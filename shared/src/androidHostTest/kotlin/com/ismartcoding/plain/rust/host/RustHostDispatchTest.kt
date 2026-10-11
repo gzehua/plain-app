@@ -1,12 +1,10 @@
 package com.ismartcoding.plain.rust.host
 
-import com.ismartcoding.plain.rust.request.*
-
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * The Rust host socket multiplexes every platform callback onto one JSON-RPC-ish
+ * The Rust native host stream multiplexes every platform callback onto one request
  * channel and dispatches by method-name prefix (see `RustHostApi.start`). The
  * routing table is the contract between Rust and Kotlin, so a silent
  * mis-route here surfaces as one host's method answering for another's data.
@@ -23,8 +21,9 @@ class RustHostDispatchTest {
             "chatPickedFacts" to HostRoute.ChatPicked,
             "sharedTransferSend" to HostRoute.SharedTransfer,
             "blePairConnect" to HostRoute.BlePairing,
-            "mainGraphql" to HostRoute.MainGraphql,
-            "mainGraphqlServerFailed" to HostRoute.MainGraphql,
+            "mainGraphqlHealth" to HostRoute.HttpServer,
+            "mainGraphqlShutdown" to HostRoute.HttpServer,
+            "mainGraphqlServerFailed" to HostRoute.HttpServer,
             "mdnsMulticast" to HostRoute.MdnsMulticast,
             "discoveryFacts" to HostRoute.DiscoveryAdvertisement,
             "nearbyScanFacts" to HostRoute.NearbyScan,
@@ -92,7 +91,13 @@ class RustHostDispatchTest {
 
     @Test
     fun everyRouteIsReachable() {
-        val reachable = ALL_METHOD_NAMES.map { routeOf(it) }.toSet()
+        val reachable = listOf(
+            "fileResourceStream", "thumbnailDecode", "chatPickedFacts", "sharedTransferSend",
+            "blePairConnect", "mainGraphqlHealth", "mdnsMulticast", "discoveryFacts",
+            "nearbyScanFacts", "pairingNotification", "bleScanRead", "peerStartAware", "peerTransportSocket",
+            "systemAppFacts", "fileMetadataFacts", "audioEngineCommand", "fileTaskScan",
+            "mediaAction", "imageIndexStatus", "audioMetadata",
+        ).map { routeOf(it) }.toSet()
         assertEquals(
             "a route declared in the dispatch table has no known method",
             HostRoute.entries.toSet(),

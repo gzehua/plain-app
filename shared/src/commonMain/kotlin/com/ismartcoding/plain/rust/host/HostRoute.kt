@@ -14,7 +14,7 @@ enum class HostRoute {
     SharedTransfer,
     BlePairing,
     BleScan,
-    MainGraphql,
+    HttpServer,
     MdnsMulticast,
     DiscoveryAdvertisement,
     NearbyScan,
@@ -40,7 +40,7 @@ fun routeForHostMethod(method: String): HostRoute = when {
     method.startsWith("sharedTransfer") -> HostRoute.SharedTransfer
     method.startsWith("blePair") -> HostRoute.BlePairing
     method == "bleScanRead" -> HostRoute.BleScan
-    method.startsWith("mainGraphql") -> HostRoute.MainGraphql
+    method == "mainGraphqlHealth" || method == "mainGraphqlServerFailed" || method == "mainGraphqlShutdown" -> HostRoute.HttpServer
     method == "mdnsMulticast" -> HostRoute.MdnsMulticast
     method == "discoveryFacts" -> HostRoute.DiscoveryAdvertisement
     method == "nearbyScanFacts" -> HostRoute.NearbyScan
@@ -54,12 +54,3 @@ fun routeForHostMethod(method: String): HostRoute = when {
     method.startsWith("imageIndex") -> HostRoute.ImageIndex
     else -> HostRoute.AudioLibrary
 }
-
-/** Method names the Rust side actually sends, used to prove no route is dead. */
-internal val ALL_METHOD_NAMES = listOf(
-    "fileResourceStream", "thumbnailDecode", "chatPickedFacts", "sharedTransferSend",
-    "blePairConnect", "mainGraphql", "mdnsMulticast", "discoveryFacts",
-    "nearbyScanFacts", "pairingNotification", "bleScanRead", "peerStartAware", "peerTransportSocket",
-    "systemAppFacts", "fileMetadataFacts", "audioEngineCommand", "fileTaskScan",
-    "mediaAction", "imageIndexStatus", "audioMetadata",
-)
