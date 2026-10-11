@@ -65,7 +65,7 @@ mod android {
         sys::jstring,
     };
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_RustCoreBridge_startNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_startNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         path: JString<'_>,
@@ -87,7 +87,7 @@ mod android {
         .into_raw()
     }
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_RustCoreBridge_stopNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_stopNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {

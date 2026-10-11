@@ -151,7 +151,7 @@ mod android {
     type BridgeResult<T> = std::result::Result<T, BridgeError>;
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_RustPrefsBridge_openNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustPrefsBridge_openNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         system_path: JString<'_>,
@@ -165,7 +165,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_RustPrefsBridge_userSnapshotNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustPrefsBridge_userSnapshotNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -178,7 +178,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_RustPrefsBridge_updateUserNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustPrefsBridge_updateUserNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         patch_json: JString<'_>,
@@ -191,7 +191,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_RustPrefsBridge_userActionNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustPrefsBridge_userActionNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         action_json: JString<'_>,

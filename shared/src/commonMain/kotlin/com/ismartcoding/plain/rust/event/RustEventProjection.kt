@@ -44,7 +44,8 @@ internal object RustEventProjection {
             EventType.PEER_TRANSPORT_UPDATED.name -> com.ismartcoding.plain.chat.peer.PeerTransportProjection.refresh()
             EventType.PEER_CONNECTIONS_UPDATED.name -> com.ismartcoding.plain.chat.peer.PeerStatusProjection.refresh(payload)
             EventType.MDNS_UPDATED.name, EventType.NEARBY_DISCOVERY_STARTED.name, EventType.NEARBY_DISCOVERY_STOPPED.name -> com.ismartcoding.plain.discover.RustMdnsRuntime.refresh(if (type == EventType.MDNS_UPDATED.name) payload else null)
-            EventType.DLNA_RENDERER_UPDATED.name -> com.ismartcoding.plain.features.dlna.DlnaRendererState.refresh()
+            EventType.DLNA_RENDERER_UPDATED.name -> com.ismartcoding.plain.features.dlna.DlnaRendererState.apply(
+                JsonHelper.jsonDecode<JsonObject>(payload).getValue("renderer").jsonObject)
             EventType.NEARBY_DEVICES_UPDATED.name -> com.ismartcoding.plain.discover.RustNearbyDevices.refresh()
             EventType.PAIRING_REQUEST_RECEIVED.name -> com.ismartcoding.plain.discover.PairingProjection.request(payload)
             EventType.PAIRING_STARTED.name -> com.ismartcoding.plain.discover.PairingProjection.started(payload)
