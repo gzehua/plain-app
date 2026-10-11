@@ -69,9 +69,8 @@ expect suspend fun stopHttpServiceAsync()
 
 suspend fun checkHttpServerAsync(): Boolean = withIO {
     try {
-        val request = JsonHelper.jsonDecode<JsonObject>(JsonHelper.jsonEncode(emptyMap<String, String>()))
-        RustContentApi.postJsonOrThrow("system/http-server/health", request)
-            .getValue("healthy").jsonPrimitive.boolean
+        com.ismartcoding.plain.rust.PlainRust.mainQuery("coreHttpServerHealthy")
+            .getValue("coreHttpServerHealthy").jsonPrimitive.boolean
     } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (error: Exception) {
