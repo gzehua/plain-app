@@ -6,7 +6,6 @@ import com.ismartcoding.plain.enums.PickFileType
 import com.ismartcoding.plain.events.PickFileResultEvent
 import com.ismartcoding.plain.features.ChatMessageEditor
 import com.ismartcoding.plain.lib.coMain
-import com.ismartcoding.plain.chat.ChatManager
 import com.ismartcoding.plain.chat.ChatViewModel
 import com.ismartcoding.plain.ui.models.PeerViewModel
 
@@ -19,7 +18,9 @@ fun handleChatFileSelection(
     coMain {
         val target = ChatViewModel.target.value
         focusManager.clearFocus()
-        ChatManager.sharePicked(target, event.uris.toList(), event.type == PickFileType.IMAGE_VIDEO, event.type == PickFileType.IMAGE_VIDEO)
+        sendPickedAttachments(listOf(target), event.uris.toList(),
+            images = event.type == PickFileType.IMAGE_VIDEO,
+            normalize = event.type == PickFileType.IMAGE_VIDEO)
     }
 }
 

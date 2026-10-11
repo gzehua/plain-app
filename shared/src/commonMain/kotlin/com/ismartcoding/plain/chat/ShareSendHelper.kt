@@ -6,9 +6,6 @@ import com.ismartcoding.plain.db.DShare
 import kotlin.time.Instant
 
 object ShareSendHelper {
-    suspend fun sendAsync(targets: List<ChatTarget>, uris: List<String>, text: String?, caption: String?): Boolean =
-        RustChatService.share(targets, uris, text, caption)
-
     suspend fun sendContentAsync(targets: List<ChatTarget>, content: DMessageContent) {
         RustChatService.sendMany(targets, content)
     }

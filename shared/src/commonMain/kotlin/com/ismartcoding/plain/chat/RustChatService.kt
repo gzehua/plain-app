@@ -7,7 +7,6 @@ import com.ismartcoding.plain.db.DMessageContent
 import com.ismartcoding.plain.db.DMessageFile
 import com.ismartcoding.plain.db.toJSONString
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.ui.helpers.DialogHelper
 import kotlinx.serialization.json.*
 
 internal object RustChatService {
@@ -19,11 +18,10 @@ internal object RustChatService {
         call(ChatServiceCommand.SendMany(targets.map { it.encodedToId }, content.toJSONString())).jsonArray.map(RustChatStore::decode)
     suspend fun forward(id: String, target: ChatTarget): DChat =
         RustChatStore.decode(call(ChatServiceCommand.Forward(id, target.encodedToId)))
-    suspend fun share(targets: List<ChatTarget>, uris: List<String>, text: String?, caption: String?, images: Boolean? = null, normalize: Boolean = false): Boolean {
+    suspend fun share(targets: List<ChatTarget>, attachments: List<ChatAttachment>, text: String?, caption: String?, images: Boolean? = null, normalize: Boolean = false): Boolean {
         val result = JsonHelper.jsonDecodeFromElement<ChatShareResult>(call(
-            ChatServiceCommand.Share(targets.map { it.encodedToId }, uris, text, caption, images, normalize),
+            ChatServiceCommand.Share(targets.map { it.encodedToId }, attachments, text, caption, images, normalize),
         ))
-        result.warnings.forEach { DialogHelper.showMessage(it) }
         return result.ok
     }
     suspend fun folder(targets: List<ChatTarget>, path: String, name: String, expiry: String?): Boolean =

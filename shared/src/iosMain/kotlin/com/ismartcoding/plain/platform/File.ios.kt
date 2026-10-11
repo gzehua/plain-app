@@ -111,7 +111,7 @@ actual fun fileExists(path: String): Boolean =
 
 @OptIn(ExperimentalForeignApi::class)
 actual suspend fun copyPickedFileToAppStorage(uriStr: String, destRelativePath: String): String? = withIO {
-    val srcPath = uriStr
+    val srcPath = NSURL.URLWithString(uriStr)?.path ?: uriStr
     if (!NSFileManager.defaultManager.fileExistsAtPath(srcPath)) return@withIO null
     val destPath = appDir() + "/" + destRelativePath
     val parent = destPath.substringBeforeLast('/', "")

@@ -13,7 +13,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.lifecycleScope
-import com.ismartcoding.plain.chat.ShareSendHelper
+import com.ismartcoding.plain.platform.sendPickedAttachments
 import com.ismartcoding.plain.chat.data.ChatTarget
 import com.ismartcoding.plain.enums.DarkTheme
 import com.ismartcoding.plain.features.NoteHelper
@@ -113,7 +113,7 @@ class ShareActivity : ComponentActivity() {
         vm.sending = true
         lifecycleScope.launch {
             try {
-                val ok = ShareSendHelper.sendAsync(targets, uris, vm.text, vm.caption.ifBlank { null })
+                val ok = sendPickedAttachments(targets, uris, vm.text, vm.caption.ifBlank { null })
                 if (ok) {
                     toast(LocaleHelper.getPluralStringAsync(Res.plurals.sent_to_n_targets, targets.size))
                     finish()

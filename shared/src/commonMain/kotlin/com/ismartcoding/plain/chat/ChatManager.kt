@@ -21,9 +21,6 @@ object ChatManager {
     suspend fun forward(id: String, target: ChatTarget): DChat = RustChatService.forward(id, target)
     suspend fun retry(id: String): DChat = RustChatService.retry(id)
     suspend fun deleteQuery(query: String): Int = RustChatService.deleteQuery(query)
-    suspend fun sharePicked(target: ChatTarget, uris: List<String>, images: Boolean, normalize: Boolean): Boolean =
-        RustChatService.share(listOf(target), uris, null, null, images, normalize)
-
     suspend fun deliver(id: String, recipients: List<String>? = null): DChat = RustChatService.deliver(id, recipients)
 
     suspend fun insertFilesImmediate(target: ChatTarget, files: List<DMessageFile>, isImageVideo: Boolean): DChat = withIO {

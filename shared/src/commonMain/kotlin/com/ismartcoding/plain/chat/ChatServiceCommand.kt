@@ -15,7 +15,7 @@ internal sealed class ChatServiceCommand {
     @Serializable @SerialName("sendMany") data class SendMany(val targets: List<String>, val content: String) : ChatServiceCommand()
     @Serializable @SerialName("forward") data class Forward(val id: String, val target: String) : ChatServiceCommand()
     @Serializable @SerialName("share") data class Share(
-        val targets: List<String>, val uris: List<String>, val text: String?, val caption: String?,
+        val targets: List<String>, val attachments: List<ChatAttachment>, val text: String?, val caption: String?,
         val images: Boolean?, val normalize: Boolean,
     ) : ChatServiceCommand()
     @Serializable @SerialName("folder") data class Folder(

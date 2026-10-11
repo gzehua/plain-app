@@ -35,7 +35,6 @@ internal object RustHostApi {
                                     val result = when {
                                         method == "fileResourceStream" -> { com.ismartcoding.plain.platform.FileResourceStreamHost.start(exchangeScope, session, params); JsonNull }
                                         method.startsWith("thumbnail") -> com.ismartcoding.plain.thumbnail.ThumbnailHost.handle(session, method, params)
-                                        method.startsWith("chatPicked") -> com.ismartcoding.plain.chat.ChatPickedHost.handle(method, params)
                                         method.startsWith("sharedTransfer") -> com.ismartcoding.plain.features.share.SharedTransferHost.handle(exchangeScope, method, params)
                                         method.startsWith("blePair") -> com.ismartcoding.plain.discover.BlePairingHost.handle(method, params)
                                         method == "bleScanRead" -> com.ismartcoding.plain.discover.BleScanDriver.read(params)
@@ -70,7 +69,6 @@ internal object RustHostApi {
 
     private suspend fun disconnect() {
         cleanup("Peer socket") { com.ismartcoding.plain.chat.peer.transport.PeerSocketHost.disconnect() }
-        cleanup("Selected file") { com.ismartcoding.plain.chat.ChatPickedHost.disconnect() }
         cleanup("Shared OS adapter") { com.ismartcoding.plain.features.share.SharedTransferHost.disconnect() }
         cleanup("Multicast permission") { com.ismartcoding.plain.discover.MdnsMulticastHost.disconnect() }
         cleanup("BLE handle") { com.ismartcoding.plain.discover.BlePairingHost.disconnect() }
