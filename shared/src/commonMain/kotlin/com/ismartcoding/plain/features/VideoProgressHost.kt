@@ -12,10 +12,11 @@ object VideoProgressHost {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val lock = Mutex()
 
-    suspend fun restore() {
+    suspend fun restore() = lock.withLock {
         val rows = VideoProgressHelper.recentAsync(Clock.System.now() - 30.days)
         withContext(Dispatchers.Main) {
-            rows.forEach { TempData.videoPlayProgressMap.getOrPut(it.mediaId) { it.positionMs } }
+            TempData.videoPlayProgressMap.clear()
+            rows.forEach { TempData.videoPlayProgressMap[it.mediaId] = it.positionMs }
         }
     }
 
@@ -24,7 +25,10 @@ object VideoProgressHost {
         TempData.videoPlayProgressMap[mediaId] = positionMs
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
             lock.withLock {
-                try { VideoProgressHelper.saveAsync(mediaId, positionMs) }
+                try {
+                    VideoProgressHelper.saveAsync(mediaId, positionMs)
+                    withContext(Dispatchers.Main) { TempData.videoPlayProgressMap[mediaId] = positionMs }
+                }
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (e: Exception) { LogCat.e("Video progress: ${e.message}") }
             }

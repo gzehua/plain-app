@@ -171,8 +171,8 @@ object PlainRust {
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
             events.collect { event ->
                 try {
-                    if (event.reconcile) RustEventProjection.reconcile()
                     RustEventProjection.apply(event)
+                    if (event.reconcile) RustEventProjection.reconcile()
                 } catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) { LogCat.e("Rust event projection", error) }
             }

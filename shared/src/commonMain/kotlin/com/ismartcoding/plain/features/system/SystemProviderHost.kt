@@ -60,34 +60,22 @@ object SystemProviderHost {
         "systemRecentFileFacts",
         "systemImageFileInfo",
         "systemVideoFileInfo",
-        "systemAudioFileInfo",
-        "systemDeleteFiles",
-        "systemCreateDir",
-        "systemRenameFile",
-        "systemWriteTextFile",
-        "systemTransferFile" -> SystemFilesHost.handle(method, params)
+        "systemAudioFileInfo" -> SystemFilesHost.handle(method, params)
         "systemMediaBucketItemFacts",
         "systemMediaRows",
         "systemImageIdsFacts",
         "systemMediaCount",
         "systemDocExtGroups",
-        "systemMediaAction" -> SystemMediaHost.handle(method, params)
-        "systemMediaTagFacts",
+        "systemMediaIdsFacts" -> SystemMediaHost.handle(method, params)
         "systemTagQueryStubs",
         "systemTagQueryKeys" -> SystemTagsHost.handle(method, params)
         "systemAudioPlaylistTracks",
         "systemAudioSearchTracks",
         "systemAudioLyrics",
-        "systemAudioPlaybackState",
-        "systemAudioPlayMode",
-        "systemAudioLibrarySort",
-        "systemAudioPlay",
-        "systemAudioClear" -> SystemAudioHost.handle(method, params)
+        "systemAudioPlaybackPermission",
+        "systemAudioPlaybackState" -> SystemAudioHost.handle(method, params)
         "systemDbPath" -> SystemDatabaseHost.handle(method, params)
         "uploadTmpDirFacts" -> SystemUploadsHost.handle(method, params)
-        "systemStopDiscovery",
-        "systemStartDiscovery",
-        "systemDiscoveryFacts" -> SystemDiscoveryHost.handle(method, params)
         "systemDeleteRecords" -> SystemRecordsHost.handle(method, params)
         "systemSetClipboard",
         "systemEpochMillis",

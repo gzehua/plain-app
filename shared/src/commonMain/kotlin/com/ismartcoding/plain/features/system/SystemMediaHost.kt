@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.features.system
 
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.enums.has
 import kotlinx.serialization.json.*
 
 internal object SystemMediaHost {
@@ -36,7 +35,15 @@ internal object SystemMediaHost {
                     ext = ext,
                     count = count,
                 ) })
-        "systemMediaAction" -> runMediaAction(params)
+        "systemMediaIdsFacts" -> {
+            val type = mediaDataType(params)
+            val query = params.getValue("query").jsonPrimitive.content
+            JsonHelper.jsonEncodeToElement(if (params.getValue("fromTrash").jsonPrimitive.boolean) {
+                com.ismartcoding.plain.platform.getTrashedMediaIds(type, query)
+            } else {
+                com.ismartcoding.plain.platform.getMediaIds(type, query)
+            })
+        }
         else -> error("Unsupported provider operation")
     }
 
@@ -91,29 +98,6 @@ internal object SystemMediaHost {
         isFavorite = isFavorite,
         width = width, height = height, rotation = rotation,
     ))
-
-    /** Each action resolves its own id source: a restore looks in the trash,
-     * a trash or a move looks in the live library, and only a delete has to
-     * ask whether the trash feature is on at all. */
-    private suspend fun runMediaAction(params: JsonObject): JsonElement {
-        val action = params.getValue("action").jsonPrimitive.content
-        val type = mediaDataType(params)
-        val query = params.getValue("query").jsonPrimitive.content
-        val destDir = params["destDir"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content ?: ""
-        val fromTrash = action == "delete" && com.ismartcoding.plain.enums.AppFeatureType.MEDIA_TRASH.has()
-        val ids = when {
-            action == "restore" -> com.ismartcoding.plain.platform.getTrashedMediaIds(type, query)
-            fromTrash -> com.ismartcoding.plain.platform.getTrashedMediaIds(type, query)
-            else -> com.ismartcoding.plain.platform.getMediaIds(type, query)
-        }
-        return JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.features.mediaactions.MediaActionHelper.run(
-            type,
-            com.ismartcoding.plain.features.mediaactions.MediaAction.valueOf(action.uppercase()),
-            ids,
-            fromTrash,
-            destDir,
-        ))
-    }
 
     private fun fileSortBy(params: JsonObject) =
         com.ismartcoding.plain.features.file.FileSortBy.valueOf(params.getValue("sortBy").jsonPrimitive.content)

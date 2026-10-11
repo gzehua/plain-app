@@ -14,6 +14,8 @@ import kotlinx.serialization.json.*
 
 internal object RustEventProjection {
     suspend fun reconcile() {
+        com.ismartcoding.plain.features.MediaDurationHelper.restore()
+        com.ismartcoding.plain.features.VideoProgressHost.restore()
         com.ismartcoding.plain.preferences.Prefs.refresh()
         com.ismartcoding.plain.features.session.refreshOnlineClientIds()
         runCatching { RustContentApi.postJson("files/mutate", JsonHelper.jsonEncodeToElement(RecoverDeletionsRequest()).jsonObject) }
@@ -36,6 +38,11 @@ internal object RustEventProjection {
         val type = message.type
         val payload = message.payload
         when (type) {
+            EventType.MEDIA_ACTION_FINISHED.name -> com.ismartcoding.plain.features.mediaactions.MediaActionProjection.apply(payload)
+            EventType.HTTP_SERVER_FAILED.name -> {
+                val failure = JsonHelper.jsonDecode<com.ismartcoding.plain.platform.HttpServerFailure>(payload)
+                com.ismartcoding.plain.platform.onRustHttpServerFailed(failure.generation, failure.message)
+            }
             EventType.PEER_STATUS_UPDATED.name -> {
                 com.ismartcoding.plain.chat.peer.PeerStatusProjection.refresh()
                 com.ismartcoding.plain.chat.peer.PeerCacher.load()

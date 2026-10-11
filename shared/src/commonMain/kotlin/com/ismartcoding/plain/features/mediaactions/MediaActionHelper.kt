@@ -6,7 +6,6 @@ import com.ismartcoding.plain.rust.host.*
 import com.ismartcoding.plain.rust.bridge.*
 import com.ismartcoding.plain.rust.http.*
 import com.ismartcoding.plain.rust.content.*
-import com.ismartcoding.plain.TempData
 import com.ismartcoding.plain.enums.DataType
 import kotlinx.serialization.json.*
 
@@ -19,12 +18,7 @@ object MediaActionHelper {
             affected += value.getValue("affectedCount").jsonPrimitive.int
             val batchFailed = value.getValue("failedIds").jsonArray.map { it.jsonPrimitive.content }.toSet()
             failed.addAll(batchFailed)
-            if (action == MediaAction.TRASH || action == MediaAction.DELETE) {
-                batch.filterNot { it in batchFailed }.forEach { id ->
-                    TempData.mediaDurationMap.remove("${type.name.lowercase()}:$id")
-                    if (type == DataType.VIDEO) TempData.videoPlayProgressMap.remove(id)
-                }
-            }
+
         }
         check(failed.isEmpty()) { "${action.name}: ${failed.size} media actions failed ($affected completed)" }
         return affected

@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.features.system
 
-import com.ismartcoding.plain.preferences.UserPrefs
 import com.ismartcoding.plain.enums.WebSettingsFeature
 import com.ismartcoding.plain.lib.extensions.parseEpochMillis
 import com.ismartcoding.plain.lib.JsonHelper
@@ -91,21 +90,14 @@ internal object SystemAppHost {
 
     /** The `App` contract row. Capabilities and permissions are named rather
      * than encoded: both enums are the contract's own, so there is no mapping. */
-    @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
     private suspend fun appFacts(): JsonElement = JsonHelper.jsonEncodeToElement(AppFacts(
-        clientId = com.ismartcoding.plain.TempData.clientId,
-        urlToken = kotlin.io.encoding.Base64.encode(com.ismartcoding.plain.TempData.urlToken),
-        httpPort = UserPrefs.httpPort.value,
-        httpsPort = UserPrefs.httpsPort.value,
         appDir = com.ismartcoding.plain.platform.appDir(),
-        deviceName = com.ismartcoding.plain.TempData.deviceName.value,
         deviceType = com.ismartcoding.plain.platform.getDeviceType().name,
         capabilities = com.ismartcoding.plain.platform.getDeviceCapabilities().map { it.name },
         buildChannel = com.ismartcoding.plain.enums.AppChannelType
             .fromString(com.ismartcoding.plain.buildChannel).name,
-        permissions = com.ismartcoding.plain.features.getGrantedWebPermissionsAsync().map { it.name },
+        permissions = com.ismartcoding.plain.platform.Permission.entries.filter { it.isGranted() }.map { it.name },
         downloadsDir = com.ismartcoding.plain.platform.getDownloadsDirPath(),
-        developerMode = UserPrefs.developerMode.value,
         debug = com.ismartcoding.plain.platform.isDebugBuild(),
     ))
 }

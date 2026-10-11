@@ -8,17 +8,7 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 import kotlin.time.Instant
 
-/**
- * `SystemProviderHost` hands these to the Rust side as JSON —
- * `systemCreateDir` and `systemWriteTextFile` all end in `jsonEncode(...)` on
- * the DTO. kotlinx serialization resolves a serializer from the static type, so
- * a DTO without `@Serializable` throws at the call instead of at compile time;
- * the only symptom is a GraphQL error carrying `Serializer for class '...' is
- * not found`, long after the change that dropped the annotation.
- *
- * Same failure as [DeviceFactsSerializationTest]; a separate class because
- * these are the database and file facts rather than the device's.
- */
+/** File and package facts must remain serializable across the native bridge. */
 class HostBridgeDtoSerializationTest {
     private val epoch = Instant.fromEpochMilliseconds(0)
 

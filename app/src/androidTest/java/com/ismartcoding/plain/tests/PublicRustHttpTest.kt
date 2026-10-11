@@ -47,8 +47,8 @@ class PublicRustHttpTest {
                 assertArrayEquals(getSSLSignature(), certificate.signature)
             }
             createUnsafeHttpClient().use { client ->
-                client.get("http://127.0.0.1:$port/health").use { assertEquals(200, it.status.value); assertEquals(getOwnPackageName(), it.bodyAsText()) }
-                client.get("https://127.0.0.1:$tlsPort/health").use { assertEquals(200, it.status.value); assertEquals(getOwnPackageName(), it.bodyAsText()) }
+                client.get("http://127.0.0.1:$port/health").use { assertEquals(200, it.status.value); assertEquals("OK", it.bodyAsText()) }
+                client.get("https://127.0.0.1:$tlsPort/health").use { assertEquals(200, it.status.value); assertEquals("OK", it.bodyAsText()) }
                 client.request("HEAD", "http://127.0.0.1:$port/health").use { assertEquals(200, it.status.value); assertEquals(0, it.bodyAsBytes().size) }
                 client.post("http://127.0.0.1:$port/init", ByteArray(0)).use { assertEquals(400, it.status.value) }
                 client.get("http://127.0.0.1:$port/").use { assertEquals(200, it.status.value); assertTrue(it.bodyAsText().contains("window.__SERVER_TIME__=")) }

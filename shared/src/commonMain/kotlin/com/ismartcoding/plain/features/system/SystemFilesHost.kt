@@ -39,26 +39,6 @@ internal object SystemFilesHost {
         "systemImageFileInfo" -> fileInfoFacts(method, params)
         "systemVideoFileInfo" -> fileInfoFacts(method, params)
         "systemAudioFileInfo" -> fileInfoFacts(method, params)
-        "systemDeleteFiles" -> JsonHelper.jsonEncodeToElement(params.getValue("paths").jsonArray.count { path ->
-            com.ismartcoding.plain.platform.deleteFileOrDir(path.jsonPrimitive.content)
-        })
-        "systemCreateDir" -> JsonHelper.jsonEncodeToElement(
-            com.ismartcoding.plain.platform.createDirectory(params.getValue("path").jsonPrimitive.content))
-        "systemRenameFile" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.renameAndScanFile(
-            params.getValue("path").jsonPrimitive.content,
-            params.getValue("name").jsonPrimitive.content) != null)
-        "systemWriteTextFile" -> JsonHelper.jsonEncodeToElement(
-            com.ismartcoding.plain.platform.writeFileText(
-                params.getValue("path").jsonPrimitive.content,
-                params.getValue("content").jsonPrimitive.content,
-                params.getValue("overwrite").jsonPrimitive.boolean))
-        "systemTransferFile" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.features.file.FileTaskHelper.execute(
-            com.ismartcoding.plain.features.file.FileTaskType.valueOf(params.getValue("type").jsonPrimitive.content),
-            listOf(com.ismartcoding.plain.features.file.FileTaskOp(
-                params.getValue("src").jsonPrimitive.content,
-                params.getValue("dst").jsonPrimitive.content,
-                params.getValue("overwrite").jsonPrimitive.boolean),
-            )).status == com.ismartcoding.plain.features.file.FileTaskStatus.DONE)
         else -> error("Unsupported provider operation")
     }
 

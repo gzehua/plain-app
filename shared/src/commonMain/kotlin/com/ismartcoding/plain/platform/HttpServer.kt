@@ -70,8 +70,7 @@ expect suspend fun stopHttpServiceAsync()
 /**
  * Diagnostic for the desktop-access page. It deliberately goes over loopback
  * HTTP: a check for "is my HTTP server reachable" that skipped HTTP would pass
- * with a broken listener. The round trip also proves the core can still reach
- * this app, since `/health` answers through the host bridge.
+ * with a broken listener. Rust answers `/health` directly.
  */
 suspend fun checkHttpServerAsync(): Boolean = withIO {
     val base = RustContentApi.startedSession()?.baseUrl

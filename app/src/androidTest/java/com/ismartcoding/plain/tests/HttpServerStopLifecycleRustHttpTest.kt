@@ -35,7 +35,7 @@ import java.net.Socket
  * without an engine by `HttpServerStateInvariantsTest`.
  *
  * The `/shutdown` route itself lives in the Rust listener, which reaches the
- * same teardown through the `mainGraphqlShutdown` host action; its
+ * desktop-access preference update directly in Rust; its
  * loopback-only guard is covered by
  * `shutdown_only_accepts_ipv4_and_ipv6_loopback_peers` in plain-rs.
  */
