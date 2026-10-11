@@ -40,7 +40,6 @@ object SystemProviderHost {
         "systemDeleteSms",
         "systemMmsLatest", "systemMmsLaunch", "systemMmsCandidates",
         "systemSimFacts" -> SystemSmsHost.handle(method, params)
-        "systemWebLoginRequest",
         "systemWebLoginCompleted",
         "systemWebSocketRegistered",
         "systemScreenMirrorControls",

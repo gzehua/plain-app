@@ -116,3 +116,5 @@
 -keep class com.ismartcoding.plain.rust.bridge.RustBleBridge { *; }
 
 -keep class com.ismartcoding.plain.rust.bridge.RustDlnaBridge { *; }
+
+-keep class com.ismartcoding.plain.rust.bridge.RustWebLoginBridge { *; }

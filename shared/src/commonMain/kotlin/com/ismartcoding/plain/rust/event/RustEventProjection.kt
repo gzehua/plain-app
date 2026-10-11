@@ -92,6 +92,11 @@ internal object RustEventProjection {
             EventType.PREFS_UPDATED.name -> com.ismartcoding.plain.preferences.Prefs.refresh()
             EventType.IMAGE_MODELS_UPDATED.name -> com.ismartcoding.plain.ai.RustImageModels.apply(JsonHelper.jsonDecode<JsonObject>(payload))
             EventType.DLNA_SENDER_UPDATED.name -> com.ismartcoding.plain.features.dlna.sender.RustDlnaSender.apply(JsonHelper.jsonDecode<JsonObject>(payload))
+            EventType.WEB_LOGIN_REQUESTED.name -> {
+                val facts = JsonHelper.jsonDecode<com.ismartcoding.plain.platform.WebLoginRequestFacts>(payload)
+                sendEvent(com.ismartcoding.plain.events.HConfirmToAcceptLoginEvent(
+                    facts.clientId, facts.request, facts.requestId, facts.clientIp))
+            }
             EventType.WEB_REQUEST_RECEIVED.name -> {
                 sendEvent(HWebRequestReceivedEvent())
             }

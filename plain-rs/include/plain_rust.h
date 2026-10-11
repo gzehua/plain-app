@@ -20,6 +20,7 @@ void plain_prefs_string_free(char *pointer);
 char *plain_core_start(const char *database_path, const char *token, const char *config_json);
 void plain_core_stop(void);
 char *plain_http_stop(void);
+char *plain_web_login_decide(const char *request_id, bool allowed);
 char *plain_dlna_receiver(const char *command);
 char *plain_graphql(const char *request, bool host_api);
 char *plain_events_next(const char *stream);

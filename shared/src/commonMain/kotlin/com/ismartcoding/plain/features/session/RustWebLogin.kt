@@ -1,16 +1,16 @@
 package com.ismartcoding.plain.features.session
 
-import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.events.HConfirmToAcceptLoginEvent
-import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.preferences.Prefs
-import kotlinx.serialization.json.jsonObject
+import com.ismartcoding.plain.rust.bridge.RustDispatchers
+import com.ismartcoding.plain.rust.bridge.RustWebLoginBridge
+import kotlinx.coroutines.withContext
 
 object RustWebLogin {
-    private suspend fun call(command: WebLoginCommand) = RustContentApi.postJsonOrThrow("system/ws-login", JsonHelper.jsonEncodeToElement<WebLoginCommand>(command).jsonObject)
-    suspend fun cancel(requestId: String) { call(WebLoginCommand.Cancel(requestId)) }
-    suspend fun resetPassword(): String {
-        return com.ismartcoding.plain.preferences.RustSystemState.resetPassword()
+    private suspend fun decide(requestId: String, allowed: Boolean) = withContext(RustDispatchers.requests) {
+        val error = RustWebLoginBridge.decide(requestId, allowed)
+        check(error.isEmpty()) { error }
     }
-    suspend fun complete(event: HConfirmToAcceptLoginEvent) { call(WebLoginCommand.Complete(event.requestId)) }
+    suspend fun cancel(requestId: String) { decide(requestId, false) }
+    suspend fun resetPassword(): String = com.ismartcoding.plain.preferences.RustSystemState.resetPassword()
+    suspend fun complete(event: HConfirmToAcceptLoginEvent) { decide(event.requestId, true) }
 }
