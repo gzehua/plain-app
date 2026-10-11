@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.platform
 
 import com.ismartcoding.plain.features.audio.AudioCommands
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.audio_notification_prompt
 import kotlinx.coroutines.Dispatchers
@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
 interface AudioPlayer {
     val isPlayingFlow: StateFlow<Boolean>
     val currentPath: String
-    suspend fun load(audio: AudioHostTrack, positionMs: Long, speed: Float, revision: Long)
+    suspend fun load(audio: AudioItem, positionMs: Long, speed: Float, revision: Long)
     val progress: Long
     fun seekTo(positionMs: Long)
     fun pause()
@@ -48,9 +48,9 @@ fun playAudioWithNotificationCheck(path: String) {
     }
 }
 
-fun audioJustPlay(audio: AudioHostTrack) = AudioCommands.playTrack(audio)
+fun audioJustPlay(audio: AudioItem) = AudioCommands.playTrack(audio)
 
-fun audioJustPlayWithNotificationCheck(audio: AudioHostTrack) {
+fun audioJustPlayWithNotificationCheck(audio: AudioItem) {
     checkNotificationPermission(Res.string.audio_notification_prompt) {
         AudioCommands.playTrack(audio)
     }

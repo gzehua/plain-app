@@ -15,7 +15,7 @@ import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.audio.fromPath
 import com.ismartcoding.plain.data.DPomodoroSettings
 import com.ismartcoding.plain.extensions.getFinalPath
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.graphql.models.PomodoroSettings
 import com.ismartcoding.plain.helpers.NotificationHelper
 import com.ismartcoding.plain.i18n.*
@@ -120,7 +120,7 @@ actual suspend fun playPomodoroCompletionSound(settings: DPomodoroSettings) {
 
 private suspend fun playCustomSong(context: android.content.Context, songPath: String) {
     try {
-        val audio = AudioHostTrack.fromPath(context, songPath)
+        val audio = AudioItem.fromPath(context, songPath)
         coIO {
             audioJustPlay(audio)
         }

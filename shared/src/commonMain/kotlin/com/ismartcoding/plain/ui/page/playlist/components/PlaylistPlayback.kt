@@ -3,7 +3,7 @@ package com.ismartcoding.plain.ui.page.playlist.components
 import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.features.audio.AudioQueueManager
 import com.ismartcoding.plain.graphql.models.Audio
-import com.ismartcoding.plain.graphql.models.AudioHostPlaylistItem
+import com.ismartcoding.plain.graphql.models.AudioPlaylistItem
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.audioJustPlayWithNotificationCheck
@@ -29,7 +29,7 @@ internal suspend fun playPlaylistShuffled(playlistId: String, audioQueueVM: Audi
 }
 
 /** Off-library fallback row value so selection records one id space. */
-internal fun AudioHostPlaylistItem.toDAudio(): DAudio = DAudio(
+internal fun AudioPlaylistItem.toDAudio(): DAudio = DAudio(
     id = audioPath,
     title = title,
     artist = artist,

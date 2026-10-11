@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.audioJustPlayWithNotificationCheck
 import com.ismartcoding.plain.ui.base.HorizontalSpace
@@ -30,7 +30,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ReorderableCollectionItemScope.AudioQueueItemRow(
-    audio: AudioHostTrack,
+    audio: AudioItem,
     index: Int,
     isPlaying: Boolean,
     canReorder: Boolean,

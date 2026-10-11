@@ -13,7 +13,6 @@ data class Note(
     @kotlinx.serialization.Required var deletedAt: Instant? = null,
     @kotlinx.serialization.Required var createdAt: Instant = TimeHelper.now(),
     @kotlinx.serialization.Required var updatedAt: Instant = TimeHelper.now(),
-    var tags: List<Tag> = emptyList(),
 ) : com.ismartcoding.plain.db.IData {
     fun getSummary(): String {
         return content.replace("\n", "").replaceFirst("^\\s*".toRegex(), "")

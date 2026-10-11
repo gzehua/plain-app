@@ -20,7 +20,6 @@ data class FeedEntry(
     @kotlinx.serialization.Required var publishedAt: Instant = TimeHelper.now(),
     @kotlinx.serialization.Required var createdAt: Instant = TimeHelper.now(),
     @kotlinx.serialization.Required var updatedAt: Instant = TimeHelper.now(),
-    var tags: List<Tag> = emptyList(),
     var feed: Feed? = null,
 ) : com.ismartcoding.plain.db.IData {
     fun getSummary(): String {

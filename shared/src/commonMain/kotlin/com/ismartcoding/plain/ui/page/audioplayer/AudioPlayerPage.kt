@@ -31,7 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.TempData
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.withIO
@@ -77,7 +77,7 @@ fun AudioPlayerPage(audioQueueVM: AudioQueueViewModel, onDismissRequest: () -> U
 
     // Pager pages mirror the play queue; fall back to the single playing
     // track when the queue is empty (e.g. player opened from chat).
-    var fallbackItem by remember { mutableStateOf<AudioHostTrack?>(null) }
+    var fallbackItem by remember { mutableStateOf<AudioItem?>(null) }
     LaunchedEffect(currentPlayingPath.value) {
         fallbackItem = null
         if (!isDragging) progress = audioPlayerProgress().toFloat()

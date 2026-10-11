@@ -13,7 +13,7 @@ import com.ismartcoding.plain.enums.AudioAction
 import com.ismartcoding.plain.events.AudioActionEvent
 import com.ismartcoding.plain.features.audio.AudioCommands
 import com.ismartcoding.plain.features.audio.AudioQueueManager
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -81,7 +81,7 @@ object AudioPlayer {
 
     private var controller: MediaController? = null
     private var player: Player? = null
-    private var pendingStart: Pair<AudioHostTrack, Long>? = null
+    private var pendingStart: Pair<AudioItem, Long>? = null
     val currentPath: String get() = player?.currentMediaItem?.mediaId.orEmpty()
     var playerProgress: Long = 0 // player progress in milliseconds
         get() {
@@ -120,7 +120,7 @@ object AudioPlayer {
         }, MoreExecutors.directExecutor())
     }
 
-    suspend fun load(context: Context, audio: AudioHostTrack, positionMs: Long, speed: Float, revision: Long) {
+    suspend fun load(context: Context, audio: AudioItem, positionMs: Long, speed: Float, revision: Long) {
         val ready = CompletableDeferred<Unit>()
         ensurePlayer(context) {
             try {
@@ -194,7 +194,7 @@ object AudioPlayer {
     }
 
     private fun doPlay(
-        audio: AudioHostTrack,
+        audio: AudioItem,
         speed: Float,
         revision: Long,
     ) {

@@ -16,5 +16,4 @@ data class Audio(
     var createdAt: Instant,
     var updatedAt: Instant,
     var isFavorite: Boolean,
-    var tags: List<Tag>,
 )

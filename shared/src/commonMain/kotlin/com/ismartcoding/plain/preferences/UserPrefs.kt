@@ -10,7 +10,7 @@ import com.ismartcoding.plain.enums.DarkTheme
 import com.ismartcoding.plain.enums.MediaPlayMode
 import com.ismartcoding.plain.enums.ScreenMirrorMode
 import com.ismartcoding.plain.features.file.FileSortBy
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.graphql.models.PomodoroSettings
 import com.ismartcoding.plain.graphql.models.ScreenMirrorQuality
 import com.ismartcoding.plain.graphql.models.Video
@@ -59,7 +59,7 @@ object UserPrefs {
     val editorStatusBar = userPref("editorStatusBar", true)
     val lastFilePath = userPref("lastFilePath", FilePathData("", "", ""))
     val scanHistory = userPref("scanHistory", emptyList<String>())
-    val audioPlaylist = userPref("audioPlaylist", emptyList<AudioHostTrack>())
+    val audioPlaylist = userPref("audioPlaylist", emptyList<AudioItem>())
     val chatInputText = userPref("chatInputText", "")
     val nearbyDiscoverable = userPref("nearbyDiscoverable", true)
     val aiImageSearchEnabled = userPref("aiImageSearchEnabled", false)

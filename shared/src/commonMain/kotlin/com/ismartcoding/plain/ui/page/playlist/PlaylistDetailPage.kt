@@ -31,7 +31,7 @@ import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.db.IDData
 import com.ismartcoding.plain.features.audio.AudioPlaylistManager
 import com.ismartcoding.plain.graphql.models.Audio
-import com.ismartcoding.plain.graphql.models.AudioHostPlaylistItem
+import com.ismartcoding.plain.graphql.models.AudioPlaylistItem
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.cast
 import com.ismartcoding.plain.i18n.sort
@@ -102,7 +102,7 @@ fun PlaylistDetailPage(
     })
 
     var playlistName by remember { mutableStateOf("") }
-    var items by remember { mutableStateOf<List<AudioHostPlaylistItem>>(listOf()) }
+    var items by remember { mutableStateOf<List<AudioPlaylistItem>>(listOf()) }
     var albumCovers by remember { mutableStateOf<List<PlaylistAlbumCover>>(emptyList()) }
     var version by remember { mutableIntStateOf(0) }
     var showMore by remember { mutableStateOf(false) }

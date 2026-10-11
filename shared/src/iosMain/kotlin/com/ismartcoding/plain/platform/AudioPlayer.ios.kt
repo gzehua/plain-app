@@ -5,7 +5,7 @@ package com.ismartcoding.plain.platform
 import com.ismartcoding.plain.TempData
 import com.ismartcoding.plain.features.audio.AudioCommands
 import com.ismartcoding.plain.features.audio.AudioQueueManager
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.preferences.*
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -36,11 +36,11 @@ private object AVPlayerAudioPlayer : AudioPlayer {
     override val isPlayingFlow: StateFlow<Boolean> = _isPlayingFlow.asStateFlow()
 
     private var player: AVPlayer? = null
-    private var currentAudio: AudioHostTrack? = null
-    private var pendingStart: Pair<AudioHostTrack, Long>? = null
+    private var currentAudio: AudioItem? = null
+    private var pendingStart: Pair<AudioItem, Long>? = null
     override val currentPath: String get() = if (player == null) "" else currentAudio?.path.orEmpty()
 
-    override suspend fun load(audio: AudioHostTrack, positionMs: Long, speed: Float, revision: Long) = withContext(Dispatchers.Main) {
+    override suspend fun load(audio: AudioItem, positionMs: Long, speed: Float, revision: Long) = withContext(Dispatchers.Main) {
         currentAudio = audio
         TempData.audioPlayPosition = positionMs
         playInternal(audio, speed, revision)
@@ -128,7 +128,7 @@ private object AVPlayerAudioPlayer : AudioPlayer {
         }
     }
 
-    private fun playInternal(audio: AudioHostTrack, speed: Float, revision: Long) {
+    private fun playInternal(audio: AudioItem, speed: Float, revision: Long) {
         try {
             configureSession()
             val url = NSURL.fileURLWithPath(audio.path)

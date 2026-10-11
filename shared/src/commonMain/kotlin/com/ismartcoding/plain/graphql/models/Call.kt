@@ -15,5 +15,4 @@ data class Call(
     var type: CallType,
     var accountId: String,
     var geo: PhoneGeo?,
-    var tags: List<Tag>,
 )

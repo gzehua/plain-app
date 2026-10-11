@@ -13,5 +13,4 @@ data class Doc(
     var bucketId: String,
     var createdAt: Instant,
     var updatedAt: Instant,
-    var tags: List<Tag>,
 )

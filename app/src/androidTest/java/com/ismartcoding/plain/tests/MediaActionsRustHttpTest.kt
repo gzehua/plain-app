@@ -12,7 +12,7 @@ import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.*
 import com.ismartcoding.plain.features.audio.*
 import com.ismartcoding.plain.features.mediaactions.*
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.platform.deleteMedia
 import com.ismartcoding.plain.platform.getMediaItemUriString
 import com.ismartcoding.plain.platform.restoreMedia
@@ -85,7 +85,7 @@ class MediaActionsRustHttpTest {
             TagHelper.editTagRelations(DataType.AUDIO,TagRelationStub(missingId,"Synthetic missing",1),listOf(audioTag),emptyList())
             TagHelper.editTagRelations(DataType.VIDEO,TagRelationStub(id,"Other domain",1),listOf(videoTag),emptyList())
             MediaDurationHelper.save("audio",id,1000)
-            val track = AudioHostTrack("Synthetic",path,prefix,1000,"")
+            val track = AudioItem(title = "Synthetic", artist = prefix, path = path, durationMs = 1000)
             playlistId = AudioPlaylistManager.createPlaylist(prefix).id
             AudioPlaylistManager.addPlaylistItems(playlistId,listOf(track))
             AudioQueueManager.enqueue(listOf(track))

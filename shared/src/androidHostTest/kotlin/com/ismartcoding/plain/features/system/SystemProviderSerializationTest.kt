@@ -3,7 +3,7 @@ package com.ismartcoding.plain.features.system
 import com.ismartcoding.plain.features.sms.SmsConversationFacts
 import com.ismartcoding.plain.features.sms.SmsCountFacts
 import com.ismartcoding.plain.features.sms.SmsRowsFacts
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.lib.JsonHelper
 import java.io.File
 import kotlinx.serialization.SerializationException
@@ -67,9 +67,9 @@ class SystemProviderSerializationTest {
         val input = JsonHelper.jsonDecode<kotlinx.serialization.json.JsonElement>(
             """{"title":"Song","artist":"Singer","path":"/song","durationMs":42,"extra":true}""",
         )
-        assertEquals(AudioHostTrack("Song", "/song", "Singer", 42), JsonHelper.jsonDecodeFromElement<AudioHostTrack>(input))
+        assertEquals(AudioItem(title = "Song", path = "/song", artist = "Singer", durationMs = 42), JsonHelper.jsonDecodeFromElement<AudioItem>(input))
         assertThrows(SerializationException::class.java) {
-            JsonHelper.jsonDecodeFromElement<AudioHostTrack>(JsonHelper.jsonDecode("""{"title":"Song"}"""))
+            JsonHelper.jsonDecodeFromElement<AudioItem>(JsonHelper.jsonDecode("""{"title":"Song"}"""))
         }
     }
 

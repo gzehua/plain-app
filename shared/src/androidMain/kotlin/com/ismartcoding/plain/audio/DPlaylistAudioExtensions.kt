@@ -5,7 +5,7 @@ import android.media.MediaMetadataRetriever
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.unknown
 import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
@@ -13,11 +13,11 @@ import com.ismartcoding.plain.lib.extensions.pathToUri
 import com.ismartcoding.plain.platform.LocaleHelper
 
 /**
- * Android-specific extensions on [AudioHostTrack] kept in androidMain because they
+ * Android-specific extensions on [AudioItem] kept in androidMain because they
  * depend on MediaMetadataRetriever and Media3.
  */
 @OptIn(UnstableApi::class)
-fun AudioHostTrack.toMediaItem(): MediaItem {
+fun AudioItem.toMediaItem(): MediaItem {
     val mediaMetadata = MediaMetadata.Builder()
         .setTitle(title)
         .setSubtitle(artist)
@@ -33,10 +33,10 @@ fun AudioHostTrack.toMediaItem(): MediaItem {
         .build()
 }
 
-fun AudioHostTrack.Companion.fromPath(
+fun AudioItem.Companion.fromPath(
     context: Context,
     path: String,
-): AudioHostTrack {
+): AudioItem {
     val retriever = MediaMetadataRetriever()
     var title = path.getFilenameWithoutExtensionFromPath()
     var durationMs = 0L
@@ -57,5 +57,5 @@ fun AudioHostTrack.Companion.fromPath(
     } catch (ex: Throwable) {
         ex.printStackTrace()
     }
-    return AudioHostTrack(title, path, artist, durationMs)
+    return AudioItem(title = title, path = path, artist = artist, durationMs = durationMs)
 }

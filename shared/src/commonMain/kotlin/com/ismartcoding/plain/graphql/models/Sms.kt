@@ -17,5 +17,4 @@ data class Sms(
     var subscriptionId: Int,
     var isMms: Boolean,
     var attachments: List<SmsAttachment>,
-    var tags: List<Tag>,
 )

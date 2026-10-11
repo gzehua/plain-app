@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.platform.AudioPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -11,7 +11,7 @@ internal class AudioTestPlayer : AudioPlayer {
     var loads = 0
     var fail = false
     private fun checkAvailable() { check(!fail) { "Synthetic player unavailable" } }
-    override suspend fun load(audio: AudioHostTrack, positionMs: Long, speed: Float, revision: Long) {
+    override suspend fun load(audio: AudioItem, positionMs: Long, speed: Float, revision: Long) {
         checkAvailable()
         loads++
         currentPath = audio.path

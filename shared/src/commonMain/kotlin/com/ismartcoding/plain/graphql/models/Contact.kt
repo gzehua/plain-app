@@ -28,5 +28,4 @@ data class Contact(
     var ims: List<ContactIm>,
     var ringtone: String,
     var updatedAt: Instant,
-    var tags: List<Tag>,
 )

@@ -39,7 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.pause
 import com.ismartcoding.plain.lib.LrcParser
@@ -61,7 +61,7 @@ private fun dpLerp(start: Dp, stop: Dp, fraction: Float): Dp = start + (stop - s
  */
 @Composable
 internal fun AudioPlayerTrackPage(
-    item: AudioHostTrack,
+    item: AudioItem,
     progressMs: Long,
     isPlaying: Boolean,
     viewMode: PlayerView,

@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 class GraphqlModelContractTest {
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @Test
-    fun restoredPublicModelsMatchEverySchemaFieldAndItsNullability() {
+    fun baseModelsMatchSchemaWithoutLazyTagFields() {
         val sdl = java.io.File("apitest/schema.graphqls").readText()
             .replace(Regex("\"\"\"[\\s\\S]*?\"\"\""), "")
         val models: Map<String, SerialDescriptor> = mapOf(
@@ -107,13 +107,18 @@ class GraphqlModelContractTest {
         )
         val blocks = Regex("""(?:type|input) (\w+)\s*\{([^}]+)}""").findAll(sdl)
             .associate { it.groupValues[1] to it.groupValues[2] }
+        val lazyTags = setOf("Audio", "Call", "Contact", "Sms", "Doc", "Image", "Video", "Note", "FeedEntry")
         models.forEach { (name, descriptor) ->
             val fields = Regex("""(\w+)\s*:\s*([\w!\[\]]+)""").findAll(blocks.getValue(name))
                 .associate { it.groupValues[1] to !it.groupValues[2].endsWith("!") }
             val actual = (0 until descriptor.elementsCount).associate {
                 descriptor.getElementName(it) to descriptor.getElementDescriptor(it).isNullable
             }
-            assertEquals(fields, actual, name)
+            if (name in lazyTags) {
+                assertEquals(false, fields.getValue("tags"), "$name.tags remains a non-null GraphQL field")
+                assertEquals(false, actual.containsKey("tags"), "$name.tags must be resolved separately")
+            }
+            assertEquals(fields.filterKeys { it != "tags" || name !in lazyTags }, actual, name)
         }
     }
 }

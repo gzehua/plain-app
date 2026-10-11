@@ -15,5 +15,4 @@ data class Video(
     var updatedAt: Instant,
     var takenAt: Instant?,
     var isFavorite: Boolean,
-    var tags: List<Tag>,
 )

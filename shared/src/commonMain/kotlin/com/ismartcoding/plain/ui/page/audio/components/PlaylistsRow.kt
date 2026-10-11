@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.graphql.models.AudioHostPlaylist
+import com.ismartcoding.plain.graphql.models.AudioPlaylist
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.drawerOpenAtRowStart
 import com.ismartcoding.plain.ui.page.playlist.PlaylistAlbumCover
@@ -30,9 +30,9 @@ import org.jetbrains.compose.resources.pluralStringResource
 /** Horizontally scrolling playlist cards. */
 @Composable
 fun PlaylistsRow(
-    playlists: List<Pair<AudioHostPlaylist, Int>>,
+    playlists: List<Pair<AudioPlaylist, Int>>,
     covers: Map<String, List<PlaylistAlbumCover>>,
-    onPlaylistClick: (AudioHostPlaylist) -> Unit,
+    onPlaylistClick: (AudioPlaylist) -> Unit,
 ) {
     val listState = rememberLazyListState()
     LazyRow(

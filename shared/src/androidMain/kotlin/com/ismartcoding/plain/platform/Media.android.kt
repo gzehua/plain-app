@@ -9,7 +9,7 @@ import com.ismartcoding.plain.audio.fromPath
 import com.ismartcoding.plain.data.DImageMeta
 import com.ismartcoding.plain.data.DVideoMeta
 import com.ismartcoding.plain.extensions.getDurationMs
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.helpers.ImageHelper
 import com.ismartcoding.plain.helpers.MediaShortcutHelper
 import com.ismartcoding.plain.helpers.Mp4Helper
@@ -50,7 +50,7 @@ actual fun getMediaDurationMs(path: String): Long {
 }
 
 actual fun getAudioDurationMs(path: String): Long =
-    AudioHostTrack.fromPath(appContext, path).durationMs
+    AudioItem.fromPath(appContext, path).durationMs
 
 actual fun generateQrCode(text: String, width: Int, height: Int): ImageBitmap {
     return QrCodeGenerateHelper.generate(text, width, height).asImageBitmap()

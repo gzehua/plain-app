@@ -3,7 +3,7 @@ package com.ismartcoding.plain.audio
 import com.ismartcoding.plain.data.IItemMetadata
 import com.ismartcoding.plain.db.IData
 import com.ismartcoding.plain.db.IMedia
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.lib.extensions.formatDurationMs
 import kotlin.time.Instant
 
@@ -24,7 +24,7 @@ data class DAudio(
         return listOf(artist, durationMs.formatDurationMs()).filter { it.isNotEmpty() }.joinToString(" · ")
     }
 
-    fun toPlaylistAudio(): AudioHostTrack {
-        return AudioHostTrack(title, path, artist, durationMs, albumId)
+    fun toPlaylistAudio(): AudioItem {
+        return AudioItem(title = title, artist = artist, albumId = albumId, path = path, durationMs = durationMs)
     }
 }

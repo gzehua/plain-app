@@ -27,7 +27,7 @@ import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.has
 import com.ismartcoding.plain.features.audio.AudioPlaylistManager
 import com.ismartcoding.plain.features.audio.AudioQueueManager
-import com.ismartcoding.plain.graphql.models.AudioHostPlaylist
+import com.ismartcoding.plain.graphql.models.AudioPlaylist
 import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.coIO
@@ -288,7 +288,7 @@ private fun HomeSections(
     onViewAllItems: () -> Unit,
     onArtistsViewAll: () -> Unit,
     onArtistClick: (AudioHomeArtist) -> Unit,
-    onPlaylistClick: (AudioHostPlaylist) -> Unit,
+    onPlaylistClick: (AudioPlaylist) -> Unit,
 ) {
     val artists = homeVM.artists.value
     val playlists = homeVM.playlists.value

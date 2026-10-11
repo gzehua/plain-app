@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.system
 
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
 
@@ -21,7 +21,7 @@ internal object SystemAudioHost {
                 com.ismartcoding.plain.features.file.FileSortBy.valueOf(
                     params.getValue("sortBy").jsonPrimitive.content),
             ).filterIsInstance<com.ismartcoding.plain.audio.DAudio>()
-            .map { playlistTrackFacts(com.ismartcoding.plain.graphql.models.AudioHostTrack(
+            .map { playlistTrackFacts(com.ismartcoding.plain.graphql.models.AudioItem(
                 title = it.title, path = it.path, artist = it.artist,
                 durationMs = it.durationMs)) })
         "systemAudioLyrics" -> JsonHelper.jsonEncodeToElement(
@@ -36,7 +36,7 @@ internal object SystemAudioHost {
         else -> error("Unsupported provider operation")
     }
 
-    private fun playlistTrackFacts(track: com.ismartcoding.plain.graphql.models.AudioHostTrack): PlaylistTrackFacts =
+    private fun playlistTrackFacts(track: com.ismartcoding.plain.graphql.models.AudioItem): PlaylistTrackFacts =
         PlaylistTrackFacts(
             title = track.title,
             artist = track.artist,

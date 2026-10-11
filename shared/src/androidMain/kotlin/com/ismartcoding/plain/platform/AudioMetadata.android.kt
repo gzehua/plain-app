@@ -7,13 +7,13 @@ import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.audio.fromPath
 import com.ismartcoding.plain.audio.getAlbumUri
 import com.ismartcoding.plain.graphql.models.Audio
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.helpers.getFileId
 import com.ismartcoding.plain.lib.EmbeddedLyrics
 import com.ismartcoding.plain.lib.extensions.pathToUri
 
 actual suspend fun getAudioMetadata(path: String): Pair<String, String> {
-    val audio = AudioHostTrack.fromPath(appContext, path)
+    val audio = AudioItem.fromPath(appContext, path)
     return audio.title to audio.artist
 }
 
@@ -41,8 +41,8 @@ actual suspend fun getAudioLyrics(path: String): String {
     }
 }
 
-actual fun playlistAudioFromPath(path: String): AudioHostTrack {
-    return AudioHostTrack.fromPath(appContext, path)
+actual fun playlistAudioFromPath(path: String): AudioItem {
+    return AudioItem.fromPath(appContext, path)
 }
 
 actual fun loadAudioCoverBitmap(path: String): ImageBitmap? {

@@ -2,7 +2,7 @@ package com.ismartcoding.plain.platform
 
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.audio.AudioPlayer as AndroidAudioPlayer
-import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.AudioItem
 import kotlinx.coroutines.flow.StateFlow
 
 actual fun createAudioPlayer(): AudioPlayer = ExoPlayerAudioPlayer
@@ -12,7 +12,7 @@ private object ExoPlayerAudioPlayer : AudioPlayer {
 
     override val currentPath: String get() = AndroidAudioPlayer.currentPath
 
-    override suspend fun load(audio: AudioHostTrack, positionMs: Long, speed: Float, revision: Long) = AndroidAudioPlayer.load(appContext, audio, positionMs, speed, revision)
+    override suspend fun load(audio: AudioItem, positionMs: Long, speed: Float, revision: Long) = AndroidAudioPlayer.load(appContext, audio, positionMs, speed, revision)
 
     override val progress: Long
         get() = AndroidAudioPlayer.playerProgress

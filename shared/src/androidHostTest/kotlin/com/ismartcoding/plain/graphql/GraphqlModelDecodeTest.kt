@@ -50,11 +50,18 @@ class GraphqlModelDecodeTest {
     }
 
     @Test
+    fun audioDecodesWithoutLoadingTags() {
+        val audio = JsonHelper.jsonDecode<Audio>("""{"id":"audio-1","title":"Track","artist":"Artist","path":"/track.mp3","durationMs":1000,"size":2000,"bucketId":"bucket-1","albumFileId":"","createdAt":"2026-10-12T00:00:00Z","updatedAt":"2026-10-12T00:00:00Z","isFavorite":false}""")
+        assertEquals("audio-1", audio.id)
+        assertEquals(false, JsonHelper.jsonEncodeToElement(audio).toString().contains("\"tags\""))
+    }
+
+    @Test
     fun hostModelsPreserveLongScalarsAndSchemaFieldNames() {
         val relation = JsonHelper.jsonDecode<TagHostRelation>("""{"tagId":"tag-1","key":"file-1","type":1,"title":"file","sizeBytes":4294967296,"createdAt":"2026-10-12T00:00:00Z"}""")
         assertEquals(4294967296L, relation.sizeBytes)
-        val history = JsonHelper.jsonDecode<AudioHostHistory>("""{"path":"/music.mp3","title":"Music","artist":"Artist","durationMs":1234,"playCount":4294967296,"playedAt":"2026-10-12T00:00:00Z"}""")
-        assertEquals(4294967296L, history.playCount)
+        val history = JsonHelper.jsonDecode<AudioPlayHistory>("""{"path":"/music.mp3","title":"Music","artist":"Artist","durationMs":1234,"playCount":2147483647,"playedAt":"2026-10-12T00:00:00Z"}""")
+        assertEquals(2147483647, history.playCount)
     }
 
     @Test

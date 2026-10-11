@@ -52,7 +52,8 @@ type Query {
   audios(offset: Int!, limit: Int!, query: String!, sortBy: FileSortBy!): [Audio!]!
   audioLyrics(path: String!): String
   audioPlaylists: [AudioPlaylist!]!
-  audioPlaylistItems(id: ID!, offset: Int!, limit: Int!, query: String!): [AudioItem!]!
+  audioPlaylist(id: ID!): AudioPlaylist
+  audioPlaylistItems(id: ID!, offset: Int!, limit: Int!, query: String!): [AudioPlaylistItem!]!
   audioPlaylistItemCount(id: ID!): Int!
   audioPlayHistory(offset: Int!, limit: Int!, query: String!): [AudioPlayHistory!]!
   imageCount(query: String!): Int!
@@ -342,6 +343,11 @@ type AudioFileInfo {
 type AudioItem {
   title: String!
   artist: String!
+  """
+  Album id from the platform catalog, null when the track carries no
+  album metadata.
+  """
+  albumId: ID
   path: String!
   durationMs: Long!
 }
@@ -368,6 +374,18 @@ type AudioPlaylist {
   itemCount: Int!
   createdAt: Instant!
   updatedAt: Instant!
+}
+
+type AudioPlaylistItem {
+  id: ID!
+  playlistId: ID!
+  audioPath: String!
+  title: String!
+  artist: String!
+  albumId: ID
+  durationMs: Long!
+  sortOrder: Long!
+  addedAt: Instant!
 }
 
 type Bookmark {
