@@ -1,22 +1,27 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.chat.ChatManager
 import com.ismartcoding.plain.chat.RustChatStore
 import com.ismartcoding.plain.chat.ShareSendHelper
 import com.ismartcoding.plain.chat.data.ChatTarget
+import com.ismartcoding.plain.chat.models.MessageFiles
+import com.ismartcoding.plain.chat.models.MessageImages
+import com.ismartcoding.plain.chat.models.MessageShare
+import com.ismartcoding.plain.chat.models.toJSONString
 import com.ismartcoding.plain.db.*
 import com.ismartcoding.plain.enums.ChatStatus
 import com.ismartcoding.plain.features.share.ShareManager
+import com.ismartcoding.plain.graphql.models.ChatItem
 import com.ismartcoding.plain.helpers.AppFileStore
+import com.ismartcoding.plain.rust.request.RustContentApi
+import java.io.File
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
-import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class ChatServiceRustHttpTest {
@@ -30,21 +35,21 @@ class ChatServiceRustHttpTest {
         val files = mutableSetOf<String>()
         val shares = mutableSetOf<String>()
         val oldService = com.ismartcoding.plain.preferences.UserPrefs.service.value
-        suspend fun created(): List<DChat> = RustChatStore.getByPeerId("local").filter { it.content.toJSONString().contains(marker) }.also { rows -> ids += rows.map { it.id } }
+        suspend fun created(): List<ChatItem> = RustChatStore.getByPeerId("local").filter { it.content.contains(marker) }.also { rows -> ids += rows.map { it.id } }
         try {
             com.ismartcoding.plain.preferences.UserPrefs.service.value = true
             val longText = marker + "😀".repeat(1100)
             val text = ChatManager.sendText(local, longText).also { ids += it.id }
             assertEquals(ChatStatus.SENT, text.status)
-            val textFile = (text.content.value as DMessageFiles).items.single()
+            val textFile = (text.messageContent.value as MessageFiles).items.single()
             files += textFile.uri.removePrefix("fid:").substringBefore('.')
             assertEquals(longText.toByteArray().size.toLong(), textFile.size)
             val record = AppFileStore.getById(files.single())!!
             assertArrayEquals(longText.toByteArray(), File(RustContentApi.directory, record.realPath).readBytes())
             assertTrue(com.ismartcoding.plain.platform.sendPickedAttachments(listOf(local, local), listOf(androidx.core.content.FileProvider.getUriForFile(com.ismartcoding.plain.appContext, com.ismartcoding.plain.AppIntents.AUTHORITY, source).toString()), null, "$marker caption"))
-            val picked = created().filter { (it.content.value as? DMessageFiles)?.items?.any { item -> item.fileName == source.name } == true }
+            val picked = created().filter { (it.messageContent.value as? MessageFiles)?.items?.any { item -> item.fileName == source.name } == true }
             assertEquals(2, picked.size)
-            val attachment = (picked.first().content.value as DMessageFiles).items.single()
+            val attachment = (picked.first().messageContent.value as MessageFiles).items.single()
             val hash = attachment.uri.removePrefix("fid:").substringBefore('.')
             files += hash
             assertEquals(source.length(), attachment.size)
@@ -68,13 +73,13 @@ class ChatServiceRustHttpTest {
             bitmap.recycle()
             val imageUri = androidx.core.content.FileProvider.getUriForFile(com.ismartcoding.plain.appContext, com.ismartcoding.plain.AppIntents.AUTHORITY, image).toString()
             assertTrue(com.ismartcoding.plain.platform.sendPickedAttachments(listOf(local), listOf(imageUri), null, null))
-            val picture = created().mapNotNull { it.content.value as? DMessageImages }.single().items.single()
+            val picture = created().mapNotNull { it.messageContent.value as? MessageImages }.single().items.single()
             files += picture.uri.removePrefix("fid:").substringBefore('.')
             assertEquals(7, picture.width)
             assertEquals(5, picture.height)
             assertEquals(image.length(), picture.size)
             assertTrue(ShareSendHelper.sendFolderShareAsync(listOf(local), root.absolutePath, marker, null))
-            val card = created().mapNotNull { it.content.value as? DMessageShare }.single()
+            val card = created().mapNotNull { it.messageContent.value as? MessageShare }.single()
             shares += card.shareId
             assertEquals(2, card.itemCount)
             assertEquals(source.length() + image.length(), card.totalSize)

@@ -3,16 +3,16 @@ package com.ismartcoding.plain.ui.models
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.db.DImageEditorProject
 import com.ismartcoding.plain.features.ImageEditorProjectHelper
 import com.ismartcoding.plain.features.imageeditor.ImageEditorProjectSummary
 import com.ismartcoding.plain.features.imageeditor.toSummary
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import com.ismartcoding.plain.graphql.models.ImageEditorProject
 import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class ImageEditorViewModel : ViewModel() {
     private val _itemsFlow = MutableStateFlow<List<ImageEditorProjectSummary>>(emptyList())
@@ -39,7 +39,7 @@ class ImageEditorViewModel : ViewModel() {
         }
     }
 
-    fun updateItem(item: DImageEditorProject) {
+    fun updateItem(item: ImageEditorProject) {
         _itemsFlow.update {
             val index = it.indexOfFirst { i -> i.id.value == item.id }
             if (index != -1) {

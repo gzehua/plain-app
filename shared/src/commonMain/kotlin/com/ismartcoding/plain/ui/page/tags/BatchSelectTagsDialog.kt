@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.page.tags
 
-import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -10,29 +8,30 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import com.ismartcoding.plain.ui.base.PTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.db.DTag
 import com.ismartcoding.plain.enums.ButtonSize
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.PSelectionChip
+import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.components.NewTagButton
 import com.ismartcoding.plain.ui.components.TagNameDialog
 import com.ismartcoding.plain.ui.models.TagsViewModel
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun BatchSelectTagsDialog(
     tagsVM: TagsViewModel,
-    tagsState: List<DTag>,
+    tagsState: List<TagHostRecord>,
     items: List<IData>,
     removeFromTags: Boolean = false,
     onDismiss: () -> Unit,
@@ -93,5 +92,3 @@ fun BatchSelectTagsDialog(
             PTextButton(text = stringResource(Res.string.cancel), onClick = { onDismiss() })
         })
 }
-
-

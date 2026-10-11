@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.imageeditor
 
 import com.ismartcoding.plain.data.ID
-import com.ismartcoding.plain.db.DImageEditorProject
+import com.ismartcoding.plain.graphql.models.ImageEditorProject
 import kotlin.time.Instant
 
 data class ImageEditorProjectSummary(
@@ -13,7 +13,7 @@ data class ImageEditorProjectSummary(
     val updatedAt: Instant,
 )
 
-fun DImageEditorProject.toSummary(): ImageEditorProjectSummary {
+fun ImageEditorProject.toSummary(): ImageEditorProjectSummary {
     return ImageEditorProjectSummary(
         ID(id),
         thumbnail,

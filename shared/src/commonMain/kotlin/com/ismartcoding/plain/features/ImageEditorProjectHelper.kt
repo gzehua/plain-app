@@ -1,14 +1,15 @@
 package com.ismartcoding.plain.features
 
-import com.ismartcoding.plain.rust.request.*
-import com.ismartcoding.plain.rust.event.*
-import com.ismartcoding.plain.rust.host.*
-import com.ismartcoding.plain.rust.bridge.*
-import com.ismartcoding.plain.rust.http.*
-import com.ismartcoding.plain.rust.content.*
-import com.ismartcoding.plain.db.DImageEditorProject
 import com.ismartcoding.plain.data.ID
 import com.ismartcoding.plain.features.imageeditor.ImageEditorProjectSummary
+import com.ismartcoding.plain.graphql.models.ImageEditorProject
+import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.rust.bridge.*
+import com.ismartcoding.plain.rust.content.*
+import com.ismartcoding.plain.rust.event.*
+import com.ismartcoding.plain.rust.host.*
+import com.ismartcoding.plain.rust.http.*
+import com.ismartcoding.plain.rust.request.*
 import kotlinx.serialization.json.*
 
 object ImageEditorProjectHelper {
@@ -24,12 +25,12 @@ object ImageEditorProjectHelper {
                     row.getValue("layerCount").jsonPrimitive.int, row.instant("updatedAt"))
             }
 
-    suspend fun getByIdAsync(id: String): DImageEditorProject? =
+    suspend fun getByIdAsync(id: String): ImageEditorProject? =
         RustContentApi.query("imageEditorProject(id: ${gql(id)}) { $FIELDS }")
             .getValue("imageEditorProject").takeUnless { it is JsonNull }?.project()
 
-    suspend fun addOrUpdateAsync(id: String, updateItem: DImageEditorProject.() -> Unit): DImageEditorProject {
-        val project = (if (id.isEmpty()) null else getByIdAsync(id)) ?: DImageEditorProject(id)
+    suspend fun addOrUpdateAsync(id: String, updateItem: ImageEditorProject.() -> Unit): ImageEditorProject {
+        val project = (if (id.isEmpty()) null else getByIdAsync(id)) ?: ImageEditorProject(id)
         project.updateItem()
         val thumbnail = project.thumbnail?.let(::gql) ?: "null"
         val input = "{ stateB64: ${gql(project.stateB64)}, thumbnail: $thumbnail, canvasWidth: ${project.canvasWidth}, canvasHeight: ${project.canvasHeight}, layerCount: ${project.layerCount} }"
@@ -45,9 +46,5 @@ object ImageEditorProjectHelper {
         RustContentApi.mutate("broadcastImageEditorUpdate(id: ${gql(pid)}, update: ${gql(updateB64)})")
     }
 
-    private fun JsonElement.project(): DImageEditorProject = jsonObject.let { row ->
-        DImageEditorProject(row.string("id"), row.string("stateB64"), row["thumbnail"]?.jsonPrimitive?.contentOrNull,
-            row.getValue("canvasWidth").jsonPrimitive.int, row.getValue("canvasHeight").jsonPrimitive.int,
-            row.getValue("layerCount").jsonPrimitive.int, row.instant("createdAt"), row.instant("updatedAt"))
-    }
+    private fun JsonElement.project(): ImageEditorProject = JsonHelper.jsonDecodeFromElement<ImageEditorProject>(this)
 }

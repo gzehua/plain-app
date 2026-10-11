@@ -1,29 +1,35 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.chat.RustChatFixtures
 import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.chat.RustChatFixtures
 import com.ismartcoding.plain.chat.RustChatStore
+import com.ismartcoding.plain.chat.models.MessageContent
+import com.ismartcoding.plain.chat.models.MessageShare
+import com.ismartcoding.plain.chat.models.MessageType
+import com.ismartcoding.plain.chat.models.SharePeerInfo
+import com.ismartcoding.plain.chat.models.toJSONString
 import com.ismartcoding.plain.db.*
+import com.ismartcoding.plain.features.download.DownloadCenter
+import com.ismartcoding.plain.features.download.DownloadStatus
 import com.ismartcoding.plain.features.share.*
+import com.ismartcoding.plain.graphql.models.ChatItem
 import com.ismartcoding.plain.platform.startHttpEngineAsync
 import com.ismartcoding.plain.platform.stopHttpEngineAsync
 import com.ismartcoding.plain.preferences.*
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withTimeout
-import kotlinx.serialization.json.*
-import com.ismartcoding.plain.features.download.DownloadCenter
-import com.ismartcoding.plain.features.download.DownloadStatus
-import org.junit.Assert.*
-import org.junit.Test
-import org.junit.runner.RunWith
+import com.ismartcoding.plain.rust.request.RustContentApi
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.UUID
 import kotlin.time.Instant
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.serialization.json.*
+import org.junit.Assert.*
+import org.junit.Test
+import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class SharedClientRustHttpTest {
@@ -48,8 +54,8 @@ class SharedClientRustHttpTest {
             assertTrue(com.ismartcoding.plain.platform.checkHttpServerAsync())
             val share = ShareManager.createShare(marker, listOf(folder.absolutePath), true, null)
             shareId = share.id
-            val old = DMessageShare(shareId = share.id, urlToken = ShareManager.sharedToken(share.id), peerInfo = DSharePeerInfo(RustSystemState.state.value.clientId, "bad,127.0.0.1", 1), name = "old", itemCount = 1, totalSize = file.length(), expiresAt = Instant.parse("2030-01-01T00:00:00Z"))
-            RustChatFixtures.insert(DChat(id = messageId, fromId = "me", toId = "local", content = DMessageContent(MessageType.SHARE, old)))
+            val old = MessageShare(shareId = share.id, urlToken = ShareManager.sharedToken(share.id), peerInfo = SharePeerInfo(RustSystemState.state.value.clientId, "bad,127.0.0.1", 1), name = "old", itemCount = 1, totalSize = file.length(), expiresAt = Instant.parse("2030-01-01T00:00:00Z"))
+            RustChatFixtures.insert(ChatItem(id = messageId, fromId = "me", toId = "local", content = MessageContent(MessageType.SHARE, old).toJSONString()))
             val initial = SharedLinkClient.initialLink(messageId, old)
             assertEquals("127.0.0.1", initial.host)
             assertEquals(UserPrefs.httpsPort.value, initial.port)
@@ -59,7 +65,7 @@ class SharedClientRustHttpTest {
             assertEquals(marker, result.card.name)
             assertNull(result.card.expiresAt)
             assertEquals(initial.port, result.card.peerInfo.port)
-            val saved = RustChatStore.getById(messageId)!!.content.value as DMessageShare
+            val saved = RustChatStore.getById(messageId)!!.messageContent.value as MessageShare
             assertEquals(marker, saved.name)
             assertNull(saved.expiresAt)
             val entry = result.info.entries.single()

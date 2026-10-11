@@ -1,13 +1,18 @@
 package com.ismartcoding.plain.platform
 
+import com.ismartcoding.plain.TempData
+import com.ismartcoding.plain.chat.models.MessageContent
+import com.ismartcoding.plain.chat.models.MessageShare
+import com.ismartcoding.plain.chat.models.MessageType
+import com.ismartcoding.plain.chat.models.SharePeerInfo
 import com.ismartcoding.plain.db.*
 import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.features.share.ShareManager
-import com.ismartcoding.plain.TempData
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.graphql.models.ShareRecord
 import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.preferences.UserPrefs
 
-internal suspend fun buildPlatformShareContent(share: DShare, paths: List<String>): DMessageContent = withIO {
+internal suspend fun buildPlatformShareContent(share: ShareRecord, paths: List<String>): MessageContent = withIO {
     // Single directory root: count its shallow entries; file roots: one
     // item per path. Directory sizes are not walked recursively.
     val isSingleDir = paths.size == 1 && (statFile(paths[0])?.isDir == true)
@@ -21,12 +26,12 @@ internal suspend fun buildPlatformShareContent(share: DShare, paths: List<String
         itemCount = paths.size
         totalSize = paths.sumOf { statFile(it)?.size ?: 0L }
     }
-    DMessageContent(
+    MessageContent(
         MessageType.SHARE,
-        DMessageShare(
+        MessageShare(
             shareId = share.id,
             urlToken = ShareManager.sharedToken(share.id),
-            peerInfo = DSharePeerInfo(
+            peerInfo = SharePeerInfo(
                 id = TempData.clientId,
                 ip = getDeviceIP4(),
                 port = UserPrefs.httpsPort.value,

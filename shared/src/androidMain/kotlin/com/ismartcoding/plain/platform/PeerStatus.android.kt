@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.platform
 
 import com.ismartcoding.plain.appContext
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.transport.WifiAwareTransport
-import com.ismartcoding.plain.db.DPeer
 import com.ismartcoding.plain.lib.extensions.hasPermission
 
 actual fun startAwareIfNeeded(): Boolean {
@@ -17,7 +17,7 @@ actual fun startAwareIfNeeded(): Boolean {
     return true
 }
 
-actual fun subscribeAwareForPeer(peer: DPeer) {
+actual fun subscribeAwareForPeer(peer: PeerRecord) {
     if (!isWifiAwareSupported) return
     WifiAwareTransport.subscribe(peer)
 }

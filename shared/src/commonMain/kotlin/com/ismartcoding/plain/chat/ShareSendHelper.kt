@@ -1,19 +1,19 @@
 package com.ismartcoding.plain.chat
 
 import com.ismartcoding.plain.chat.data.ChatTarget
-import com.ismartcoding.plain.db.DChat
-import com.ismartcoding.plain.db.DMessageContent
+import com.ismartcoding.plain.chat.models.MessageContent
 import com.ismartcoding.plain.enums.ChatStatus
-import com.ismartcoding.plain.db.DShare
 import com.ismartcoding.plain.features.share.ShareManager
+import com.ismartcoding.plain.graphql.models.ChatItem
+import com.ismartcoding.plain.graphql.models.ShareRecord
 import com.ismartcoding.plain.platform.buildPlatformShareContent
+import kotlin.time.Instant
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlin.time.Instant
 
 object ShareSendHelper {
-    suspend fun sendContentAsync(targets: List<ChatTarget>, content: DMessageContent): List<DChat> = coroutineScope {
+    suspend fun sendContentAsync(targets: List<ChatTarget>, content: MessageContent): List<ChatItem> = coroutineScope {
         targets.map { target -> async {
             val item = ChatManager.sendContent(target, content)
             ChatViewModel.onMessagesCreated(target, listOf(item), scroll = true)
@@ -27,6 +27,6 @@ object ShareSendHelper {
         return sendContentAsync(targets, buildShareContent(share, listOf(dirPath))).all { it.status == ChatStatus.SENT }
     }
 
-    suspend fun buildShareContent(share: DShare, paths: List<String>): DMessageContent =
+    suspend fun buildShareContent(share: ShareRecord, paths: List<String>): MessageContent =
         buildPlatformShareContent(share, paths)
 }

@@ -1,9 +1,9 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.db.DBookmark
-import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.extensions.getFinalPath
+import com.ismartcoding.plain.graphql.models.Bookmark
 import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.lib.withIO
 import io.ktor.http.Url
 
 /**
@@ -18,7 +18,7 @@ expect fun bookmarkFaviconDirPath(): String
  * Delete the favicon files associated with the given [bookmarks]. Files are
  * resolved through the canonical `app://` path mapping ([getFinalPath]).
  */
-fun deleteBookmarkFavicons(bookmarks: List<DBookmark>) {
+fun deleteBookmarkFavicons(bookmarks: List<Bookmark>) {
     bookmarks.forEach { b ->
         try {
             val path = b.faviconPath

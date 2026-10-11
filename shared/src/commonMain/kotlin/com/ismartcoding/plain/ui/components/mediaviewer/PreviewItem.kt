@@ -1,13 +1,15 @@
 package com.ismartcoding.plain.ui.components.mediaviewer
 
 import androidx.compose.ui.unit.IntSize
-import com.ismartcoding.plain.lib.extensions.getMimeType
-import com.ismartcoding.plain.lib.extensions.isImageFast
-import com.ismartcoding.plain.lib.extensions.isVideoFast
+import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.data.DImage
 import com.ismartcoding.plain.data.DVideo
 import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.db.DMessageFile
+import com.ismartcoding.plain.graphql.models.Image
+import com.ismartcoding.plain.graphql.models.Video
+import com.ismartcoding.plain.lib.extensions.getMimeType
+import com.ismartcoding.plain.lib.extensions.isImageFast
+import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.platform.getImageIntrinsicSize
 import com.ismartcoding.plain.platform.getImageRotation
 import com.ismartcoding.plain.platform.getVideoMeta
@@ -18,7 +20,7 @@ data class PreviewItem(
     var path: String = "",
     var size: Long = 0L,
     val mediaId: String = "",
-    val data: IData? = null, // DMessageFile, DVideo, DImage
+    val data: IData? = null, // MessageFile, DVideo, DImage
 ) {
     var intrinsicSize: IntSize = IntSize.Zero
     var rotation: Int = -1
@@ -26,7 +28,7 @@ data class PreviewItem(
     fun isVideo(): Boolean {
         if (path.isVideoFast()) return true
         return when (val d = data) {
-            is DMessageFile -> d.fileName.isVideoFast()
+            is MessageFile -> d.fileName.isVideoFast()
             is DVideo -> true
             else -> false
         }
@@ -34,14 +36,14 @@ data class PreviewItem(
 
     fun getMimeType(): String {
        return path.getMimeType().ifEmpty {
-            if (data is DMessageFile) data.fileName.getMimeType() else ""
+            if (data is MessageFile) data.fileName.getMimeType() else ""
         }
     }
 
     fun isImage(): Boolean {
         if (path.isImageFast()) return true
         return when (val d = data) {
-            is DMessageFile -> d.fileName.isImageFast()
+            is MessageFile -> d.fileName.isImageFast()
             is DImage -> true
             else -> false
         }
@@ -82,7 +84,7 @@ data class PreviewItem(
         }
     }
 
-    fun initAsync(item: DMessageFile) {
+    fun initAsync(item: MessageFile) {
         if (item.fileName.isImageFast()) {
             rotation = getImageRotation(path)
             intrinsicSize = if (item.width > 0 && item.height > 0) {

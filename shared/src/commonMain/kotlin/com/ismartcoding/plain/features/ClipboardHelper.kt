@@ -1,27 +1,27 @@
 package com.ismartcoding.plain.features
 
 import com.ismartcoding.plain.chat.peer.RustPeerStore
-
-import com.ismartcoding.plain.rust.request.*
+import com.ismartcoding.plain.graphql.models.ClipboardItem
+import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.rust.bridge.*
+import com.ismartcoding.plain.rust.content.*
 import com.ismartcoding.plain.rust.event.*
 import com.ismartcoding.plain.rust.host.*
-import com.ismartcoding.plain.rust.bridge.*
 import com.ismartcoding.plain.rust.http.*
-import com.ismartcoding.plain.rust.content.*
-import com.ismartcoding.plain.db.DClipboard
+import com.ismartcoding.plain.rust.request.*
 import kotlinx.serialization.json.*
 
 object ClipboardHelper {
     private const val FIELDS = "id text source label sensitive createdAt"
 
-    suspend fun getPage(limit: Int, offset: Int, query: String = ""): List<DClipboard> =
+    suspend fun getPage(limit: Int, offset: Int, query: String = ""): List<ClipboardItem> =
         RustContentApi.query("clipboardItems(limit: $limit, offset: $offset, query: ${gql(query)}) { $FIELDS }")
             .getValue("clipboardItems").jsonArray.map { it.clipboard() }
 
     suspend fun count(query: String = ""): Int = RustContentApi.query("clipboardItemCount(query: ${gql(query)})")
         .getValue("clipboardItemCount").jsonPrimitive.int
 
-    suspend fun record(text: String, source: String = "", label: String = "", sensitive: Boolean = false): DClipboard? {
+    suspend fun record(text: String, source: String = "", label: String = "", sensitive: Boolean = false): ClipboardItem? {
         val input = "{ text: ${gql(text)}, source: ${gql(source)}, label: ${gql(label)}, sensitive: $sensitive }"
         val result = RustContentApi.mutate("recordClipboard(input: $input) { inserted item { $FIELDS } }")
             .getValue("recordClipboard").jsonObject
@@ -43,8 +43,5 @@ object ClipboardHelper {
         if (source.isBlank()) "" else RustPeerStore.getById(source)?.name ?: source
 
 
-    private fun JsonElement.clipboard(): DClipboard = jsonObject.let {
-        DClipboard(id = it.string("id"), text = it.string("text"), source = it.string("source"), label = it.string("label"),
-            sensitive = it.getValue("sensitive").jsonPrimitive.boolean, createdAt = it.instant("createdAt"))
-    }
+    private fun JsonElement.clipboard(): ClipboardItem = JsonHelper.jsonDecodeFromElement<ClipboardItem>(this)
 }

@@ -2,18 +2,18 @@ package com.ismartcoding.plain.platform
 
 import coil3.imageLoader
 import com.ismartcoding.plain.appContextValue
-import com.ismartcoding.plain.db.DMessageFile
+import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.features.media.ImageMediaStoreHelper
 import com.ismartcoding.plain.helpers.DownloadHelper
 import com.ismartcoding.plain.helpers.FileHelper
 import com.ismartcoding.plain.helpers.ShareHelper
-import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.image_save_to
 import com.ismartcoding.plain.i18n.image_save_to_failed
 import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.isUrl
+import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.components.mediaviewer.PreviewItem
 import com.ismartcoding.plain.ui.helpers.DialogHelper
 import java.io.File
@@ -46,7 +46,7 @@ actual suspend fun sharePreviewMedia(m: PreviewItem) {
 }
 
 actual suspend fun savePreviewMedia(m: PreviewItem, dir: String?) {
-    val fileName = (m.data as? DMessageFile)?.fileName?.takeIf { it.isNotEmpty() }
+    val fileName = (m.data as? MessageFile)?.fileName?.takeIf { it.isNotEmpty() }
         ?: m.path.getFilenameFromPath()
     if (m.path.isUrl()) {
         val context = appContextValue ?: return

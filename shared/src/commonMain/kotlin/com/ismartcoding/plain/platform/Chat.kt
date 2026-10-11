@@ -1,12 +1,12 @@
 package com.ismartcoding.plain.platform
 
 import androidx.compose.ui.focus.FocusManager
-import com.ismartcoding.plain.db.DChat
+import com.ismartcoding.plain.chat.ChatViewModel
 import com.ismartcoding.plain.enums.PickFileType
 import com.ismartcoding.plain.events.PickFileResultEvent
 import com.ismartcoding.plain.features.ChatMessageEditor
+import com.ismartcoding.plain.graphql.models.ChatItem
 import com.ismartcoding.plain.lib.coMain
-import com.ismartcoding.plain.chat.ChatViewModel
 import com.ismartcoding.plain.ui.models.PeerViewModel
 
 fun handleChatFileSelection(
@@ -31,6 +31,6 @@ fun handleChatFileSelection(
  *
  * Returns true if a change was persisted.
  */
-suspend fun updateChatMessageTextAsync(item: DChat, newText: String): Boolean {
+suspend fun updateChatMessageTextAsync(item: ChatItem, newText: String): Boolean {
     return ChatMessageEditor.updateTextAsync(item, newText)
 }

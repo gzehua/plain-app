@@ -27,24 +27,24 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.db.DFeed
-import com.ismartcoding.plain.db.DTag
 import com.ismartcoding.plain.enums.FeedEntryFilterType
 import com.ismartcoding.plain.extensions.getFinalPath
+import com.ismartcoding.plain.graphql.models.Feed
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.SidebarItem
 import com.ismartcoding.plain.ui.components.SidebarSectionHeader
 import com.ismartcoding.plain.ui.models.FeedEntriesViewModel
 import com.ismartcoding.plain.ui.models.FeedsViewModel
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.history as ui_drawable_history
 import com.ismartcoding.plain.ui.resources.layout_grid as ui_drawable_layout_grid
 import com.ismartcoding.plain.ui.resources.plus as ui_drawable_plus
 import com.ismartcoding.plain.ui.resources.tag as ui_drawable_tag
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Drawer content for the feed entries page: All, Today, Feeds (with a "+"
@@ -54,10 +54,10 @@ import com.ismartcoding.plain.ui.resources.tag as ui_drawable_tag
 internal fun FeedEntriesDrawerContent(
     feedEntriesVM: FeedEntriesViewModel,
     feedsVM: FeedsViewModel,
-    feedsState: List<DFeed>,
-    tagsState: List<DTag>,
+    feedsState: List<Feed>,
+    tagsState: List<TagHostRecord>,
     drawerState: DrawerState,
-    onSelect: (feedId: String, filterType: FeedEntryFilterType, tag: DTag?) -> Unit,
+    onSelect: (feedId: String, filterType: FeedEntryFilterType, tag: TagHostRecord?) -> Unit,
     onOpenCatalog: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()

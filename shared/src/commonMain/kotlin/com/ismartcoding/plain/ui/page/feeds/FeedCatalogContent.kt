@@ -16,10 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.DFeed
 import com.ismartcoding.plain.enums.ButtonSize
 import com.ismartcoding.plain.features.feed.CatalogCategoryIds
 import com.ismartcoding.plain.features.feed.CatalogFeed
+import com.ismartcoding.plain.graphql.models.Feed
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.add_rss_manually
 import com.ismartcoding.plain.i18n.category_dev_cn
@@ -28,7 +28,6 @@ import com.ismartcoding.plain.i18n.category_reads
 import com.ismartcoding.plain.i18n.category_tech_cn
 import com.ismartcoding.plain.i18n.category_tech_en
 import com.ismartcoding.plain.i18n.feed_catalog
-import com.ismartcoding.plain.ui.resources.plus as ui_drawable_plus
 import com.ismartcoding.plain.i18n.retry
 import com.ismartcoding.plain.i18n.subscribe
 import com.ismartcoding.plain.i18n.unsubscribe
@@ -42,17 +41,18 @@ import com.ismartcoding.plain.ui.base.POutlinedButton
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.models.FeedCatalogViewModel
 import com.ismartcoding.plain.ui.models.FeedsViewModel
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.plus as ui_drawable_plus
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.ui.resources.Res as UiRes
 
 @Composable
 fun FeedCatalogContent(
     feedsVM: FeedsViewModel,
     catalogVM: FeedCatalogViewModel,
-    feedsState: List<DFeed>,
+    feedsState: List<Feed>,
     paddingValues: PaddingValues,
     header: (@Composable () -> Unit)? = null,
 ) {

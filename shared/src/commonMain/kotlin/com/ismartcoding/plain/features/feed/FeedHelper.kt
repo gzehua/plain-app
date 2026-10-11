@@ -1,27 +1,29 @@
 package com.ismartcoding.plain.features.feed
 
-import com.ismartcoding.plain.rust.request.*
+import com.ismartcoding.plain.db.*
+import com.ismartcoding.plain.graphql.models.Feed
+import com.ismartcoding.plain.graphql.models.FeedEntryCount
+import com.ismartcoding.plain.platform.feedWorkerOneTimeRequest
+import com.ismartcoding.plain.rust.bridge.*
+import com.ismartcoding.plain.rust.content.*
 import com.ismartcoding.plain.rust.event.*
 import com.ismartcoding.plain.rust.host.*
-import com.ismartcoding.plain.rust.bridge.*
 import com.ismartcoding.plain.rust.http.*
-import com.ismartcoding.plain.rust.content.*
-import com.ismartcoding.plain.db.*
-import com.ismartcoding.plain.platform.feedWorkerOneTimeRequest
+import com.ismartcoding.plain.rust.request.*
 import kotlinx.serialization.json.*
 
 object FeedHelper {
-    suspend fun getAll(): List<DFeed> = RustContentApi.query("feeds { $FEED_FIELDS }").getValue("feeds").jsonArray.map { it.feed() }
-    suspend fun getFeedCounts(): List<DFeedCount> = RustContentApi.query("feedEntryCounts { id count }").getValue("feedEntryCounts").jsonArray.map { DFeedCount(it.jsonObject.string("id"), it.jsonObject.getValue("count").jsonPrimitive.int) }
-    suspend fun getById(id: String): DFeed? = RustContentApi.query("feed(id: ${gql(id)}) { $FEED_FIELDS }")["feed"]?.takeUnless { it is JsonNull }?.feed()
-    suspend fun getByUrl(url: String): DFeed? = getAll().firstOrNull { it.url == url }
-    suspend fun addAsync(updateItem: DFeed.() -> Unit): String {
-        val item = DFeed().apply(updateItem)
+    suspend fun getAll(): List<Feed> = RustContentApi.query("feeds { $FEED_FIELDS }").getValue("feeds").jsonArray.map { it.feed() }
+    suspend fun getFeedCounts(): List<FeedEntryCount> = RustContentApi.query("feedEntryCounts { id count }").getValue("feedEntryCounts").let { com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<List<FeedEntryCount>>(it) }
+    suspend fun getById(id: String): Feed? = RustContentApi.query("feed(id: ${gql(id)}) { $FEED_FIELDS }")["feed"]?.takeUnless { it is JsonNull }?.feed()
+    suspend fun getByUrl(url: String): Feed? = getAll().firstOrNull { it.url == url }
+    suspend fun addAsync(updateItem: Feed.() -> Unit): String {
+        val item = Feed().apply(updateItem)
         val created = RustContentApi.mutate("createFeed(url: ${gql(item.url)}, fetchContent: ${item.fetchContent}) { $FEED_FIELDS }").getValue("createFeed").feed()
         if (created.name != item.name && item.name.isNotEmpty()) updateAsync(created.id) { name = item.name }
         return created.id
     }
-    suspend fun updateAsync(id: String, updateItem: DFeed.() -> Unit): String {
+    suspend fun updateAsync(id: String, updateItem: Feed.() -> Unit): String {
         val current = getById(id) ?: error("Feed $id not found")
         val oldUrl = current.url
         current.updateItem()

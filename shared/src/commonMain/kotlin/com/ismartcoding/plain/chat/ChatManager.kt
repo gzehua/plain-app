@@ -1,14 +1,14 @@
 package com.ismartcoding.plain.chat
 
-import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.chat.data.ChatTarget
-import com.ismartcoding.plain.db.DChat
-import com.ismartcoding.plain.db.DMessageContent
-import com.ismartcoding.plain.db.DMessageFile
-import com.ismartcoding.plain.db.DMessageFiles
-import com.ismartcoding.plain.db.DMessageImages
-import com.ismartcoding.plain.db.MessageType
-import com.ismartcoding.plain.db.toJSONString
+import com.ismartcoding.plain.chat.models.MessageContent
+import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.chat.models.MessageFiles
+import com.ismartcoding.plain.chat.models.MessageImages
+import com.ismartcoding.plain.chat.models.MessageType
+import com.ismartcoding.plain.chat.models.toJSONString
+import com.ismartcoding.plain.graphql.models.ChatItem
+import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.rust.content.gqlIds
@@ -20,32 +20,32 @@ object ChatManager {
         ChatCacher.load()
     }
 
-    suspend fun getChatItem(id: String): DChat? = ChatDbHelper.getChatItem(id)
+    suspend fun getChatItem(id: String): ChatItem? = ChatDbHelper.getChatItem(id)
 
     suspend fun getIdsAsync(query: String): Set<String> = ChatDbHelper.getIdsAsync(query)
 
-    suspend fun sendContent(target: ChatTarget, content: DMessageContent): DChat =
+    suspend fun sendContent(target: ChatTarget, content: MessageContent): ChatItem =
         RustChatStore.decodeGraphql(PlainRust.mainMutate("sendChatItem(target: ${gql(target.encodedToId)}, content: ${gql(content.toJSONString())}) { ${RustChatStore.FIELDS} }", longRunning = true)
             .getValue("sendChatItem").jsonArray.single())
 
-    suspend fun sendText(target: ChatTarget, text: String): DChat =
+    suspend fun sendText(target: ChatTarget, text: String): ChatItem =
         RustChatStore.decodeGraphql(PlainRust.mainMutate("sendChatText(target: ${gql(target.encodedToId)}, text: ${gql(text)}) { ${RustChatStore.FIELDS} }", longRunning = true).getValue("sendChatText"))
 
-    suspend fun forward(id: String, target: ChatTarget): DChat =
+    suspend fun forward(id: String, target: ChatTarget): ChatItem =
         RustChatStore.decodeGraphql(PlainRust.mainMutate("forwardChatItem(id: ${gql(id)}, target: ${gql(target.encodedToId)}) { ${RustChatStore.FIELDS} }", longRunning = true).getValue("forwardChatItem"))
 
-    suspend fun retry(id: String): DChat =
+    suspend fun retry(id: String): ChatItem =
         RustChatStore.decodeGraphql(PlainRust.mainMutate("retryChatItem(id: ${gql(id)}) { ${RustChatStore.FIELDS} }").getValue("retryChatItem"))
 
     suspend fun deleteQuery(query: String): Int =
         PlainRust.mainMutate("deleteChatItems(query: ${gql(query)}) { affectedCount }").getValue("deleteChatItems").jsonObject.getValue("affectedCount").jsonPrimitive.int
 
-    suspend fun deliver(id: String, recipients: List<String>? = null): DChat =
+    suspend fun deliver(id: String, recipients: List<String>? = null): ChatItem =
         RustChatStore.decodeGraphql(PlainRust.mainMutate("deliverChatItem(id: ${gql(id)}, recipients: ${recipients?.let(::gqlIds) ?: "null"}) { ${RustChatStore.FIELDS} }", longRunning = true).getValue("deliverChatItem"))
 
-    suspend fun insertFilesImmediate(target: ChatTarget, files: List<DMessageFile>, isImageVideo: Boolean): DChat = withIO {
-        val content = if (isImageVideo) DMessageContent(MessageType.IMAGES, DMessageImages(files))
-            else DMessageContent(MessageType.FILES, DMessageFiles(files))
+    suspend fun insertFilesImmediate(target: ChatTarget, files: List<MessageFile>, isImageVideo: Boolean): ChatItem = withIO {
+        val content = if (isImageVideo) MessageContent(MessageType.IMAGES, MessageImages(files))
+            else MessageContent(MessageType.FILES, MessageFiles(files))
         val item = RustChatStore.decodeGraphql(PlainRust.mainMutate("createChatItem(target: ${gql(target.encodedToId)}, content: ${gql(content.toJSONString())}) { ${RustChatStore.FIELDS} }").getValue("createChatItem"))
         refreshLatestChats()
         item
@@ -53,9 +53,9 @@ object ChatManager {
 
     suspend fun updateFilesMessage(
         messageId: String,
-        files: List<DMessageFile>,
-    ): DChat? = withIO {
-        val content = DMessageContent(MessageType.FILES, DMessageFiles(files))
+        files: List<MessageFile>,
+    ): ChatItem? = withIO {
+        val content = MessageContent(MessageType.FILES, MessageFiles(files))
         val item = PlainRust.mainMutate("replaceChatFiles(id: ${gql(messageId)}, content: ${gql(content.toJSONString())}) { ${RustChatStore.FIELDS} }", longRunning = true)
             .getValue("replaceChatFiles").takeUnless { it is JsonNull }?.let(RustChatStore::decodeGraphql)
         refreshLatestChats()

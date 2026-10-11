@@ -1,23 +1,23 @@
 package com.ismartcoding.plain.features
 
-import com.ismartcoding.plain.rust.request.*
+import com.ismartcoding.plain.graphql.models.Note
+import com.ismartcoding.plain.rust.bridge.*
+import com.ismartcoding.plain.rust.content.*
 import com.ismartcoding.plain.rust.event.*
 import com.ismartcoding.plain.rust.host.*
-import com.ismartcoding.plain.rust.bridge.*
 import com.ismartcoding.plain.rust.http.*
-import com.ismartcoding.plain.rust.content.*
-import com.ismartcoding.plain.db.DNote
+import com.ismartcoding.plain.rust.request.*
 import kotlinx.serialization.json.*
 
 object NoteHelper {
     suspend fun count(query: String): Int = RustContentApi.query("noteCount(query: ${gql(query)})").getValue("noteCount").jsonPrimitive.int
-    suspend fun search(query: String, limit: Int, offset: Int): List<DNote> = RustContentApi.query("notes(query: ${gql(query)}, limit: $limit, offset: $offset) { $NOTE_FIELDS }").getValue("notes").jsonArray.map { it.note() }
-    suspend fun getById(id: String): DNote? = RustContentApi.query("note(id: ${gql(id)}) { $NOTE_FIELDS }")["note"]?.takeUnless { it is JsonNull }?.note()
+    suspend fun search(query: String, limit: Int, offset: Int): List<Note> = RustContentApi.query("notes(query: ${gql(query)}, limit: $limit, offset: $offset) { $NOTE_FIELDS }").getValue("notes").jsonArray.map { it.note() }
+    suspend fun getById(id: String): Note? = RustContentApi.query("note(id: ${gql(id)}) { $NOTE_FIELDS }")["note"]?.takeUnless { it is JsonNull }?.note()
     suspend fun getIdsAsync(query: String): Set<String> = ids(query)
     suspend fun getTrashedIdsAsync(query: String): Set<String> = ids("$query trash:true")
     private suspend fun ids(query: String): Set<String> = RustContentApi.query("notes(query: ${gql(query)}, limit: ${Int.MAX_VALUE}, offset: 0) { id }").getValue("notes").jsonArray.map { it.jsonObject.string("id") }.toSet()
-    suspend fun addOrUpdateAsync(id: String, updateItem: DNote.() -> Unit): DNote {
-        val item = if (id.isEmpty()) DNote() else getById(id) ?: error("Note $id not found")
+    suspend fun addOrUpdateAsync(id: String, updateItem: Note.() -> Unit): Note {
+        val item = if (id.isEmpty()) Note() else getById(id) ?: error("Note $id not found")
         item.updateItem()
         val input = "{ title: ${gql(item.title)}, content: ${gql(item.content)} }"
         val field = if (id.isEmpty()) "createNote" else "updateNote"

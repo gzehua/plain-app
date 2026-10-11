@@ -9,10 +9,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import com.ismartcoding.plain.db.DTag
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.enums.has
+import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.getMediaItemUriString
@@ -45,7 +45,7 @@ fun AudioFilesSelectModeBottomActions(
     audioVM: AudioViewModel,
     audioQueueVM: AudioQueueViewModel,
     tagsVM: TagsViewModel,
-    tagsState: List<DTag>,
+    tagsState: List<TagHostRecord>,
     dragSelectState: DragSelectState,
     // Generic slot (playlist detail, artist page, ...): when provided, a
     // remove-from-playlist action leads the bar and the slot runs the removal.

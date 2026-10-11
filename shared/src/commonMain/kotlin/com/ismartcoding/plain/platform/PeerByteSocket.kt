@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.db.DPeer
+import com.ismartcoding.plain.chat.models.PeerRecord
 
 interface PeerByteSocket {
     suspend fun read(length: Int): ByteArray?
@@ -8,4 +8,4 @@ interface PeerByteSocket {
     fun close()
 }
 
-expect suspend fun openAwareByteSocket(peer: DPeer): PeerByteSocket
+expect suspend fun openAwareByteSocket(peer: PeerRecord): PeerByteSocket

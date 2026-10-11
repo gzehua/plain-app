@@ -1,11 +1,11 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.rust.http.ApiResult
-import com.ismartcoding.plain.db.DFeedEntry
 import com.ismartcoding.plain.features.feed.FeedEntryHelper
+import com.ismartcoding.plain.graphql.models.FeedEntry
+import com.ismartcoding.plain.rust.http.ApiResult
 import kotlinx.coroutines.CancellationException
 
-suspend fun DFeedEntry.fetchContentAsync(): ApiResult = try {
+suspend fun FeedEntry.fetchContentAsync(): ApiResult = try {
     val refreshed = FeedEntryHelper.syncContent(id)
     content = refreshed.content
     image = refreshed.image

@@ -19,9 +19,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.DNote
-import com.ismartcoding.plain.db.DTag
 import com.ismartcoding.plain.extensions.timeAgo
+import com.ismartcoding.plain.graphql.models.Note
+import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.models.NotesViewModel
@@ -34,11 +34,11 @@ import com.ismartcoding.plain.ui.theme.listItemTag
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun NoteListItem(
-    m: DNote,
-    tags: List<DTag>,
+    m: Note,
+    tags: List<TagHostRecord>,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
-    onClickTag: (DTag) -> Unit
+    onClickTag: (TagHostRecord) -> Unit
 ) {
     Row {
         if (NotesViewModel.selectMode.value) {

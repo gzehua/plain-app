@@ -3,20 +3,19 @@ package com.ismartcoding.plain.ui.components
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.db.DTag
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.has
-import com.ismartcoding.plain.platform.shareFiles
+import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.i18n.delete
 import com.ismartcoding.plain.i18n.confirm_to_delete
+import com.ismartcoding.plain.i18n.delete
+import com.ismartcoding.plain.platform.shareFiles
 import com.ismartcoding.plain.ui.base.BottomActionButtons
 import com.ismartcoding.plain.ui.base.IconTextSmallButtonDelete
 import com.ismartcoding.plain.ui.base.IconTextSmallButtonLabel
@@ -30,13 +29,14 @@ import com.ismartcoding.plain.ui.helpers.confirmActionAsync
 import com.ismartcoding.plain.ui.models.BaseMediaViewModel
 import com.ismartcoding.plain.ui.models.TagsViewModel
 import com.ismartcoding.plain.ui.page.tags.BatchSelectTagsDialog
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun <T : IData> MediaFilesSelectModeBottomActions(
     vm: BaseMediaViewModel<T>,
     tagsVM: TagsViewModel,
-    tagsState: List<DTag>,
+    tagsState: List<TagHostRecord>,
     dragSelectState: DragSelectState,
     getItemUri: (String) -> String,
     getCollectableItems: @Composable () -> List<T>,

@@ -1,5 +1,26 @@
 package com.ismartcoding.plain.db
 
+import com.ismartcoding.plain.chat.models.ChatChannelRecord
+import com.ismartcoding.plain.chat.models.PeerRecord
+import com.ismartcoding.plain.graphql.models.AppFileRecord
+import com.ismartcoding.plain.graphql.models.AudioHostHistory
+import com.ismartcoding.plain.graphql.models.AudioHostPlaylist
+import com.ismartcoding.plain.graphql.models.AudioHostPlaylistItem
+import com.ismartcoding.plain.graphql.models.AudioHostSource
+import com.ismartcoding.plain.graphql.models.Bookmark
+import com.ismartcoding.plain.graphql.models.BookmarkGroup
+import com.ismartcoding.plain.graphql.models.ChatItem
+import com.ismartcoding.plain.graphql.models.ClipboardItem
+import com.ismartcoding.plain.graphql.models.Feed
+import com.ismartcoding.plain.graphql.models.FeedEntry
+import com.ismartcoding.plain.graphql.models.ImageEditorProject
+import com.ismartcoding.plain.graphql.models.MediaHostDuration
+import com.ismartcoding.plain.graphql.models.Note
+import com.ismartcoding.plain.graphql.models.PomodoroRecord
+import com.ismartcoding.plain.graphql.models.ShareRecord
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.graphql.models.TagHostRelation
+import com.ismartcoding.plain.graphql.models.VideoPlayProgress
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.primaryConstructor
@@ -25,14 +46,14 @@ import kotlin.test.fail
 class EntityConstructorGuardTest {
 
     private val entities: List<KClass<*>> = listOf(
-        DAppFile::class, DArchivedConversation::class, DBook::class, DBookChapter::class,
-        DBookmark::class, DBookmarkGroup::class, DChat::class, DChatChannel::class,
-        DClipboard::class, DFeed::class, DFeedEntry::class, DImageEditorProject::class,
-        DImageEmbedding::class, DMediaItem::class, DNote::class, DPeer::class,
-        DPomodoroItem::class, DSession::class, DShare::class, DTag::class,
-        DTagRelation::class, DVideoPlayProgress::class,
-        DAudioPlaylist::class, DAudioPlaylistItem::class, DAudioPlayHistory::class,
-        DAudioQueueSource::class, DAudioQueueItem::class, DNearbyDeviceCache::class,
+        AppFileRecord::class, DArchivedConversation::class, DBook::class, DBookChapter::class,
+        Bookmark::class, BookmarkGroup::class, ChatItem::class, ChatChannelRecord::class,
+        ClipboardItem::class, Feed::class, FeedEntry::class, ImageEditorProject::class,
+        DImageEmbedding::class, MediaHostDuration::class, Note::class, PeerRecord::class,
+        PomodoroRecord::class, DSession::class, ShareRecord::class, TagHostRecord::class,
+        TagHostRelation::class, VideoPlayProgress::class,
+        AudioHostPlaylist::class, AudioHostPlaylistItem::class, AudioHostHistory::class,
+        AudioHostSource::class, DAudioQueueItem::class, DNearbyDeviceCache::class,
     )
 
     @Test
@@ -64,13 +85,13 @@ class EntityConstructorGuardTest {
     fun dataClassEqualsCoversAllColumnBearingFields() {
         // Secondary structural check: mutating any constructor property of a fresh
         // entity must change equals (catches accidental `get() =` constants too).
-        val a = DNote(id = "guard")
+        val a = Note(id = "guard")
         val b = a.copy()
         assertTrue(a == b, "copied DNotes must be equal")
         b.title = "different"
-        assertTrue(a != b, "DNote.equals must include title (StateFlow relies on it)")
+        assertTrue(a != b, "Note.equals must include title (StateFlow relies on it)")
         b.title = a.title
         b.updatedAt = b.updatedAt.plus(kotlin.time.Duration.parse("1s"))
-        assertTrue(a != b, "DNote.equals must include updatedAt")
+        assertTrue(a != b, "Note.equals must include updatedAt")
     }
 }

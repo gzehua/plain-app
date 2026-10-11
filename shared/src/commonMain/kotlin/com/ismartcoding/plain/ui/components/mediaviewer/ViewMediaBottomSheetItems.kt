@@ -1,28 +1,27 @@
 package com.ismartcoding.plain.ui.components.mediaviewer
+
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.ui.theme.PlainTheme
-
-import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.data.DImage
 import com.ismartcoding.plain.data.DVideo
-import com.ismartcoding.plain.db.DMessageFile
+import com.ismartcoding.plain.graphql.models.Image
+import com.ismartcoding.plain.graphql.models.Video
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.i18n.cast
 import com.ismartcoding.plain.platform.shareFile
 import com.ismartcoding.plain.ui.base.CopyIconButton
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PSheetActionRow
 import com.ismartcoding.plain.ui.base.PSheetPrimaryAction
-import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
 import com.ismartcoding.plain.ui.base.PSheetPrimaryActionsCard
+import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.helpers.confirmActionAsync
 import com.ismartcoding.plain.ui.resources.Res as UiRes
@@ -30,7 +29,9 @@ import com.ismartcoding.plain.ui.resources.cast as ui_drawable_cast
 import com.ismartcoding.plain.ui.resources.pen as ui_drawable_pen
 import com.ismartcoding.plain.ui.resources.scan_qr_code as ui_drawable_scan_qr_code
 import com.ismartcoding.plain.ui.resources.share_2 as ui_drawable_share_2
-import com.ismartcoding.plain.i18n.cast
+import com.ismartcoding.plain.ui.theme.PlainTheme
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

@@ -19,8 +19,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,25 +34,25 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.DFeed
 import com.ismartcoding.plain.enums.ButtonSize
 import com.ismartcoding.plain.extensions.timeAgo
 import com.ismartcoding.plain.features.feed.FeedSyncErrorCode
 import com.ismartcoding.plain.features.feed.FeedWorkerState
 import com.ismartcoding.plain.features.feed.FeedWorkerStatus
+import com.ismartcoding.plain.graphql.models.Feed
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.setClipboardText
+import com.ismartcoding.plain.ui.base.AlertType
 import com.ismartcoding.plain.ui.base.PAlert
 import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.ui.base.AlertType
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.chevron_up as ui_drawable_chevron_up
 import com.ismartcoding.plain.ui.resources.x as ui_drawable_x
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
-/** Maps the persisted DFeed.lastError.code to a localized user-facing reason. */
+/** Maps the persisted Feed.lastError.code to a localized user-facing reason. */
 @Composable
 internal fun feedSyncErrorReason(code: String): String? {
     val errorCode = FeedSyncErrorCode.fromString(code) ?: return null
@@ -77,7 +77,7 @@ internal fun feedSyncErrorReason(code: String): String? {
  */
 @Composable
 internal fun FeedSyncBanner(
-    failedFeeds: List<DFeed>,
+    failedFeeds: List<Feed>,
     singleFeed: Boolean,
     onRetry: (String) -> Unit,
     onRetryAll: () -> Unit,
@@ -164,7 +164,7 @@ internal fun FeedSyncBanner(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FeedSyncBannerRow(
-    feed: DFeed,
+    feed: Feed,
     detailExpanded: Boolean,
     onToggleDetail: () -> Unit,
     onRetry: () -> Unit,

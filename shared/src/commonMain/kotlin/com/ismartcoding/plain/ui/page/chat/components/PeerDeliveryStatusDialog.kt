@@ -1,21 +1,20 @@
 package com.ismartcoding.plain.ui.page.chat.components
 
-import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.db.DMessageStatusData
+import com.ismartcoding.plain.chat.models.MessageStatusData
 import com.ismartcoding.plain.enums.ButtonSize
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.PFilledButton
-import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 import com.ismartcoding.plain.ui.base.PTextButton
+import com.ismartcoding.plain.ui.theme.dialogSheetBackground
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun PeerDeliveryStatusDialog(
-    statusData: DMessageStatusData,
+    statusData: MessageStatusData,
     onRetry: () -> Unit,
     onDismiss: () -> Unit,
 ) {

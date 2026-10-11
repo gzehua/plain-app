@@ -1,20 +1,20 @@
 package com.ismartcoding.plain.features
 
-import com.ismartcoding.plain.rust.request.*
+import com.ismartcoding.plain.graphql.models.PomodoroRecord
+import com.ismartcoding.plain.lib.TimeHelper
+import com.ismartcoding.plain.rust.bridge.*
+import com.ismartcoding.plain.rust.content.*
 import com.ismartcoding.plain.rust.event.*
 import com.ismartcoding.plain.rust.host.*
-import com.ismartcoding.plain.rust.bridge.*
 import com.ismartcoding.plain.rust.http.*
-import com.ismartcoding.plain.rust.content.*
-import com.ismartcoding.plain.db.DPomodoroItem
-import com.ismartcoding.plain.ui.page.pomodoro.PomodoroToday
-import com.ismartcoding.plain.lib.TimeHelper
+import com.ismartcoding.plain.rust.request.*
 import com.ismartcoding.plain.ui.page.pomodoro.PomodoroState
+import com.ismartcoding.plain.ui.page.pomodoro.PomodoroToday
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.*
 
 object PomodoroHelper {
@@ -57,12 +57,8 @@ object PomodoroHelper {
         val result = RustContentApi.mutate("$name { today { $FIELDS } completedState }").getValue(name).jsonObject
         return result.getValue("today").today() to result["completedState"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content?.let(PomodoroState::valueOf)
     }
-    suspend fun record(date: String): DPomodoroItem? = RustContentApi.query("pomodoroRecord(date: ${gql(date)}) { id date completedCount totalWorkSec totalBreakSec createdAt updatedAt }")
-        .getValue("pomodoroRecord").takeUnless { it is JsonNull }?.jsonObject?.let {
-            DPomodoroItem(id = it.string("id"), date = it.string("date"), completedCount = it.getValue("completedCount").jsonPrimitive.int,
-                totalWorkSeconds = it.getValue("totalWorkSec").jsonPrimitive.int, totalBreakSeconds = it.getValue("totalBreakSec").jsonPrimitive.int,
-                createdAt = it.instant("createdAt"), updatedAt = it.instant("updatedAt"))
-        }
+    suspend fun record(date: String): PomodoroRecord? = RustContentApi.query("pomodoroRecord(date: ${gql(date)}) { id date completedCount totalWorkSec totalBreakSec createdAt updatedAt }")
+        .getValue("pomodoroRecord").takeUnless { it is JsonNull }?.let { com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<PomodoroRecord>(it) }
     private fun JsonElement.today(): PomodoroToday = jsonObject.let {
         PomodoroToday(date = it.instant("date"), completedCount = it.getValue("completedCount").jsonPrimitive.int,
             currentRound = it.getValue("currentRound").jsonPrimitive.int, timeLeftSec = it.getValue("timeLeftSec").jsonPrimitive.int,

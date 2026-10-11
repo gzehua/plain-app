@@ -3,15 +3,16 @@ package com.ismartcoding.plain.ui.page.feeds
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import com.ismartcoding.plain.lib.Channel
-import com.ismartcoding.plain.events.HFeedStatusEvent
 import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HFeedStatusEvent
 import com.ismartcoding.plain.features.feed.FeedWorkerStatus
+import com.ismartcoding.plain.graphql.models.Feed
+import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.platform.PBackHandler
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
-import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshLayoutState
+import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.models.FeedEntriesViewModel
 import com.ismartcoding.plain.ui.models.FeedsViewModel
 import com.ismartcoding.plain.ui.models.TagsViewModel
@@ -55,7 +56,7 @@ internal fun FeedEntriesPageEffects(
                     topRefreshLayoutState.setRefreshState(
                         if (event.status == FeedWorkerStatus.ERROR) RefreshContentState.Failed else RefreshContentState.Finished,
                     )
-                    // Sync outcomes are persisted on DFeed by FeedFetcher; reload so the
+                    // Sync outcomes are persisted on Feed by FeedFetcher; reload so the
                     // banner, drawer dots and the open feed sheet reflect the new state.
                     feedsVM.loadAsync(withCount = true)
                     feedsVM.refreshSelectedItemAsync()

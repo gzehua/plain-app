@@ -1,29 +1,29 @@
 package com.ismartcoding.plain.ui.page.appfiles
 
-import com.ismartcoding.plain.platform.getExtensionFromMimeType
-import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.chat.models.MessageFiles
+import com.ismartcoding.plain.chat.models.MessageImages
+import com.ismartcoding.plain.graphql.models.AppFileRecord
+import com.ismartcoding.plain.graphql.models.ChatItem
 import com.ismartcoding.plain.helpers.AppFileStore
-import com.ismartcoding.plain.db.DAppFile
-import com.ismartcoding.plain.db.DChat
-import com.ismartcoding.plain.db.DMessageFile
-import com.ismartcoding.plain.db.DMessageFiles
-import com.ismartcoding.plain.db.DMessageImages
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.platform.getExtensionFromMimeType
 
 object AppFileDisplayNameHelper {
-    fun buildNameMap(chats: List<DChat>): Map<String, String> {
+    fun buildNameMap(chats: List<ChatItem>): Map<String, String> {
         val map = mutableMapOf<String, String>()
         chats
             .sortedByDescending { it.createdAt }
             .forEach { chat ->
-                when (val value = chat.content.value) {
-                    is DMessageFiles -> bindItems(value.items, map)
-                    is DMessageImages -> bindItems(value.items, map)
+                when (val value = chat.messageContent.value) {
+                    is MessageFiles -> bindItems(value.items, map)
+                    is MessageImages -> bindItems(value.items, map)
                 }
             }
         return map
     }
 
-    fun resolveDisplayName(file: DAppFile, nameMap: Map<String, String>): String {
+    fun resolveDisplayName(file: AppFileRecord, nameMap: Map<String, String>): String {
         val fromChat = nameMap[file.id].orEmpty().trim()
         if (fromChat.isNotEmpty()) return fromChat
         val ext = getExtensionFromMimeType(file.mimeType)
@@ -36,7 +36,7 @@ object AppFileDisplayNameHelper {
         AppFileStore.displayName(fileName).ifEmpty { fileName }
     }
 
-    private fun bindItems(items: List<DMessageFile>, map: MutableMap<String, String>) {
+    private fun bindItems(items: List<MessageFile>, map: MutableMap<String, String>) {
         items.forEach { item ->
             if (item.isFidFile() && item.fileName.isNotEmpty()) {
                 val hash = item.localFileId().substringBefore(".")

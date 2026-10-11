@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.page.files
 
-import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -16,8 +14,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -27,12 +25,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.db.DShare
 import com.ismartcoding.plain.enums.FilesType
 import com.ismartcoding.plain.events.FolderKanbanSelectEvent
+import com.ismartcoding.plain.features.FavoriteFolderHelper
 import com.ismartcoding.plain.features.share.ShareManager
+import com.ismartcoding.plain.graphql.models.ShareRecord
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.i18n.folder
+import com.ismartcoding.plain.i18n.link
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.base.PDropdownMenu
 import com.ismartcoding.plain.ui.base.PDropdownMenuItem
@@ -45,19 +45,18 @@ import com.ismartcoding.plain.ui.components.buildFolderOptions
 import com.ismartcoding.plain.ui.helpers.confirmActionAsync
 import com.ismartcoding.plain.ui.models.FilesViewModel
 import com.ismartcoding.plain.ui.models.FolderOption
+import com.ismartcoding.plain.ui.models.launchSafe
 import com.ismartcoding.plain.ui.nav.Routing
 import com.ismartcoding.plain.ui.page.shares.expiryLabel
-import kotlinx.coroutines.launch
-import com.ismartcoding.plain.features.FavoriteFolderHelper
-import com.ismartcoding.plain.ui.models.launchSafe
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.folder as ui_drawable_folder
 import com.ismartcoding.plain.ui.resources.history as ui_drawable_history
 import com.ismartcoding.plain.ui.resources.link as ui_drawable_link
 import com.ismartcoding.plain.ui.resources.pen as ui_drawable_pen
 import com.ismartcoding.plain.ui.resources.square_pen as ui_drawable_square_pen
-import com.ismartcoding.plain.i18n.folder
-import com.ismartcoding.plain.i18n.link
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Drawer content for the Files page: storage locations as SidebarItems, a
@@ -81,7 +80,7 @@ fun FilesDrawerContent(
     val scope = rememberCoroutineScope()
     val favoriteFolders by FavoriteFolderHelper.items.collectAsState()
     val options = remember { mutableStateListOf<FolderOption>() }
-    var shares by remember { mutableStateOf<List<DShare>>(emptyList()) }
+    var shares by remember { mutableStateOf<List<ShareRecord>>(emptyList()) }
     var contextMenuPath by remember { mutableStateOf<String?>(null) }
     var contextMenuShareId by remember { mutableStateOf<String?>(null) }
     var renameFavorite by remember { mutableStateOf<FolderOption?>(null) }

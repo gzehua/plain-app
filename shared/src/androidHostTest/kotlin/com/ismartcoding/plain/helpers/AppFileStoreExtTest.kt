@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.helpers
 
-import com.ismartcoding.plain.db.DAppFile
+import com.ismartcoding.plain.graphql.models.AppFileRecord
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -22,7 +22,7 @@ class AppFileStoreExtTest {
 
     @Test
     fun toFidUri_usesRealPathFileName() {
-        val dFile = DAppFile("aabbccdd")
+        val dFile = AppFileRecord("aabbccdd")
         dFile.realPath = "aa/bb/aabbccdd.properties"
         assertEquals("fid:aabbccdd.properties", AppFileStore.toFidUri(dFile))
         dFile.realPath = "aa/bb/aabbccdd"

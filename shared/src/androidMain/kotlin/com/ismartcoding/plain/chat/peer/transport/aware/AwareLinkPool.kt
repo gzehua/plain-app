@@ -1,14 +1,15 @@
 package com.ismartcoding.plain.chat.peer.transport.aware
 
-import kotlinx.serialization.json.jsonObject
 import android.Manifest
 import android.net.ConnectivityManager
 import android.net.wifi.aware.PeerHandle
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
-import com.ismartcoding.plain.db.DPeer
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.lib.logcat.LogCat
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -17,8 +18,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.serialization.json.jsonObject
 
 @RequiresApi(Build.VERSION_CODES.S)
 internal class AwareLinkPool(
@@ -26,7 +26,7 @@ internal class AwareLinkPool(
     private val connectivityManager: ConnectivityManager,
 ) {
     private val links = ConcurrentHashMap<String, AwarePeerLink>()
-    private val subscribedPeers = ConcurrentHashMap<String, DPeer>()
+    private val subscribedPeers = ConcurrentHashMap<String, PeerRecord>()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     @Volatile
     private var sweepJob: Job? = null
@@ -77,7 +77,7 @@ internal class AwareLinkPool(
     }
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.CHANGE_NETWORK_STATE])
-    suspend fun buildLink(peer: DPeer): PeerConnection {
+    suspend fun buildLink(peer: PeerRecord): PeerConnection {
         val link = linkFor(peer)
         val conn = link.build(peer)
         link.touch()
@@ -110,7 +110,7 @@ internal class AwareLinkPool(
         scope.cancel()
     }
 
-    fun subscribe(peer: DPeer) {
+    fun subscribe(peer: PeerRecord) {
         subscribedPeers[peer.id] = peer
         session.start()
     }
@@ -121,7 +121,7 @@ internal class AwareLinkPool(
     }
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.CHANGE_NETWORK_STATE])
-    suspend fun linkFor(peer: DPeer): AwarePeerLink {
+    suspend fun linkFor(peer: PeerRecord): AwarePeerLink {
         session.start()
         val config = com.ismartcoding.plain.rust.request.RustContentApi.postJsonOrThrow("chat/transport", kotlinx.serialization.json.buildJsonObject {
             put("action", kotlinx.serialization.json.JsonPrimitive("awareConfig"))

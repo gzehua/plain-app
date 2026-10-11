@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.DMessageText
+import com.ismartcoding.plain.chat.models.MessageText
 import com.ismartcoding.plain.ui.base.PClickableText
 import com.ismartcoding.plain.ui.base.linkify
 import com.ismartcoding.plain.ui.base.urlAt
@@ -23,7 +23,7 @@ fun ChatText(
     onDoubleClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
-    val messageText = m.value as DMessageText
+    val messageText = m.value as MessageText
     val text = messageText.text.linkify()
 
     PClickableText(

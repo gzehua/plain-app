@@ -1,25 +1,23 @@
 package com.ismartcoding.plain.ui.page.feeds
-import androidx.compose.foundation.layout.padding
-import com.ismartcoding.plain.ui.theme.PlainTheme
-
-import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.runtime.collectAsState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.DTag
-import com.ismartcoding.plain.db.DTagRelation
 import com.ismartcoding.plain.extensions.getFinalPath
+import com.ismartcoding.plain.features.feed.displayImage
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.graphql.models.TagHostRelation
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.formatDateTime
 import com.ismartcoding.plain.platform.launchUrl
 import com.ismartcoding.plain.ui.base.BottomSpace
@@ -30,8 +28,8 @@ import com.ismartcoding.plain.ui.base.PModalBottomSheet
 import com.ismartcoding.plain.ui.base.PSheetHeader
 import com.ismartcoding.plain.ui.base.PSheetHeaderThumb
 import com.ismartcoding.plain.ui.base.PSheetPrimaryAction
-import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
 import com.ismartcoding.plain.ui.base.PSheetPrimaryActionsRow
+import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
 import com.ismartcoding.plain.ui.base.Subtitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.TagSelector
@@ -46,6 +44,8 @@ import com.ismartcoding.plain.ui.resources.circle_check as ui_drawable_circle_ch
 import com.ismartcoding.plain.ui.resources.circle_dot as ui_drawable_circle_dot
 import com.ismartcoding.plain.ui.resources.list_checks as ui_drawable_list_checks
 import com.ismartcoding.plain.ui.resources.rss as ui_drawable_rss
+import com.ismartcoding.plain.ui.theme.PlainTheme
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -53,8 +53,8 @@ fun ViewFeedEntryBottomSheet(
     feedEntriesVM: FeedEntriesViewModel,
     feedsVM: FeedsViewModel,
     tagsVM: TagsViewModel,
-    tagsMap: Map<String, List<DTagRelation>>,
-    tagsState: List<DTag>,
+    tagsMap: Map<String, List<TagHostRelation>>,
+    tagsState: List<TagHostRecord>,
 ) {
     val m = feedEntriesVM.selectedItem.value ?: return
     val feeds by feedsVM.itemsFlow.collectAsState()
@@ -77,7 +77,7 @@ fun ViewFeedEntryBottomSheet(
                     PSheetHeader(
                         thumbnail = {
                             PSheetHeaderThumb(
-                                model = m.image.getFinalPath().ifEmpty { feedLogo },
+                                model = m.displayImage.getFinalPath().ifEmpty { feedLogo },
                                 fallbackIcon = UiRes.drawable.ui_drawable_rss,
                                 contentScale = ContentScale.Crop,
                             )

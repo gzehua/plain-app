@@ -1,10 +1,6 @@
 package com.ismartcoding.plain.ui.page.appfiles.components
+
 import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Modifier
-import com.ismartcoding.plain.ui.theme.PlainTheme
-
-import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -13,13 +9,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.DMessageContent
-import com.ismartcoding.plain.db.DMessageFile
-import com.ismartcoding.plain.db.DMessageFiles
-import com.ismartcoding.plain.db.DMessageImages
-import com.ismartcoding.plain.db.MessageType
+import com.ismartcoding.plain.chat.ShareSendHelper
+import com.ismartcoding.plain.chat.models.MessageContent
+import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.chat.models.MessageFiles
+import com.ismartcoding.plain.chat.models.MessageImages
+import com.ismartcoding.plain.chat.models.MessageType
 import com.ismartcoding.plain.extensions.resolveAppFileRealPath
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isVideoFast
@@ -30,10 +29,10 @@ import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PModalBottomSheet
 import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.helpers.DialogHelper
 import com.ismartcoding.plain.ui.models.VAppFile
 import com.ismartcoding.plain.ui.page.chat.components.ForwardTargetDialog
-import com.ismartcoding.plain.chat.ShareSendHelper
-import com.ismartcoding.plain.ui.helpers.DialogHelper
+import com.ismartcoding.plain.ui.theme.PlainTheme
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -50,7 +49,7 @@ fun AppFileInfoBottomSheet(
         ForwardTargetDialog(
             onDismiss = { showForwardDialog = false },
             onTargetsSelected = { targets ->
-                val dFile = DMessageFile(
+                val dFile = MessageFile(
                     uri = file.appFile.getFidUri(),
                     size = file.appFile.size,
                     fileName = file.fileName,
@@ -60,9 +59,9 @@ fun AppFileInfoBottomSheet(
                         file.appFile.mimeType.startsWith("image/") ||
                         file.appFile.mimeType.startsWith("video/")
                 val content = if (isImageVideo) {
-                    DMessageContent(MessageType.IMAGES, DMessageImages(listOf(dFile)))
+                    MessageContent(MessageType.IMAGES, MessageImages(listOf(dFile)))
                 } else {
-                    DMessageContent(MessageType.FILES, DMessageFiles(listOf(dFile)))
+                    MessageContent(MessageType.FILES, MessageFiles(listOf(dFile)))
                 }
                 showForwardDialog = false
                 onDismiss()

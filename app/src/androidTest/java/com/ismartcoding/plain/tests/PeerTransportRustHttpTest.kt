@@ -1,23 +1,23 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.RustPeerStore
 import com.ismartcoding.plain.chat.peer.transport.PeerTransportHost
-import com.ismartcoding.plain.db.DPeer
+import com.ismartcoding.plain.rust.request.RustContentApi
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class PeerTransportRustHttpTest {
     @Test
     fun rustSharesCircuitStateForSendsAndDownloadsAndRejectsLateReceipts() = runBlocking {
         val id = "synthetic-peer-transport-${UUID.randomUUID()}"
-        val peer = DPeer(id = id, name = id)
+        val peer = PeerRecord(id = id, name = id)
         suspend fun call(body: JsonObject) = RustContentApi.postJsonOrThrow("chat/transport", body).getValue("result")
         suspend fun begin(types: List<String>) = call(buildJsonObject {
             put("action", "beginDownload"); put("id", id); put("available", JsonArray(types.map(::JsonPrimitive)))

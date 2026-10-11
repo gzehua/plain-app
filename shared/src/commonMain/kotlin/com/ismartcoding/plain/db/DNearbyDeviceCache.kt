@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.db
 
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.enums.DeviceType
 import com.ismartcoding.plain.lib.TimeHelper
 import kotlin.time.Instant
@@ -13,7 +14,7 @@ import kotlin.time.Instant
 data class DNearbyDeviceCache(
     var id: String,
     var name: String = "",
-    /** Comma-joined address list, same encoding as [DPeer.ip]. */
+    /** Comma-joined address list, same encoding as [PeerRecord.ip]. */
     var ips: String = "",
     var port: Int = 0,
     var deviceType: DeviceType = DeviceType.PHONE,

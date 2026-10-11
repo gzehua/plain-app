@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.page.chat.components
 
-import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -18,25 +16,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.chat.download.DownloadTask
+import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.enums.TextFileType
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.extensions.isAudioFast
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isPdfFile
 import com.ismartcoding.plain.lib.extensions.isTextFile
 import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.lib.extensions.isZipFile
-import com.ismartcoding.plain.lib.coMain
-import com.ismartcoding.plain.platform.fileToUriString
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.platform.LocaleHelper
 import com.ismartcoding.plain.platform.copyFileToDir
+import com.ismartcoding.plain.platform.fileToUriString
 import com.ismartcoding.plain.platform.playAudioWithNotificationCheck
 import com.ismartcoding.plain.platform.saveFileToDownloads
-import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.chat.download.DownloadTask
-import com.ismartcoding.plain.db.DMessageFile
-import com.ismartcoding.plain.enums.TextFileType
-import com.ismartcoding.plain.platform.LocaleHelper
 import com.ismartcoding.plain.ui.base.PDropdownMenu
 import com.ismartcoding.plain.ui.base.PDropdownMenuItem
 import com.ismartcoding.plain.ui.components.SaveToSheet
@@ -49,13 +47,14 @@ import com.ismartcoding.plain.ui.nav.navigateOtherFile
 import com.ismartcoding.plain.ui.nav.navigatePdf
 import com.ismartcoding.plain.ui.nav.navigateTextFile
 import com.ismartcoding.plain.ui.nav.navigateZipFile
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun ChatFileItemContent(
     items: List<VChat>,
     navController: NavHostController,
-    item: DMessageFile,
+    item: MessageFile,
     itemState: TransformItemState,
     previewerState: MediaPreviewerState,
     fileName: String,

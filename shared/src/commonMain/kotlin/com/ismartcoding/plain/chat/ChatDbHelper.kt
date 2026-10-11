@@ -1,14 +1,14 @@
 package com.ismartcoding.plain.chat
 
-import com.ismartcoding.plain.db.DChat
+import com.ismartcoding.plain.graphql.models.ChatItem
 import com.ismartcoding.plain.lib.withIO
 
 object ChatDbHelper {
-    suspend fun getChatItem(id: String): DChat? = withIO {
+    suspend fun getChatItem(id: String): ChatItem? = withIO {
         RustChatStore.getById(id)
     }
 
-    suspend fun searchAsync(query: String, limit: Int, offset: Int): List<DChat> = withIO {
+    suspend fun searchAsync(query: String, limit: Int, offset: Int): List<ChatItem> = withIO {
         if (query.isEmpty()) return@withIO emptyList()
         RustChatStore.search(query, limit, offset)
     }

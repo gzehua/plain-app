@@ -27,17 +27,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.chat.ChatViewModel
 import com.ismartcoding.plain.chat.data.ChatTarget
-import com.ismartcoding.plain.db.DMessageStatusData
-import com.ismartcoding.plain.db.DMessageText
-import com.ismartcoding.plain.db.MessageType
-import com.ismartcoding.plain.db.DPeer
+import com.ismartcoding.plain.chat.models.MessageStatusData
+import com.ismartcoding.plain.chat.models.MessageText
+import com.ismartcoding.plain.chat.models.MessageType
+import com.ismartcoding.plain.chat.models.PeerRecord
+import com.ismartcoding.plain.graphql.models.Peer
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.CheckCircle
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.models.AudioQueueViewModelBase
-import com.ismartcoding.plain.chat.ChatViewModel
 import com.ismartcoding.plain.ui.models.VChat
 import com.ismartcoding.plain.ui.models.enterSelectMode
 import com.ismartcoding.plain.ui.models.select
@@ -53,7 +54,7 @@ fun ChatListItem(
     audioQueueVM: AudioQueueViewModelBase,
     items: List<VChat>,
     m: VChat,
-    peer: DPeer?,
+    peer: PeerRecord?,
     index: Int,
     imageWidthDp: Dp,
     imageWidthPx: Int,
@@ -62,7 +63,7 @@ fun ChatListItem(
     onForward: (VChat) -> Unit = {},
 ) {
     val showContextMenu = remember { mutableStateOf(false) }
-    val showDeliveryDialog = remember { mutableStateOf<DMessageStatusData?>(null) }
+    val showDeliveryDialog = remember { mutableStateOf<MessageStatusData?>(null) }
     val selected = chatVM.selectedItem.value?.id == m.id || chatVM.selectedIds.contains(m.id)
     Column {
         ChatDate(items, m, index)
@@ -99,8 +100,8 @@ fun ChatListItem(
                                 showContextMenu.value = true
                             },
                             onDoubleClick = {
-                                if (m.value is DMessageText) {
-                                    navController.navigateChatText((m.value as DMessageText).text)
+                                if (m.value is MessageText) {
+                                    navController.navigateChatText((m.value as MessageText).text)
                                 }
                             },
                         ),
@@ -119,7 +120,7 @@ fun ChatListItem(
                         MessageType.IMAGES -> ChatImages(items, m, peer, imageWidthDp, imageWidthPx, previewerState, chatVM)
                         MessageType.FILES -> ChatFiles(items, navController, m, peer, audioQueueVM, previewerState)
                         MessageType.TEXT -> ChatText(focusManager, m, isSelectMode = chatVM.selectMode.value, onSelect = { chatVM.select(it) }, onDoubleClick = {
-                            navController.navigateChatText((m.value as DMessageText).text)
+                            navController.navigateChatText((m.value as MessageText).text)
                         }, onLongClick = {
                             if (chatVM.selectMode.value) return@ChatText
                             chatVM.selectedItem.value = m

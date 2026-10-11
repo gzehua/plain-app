@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.page.chat.components
 
-import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,17 +12,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.DMessageStatusData
+import com.ismartcoding.plain.chat.models.MessageStatusData
 import com.ismartcoding.plain.enums.ButtonSize
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.PFilledButton
-import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 import com.ismartcoding.plain.ui.base.PTextButton
+import com.ismartcoding.plain.ui.theme.dialogSheetBackground
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ChannelDeliveryStatusDialog(
-    statusData: DMessageStatusData,
+    statusData: MessageStatusData,
     onResend: (peerIds: List<String>) -> Unit,
     onDismiss: () -> Unit,
 ) {

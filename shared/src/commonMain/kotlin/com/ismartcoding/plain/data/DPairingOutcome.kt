@@ -1,5 +1,5 @@
 package com.ismartcoding.plain.data
 
-import com.ismartcoding.plain.db.DPeer
+import com.ismartcoding.plain.chat.models.PeerRecord
 
-data class DPairingOutcome(val ticket: DPairingTicket, val peer: DPeer?, val error: String)
+data class DPairingOutcome(val ticket: DPairingTicket, val peer: PeerRecord?, val error: String)

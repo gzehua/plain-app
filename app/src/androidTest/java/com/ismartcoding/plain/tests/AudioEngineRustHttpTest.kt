@@ -1,20 +1,20 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.rust.request.*
-import com.ismartcoding.plain.rust.content.*
-import com.ismartcoding.plain.rust.http.*
-import com.ismartcoding.plain.audio.DPlaylistAudio
+import com.ismartcoding.plain.enums.MediaPlayMode
 import com.ismartcoding.plain.features.audio.*
 import com.ismartcoding.plain.features.file.FileSortBy
-import com.ismartcoding.plain.enums.MediaPlayMode
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
 import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.rust.content.*
+import com.ismartcoding.plain.rust.http.*
+import com.ismartcoding.plain.rust.request.*
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class AudioEngineRustHttpTest {
@@ -23,7 +23,7 @@ class AudioEngineRustHttpTest {
         assertTrue(AudioQueueManager.queuedPaths().isEmpty())
         assertTrue(AudioQueueManager.source().currentPath.isEmpty())
         val prefix = "audio-engine-${UUID.randomUUID()}"
-        fun track(index: Int) = DPlaylistAudio("Track $index", "$prefix/$index", "Synthetic", 117123, "42")
+        fun track(index: Int) = AudioHostTrack("Track $index", "$prefix/$index", "Synthetic", 117123, "42")
         val oldProvider = AudioLibraryHost.install(object : AudioLibraryProvider {
             override suspend fun count() = 2
             override suspend fun page(offset: Int, limit: Int, sort: FileSortBy) = (offset until minOf(2, offset + limit)).map(::track)

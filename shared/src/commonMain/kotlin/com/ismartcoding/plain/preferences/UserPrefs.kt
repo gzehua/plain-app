@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.audio.DPlaylistAudio
 import com.ismartcoding.plain.data.DPomodoroSettings
 import com.ismartcoding.plain.data.DScreenMirrorQuality
 import com.ismartcoding.plain.data.DVideo
@@ -11,6 +10,10 @@ import com.ismartcoding.plain.enums.DarkTheme
 import com.ismartcoding.plain.enums.MediaPlayMode
 import com.ismartcoding.plain.enums.ScreenMirrorMode
 import com.ismartcoding.plain.features.file.FileSortBy
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.PomodoroSettings
+import com.ismartcoding.plain.graphql.models.ScreenMirrorQuality
+import com.ismartcoding.plain.graphql.models.Video
 import com.ismartcoding.plain.platform.Locale
 
 /**
@@ -56,7 +59,7 @@ object UserPrefs {
     val editorStatusBar = userPref("editorStatusBar", true)
     val lastFilePath = userPref("lastFilePath", FilePathData("", "", ""))
     val scanHistory = userPref("scanHistory", emptyList<String>())
-    val audioPlaylist = userPref("audioPlaylist", emptyList<DPlaylistAudio>())
+    val audioPlaylist = userPref("audioPlaylist", emptyList<AudioHostTrack>())
     val chatInputText = userPref("chatInputText", "")
     val nearbyDiscoverable = userPref("nearbyDiscoverable", true)
     val aiImageSearchEnabled = userPref("aiImageSearchEnabled", false)

@@ -1,20 +1,19 @@
 package com.ismartcoding.plain.ui.models
 
-import com.ismartcoding.plain.preferences.*
-
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.db.DFeed
-import com.ismartcoding.plain.db.DFeedEntry
 import com.ismartcoding.plain.features.feed.FeedFontScale
+import com.ismartcoding.plain.graphql.models.Feed
+import com.ismartcoding.plain.graphql.models.FeedEntry
+import com.ismartcoding.plain.preferences.*
 import kotlinx.coroutines.launch
 
 class FeedEntryViewModel : ViewModel() {
     val showSelectTagsDialog = mutableStateOf(false)
-    val item = mutableStateOf<DFeedEntry?>(null)
-    val feed = mutableStateOf<DFeed?>(null)
+    val item = mutableStateOf<FeedEntry?>(null)
+    val feed = mutableStateOf<Feed?>(null)
     val content = mutableStateOf("")
     val fetchingContent = mutableStateOf(false)
 

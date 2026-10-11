@@ -39,32 +39,32 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ismartcoding.plain.db.DTag
-import com.ismartcoding.plain.db.DTagRelation
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.graphql.models.TagHostRelation
 import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.ui.resources.close as ui_drawable_close
-import com.ismartcoding.plain.ui.resources.double_arrow_right as ui_drawable_double_arrow_right
+import com.ismartcoding.plain.i18n.close
 import com.ismartcoding.plain.ui.base.ControlChipIconButton
 import com.ismartcoding.plain.ui.components.mediaviewer.GestureScope
 import com.ismartcoding.plain.ui.components.mediaviewer.ImagePreviewActions
 import com.ismartcoding.plain.ui.components.mediaviewer.PreviewItem
 import com.ismartcoding.plain.ui.components.mediaviewer.PreviewerSoftWhite
 import com.ismartcoding.plain.ui.components.mediaviewer.ViewMediaBottomSheet
-import com.ismartcoding.plain.ui.components.mediaviewer.rememberViewerState
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.TransformContentView
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.ViewerContainerState
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.rememberTransformContentState
+import com.ismartcoding.plain.ui.components.mediaviewer.rememberViewerState
 import com.ismartcoding.plain.ui.components.mediaviewer.video.VideoPreviewActions
 import com.ismartcoding.plain.ui.models.CastViewModel
 import com.ismartcoding.plain.ui.models.MediaPreviewData
 import com.ismartcoding.plain.ui.models.TagsViewModel
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.close as ui_drawable_close
+import com.ismartcoding.plain.ui.resources.double_arrow_right as ui_drawable_double_arrow_right
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.i18n.close
 
 // Grace period before showing a loading icon: media that becomes ready within
 // this window switches without any visible loading state (Douyin-like).
@@ -76,8 +76,8 @@ fun MediaPreviewer(
     state: MediaPreviewerState,
     castVM: CastViewModel = viewModel { CastViewModel() },
     tagsVM: TagsViewModel? = null,
-    tagsMap: Map<String, List<DTagRelation>>? = null,
-    tagsState: List<DTag> = emptyList(),
+    tagsMap: Map<String, List<TagHostRelation>>? = null,
+    tagsState: List<TagHostRecord> = emptyList(),
     onRenamed: () -> Unit = {},
     deleteAction: (PreviewItem) -> Unit = {},
     onTagsChanged: () -> Unit = {},

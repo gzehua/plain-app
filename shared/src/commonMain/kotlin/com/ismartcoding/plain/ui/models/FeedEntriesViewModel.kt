@@ -6,25 +6,25 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.helpers.SearchHelper
-import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.enums.FeedEntryFilterType
-import com.ismartcoding.plain.db.DFeedEntry
-import com.ismartcoding.plain.db.DTag
-import com.ismartcoding.plain.features.feed.FeedEntryHelper
 import com.ismartcoding.plain.features.TagHelper
+import com.ismartcoding.plain.features.feed.FeedEntryHelper
+import com.ismartcoding.plain.graphql.models.FeedEntry
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.helpers.SearchHelper
+import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.feedWorkerOneTimeRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
 class FeedEntriesViewModel :
-    ISelectableViewModel<DFeedEntry>,
-    ISearchableViewModel<DFeedEntry>,
+    ISelectableViewModel<FeedEntry>,
+    ISearchableViewModel<FeedEntry>,
     ViewModel() {
-    private val _itemsFlow = MutableStateFlow<List<DFeedEntry>>(emptyList())
-    override val itemsFlow: StateFlow<List<DFeedEntry>> = _itemsFlow
+    private val _itemsFlow = MutableStateFlow<List<FeedEntry>>(emptyList())
+    override val itemsFlow: StateFlow<List<FeedEntry>> = _itemsFlow
     var showLoading = mutableStateOf(true)
     var offset = mutableIntStateOf(0)
     var limit = mutableIntStateOf(200)
@@ -32,10 +32,10 @@ class FeedEntriesViewModel :
     var filterType = mutableStateOf(FeedEntryFilterType.DEFAULT)
     var total = mutableIntStateOf(0)
     var totalToday = mutableIntStateOf(0)
-    var tag = mutableStateOf<DTag?>(null)
+    var tag = mutableStateOf<TagHostRecord?>(null)
     var feedId = mutableStateOf<String>("")
     val dataType = DataType.FEED_ENTRY
-    var selectedItem = mutableStateOf<DFeedEntry?>(null)
+    var selectedItem = mutableStateOf<FeedEntry?>(null)
     val showTagsDialog = mutableStateOf(false)
 
     // Cluster key ("date/feedId" from buildFeedListRows) -> explicit expanded/collapsed

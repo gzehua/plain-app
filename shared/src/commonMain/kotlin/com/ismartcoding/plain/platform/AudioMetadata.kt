@@ -2,14 +2,15 @@ package com.ismartcoding.plain.platform
 
 import androidx.compose.ui.graphics.ImageBitmap
 import com.ismartcoding.plain.audio.DAudio
-import com.ismartcoding.plain.audio.DPlaylistAudio
+import com.ismartcoding.plain.graphql.models.Audio
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
 
 expect suspend fun getAudioMetadata(path: String): Pair<String, String>
 
 /** Lyrics embedded in the audio file metadata, empty when absent. */
 expect suspend fun getAudioLyrics(path: String): String
 
-expect fun playlistAudioFromPath(path: String): DPlaylistAudio
+expect fun playlistAudioFromPath(path: String): AudioHostTrack
 
 expect fun loadAudioCoverBitmap(path: String): ImageBitmap?
 

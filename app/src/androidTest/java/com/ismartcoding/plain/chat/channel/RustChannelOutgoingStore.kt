@@ -1,14 +1,14 @@
 package com.ismartcoding.plain.chat.channel
 
 import com.ismartcoding.plain.TempData
-import com.ismartcoding.plain.rust.request.RustContentApi
-import com.ismartcoding.plain.db.DChatChannel
+import com.ismartcoding.plain.chat.models.ChatChannelRecord
 import com.ismartcoding.plain.enums.ChannelSystemMessageType
 import com.ismartcoding.plain.platform.getDeviceType
+import com.ismartcoding.plain.rust.request.RustContentApi
 import kotlinx.serialization.json.*
 
 object RustChannelOutgoingStore {
-    suspend fun prepare(channel: DChatChannel, type: ChannelSystemMessageType, target: String = ""): JsonObject = callChatStore("prepareChannel") {
+    suspend fun prepare(channel: ChatChannelRecord, type: ChannelSystemMessageType, target: String = ""): JsonObject = callChatStore("prepareChannel") {
         put("channel", RustChannelStore.encode(channel))
         put("message_type", type.name)
         put("target", target)

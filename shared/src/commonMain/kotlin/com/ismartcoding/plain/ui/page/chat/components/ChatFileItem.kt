@@ -2,35 +2,36 @@ package com.ismartcoding.plain.ui.page.chat.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.produceState
-import kotlinx.coroutines.CancellationException
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
+import com.ismartcoding.plain.chat.download.DownloadQueue
+import com.ismartcoding.plain.chat.download.DownloadTask
+import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.chat.models.PeerRecord
+import com.ismartcoding.plain.chat.models.getPreviewPath
 import com.ismartcoding.plain.extensions.getFinalPath
+import com.ismartcoding.plain.graphql.models.Peer
+import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.isAudioFast
+import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.audioIsPlayingFlow
 import com.ismartcoding.plain.platform.audioPause
 import com.ismartcoding.plain.platform.audioPlay
 import com.ismartcoding.plain.platform.audioPlayerProgress
 import com.ismartcoding.plain.platform.audioSeekTo
 import com.ismartcoding.plain.platform.getAudioDurationMs
-import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.chat.download.DownloadQueue
-import com.ismartcoding.plain.chat.download.DownloadTask
-import com.ismartcoding.plain.db.DMessageFile
-import com.ismartcoding.plain.db.DPeer
-import com.ismartcoding.plain.db.getPreviewPath
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.rememberTransformItemState
 import com.ismartcoding.plain.ui.models.AudioQueueViewModelBase
 import com.ismartcoding.plain.ui.models.VChat
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
@@ -39,10 +40,10 @@ fun ChatFileItem(
     items: List<VChat>,
     navController: NavHostController,
     m: VChat,
-    peer: DPeer?,
+    peer: PeerRecord?,
     audioQueueVM: AudioQueueViewModelBase,
     previewerState: MediaPreviewerState,
-    item: DMessageFile,
+    item: MessageFile,
     index: Int,
     downloadProgressMap: Map<String, DownloadTask>,
     onShowAudioPlayer: () -> Unit,

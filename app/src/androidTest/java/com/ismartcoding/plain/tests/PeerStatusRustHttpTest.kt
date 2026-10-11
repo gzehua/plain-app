@@ -1,19 +1,19 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.*
-import com.ismartcoding.plain.db.DPeer
 import com.ismartcoding.plain.enums.PeerStatus
 import com.ismartcoding.plain.platform.*
 import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.rust.request.RustContentApi
+import java.util.UUID
+import kotlin.io.encoding.Base64
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
-import kotlin.io.encoding.Base64
 
 @RunWith(AndroidJUnit4::class)
 class PeerStatusRustHttpTest {
@@ -22,7 +22,7 @@ class PeerStatusRustHttpTest {
         val id = "synthetic-status-${UUID.randomUUID()}"
         val key = ByteArray(32) { 6 }
         val (privateKey, publicKey) = generateEd25519KeyPair()
-        val peer = DPeer(id = id, name = id, publicKey = Base64.encode(publicKey), key = Base64.encode(key), status = PeerStatus.PAIRED)
+        val peer = PeerRecord(id = id, name = id, publicKey = Base64.encode(publicKey), key = Base64.encode(key), status = PeerStatus.PAIRED)
         val service = UserPrefs.service.value
         val http = UserPrefs.httpPort.value
         val https = UserPrefs.httpsPort.value

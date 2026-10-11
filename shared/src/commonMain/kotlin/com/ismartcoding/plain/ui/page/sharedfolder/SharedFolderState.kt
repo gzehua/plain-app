@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.chat.ChatManager
-import com.ismartcoding.plain.db.DMessageShare
+import com.ismartcoding.plain.chat.models.MessageShare
 import com.ismartcoding.plain.features.download.DownloadCenter
 import com.ismartcoding.plain.features.download.isTerminalDownloadStatus
 import com.ismartcoding.plain.features.share.SharedFileDto
@@ -15,6 +15,7 @@ import com.ismartcoding.plain.features.share.SharedFolderDownloadEngine
 import com.ismartcoding.plain.features.share.SharedInfoDto
 import com.ismartcoding.plain.features.share.SharedLink
 import com.ismartcoding.plain.features.share.SharedLinkClient
+import com.ismartcoding.plain.graphql.models.Root
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.isAudioFast
 import com.ismartcoding.plain.lib.extensions.isImageFast
@@ -48,7 +49,7 @@ internal class SharedFolderState(
     private val scope: CoroutineScope,
     private val previewerState: MediaPreviewerState,
 ) {
-    var shareMsg by mutableStateOf<DMessageShare?>(null)
+    var shareMsg by mutableStateOf<MessageShare?>(null)
         private set
     var rootInfo by mutableStateOf<SharedInfoDto?>(null)
         private set
@@ -82,7 +83,7 @@ internal class SharedFolderState(
     fun loadMessage() {
         scope.launch {
             val chat = withIO { ChatManager.getChatItem(messageId) }
-            shareMsg = chat?.content?.value as? DMessageShare
+            shareMsg = chat?.messageContent?.value as? MessageShare
         }
     }
 

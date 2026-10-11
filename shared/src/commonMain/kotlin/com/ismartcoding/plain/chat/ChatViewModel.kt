@@ -1,18 +1,18 @@
 package com.ismartcoding.plain.chat
 
-import com.ismartcoding.plain.chat.peer.RustPeerStore
-
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.chat.data.ChatTarget
 import com.ismartcoding.plain.chat.data.ChatTargetType
-import com.ismartcoding.plain.db.DChat
-import com.ismartcoding.plain.db.DMessageContent
-import com.ismartcoding.plain.db.DMessageFile
+import com.ismartcoding.plain.chat.models.MessageContent
+import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.chat.peer.RustPeerStore
 import com.ismartcoding.plain.enums.ChatStatus
+import com.ismartcoding.plain.graphql.models.ChatItem
+import com.ismartcoding.plain.graphql.models.Root
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.sent
+import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.helpers.DialogHelper
 import com.ismartcoding.plain.ui.models.ISelectableViewModel
 import com.ismartcoding.plain.ui.models.VChat
@@ -81,17 +81,17 @@ object ChatViewModel : ISelectableViewModel<VChat> {
         }
     }
 
-    fun addAll(items: List<DChat>) {
+    fun addAll(items: List<ChatItem>) {
         _itemsFlow.update { items.map { VChat.from(it) } + it.filterNot { existing -> items.any { incoming -> incoming.id == existing.id } } }
     }
 
-    fun addAllAndScroll(items: List<DChat>) {
+    fun addAllAndScroll(items: List<ChatItem>) {
         val previousTopId = _itemsFlow.value.firstOrNull()?.id
         addAll(items)
         _scrollToLatest.trySend(previousTopId)
     }
 
-    fun update(item: DChat) {
+    fun update(item: ChatItem) {
         _itemsFlow.update { currentList ->
             val index = currentList.indexOfFirst { it.id == item.id }
             if (index >= 0) currentList.toMutableList().also { it[index] = VChat.from(item) }
@@ -145,13 +145,13 @@ object ChatViewModel : ISelectableViewModel<VChat> {
         }
     }
 
-    private suspend fun doSendMessage(target: ChatTarget, content: DMessageContent): Boolean = withIO {
+    private suspend fun doSendMessage(target: ChatTarget, content: MessageContent): Boolean = withIO {
         val item = ChatManager.sendContent(target, content)
         publishCreated(target, listOf(item), scroll = true)
         item.status == ChatStatus.SENT
     }
 
-    fun sendContent(content: DMessageContent, onResult: (Boolean) -> Unit = {}) {
+    fun sendContent(content: MessageContent, onResult: (Boolean) -> Unit = {}) {
         launchSafe {
             onResult(doSendMessage(target.value, content))
         }
@@ -163,7 +163,7 @@ object ChatViewModel : ISelectableViewModel<VChat> {
         }
     }
 
-    suspend fun sendFilesImmediate(files: List<DMessageFile>, isImageVideo: Boolean): String = withIO {
+    suspend fun sendFilesImmediate(files: List<MessageFile>, isImageVideo: Boolean): String = withIO {
         val item = ChatManager.insertFilesImmediate(target.value, files, isImageVideo)
         publishCreated(target.value, listOf(item), scroll = true)
         item.id
@@ -175,7 +175,7 @@ object ChatViewModel : ISelectableViewModel<VChat> {
      * the open conversation when the target matches. Root message events
      * are forwarded to desktop clients by RustContentApi.
      */
-    suspend fun onMessagesCreated(target: ChatTarget, items: List<DChat>, scroll: Boolean = false) = mutex.withLock {
+    suspend fun onMessagesCreated(target: ChatTarget, items: List<ChatItem>, scroll: Boolean = false) = mutex.withLock {
         if (_target.value == target) {
             if (scroll) {
                 val previousTopId = _itemsFlow.value.firstOrNull()?.id
@@ -202,7 +202,7 @@ object ChatViewModel : ISelectableViewModel<VChat> {
         removeIds(ids)
     }
 
-    private suspend fun publishCreated(target: ChatTarget, items: List<DChat>, scroll: Boolean = false) =
+    private suspend fun publishCreated(target: ChatTarget, items: List<ChatItem>, scroll: Boolean = false) =
         onMessagesCreated(target, items, scroll)
 
 }

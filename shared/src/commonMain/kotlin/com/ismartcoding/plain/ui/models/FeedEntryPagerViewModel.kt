@@ -3,13 +3,13 @@ package com.ismartcoding.plain.ui.models
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.db.DFeed
-import com.ismartcoding.plain.db.DFeedEntry
 import com.ismartcoding.plain.features.feed.FeedEntryHelper
 import com.ismartcoding.plain.features.feed.FeedHelper
+import com.ismartcoding.plain.graphql.models.Feed
+import com.ismartcoding.plain.graphql.models.FeedEntry
 import com.ismartcoding.plain.helpers.launchSafe
-import kotlinx.coroutines.delay
 import com.ismartcoding.plain.platform.fetchContentAsync
+import kotlinx.coroutines.delay
 
 /**
  * Carries the filtered entry list from FeedEntriesPage into FeedEntryPage so
@@ -19,9 +19,9 @@ import com.ismartcoding.plain.platform.fetchContentAsync
 class FeedEntryPagerViewModel : ViewModel() {
     val ids = mutableStateListOf<String>()
 
-    private val entries = HashMap<String, DFeedEntry>()
+    private val entries = HashMap<String, FeedEntry>()
     private val contents = HashMap<String, String>()
-    private val feeds = HashMap<String, DFeed?>()
+    private val feeds = HashMap<String, Feed?>()
     private val fetchingIds = mutableSetOf<String>()
 
     fun setup(list: List<String>) {
@@ -30,14 +30,14 @@ class FeedEntryPagerViewModel : ViewModel() {
         ids.addAll(list)
     }
 
-    suspend fun entryAsync(id: String): DFeedEntry? {
+    suspend fun entryAsync(id: String): FeedEntry? {
         entries[id]?.let { return it }
         val m = FeedEntryHelper.getAsync(id) ?: return null
         entries[id] = m
         return m
     }
 
-    suspend fun feedAsync(feedId: String): DFeed? = feeds.getOrPut(feedId) { FeedHelper.getById(feedId) }
+    suspend fun feedAsync(feedId: String): Feed? = feeds.getOrPut(feedId) { FeedHelper.getById(feedId) }
 
     /** Mark an entry read while paging: persist immediately, keep the row cache in sync. */
     fun markRead(id: String) {

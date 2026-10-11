@@ -3,17 +3,18 @@ package com.ismartcoding.plain.ui.models
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.ismartcoding.plain.audio.DAudio
-import com.ismartcoding.plain.db.DAudioPlaylist
 import com.ismartcoding.plain.features.audio.AudioPlayHistoryManager
 import com.ismartcoding.plain.features.audio.AudioPlaylistManager
 import com.ismartcoding.plain.features.audio.AudioQueueManager
+import com.ismartcoding.plain.graphql.models.Audio
+import com.ismartcoding.plain.graphql.models.AudioHostPlaylist
 import com.ismartcoding.plain.ui.page.playlist.PlaylistAlbumCover
 import com.ismartcoding.plain.ui.page.playlist.loadPlaylistAlbumCovers
 
 data class AudioHomeArtist(val name: String, val itemCount: Int, val playCount: Long, val samplePath: String)
 
 class AudioHomeViewModel : ViewModel() {
-    val playlists = mutableStateOf<List<Pair<DAudioPlaylist, Int>>>(listOf())
+    val playlists = mutableStateOf<List<Pair<AudioHostPlaylist, Int>>>(listOf())
 
     /** Playlist id -> album covers feeding the home mosaic tiles. */
     val playlistCovers = mutableStateOf<Map<String, List<PlaylistAlbumCover>>>(emptyMap())

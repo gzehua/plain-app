@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.page.feeds
 
-import com.ismartcoding.plain.ui.components.SearchableTopBar
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,7 +29,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.db.DTag
 import com.ismartcoding.plain.enums.ExportFileType
 import com.ismartcoding.plain.enums.FeedEntryFilterType
 import com.ismartcoding.plain.enums.PickFileTag
@@ -38,7 +36,11 @@ import com.ismartcoding.plain.enums.PickFileType
 import com.ismartcoding.plain.events.ExportFileEvent
 import com.ismartcoding.plain.events.PickFileEvent
 import com.ismartcoding.plain.features.feed.FeedFetcher
+import com.ismartcoding.plain.graphql.models.Feed
+import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.i18n.download
+import com.ismartcoding.plain.i18n.settings
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.FeedsPageEffects
@@ -51,11 +53,12 @@ import com.ismartcoding.plain.ui.base.pullrefresh.LoadMoreRefreshContent
 import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefreshContent
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
-import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
+import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
+import com.ismartcoding.plain.ui.components.SearchableTopBar
 import com.ismartcoding.plain.ui.extensions.reset
-import com.ismartcoding.plain.ui.models.FeedEntriesViewModel
 import com.ismartcoding.plain.ui.models.FeedCatalogViewModel
+import com.ismartcoding.plain.ui.models.FeedEntriesViewModel
 import com.ismartcoding.plain.ui.models.FeedEntryPagerViewModel
 import com.ismartcoding.plain.ui.models.FeedsViewModel
 import com.ismartcoding.plain.ui.models.TagsViewModel
@@ -67,18 +70,16 @@ import com.ismartcoding.plain.ui.models.showBottomActions
 import com.ismartcoding.plain.ui.models.toggleSelectAll
 import com.ismartcoding.plain.ui.nav.Routing
 import com.ismartcoding.plain.ui.page.tags.TagsBottomSheet
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import kotlin.math.abs
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.download as ui_drawable_download
 import com.ismartcoding.plain.ui.resources.left_panel_open as ui_drawable_left_panel_open
 import com.ismartcoding.plain.ui.resources.settings as ui_drawable_settings
 import com.ismartcoding.plain.ui.resources.upload as ui_drawable_upload
-import com.ismartcoding.plain.i18n.settings
-import com.ismartcoding.plain.i18n.download
+import kotlin.math.abs
+import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -101,7 +102,7 @@ fun FeedEntriesPage(
     })
     val topRefreshLayoutState = rememberRefreshLayoutState { scope.launch { feedEntriesVM.sync() } }
 
-    val applyFilter: (String, FeedEntryFilterType, DTag?) -> Unit = { newFeedId, filterType, tag ->
+    val applyFilter: (String, FeedEntryFilterType, TagHostRecord?) -> Unit = { newFeedId, filterType, tag ->
         feedEntriesVM.feedId.value = newFeedId
         feedEntriesVM.filterType.value = filterType
         feedEntriesVM.tag.value = tag
@@ -109,7 +110,7 @@ fun FeedEntriesPage(
         scope.launch { scrollState.scrollToItem(0) }
         scope.launch(IODispatcher) { feedEntriesVM.loadAsync(tagsVM) }
     }
-    val onSelectDrawerItem: (String, FeedEntryFilterType, DTag?) -> Unit = { newFeedId, filterType, tag ->
+    val onSelectDrawerItem: (String, FeedEntryFilterType, TagHostRecord?) -> Unit = { newFeedId, filterType, tag ->
         applyFilter(newFeedId, filterType, tag)
         scope.launch { drawerState.close() }
     }
@@ -212,7 +213,7 @@ fun FeedEntriesPage(
             }
         }) { paddingValues ->
             Column(modifier = Modifier.padding(top = paddingValues.calculateTopPadding())) {
-                // State-driven sync failure banner: persisted errors on DFeed,
+                // State-driven sync failure banner: persisted errors on Feed,
                 // scoped to the current feed filter, retries go through FeedFetcher.
                 val failingFeeds = feedsState.filter {
                     it.hasSyncError &&

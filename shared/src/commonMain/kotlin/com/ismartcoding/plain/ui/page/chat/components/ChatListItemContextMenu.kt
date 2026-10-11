@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.page.chat.components
 
-import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -9,14 +7,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import org.jetbrains.compose.resources.stringResource
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.db.DMessageFile
-import com.ismartcoding.plain.db.DMessageImages
-import com.ismartcoding.plain.db.DMessageShare
-import com.ismartcoding.plain.db.DMessageText
-import com.ismartcoding.plain.db.MessageType
+import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.chat.models.MessageImages
+import com.ismartcoding.plain.chat.models.MessageShare
+import com.ismartcoding.plain.chat.models.MessageText
+import com.ismartcoding.plain.chat.models.MessageType
 import com.ismartcoding.plain.extensions.getFinalPath
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.withIO
@@ -31,6 +29,7 @@ import com.ismartcoding.plain.ui.helpers.DialogHelper
 import com.ismartcoding.plain.ui.models.VChat
 import com.ismartcoding.plain.ui.nav.navigateChatEditText
 import com.ismartcoding.plain.ui.nav.navigateEditShare
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ChatListItemContextMenu(
@@ -78,13 +77,13 @@ fun ChatListItemContextMenu(
                 },
             )
         }
-        if (m.value is DMessageText) {
+        if (m.value is MessageText) {
             PDropdownMenuItem(
                 text = { Text(stringResource(Res.string.copy_text)) },
                 onClick = {
                     selectedItem.value = null
                     showContextMenu.value = false
-                    val text = (m.value as DMessageText).text
+                    val text = (m.value as MessageText).text
                     setClipboardText(LocaleHelper.getString(Res.string.message), text)
                     DialogHelper.showTextCopiedMessage(text)
                 },
@@ -95,7 +94,7 @@ fun ChatListItemContextMenu(
                     onClick = {
                         selectedItem.value = null
                         showContextMenu.value = false
-                        val content = (m.value as DMessageText).text
+                        val content = (m.value as MessageText).text
                         navController.navigateChatEditText(m.id, content)
                     },
                 )
@@ -107,7 +106,7 @@ fun ChatListItemContextMenu(
                 onClick = {
                     selectedItem.value = null
                     showContextMenu.value = false
-                    navController.navigateEditShare((m.value as DMessageShare).shareId)
+                    navController.navigateEditShare((m.value as MessageShare).shareId)
                 },
             )
         }
@@ -122,7 +121,7 @@ fun ChatListItemContextMenu(
     }
 
     if (showSaveSheet) {
-        val images = (m.value as? DMessageImages)?.items.orEmpty()
+        val images = (m.value as? MessageImages)?.items.orEmpty()
         SaveToSheet(
             title = images.firstOrNull()?.fileName?.takeIf { it.isNotEmpty() }
                 ?: stringResource(Res.string.image),
@@ -145,7 +144,7 @@ fun ChatListItemContextMenu(
 
 /** Saves every image of an IMAGES message to [sink]'s destination, then reports the first saved path. */
 private suspend fun saveMessageImages(
-    images: List<DMessageFile>,
+    images: List<MessageFile>,
     sink: suspend (path: String, name: String) -> String,
 ) {
     var firstSavedPath = ""

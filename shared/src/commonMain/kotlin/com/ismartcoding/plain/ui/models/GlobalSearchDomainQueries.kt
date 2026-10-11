@@ -1,24 +1,30 @@
 package com.ismartcoding.plain.ui.models
 
-import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.chat.ChatDbHelper
 import com.ismartcoding.plain.chat.channel.ChannelCacher
+import com.ismartcoding.plain.chat.models.getMessagePreview
 import com.ismartcoding.plain.chat.peer.PeerCacher
 import com.ismartcoding.plain.data.DDoc
 import com.ismartcoding.plain.data.DImage
 import com.ismartcoding.plain.data.DVideo
-import com.ismartcoding.plain.db.DChat
-import com.ismartcoding.plain.db.DFeedEntry
-import com.ismartcoding.plain.db.DNote
-import com.ismartcoding.plain.db.getMessagePreview
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.enums.getIcon
-import com.ismartcoding.plain.features.feed.FeedEntryHelper
 import com.ismartcoding.plain.features.NoteHelper
+import com.ismartcoding.plain.features.feed.FeedEntryHelper
 import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.features.file.FileSortBy
+import com.ismartcoding.plain.graphql.models.Audio
+import com.ismartcoding.plain.graphql.models.ChatItem
+import com.ismartcoding.plain.graphql.models.Doc
+import com.ismartcoding.plain.graphql.models.FeedEntry
+import com.ismartcoding.plain.graphql.models.File
+import com.ismartcoding.plain.graphql.models.Image
+import com.ismartcoding.plain.graphql.models.Note
+import com.ismartcoding.plain.graphql.models.Video
 import com.ismartcoding.plain.helpers.SearchHelper
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.i18n.devices
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.formatDurationMs
 import com.ismartcoding.plain.platform.DPackageInfo
@@ -31,12 +37,11 @@ import com.ismartcoding.plain.platform.searchFiles
 import com.ismartcoding.plain.platform.searchMedia
 import com.ismartcoding.plain.platform.searchPackages
 import com.ismartcoding.plain.ui.nav.Routing
-import org.jetbrains.compose.resources.DrawableResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.bot as ui_drawable_bot
 import com.ismartcoding.plain.ui.resources.devices as ui_drawable_devices
 import com.ismartcoding.plain.ui.resources.hash as ui_drawable_hash
-import com.ismartcoding.plain.i18n.devices
+import org.jetbrains.compose.resources.DrawableResource
 
 /**
  * Data-source layer of the global search: how each domain is counted,
@@ -139,7 +144,7 @@ private suspend inline fun <reified T : Any> reloadMediaHits(
         .map { toHit(it) }
 }
 
-private fun DNote.toHit(q: String): GlobalSearchHit = GlobalSearchHit(
+private fun Note.toHit(q: String): GlobalSearchHit = GlobalSearchHit(
     key = "note_$id",
     title = title,
     snippet = content.snippetAround(q),
@@ -187,7 +192,7 @@ private fun DFile.toHit(): GlobalSearchHit = GlobalSearchHit(
     action = GlobalSearchAction.Navigate(Routing.Files(path.substringBeforeLast('/'))),
 )
 
-private fun DFeedEntry.toHit(q: String): GlobalSearchHit = GlobalSearchHit(
+private fun FeedEntry.toHit(q: String): GlobalSearchHit = GlobalSearchHit(
     key = "feed_$id",
     title = title,
     snippet = description.snippetAround(q),
@@ -195,7 +200,8 @@ private fun DFeedEntry.toHit(q: String): GlobalSearchHit = GlobalSearchHit(
     action = GlobalSearchAction.Navigate(Routing.FeedEntry(id)),
 )
 
-private fun DChat.toHit(q: String): GlobalSearchHit {
+private fun ChatItem.toHit(q: String): GlobalSearchHit {
+    val channelId = channelId.orEmpty()
     val isChannel = channelId.isNotEmpty()
     val conversation: String
     val chatRoute: String

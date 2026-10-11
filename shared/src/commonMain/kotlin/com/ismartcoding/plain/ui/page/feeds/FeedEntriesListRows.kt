@@ -30,22 +30,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.ismartcoding.plain.db.DTag
 import com.ismartcoding.plain.extensions.getFinalPath
 import com.ismartcoding.plain.extensions.timeAgo
+import com.ismartcoding.plain.features.feed.displayImage
+import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.CheckCircle
 import com.ismartcoding.plain.ui.models.FeedEntriesViewModel
 import com.ismartcoding.plain.ui.models.select
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.chevron_right as ui_drawable_chevron_right
 import com.ismartcoding.plain.ui.theme.listItemSubtitle
 import com.ismartcoding.plain.ui.theme.listItemTag
 import com.ismartcoding.plain.ui.theme.listItemTitle
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.ui.resources.chevron_right as ui_drawable_chevron_right
 
 /** Title style shared by entry rows and digest previews: big bold when unread, muted regular when read. */
 @Composable
@@ -218,11 +219,11 @@ internal fun FeedClusterHeaderRow(
 internal fun FeedClusterEntryRow(
     row: FeedListRow.Entry,
     feedEntriesVM: FeedEntriesViewModel,
-    tags: List<DTag>,
+    tags: List<TagHostRecord>,
     indented: Boolean = true,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
-    onClickTag: (DTag) -> Unit,
+    onClickTag: (TagHostRecord) -> Unit,
 ) {
     val m = row.entry
     val unread = !m.read
@@ -272,14 +273,14 @@ internal fun FeedClusterEntryRow(
                 }
             }
         }
-        if (m.image.isNotEmpty()) {
+        if (m.displayImage.isNotEmpty()) {
             HorizontalSpace(dp = 12.dp)
             AsyncImage(
-                model = m.image.getFinalPath(),
+                model = m.displayImage.getFinalPath(),
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(8.dp)),
-                contentDescription = m.image,
+                contentDescription = m.displayImage,
                 contentScale = ContentScale.Crop,
             )
         }

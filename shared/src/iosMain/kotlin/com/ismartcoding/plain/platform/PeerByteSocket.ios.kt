@@ -1,5 +1,5 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.db.DPeer
+import com.ismartcoding.plain.chat.models.PeerRecord
 
-actual suspend fun openAwareByteSocket(peer: DPeer): PeerByteSocket = error("Wi-Fi Aware is unavailable on iOS")
+actual suspend fun openAwareByteSocket(peer: PeerRecord): PeerByteSocket = error("Wi-Fi Aware is unavailable on iOS")

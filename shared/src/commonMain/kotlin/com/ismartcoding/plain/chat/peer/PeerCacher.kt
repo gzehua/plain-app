@@ -1,12 +1,14 @@
 package com.ismartcoding.plain.chat.peer
 
-import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.chat.ChatCacher
-import com.ismartcoding.plain.chat.peer.transport.PeerTransportType
-import com.ismartcoding.plain.db.DChat
-import com.ismartcoding.plain.db.DPeer
-import com.ismartcoding.plain.enums.PeerStatus
 import androidx.compose.runtime.mutableStateMapOf
+import com.ismartcoding.plain.chat.ChatCacher
+import com.ismartcoding.plain.chat.models.PeerRecord
+import com.ismartcoding.plain.chat.peer.transport.PeerTransportType
+import com.ismartcoding.plain.enums.PeerStatus
+import com.ismartcoding.plain.graphql.models.ChatItem
+import com.ismartcoding.plain.graphql.models.Peer
+import com.ismartcoding.plain.lib.withIO
+import kotlin.time.Instant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -16,12 +18,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlin.time.Instant
 
 object PeerCacher {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    val peersMap = MutableStateFlow<Map<String, DPeer>>(emptyMap())
+    val peersMap = MutableStateFlow<Map<String, PeerRecord>>(emptyMap())
     val onlineMap = MutableStateFlow<Map<String, Boolean>>(emptyMap())
 
     // Transport currently being attempted for a peer, or absent when idle. Set
@@ -40,15 +41,15 @@ object PeerCacher {
     private val awareRunningMap = mutableStateMapOf<String, Boolean>()
     // In-memory Aware supported flag per peer. Same two sources as above.
     // This is the source of truth for whether the peer CURRENTLY supports
-    // Aware — formerly mirrored on the DPeer row, now in-memory only since
+    // Aware — formerly mirrored on the PeerRecord row, now in-memory only since
     // the aware_supported column has been removed.
     private val awareSupportedMap = mutableStateMapOf<String, Boolean>()
 
-    val pairedPeers: StateFlow<List<DPeer>> = combine(peersMap, ChatCacher.latestChatMap, onlineMap) { p, c, o ->
+    val pairedPeers: StateFlow<List<PeerRecord>> = combine(peersMap, ChatCacher.latestChatMap, onlineMap) { p, c, o ->
         sortPeers(p.values.filter { it.isPaired() }, c, o)
     }.stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    val unpairedPeers: StateFlow<List<DPeer>> = combine(peersMap, ChatCacher.latestChatMap, onlineMap) { p, c, o ->
+    val unpairedPeers: StateFlow<List<PeerRecord>> = combine(peersMap, ChatCacher.latestChatMap, onlineMap) { p, c, o ->
         sortPeers(p.values.filter { it.status == PeerStatus.UNPAIRED }, c, o)
     }.stateIn(scope, SharingStarted.Eagerly, emptyList())
 
@@ -83,7 +84,7 @@ object PeerCacher {
         }
     }
 
-    fun getPeer(peerId: String): DPeer? = peersMap.value[peerId]
+    fun getPeer(peerId: String): PeerRecord? = peersMap.value[peerId]
 
     /** Returns whether the peer's Wi-Fi Aware service is currently running (from DISCOVER reply). */
     fun isAwareRunning(peerId: String): Boolean = awareRunningMap[peerId] == true
@@ -124,12 +125,12 @@ object PeerCacher {
     }
 
     private fun sortPeers(
-        peers: List<DPeer>,
-        chatCache: Map<String, DChat>,
+        peers: List<PeerRecord>,
+        chatCache: Map<String, ChatItem>,
         onlineMap: Map<String, Boolean>,
-    ): List<DPeer> {
+    ): List<PeerRecord> {
         return peers.sortedWith(
-            compareByDescending<DPeer> { chatCache[it.id]?.createdAt ?: Instant.DISTANT_PAST }
+            compareByDescending<PeerRecord> { chatCache[it.id]?.createdAt ?: Instant.DISTANT_PAST }
                 .thenByDescending { onlineMap[it.id] == true }
                 .thenByDescending { it.createdAt }
                 .thenBy { it.name.lowercase() },

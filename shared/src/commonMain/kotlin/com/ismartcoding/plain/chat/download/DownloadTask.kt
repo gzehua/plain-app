@@ -1,15 +1,16 @@
 package com.ismartcoding.plain.chat.download
 
-import com.ismartcoding.plain.db.DMessageFile
-import com.ismartcoding.plain.db.DPeer
+import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.features.download.DOWNLOAD_KIND_CHAT
 import com.ismartcoding.plain.features.download.DownloadStatus
 import com.ismartcoding.plain.features.download.DownloadTaskHandle
+import com.ismartcoding.plain.graphql.models.Peer
 import kotlinx.coroutines.Job
 
 data class DownloadTask(
-    val messageFile: DMessageFile,
-    val peer: DPeer,
+    val messageFile: MessageFile,
+    val peer: PeerRecord,
     val messageId: String,
     override var status: DownloadStatus = DownloadStatus.PENDING,
     override var error: String = "",

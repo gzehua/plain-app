@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.page.audio.components
 
-import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -13,13 +12,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.TempData
+import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.has
-import com.ismartcoding.plain.db.DTag
-import com.ismartcoding.plain.platform.checkNotificationPermission
 import com.ismartcoding.plain.features.dlna.sender.RustDlnaSender
+import com.ismartcoding.plain.graphql.models.Audio
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.platform.checkNotificationPermission
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
@@ -38,7 +39,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AudioListItem(
     item: DAudio, audioVM: AudioViewModel, audioQueueVM: AudioQueueViewModel,
-    tagsVM: TagsViewModel, castVM: CastViewModel, tags: List<DTag>,
+    tagsVM: TagsViewModel, castVM: CastViewModel, tags: List<TagHostRecord>,
     dragSelectState: DragSelectState,
     isCurrentlyPlaying: Boolean = false, isInQueue: Boolean = false,
 ) {

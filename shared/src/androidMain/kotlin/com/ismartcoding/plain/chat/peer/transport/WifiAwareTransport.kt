@@ -7,10 +7,10 @@ import android.net.wifi.aware.WifiAwareSession
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.transport.aware.AwareLinkPool
 import com.ismartcoding.plain.chat.peer.transport.aware.AwareSession
 import com.ismartcoding.plain.connectivityManager
-import com.ismartcoding.plain.db.DPeer
 import com.ismartcoding.plain.platform.isTPlus
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -47,7 +47,7 @@ object WifiAwareTransport {
         session.stop()
     }
 
-    fun subscribe(peer: DPeer) {
+    fun subscribe(peer: PeerRecord) {
         pool.subscribe(peer)
     }
 
@@ -55,7 +55,7 @@ object WifiAwareTransport {
         pool.unsubscribe(peerId)
     }
 
-    suspend fun openSocket(peer: DPeer): com.ismartcoding.plain.platform.PeerByteSocket {
+    suspend fun openSocket(peer: PeerRecord): com.ismartcoding.plain.platform.PeerByteSocket {
         val connection = pool.buildLink(peer)
         return com.ismartcoding.plain.chat.peer.transport.aware.AwareByteSocket.open(connection)
     }

@@ -26,22 +26,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.db.DShare
+import com.ismartcoding.plain.chat.ShareSendHelper
 import com.ismartcoding.plain.enums.ButtonType
 import com.ismartcoding.plain.features.share.ShareExpiry
 import com.ismartcoding.plain.features.share.ShareManager
+import com.ismartcoding.plain.graphql.models.ShareRecord
 import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.i18n.edit_share_link
-import com.ismartcoding.plain.i18n.name
 import com.ismartcoding.plain.i18n.add_items
 import com.ismartcoding.plain.i18n.confirm_to_delete
 import com.ismartcoding.plain.i18n.delete
-import com.ismartcoding.plain.ui.resources.file_text as ui_drawable_file_text
-import com.ismartcoding.plain.ui.resources.folder as ui_drawable_folder
-import com.ismartcoding.plain.ui.resources.folder_plus as ui_drawable_folder_plus
-import com.ismartcoding.plain.ui.resources.save as ui_drawable_save
-import com.ismartcoding.plain.i18n.shared_items
-import com.ismartcoding.plain.ui.resources.x as ui_drawable_x
+import com.ismartcoding.plain.i18n.edit_share_link
+import com.ismartcoding.plain.i18n.folder
+import com.ismartcoding.plain.i18n.name
+import com.ismartcoding.plain.i18n.save
+import com.ismartcoding.plain.i18n.sent
 import com.ismartcoding.plain.i18n.share_expired
 import com.ismartcoding.plain.i18n.share_expires_on
 import com.ismartcoding.plain.i18n.share_expiry
@@ -49,22 +47,23 @@ import com.ismartcoding.plain.i18n.share_expiry_never
 import com.ismartcoding.plain.i18n.share_link
 import com.ismartcoding.plain.i18n.share_link_desc
 import com.ismartcoding.plain.i18n.share_name_placeholder
+import com.ismartcoding.plain.i18n.shared_items
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.toBreakableUrl
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.formatDateTime
-import com.ismartcoding.plain.platform.statFile
 import com.ismartcoding.plain.platform.shareText
+import com.ismartcoding.plain.platform.statFile
 import com.ismartcoding.plain.ui.base.ActionButtons
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.ClipboardTextField
 import com.ismartcoding.plain.ui.base.CornerCopyCard
-import com.ismartcoding.plain.ui.base.IconTextQrCodeButton
 import com.ismartcoding.plain.ui.base.IconTextForwardButton
+import com.ismartcoding.plain.ui.base.IconTextQrCodeButton
 import com.ismartcoding.plain.ui.base.IconTextShareButton
-import com.ismartcoding.plain.ui.base.PFilterChip
 import com.ismartcoding.plain.ui.base.PFilledButton
+import com.ismartcoding.plain.ui.base.PFilterChip
 import com.ismartcoding.plain.ui.base.PIconButton
 import com.ismartcoding.plain.ui.base.POutlinedButton
 import com.ismartcoding.plain.ui.base.PScaffold
@@ -73,19 +72,20 @@ import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.WebAddressBarQrDialog
-import com.ismartcoding.plain.ui.page.chat.components.ForwardTargetDialog
-import com.ismartcoding.plain.chat.ShareSendHelper
 import com.ismartcoding.plain.ui.helpers.DialogHelper
 import com.ismartcoding.plain.ui.helpers.confirmActionAsync
-import com.ismartcoding.plain.i18n.sent
+import com.ismartcoding.plain.ui.page.chat.components.ForwardTargetDialog
 import com.ismartcoding.plain.ui.page.files.label
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.file_text as ui_drawable_file_text
+import com.ismartcoding.plain.ui.resources.folder as ui_drawable_folder
+import com.ismartcoding.plain.ui.resources.folder_plus as ui_drawable_folder_plus
+import com.ismartcoding.plain.ui.resources.save as ui_drawable_save
+import com.ismartcoding.plain.ui.resources.x as ui_drawable_x
+import kotlin.math.abs
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.math.abs
-import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.i18n.folder
-import com.ismartcoding.plain.i18n.save
 
 /**
  * Page to edit an existing share link: rename it, change the expiry, and
@@ -98,7 +98,7 @@ fun EditSharePage(
     shareId: String,
 ) {
     val scope = rememberCoroutineScope()
-    var share by remember { mutableStateOf<DShare?>(null) }
+    var share by remember { mutableStateOf<ShareRecord?>(null) }
     var link by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var expiry by remember { mutableStateOf(ShareExpiry.NEVER) }
@@ -114,7 +114,7 @@ fun EditSharePage(
         share = s
         name = s.name
         expiry = s.toExpiryOption()
-        paths = s.data.map { it.realPath }
+        paths = s.roots.map { it.realPath }
         link = ShareManager.buildLink(s)
     }
 
@@ -289,7 +289,7 @@ fun EditSharePage(
                 scope.launch {
                     ShareSendHelper.sendContentAsync(
                         targets,
-                        ShareSendHelper.buildShareContent(current, current.data.map { it.realPath }),
+                        ShareSendHelper.buildShareContent(current, current.roots.map { it.realPath }),
                     )
                     DialogHelper.showSuccess(Res.string.sent)
                 }
@@ -300,7 +300,7 @@ fun EditSharePage(
 
 /** Human-readable expiry status of a share, e.g. "Expired" / "Expires …" / "Never". */
 @Composable
-fun DShare.expiryLabel(): String {
+fun ShareRecord.expiryLabel(): String {
     val expiresAt = this.expiresAt
     return when {
         isExpired -> stringResource(Res.string.share_expired)
@@ -310,7 +310,7 @@ fun DShare.expiryLabel(): String {
 }
 
 /** Pick the expiry chip closest to the share's remaining lifetime (null = NEVER). */
-private fun DShare.toExpiryOption(): ShareExpiry {
+private fun ShareRecord.toExpiryOption(): ShareExpiry {
     val expiresAt = expiresAt ?: return ShareExpiry.NEVER
     val remainingHours = (expiresAt - TimeHelper.now()).inWholeHours
     return ShareExpiry.entries.filter { it != ShareExpiry.NEVER }

@@ -4,30 +4,30 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.lib.extensions.isUrl
-import com.ismartcoding.plain.lib.rss.model.RssChannel
 import com.ismartcoding.plain.enums.DataType
-import com.ismartcoding.plain.db.DFeed
+import com.ismartcoding.plain.features.TagHelper
 import com.ismartcoding.plain.features.feed.FeedEntryHelper
 import com.ismartcoding.plain.features.feed.FeedHelper
-import com.ismartcoding.plain.platform.fetchRssChannel
-import com.ismartcoding.plain.features.TagHelper
-import com.ismartcoding.plain.platform.LocaleHelper
+import com.ismartcoding.plain.graphql.models.Feed
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.already_added
 import com.ismartcoding.plain.i18n.error
 import com.ismartcoding.plain.i18n.invalid_url
+import com.ismartcoding.plain.lib.extensions.isUrl
+import com.ismartcoding.plain.lib.rss.model.RssChannel
+import com.ismartcoding.plain.platform.LocaleHelper
+import com.ismartcoding.plain.platform.fetchRssChannel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
-class FeedsViewModel : ISelectableViewModel<DFeed>, ViewModel() {
-    private val _itemsFlow = MutableStateFlow<List<DFeed>>(emptyList())
-    override val itemsFlow: StateFlow<List<DFeed>> = _itemsFlow
+class FeedsViewModel : ISelectableViewModel<Feed>, ViewModel() {
+    private val _itemsFlow = MutableStateFlow<List<Feed>>(emptyList())
+    override val itemsFlow: StateFlow<List<Feed>> = _itemsFlow
     var showLoading = mutableStateOf(true)
     var showAddDialog = mutableStateOf(false)
     var showEditDialog = mutableStateOf(false)
-    var selectedItem = mutableStateOf<DFeed?>(null)
+    var selectedItem = mutableStateOf<Feed?>(null)
     internal var editId = mutableStateOf("")
     var editUrl = mutableStateOf("")
     var editName = mutableStateOf("")
@@ -41,7 +41,7 @@ class FeedsViewModel : ISelectableViewModel<DFeed>, ViewModel() {
     fun loadAsync(withCount: Boolean = false) {
         viewModelScope.launchSafe {
             val countMap = if (withCount) {
-                FeedHelper.getFeedCounts().associate { it.id to it.entryCount }
+                FeedHelper.getFeedCounts().associate { it.id to it.count }
             } else {
                 emptyMap()
             }
@@ -146,7 +146,7 @@ class FeedsViewModel : ISelectableViewModel<DFeed>, ViewModel() {
         showAddDialog.value = true
     }
 
-    fun showEditDialog(item: DFeed) {
+    fun showEditDialog(item: Feed) {
         editUrlError.value = ""
         editId.value = item.id
         editUrl.value = item.url

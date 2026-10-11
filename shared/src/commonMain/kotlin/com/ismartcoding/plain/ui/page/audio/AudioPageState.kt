@@ -8,15 +8,17 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.data.DMediaBucket
-import com.ismartcoding.plain.db.DTag
-import com.ismartcoding.plain.db.DTagRelation
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.has
+import com.ismartcoding.plain.graphql.models.Audio
+import com.ismartcoding.plain.graphql.models.MediaBucket
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.graphql.models.TagHostRelation
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
 import com.ismartcoding.plain.ui.base.dragselect.rememberListDragSelectState
 import com.ismartcoding.plain.ui.models.AudioViewModel
@@ -28,8 +30,8 @@ data class AudioPageState(
     val itemsState: List<DAudio>,
     val dragSelectState: DragSelectState,
     val scrollBehavior: TopAppBarScrollBehavior,
-    val tagsState: List<DTag>,
-    val tagsMapState: Map<String, List<DTagRelation>>,
+    val tagsState: List<TagHostRecord>,
+    val tagsMapState: Map<String, List<TagHostRelation>>,
     val scrollState: LazyListState,
     val bucketsMap: Map<String, DMediaBucket>
 ) {

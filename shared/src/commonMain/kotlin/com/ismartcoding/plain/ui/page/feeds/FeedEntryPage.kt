@@ -1,9 +1,5 @@
 package com.ismartcoding.plain.ui.page.feeds
 
-import com.ismartcoding.plain.i18n.*
-
-import com.ismartcoding.plain.features.feed.FeedFontScale
-
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
@@ -50,46 +45,49 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.db.DFeed
-import com.ismartcoding.plain.db.DFeedEntry
-import com.ismartcoding.plain.db.DTag
-import com.ismartcoding.plain.db.DTagRelation
-import com.ismartcoding.plain.lib.JsonHelper.jsonEncode
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.extensions.timeAgo
-import com.ismartcoding.plain.platform.fetchContentAsync
-import com.ismartcoding.plain.platform.IODispatcher
-import com.ismartcoding.plain.ui.base.BottomSpace
-import com.ismartcoding.plain.ui.base.POutlinedButton
-import com.ismartcoding.plain.ui.base.PScaffold
-import com.ismartcoding.plain.platform.PBackHandler
-import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.features.feed.FeedFontScale
+import com.ismartcoding.plain.graphql.models.Feed
+import com.ismartcoding.plain.graphql.models.FeedEntry
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.graphql.models.TagHostRelation
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.lib.JsonHelper.jsonEncode
 import com.ismartcoding.plain.lib.markdown.compose.Markdown
 import com.ismartcoding.plain.lib.markdown.compose.MarkdownElement
 import com.ismartcoding.plain.lib.markdown.model.State
 import com.ismartcoding.plain.lib.markdown.model.rememberMarkdownState
+import com.ismartcoding.plain.platform.IODispatcher
+import com.ismartcoding.plain.platform.MediaPreviewer
+import com.ismartcoding.plain.platform.PBackHandler
+import com.ismartcoding.plain.platform.fetchContentAsync
+import com.ismartcoding.plain.ui.base.BottomSpace
+import com.ismartcoding.plain.ui.base.POutlinedButton
+import com.ismartcoding.plain.ui.base.PScaffold
+import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.markdowntext.rememberMarkdownImageTransformer
 import com.ismartcoding.plain.ui.base.markdowntext.rememberMarkdownTextConfig
 import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefreshContent
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshLayoutState
-import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
-import com.ismartcoding.plain.platform.MediaPreviewer
+import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.rememberPreviewerState
-import com.ismartcoding.plain.ui.nav.navigateText
 import com.ismartcoding.plain.ui.helpers.DialogHelper
 import com.ismartcoding.plain.ui.helpers.WebHelper
 import com.ismartcoding.plain.ui.models.FeedEntryPagerViewModel
 import com.ismartcoding.plain.ui.models.FeedEntryViewModel
 import com.ismartcoding.plain.ui.models.TagsViewModel
+import com.ismartcoding.plain.ui.nav.navigateText
 import com.ismartcoding.plain.ui.page.tags.SelectTagsDialog
 import com.ismartcoding.plain.ui.theme.PlainTheme
+import kotlin.math.abs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlin.math.abs
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
@@ -185,8 +183,8 @@ fun FeedEntryPage(
 private fun FeedEntryArticle(
     pageId: String,
     pagerVM: FeedEntryPagerViewModel,
-    tagsState: List<DTag>,
-    tagsMapState: Map<String, List<DTagRelation>>,
+    tagsState: List<TagHostRecord>,
+    tagsMapState: Map<String, List<TagHostRelation>>,
     scrollState: LazyListState,
     scrollBehavior: TopAppBarScrollBehavior,
     fontScale: Float,
@@ -198,8 +196,8 @@ private fun FeedEntryArticle(
     navController: NavHostController,
     scope: CoroutineScope,
 ) {
-    val entryState = remember(pageId) { mutableStateOf<DFeedEntry?>(null) }
-    val feedState = remember(pageId) { mutableStateOf<DFeed?>(null) }
+    val entryState = remember(pageId) { mutableStateOf<FeedEntry?>(null) }
+    val feedState = remember(pageId) { mutableStateOf<Feed?>(null) }
     LaunchedEffect(pageId) {
         val m = pagerVM.entryAsync(pageId) ?: return@LaunchedEffect
         entryState.value = m

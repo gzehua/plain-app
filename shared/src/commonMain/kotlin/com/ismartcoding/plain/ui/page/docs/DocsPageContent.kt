@@ -18,8 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.db.DTag
 import com.ismartcoding.plain.data.DDoc
+import com.ismartcoding.plain.graphql.models.Doc
+import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.NoDataColumn
 import com.ismartcoding.plain.ui.base.TopSpace
@@ -43,7 +44,7 @@ internal fun ColumnScope.DocsPageContent(
     tagsVM: TagsViewModel,
     itemsState: List<DDoc>,
     dragSelectState: DragSelectState,
-    docsTagsMap: Map<String, List<DTag>>,
+    docsTagsMap: Map<String, List<TagHostRecord>>,
     scrollBehavior: TopAppBarScrollBehavior,
     topRefreshLayoutState: RefreshLayoutState, paddingValues: PaddingValues,
 ) {

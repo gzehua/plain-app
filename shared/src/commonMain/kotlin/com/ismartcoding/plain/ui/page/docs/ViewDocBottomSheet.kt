@@ -1,39 +1,38 @@
 package com.ismartcoding.plain.ui.page.docs
-import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Modifier
-import com.ismartcoding.plain.ui.theme.PlainTheme
-
-import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.ismartcoding.plain.enums.AppFeatureType
+import com.ismartcoding.plain.enums.has
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.graphql.models.TagHostRelation
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.i18n.file
 import com.ismartcoding.plain.lib.extensions.formatBytes
+import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
 import com.ismartcoding.plain.lib.extensions.getMimeType
-import com.ismartcoding.plain.db.DTag
-import com.ismartcoding.plain.db.DTagRelation
-import coil3.compose.AsyncImage
-import androidx.compose.foundation.layout.size
+import com.ismartcoding.plain.platform.addMediaShortcut
 import com.ismartcoding.plain.platform.formatDateTime
 import com.ismartcoding.plain.platform.getFileIconPath
 import com.ismartcoding.plain.platform.openFileExternal
+import com.ismartcoding.plain.platform.renameAndScanFile
 import com.ismartcoding.plain.platform.shareFile
 import com.ismartcoding.plain.ui.base.BottomSpace
-import com.ismartcoding.plain.enums.AppFeatureType
-import com.ismartcoding.plain.enums.has
-import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.ui.base.CopyIconButton
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
@@ -42,17 +41,15 @@ import com.ismartcoding.plain.ui.base.PSheetActionRow
 import com.ismartcoding.plain.ui.base.PSheetHeader
 import com.ismartcoding.plain.ui.base.PSheetHeaderThumb
 import com.ismartcoding.plain.ui.base.PSheetPrimaryAction
-import com.ismartcoding.plain.ui.base.PSheetPrimaryTrashAction
-import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
 import com.ismartcoding.plain.ui.base.PSheetPrimaryActionsRow
+import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
+import com.ismartcoding.plain.ui.base.PSheetPrimaryTrashAction
 import com.ismartcoding.plain.ui.base.Subtitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
-import com.ismartcoding.plain.ui.components.FileRenameDialog
-import com.ismartcoding.plain.ui.components.AddToHomeHelpAction
 import com.ismartcoding.plain.ui.components.AddToHomeDialog
-import com.ismartcoding.plain.platform.renameAndScanFile
-import com.ismartcoding.plain.platform.addMediaShortcut
+import com.ismartcoding.plain.ui.components.AddToHomeHelpAction
+import com.ismartcoding.plain.ui.components.FileRenameDialog
 import com.ismartcoding.plain.ui.components.TagSelector
 import com.ismartcoding.plain.ui.helpers.confirmActionAsync
 import com.ismartcoding.plain.ui.models.DocsViewModel
@@ -64,15 +61,17 @@ import com.ismartcoding.plain.ui.resources.list_checks as ui_drawable_list_check
 import com.ismartcoding.plain.ui.resources.pen as ui_drawable_pen
 import com.ismartcoding.plain.ui.resources.share_2 as ui_drawable_share_2
 import com.ismartcoding.plain.ui.resources.square_arrow_out_up_right as ui_drawable_square_arrow_out_up_right
-import com.ismartcoding.plain.i18n.file
+import com.ismartcoding.plain.ui.theme.PlainTheme
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ViewDocBottomSheet(
     docsVM: DocsViewModel,
     tagsVM: TagsViewModel,
-    tagsMapState: Map<String, List<DTagRelation>>,
-    tagsState: List<DTag>,
+    tagsMapState: Map<String, List<TagHostRelation>>,
+    tagsState: List<TagHostRecord>,
     dragSelectState: DragSelectState,
 ) {
     val scope = rememberCoroutineScope()

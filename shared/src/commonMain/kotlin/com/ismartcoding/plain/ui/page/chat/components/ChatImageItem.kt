@@ -9,10 +9,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
-import kotlinx.coroutines.CancellationException
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,29 +20,31 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.chat.download.DownloadQueue
+import com.ismartcoding.plain.chat.download.DownloadTask
+import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.chat.models.PeerRecord
+import com.ismartcoding.plain.chat.models.getPreviewPath
+import com.ismartcoding.plain.features.download.DownloadStatus
+import com.ismartcoding.plain.graphql.models.Peer
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.formatDurationMs
 import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.chat.download.DownloadQueue
-import com.ismartcoding.plain.features.download.DownloadStatus
-import com.ismartcoding.plain.chat.download.DownloadTask
-import com.ismartcoding.plain.db.DMessageFile
-import com.ismartcoding.plain.db.DPeer
-import com.ismartcoding.plain.db.getPreviewPath
-import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.platform.TransformImageView
+import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.rememberTransformItemState
 import com.ismartcoding.plain.ui.models.MediaPreviewData
 import com.ismartcoding.plain.ui.models.VChat
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 @Composable
 internal fun ChatImageItem(
-    item: DMessageFile,
+    item: MessageFile,
     items: List<VChat>,
     messageId: String,
-    peer: DPeer?,
+    peer: PeerRecord?,
     imageWidthDp: Dp,
     imageWidthPx: Int,
     previewerState: MediaPreviewerState,

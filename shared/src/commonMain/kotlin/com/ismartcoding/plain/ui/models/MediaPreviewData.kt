@@ -1,16 +1,18 @@
 package com.ismartcoding.plain.ui.models
 
 import androidx.compose.ui.unit.toSize
-import com.ismartcoding.plain.extensions.getFinalPath
-import com.ismartcoding.plain.lib.extensions.isImageFast
-import com.ismartcoding.plain.lib.extensions.isVideoFast
+import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.chat.models.MessageFiles
+import com.ismartcoding.plain.chat.models.MessageImages
 import com.ismartcoding.plain.data.DImage
 import com.ismartcoding.plain.data.DVideo
-import com.ismartcoding.plain.db.DMessageFile
-import com.ismartcoding.plain.db.DMessageFiles
-import com.ismartcoding.plain.db.DMessageImages
-import com.ismartcoding.plain.ui.components.mediaviewer.previewer.TransformItemState
+import com.ismartcoding.plain.extensions.getFinalPath
+import com.ismartcoding.plain.graphql.models.Image
+import com.ismartcoding.plain.graphql.models.Video
+import com.ismartcoding.plain.lib.extensions.isImageFast
+import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.ui.components.mediaviewer.PreviewItem
+import com.ismartcoding.plain.ui.components.mediaviewer.previewer.TransformItemState
 
 object MediaPreviewData {
     var items = listOf<PreviewItem>()
@@ -18,14 +20,14 @@ object MediaPreviewData {
     fun setDataAsync(
         itemState: TransformItemState,
         chatItems: List<VChat>,
-        m: DMessageFile
+        m: MessageFile
     ) {
-        val newItems = mutableListOf<DMessageFile>()
+        val newItems = mutableListOf<MessageFile>()
         chatItems.forEach { item ->
-            if (item.value is DMessageImages) {
-                newItems.addAll((item.value as DMessageImages).items)
-            } else if (item.value is DMessageFiles) {
-                newItems.addAll((item.value as DMessageFiles).items.filter { it.fileName.isVideoFast() || it.fileName.isImageFast() })
+            if (item.value is MessageImages) {
+                newItems.addAll((item.value as MessageImages).items)
+            } else if (item.value is MessageFiles) {
+                newItems.addAll((item.value as MessageFiles).items.filter { it.fileName.isVideoFast() || it.fileName.isImageFast() })
             }
         }
         items = newItems.map { f ->

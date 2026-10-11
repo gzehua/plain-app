@@ -1,19 +1,20 @@
 package com.ismartcoding.plain.ui.models
 
-import com.ismartcoding.plain.preferences.*
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.ismartcoding.plain.audio.DAudio
-import com.ismartcoding.plain.audio.DPlaylistAudio
 import com.ismartcoding.plain.db.AudioPlaySource
 import com.ismartcoding.plain.events.ClearAudioQueueEvent
 import com.ismartcoding.plain.features.audio.AudioQueueManager
+import com.ismartcoding.plain.graphql.models.Audio
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.audioClear
 import com.ismartcoding.plain.platform.audioJustPlay
+import com.ismartcoding.plain.preferences.*
 
 class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
-    val queueItems = mutableStateOf<List<DPlaylistAudio>>(listOf())
+    val queueItems = mutableStateOf<List<AudioHostTrack>>(listOf())
     val queueCount = mutableStateOf(0)
     val noMore = mutableStateOf(false)
 
@@ -54,7 +55,7 @@ class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
     }
 
     /** Replace the whole queue with a single track ("open with player" flows). */
-    suspend fun playSingleAsync(audio: DPlaylistAudio) {
+    suspend fun playSingleAsync(audio: AudioHostTrack) {
         AudioQueueManager.clearQueue()
         AudioQueueManager.enqueue(listOf(audio))
         setCurrentPlaying(audio.path)
@@ -70,7 +71,7 @@ class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
     }
 
     /** Sync UI state after playback was started from a queue source (engine is already playing). */
-    suspend fun onStarted(audio: DPlaylistAudio) {
+    suspend fun onStarted(audio: AudioHostTrack) {
         setCurrentPlaying(audio.path)
         refreshWindow()
     }
@@ -131,7 +132,7 @@ class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
         queueItems.value = window
         queueCount.value = total
         noMore.value = window.size >= total
-        canReorder.value = AudioQueueManager.source().source == AudioPlaySource.NONE
+        canReorder.value = AudioQueueManager.source().source == AudioPlaySource.NONE.name
         activePlaylistId.value = AudioQueueManager.activePlaylistId()
         queuedPaths.value = AudioQueueManager.queuedPaths()
     }

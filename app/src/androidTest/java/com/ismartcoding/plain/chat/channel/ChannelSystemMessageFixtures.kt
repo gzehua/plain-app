@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.chat.channel
 
-import com.ismartcoding.plain.db.ChannelMember
 import com.ismartcoding.plain.enums.ChannelSystemMessageAction
 import com.ismartcoding.plain.enums.DeviceType
+import com.ismartcoding.plain.graphql.models.ChatChannelMember
 import kotlinx.serialization.Serializable
 
 object ChannelSystemMessages {
@@ -14,7 +14,7 @@ object ChannelSystemMessages {
         /** Base64-encoded symmetric ChaCha20 key for the channel. */
         val key: String,
         val owner: String,
-        val members: List<ChannelMember>,
+        val members: List<ChatChannelMember>,
         /** Lightweight peer info for members, so that the invitee can create
          *  peer records for members it doesn't already have. The owner's
          *  publicKey is taken from the entry whose id matches [owner]. */
@@ -52,7 +52,7 @@ object ChannelSystemMessages {
     data class ChannelUpdate(
         val channelId: String,
         val channelName: String,
-        val members: List<ChannelMember>,
+        val members: List<ChatChannelMember>,
         /** Lightweight peer info for any new members added since last update. */
         val memberPeers: List<MemberPeerInfo> = emptyList(),
         val version: Long,

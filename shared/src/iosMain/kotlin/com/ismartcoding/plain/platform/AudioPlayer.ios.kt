@@ -2,14 +2,12 @@
 
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.preferences.*
-
 import com.ismartcoding.plain.TempData
-import com.ismartcoding.plain.audio.DPlaylistAudio
 import com.ismartcoding.plain.features.audio.AudioCommands
-import kotlinx.coroutines.withContext
 import com.ismartcoding.plain.features.audio.AudioQueueManager
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
 import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.preferences.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,12 +18,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
-import platform.AVFoundation.AVPlayerTimeControlStatusPlaying
 import platform.AVFoundation.AVPlayerTimeControlStatusPaused
+import platform.AVFoundation.AVPlayerTimeControlStatusPlaying
 import platform.Foundation.NSURL
 import platform.Foundation.valueForKey
 import platform.darwin.NSObject
@@ -37,11 +36,11 @@ private object AVPlayerAudioPlayer : AudioPlayer {
     override val isPlayingFlow: StateFlow<Boolean> = _isPlayingFlow.asStateFlow()
 
     private var player: AVPlayer? = null
-    private var currentAudio: DPlaylistAudio? = null
-    private var pendingStart: Pair<DPlaylistAudio, Long>? = null
+    private var currentAudio: AudioHostTrack? = null
+    private var pendingStart: Pair<AudioHostTrack, Long>? = null
     override val currentPath: String get() = if (player == null) "" else currentAudio?.path.orEmpty()
 
-    override suspend fun load(audio: DPlaylistAudio, positionMs: Long, speed: Float, revision: Long) = withContext(Dispatchers.Main) {
+    override suspend fun load(audio: AudioHostTrack, positionMs: Long, speed: Float, revision: Long) = withContext(Dispatchers.Main) {
         currentAudio = audio
         TempData.audioPlayPosition = positionMs
         playInternal(audio, speed, revision)
@@ -129,7 +128,7 @@ private object AVPlayerAudioPlayer : AudioPlayer {
         }
     }
 
-    private fun playInternal(audio: DPlaylistAudio, speed: Float, revision: Long) {
+    private fun playInternal(audio: AudioHostTrack, speed: Float, revision: Long) {
         try {
             configureSession()
             val url = NSURL.fileURLWithPath(audio.path)

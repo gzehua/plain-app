@@ -1,0 +1,10 @@
+package com.ismartcoding.plain.graphql.models
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Tag(
+    var id: String,
+    var name: String,
+    var count: Int,
+)

@@ -1,26 +1,25 @@
 package com.ismartcoding.plain.ui.page.feeds
-import androidx.compose.foundation.layout.padding
-import com.ismartcoding.plain.ui.theme.PlainTheme
-
-import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.extensions.timeAgo
 import com.ismartcoding.plain.features.feed.FeedFetcher
 import com.ismartcoding.plain.features.feed.FeedWorkerState
 import com.ismartcoding.plain.features.feed.FeedWorkerStatus
+import com.ismartcoding.plain.graphql.models.Feed
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.formatDateTime
 import com.ismartcoding.plain.platform.launchUrl
 import com.ismartcoding.plain.ui.base.BottomSpace
@@ -28,12 +27,11 @@ import com.ismartcoding.plain.ui.base.CopyIconButton
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PModalBottomSheet
+import com.ismartcoding.plain.ui.base.POutlinedButton
 import com.ismartcoding.plain.ui.base.PSheetActionRow
 import com.ismartcoding.plain.ui.base.PSheetPrimaryAction
-import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
 import com.ismartcoding.plain.ui.base.PSheetPrimaryActionsCard
-import com.ismartcoding.plain.ui.base.POutlinedButton
-import androidx.compose.material3.Switch
+import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
 import com.ismartcoding.plain.ui.base.Subtitle
 import com.ismartcoding.plain.ui.base.Tips
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -42,12 +40,14 @@ import com.ismartcoding.plain.ui.models.FeedsViewModel
 import com.ismartcoding.plain.ui.models.enterSelectMode
 import com.ismartcoding.plain.ui.models.launchSafe
 import com.ismartcoding.plain.ui.models.select
-import com.ismartcoding.plain.ui.theme.green
-import com.ismartcoding.plain.ui.theme.listItemValue
-import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.list_checks as ui_drawable_list_checks
 import com.ismartcoding.plain.ui.resources.square_pen as ui_drawable_square_pen
+import com.ismartcoding.plain.ui.theme.PlainTheme
+import com.ismartcoding.plain.ui.theme.green
+import com.ismartcoding.plain.ui.theme.listItemValue
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -94,7 +94,7 @@ fun ViewFeedBottomSheet(
         }
         VerticalSpace(dp = 24.dp)
         Subtitle(text = m.name)
-        // Sync status card: state persisted by FeedFetcher on DFeed, refreshed
+        // Sync status card: state persisted by FeedFetcher on Feed, refreshed
         // in place when a sync finishes while the sheet is open.
         val reason = feedSyncErrorReason(m.lastError.code)
         val syncBusy = FeedWorkerState.statusMap[m.id] == FeedWorkerStatus.PENDING

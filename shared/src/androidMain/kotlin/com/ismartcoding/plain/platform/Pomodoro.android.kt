@@ -1,30 +1,31 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.preferences.*
-import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.i18n.*
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.compose.ui.graphics.toArgb
-import com.ismartcoding.plain.ui.theme.BrandPrimary
-import com.ismartcoding.plain.extensions.getFinalPath
-import com.ismartcoding.plain.lib.extensions.isAudioFast
-import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.lib.coIO
-import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.Constants
-import com.ismartcoding.plain.audio.DPlaylistAudio
-import com.ismartcoding.plain.data.DPomodoroSettings
-import com.ismartcoding.plain.audio.fromPath
-import com.ismartcoding.plain.helpers.NotificationHelper
 import com.ismartcoding.plain.MainActivity
+import com.ismartcoding.plain.appContext
+import com.ismartcoding.plain.audio.fromPath
+import com.ismartcoding.plain.data.DPomodoroSettings
+import com.ismartcoding.plain.extensions.getFinalPath
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.graphql.models.PomodoroSettings
+import com.ismartcoding.plain.helpers.NotificationHelper
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.lib.coIO
+import com.ismartcoding.plain.lib.extensions.isAudioFast
+import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.page.pomodoro.PomodoroState
+import com.ismartcoding.plain.ui.theme.BrandPrimary
 import java.io.File
 import kotlin.math.PI
 import kotlin.math.exp
@@ -119,7 +120,7 @@ actual suspend fun playPomodoroCompletionSound(settings: DPomodoroSettings) {
 
 private suspend fun playCustomSong(context: android.content.Context, songPath: String) {
     try {
-        val audio = DPlaylistAudio.fromPath(context, songPath)
+        val audio = AudioHostTrack.fromPath(context, songPath)
         coIO {
             audioJustPlay(audio)
         }

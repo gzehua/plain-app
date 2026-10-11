@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.page.chat
 
-import com.ismartcoding.plain.preferences.*
-
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,36 +18,37 @@ import androidx.navigation.NavHostController
 import com.ismartcoding.plain.TempData
 import com.ismartcoding.plain.chat.ChatCacher
 import com.ismartcoding.plain.chat.channel.ChannelCacher
+import com.ismartcoding.plain.chat.models.getBestIp
 import com.ismartcoding.plain.chat.peer.PeerCacher
 import com.ismartcoding.plain.chat.peer.PeerStatusManager
-import com.ismartcoding.plain.db.getBestIp
 import com.ismartcoding.plain.enums.ButtonSize
 import com.ismartcoding.plain.enums.DeviceType
 import com.ismartcoding.plain.enums.getIcon
 import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.events.RequestPermissionsEvent
 import com.ismartcoding.plain.events.StartNearbyServiceEvent
-import com.ismartcoding.plain.platform.Permission
 import com.ismartcoding.plain.features.bluetooth.client.BluetoothPermissionResultEvent
-import com.ismartcoding.plain.platform.BleAvailability
-import com.ismartcoding.plain.platform.bleAvailabilityFlow
-import com.ismartcoding.plain.platform.ensureBlePermissionAsync
-import com.ismartcoding.plain.platform.isGranted
-import com.ismartcoding.plain.platform.isIOS
-import com.ismartcoding.plain.platform.openAppSettings
 import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.ui.resources.bot as ui_drawable_bot
 import com.ismartcoding.plain.i18n.channels
-import com.ismartcoding.plain.ui.resources.devices as ui_drawable_devices
 import com.ismartcoding.plain.i18n.desktop_access
+import com.ismartcoding.plain.i18n.devices
 import com.ismartcoding.plain.i18n.grant_permission
-import com.ismartcoding.plain.ui.resources.hash as ui_drawable_hash
 import com.ismartcoding.plain.i18n.local_chat
 import com.ismartcoding.plain.i18n.local_chat_desc
 import com.ismartcoding.plain.i18n.nearby_wifi_devices_required_for_chat
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.platform.BleAvailability
+import com.ismartcoding.plain.platform.HttpServerManager
+import com.ismartcoding.plain.platform.Permission
+import com.ismartcoding.plain.platform.bleAvailabilityFlow
+import com.ismartcoding.plain.platform.ensureBlePermissionAsync
+import com.ismartcoding.plain.platform.isBleReady
+import com.ismartcoding.plain.platform.isGranted
+import com.ismartcoding.plain.platform.isIOS
 import com.ismartcoding.plain.platform.isTPlus
+import com.ismartcoding.plain.platform.openAppSettings
+import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.base.AlertType
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PAlert
@@ -61,20 +60,20 @@ import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
-import com.ismartcoding.plain.platform.isBleReady
 import com.ismartcoding.plain.ui.extensions.collectAsStateValue
-import com.ismartcoding.plain.platform.HttpServerManager
 import com.ismartcoding.plain.ui.models.ChannelViewModel
 import com.ismartcoding.plain.ui.models.PeerViewModel
-import com.ismartcoding.plain.ui.page.MainNavScaffold
 import com.ismartcoding.plain.ui.nav.Routing
+import com.ismartcoding.plain.ui.page.MainNavScaffold
 import com.ismartcoding.plain.ui.page.chat.components.CreateChannelDialog
 import com.ismartcoding.plain.ui.page.chat.components.PeerListItem
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.bot as ui_drawable_bot
+import com.ismartcoding.plain.ui.resources.devices as ui_drawable_devices
+import com.ismartcoding.plain.ui.resources.hash as ui_drawable_hash
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.i18n.devices
 
 @Composable
 fun ChatListPage(

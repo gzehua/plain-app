@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.data
 
-import com.ismartcoding.plain.enums.DataType
-import com.ismartcoding.plain.db.DTagRelation
 import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.enums.DataType
+import com.ismartcoding.plain.graphql.models.TagHostRelation
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -14,11 +14,11 @@ data class TagRelationStub(
     fun toTagRelation(
         tagId: String,
         type: DataType,
-    ): DTagRelation {
+    ): TagHostRelation {
         val stub = this
-        return DTagRelation(tagId, stub.key, type.value).apply {
+        return TagHostRelation(tagId, stub.key, type.value).apply {
             title = stub.title
-            size = stub.size
+            sizeBytes = stub.size
         }
     }
 

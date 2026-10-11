@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.chat.peer.transport.aware
 
-
-import kotlinx.serialization.json.*
 import android.Manifest
 import android.annotation.SuppressLint
 import android.net.ConnectivityManager
@@ -14,18 +12,19 @@ import android.net.wifi.aware.WifiAwareNetworkSpecifier
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
-import com.ismartcoding.plain.db.DPeer
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.lib.logcat.LogCat
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withTimeout
 import java.net.Inet6Address
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeout
+import kotlinx.serialization.json.*
 
 @RequiresApi(Build.VERSION_CODES.S)
 @SuppressLint("MissingPermission")
@@ -73,7 +72,7 @@ class AwarePeerLink(
     fun stateName(): String = state.name
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.CHANGE_NETWORK_STATE])
-    suspend fun build(d: DPeer): PeerConnection = buildMutex.withLock {
+    suspend fun build(d: PeerRecord): PeerConnection = buildMutex.withLock {
         LogCat.d("[AWARE] build start peer=${d.id} state=$state isClient=$isClient")
         when (state) {
             LinkState.CONNECTED -> {
@@ -284,7 +283,7 @@ class AwarePeerLink(
         @RequiresApi(Build.VERSION_CODES.S)
         @RequiresPermission(allOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.CHANGE_NETWORK_STATE])
         fun create(
-            peer: DPeer,
+            peer: PeerRecord,
             config: kotlinx.serialization.json.JsonObject,
             session: AwareSession,
             connectivityManager: ConnectivityManager,

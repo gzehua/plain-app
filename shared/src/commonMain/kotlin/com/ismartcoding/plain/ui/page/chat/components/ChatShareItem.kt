@@ -21,20 +21,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.db.DMessageShare
+import com.ismartcoding.plain.chat.models.MessageShare
+import com.ismartcoding.plain.chat.models.MessageType
 import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.i18n.folders
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.platform.formatDateTime
+import com.ismartcoding.plain.ui.models.VChat
 import com.ismartcoding.plain.ui.nav.Routing
 import com.ismartcoding.plain.ui.nav.navigateSharedFolder
-import com.ismartcoding.plain.ui.models.VChat
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.folders as ui_drawable_folders
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.ui.resources.folders as ui_drawable_folders
-import com.ismartcoding.plain.i18n.folders
 
 /**
  * Chat card for a shared folder/link message (MessageType.SHARE). Tapping the
@@ -50,7 +51,7 @@ fun ChatShareItem(
     onSelect: (String) -> Unit,
     onLongClick: () -> Unit,
 ) {
-    val share = m.value as DMessageShare
+    val share = m.value as MessageShare
     val expiresAt = share.expiresAt
     val isExpired = expiresAt != null && expiresAt < TimeHelper.now()
 
@@ -123,7 +124,7 @@ fun ChatShareItem(
 }
 
 @Composable
-private fun shareSubtitle(share: DMessageShare, isExpired: Boolean): String {
+private fun shareSubtitle(share: MessageShare, isExpired: Boolean): String {
     val parts = mutableListOf(stringResource(Res.string.folder_card_items, share.itemCount))
     if (share.totalSize > 0) parts.add(share.totalSize.formatBytes())
     val expiry = share.expiresAt?.let {

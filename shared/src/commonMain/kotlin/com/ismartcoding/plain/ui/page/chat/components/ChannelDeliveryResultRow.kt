@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.page.chat.components
 
-import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,17 +11,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.DMessageDeliveryResult
+import com.ismartcoding.plain.chat.models.MessageDeliveryResult
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.components.CheckCircle
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.check as ui_drawable_check
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 internal fun ChannelDeliveryResultRow(
-    result: DMessageDeliveryResult,
+    result: MessageDeliveryResult,
     isSelected: Boolean,
     onToggle: (() -> Unit)?,
 ) {

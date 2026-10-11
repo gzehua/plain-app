@@ -14,16 +14,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.data.DImage
-import com.ismartcoding.plain.db.DMessageFile
 import com.ismartcoding.plain.features.file.DFile
+import com.ismartcoding.plain.graphql.models.File
+import com.ismartcoding.plain.graphql.models.Image
 import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.ui.resources.ellipsis as ui_drawable_ellipsis
+import com.ismartcoding.plain.i18n.image
 import com.ismartcoding.plain.i18n.more_info
 import com.ismartcoding.plain.i18n.rotate
-import com.ismartcoding.plain.ui.resources.rotate_cw_square as ui_drawable_rotate_cw_square
-import com.ismartcoding.plain.ui.resources.image as ui_drawable_image
-import com.ismartcoding.plain.ui.resources.save as ui_drawable_save
+import com.ismartcoding.plain.i18n.save
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.platform.canSavePreviewMedia
 import com.ismartcoding.plain.platform.savePreviewMedia
@@ -32,11 +32,13 @@ import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.components.SaveToSheet
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.models.CastViewModel
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.ellipsis as ui_drawable_ellipsis
+import com.ismartcoding.plain.ui.resources.image as ui_drawable_image
+import com.ismartcoding.plain.ui.resources.rotate_cw_square as ui_drawable_rotate_cw_square
+import com.ismartcoding.plain.ui.resources.save as ui_drawable_save
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.i18n.save
-import com.ismartcoding.plain.i18n.image
 
 @Composable
 fun ImagePreviewActions(
@@ -79,7 +81,7 @@ fun ImagePreviewActions(
 
     if (showSaveSheet) {
         SaveToSheet(
-            title = (m.data as? DMessageFile)?.fileName?.takeIf { it.isNotEmpty() }
+            title = (m.data as? MessageFile)?.fileName?.takeIf { it.isNotEmpty() }
                 ?: m.path.getFilenameFromPath().ifEmpty { stringResource(Res.string.image) },
             onDismiss = { showSaveSheet = false },
             onDownloads = {

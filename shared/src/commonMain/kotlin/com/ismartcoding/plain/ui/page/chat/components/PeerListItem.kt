@@ -1,8 +1,5 @@
 package com.ismartcoding.plain.ui.page.chat.components
 
-import com.ismartcoding.plain.i18n.*
-
-import org.jetbrains.compose.resources.DrawableResource
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -13,13 +10,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.DChat
-import com.ismartcoding.plain.db.getMessagePreview
+import com.ismartcoding.plain.chat.models.getMessagePreview
 import com.ismartcoding.plain.extensions.timeAgo
+import com.ismartcoding.plain.graphql.models.ChatItem
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.theme.listItemSubtitle
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -29,7 +28,7 @@ fun PeerListItem(
     desc: String,
     icon: DrawableResource,
     online: Boolean? = null,
-    latestChat: DChat? = null,
+    latestChat: ChatItem? = null,
     peerId: String? = null,
     onDelete: ((String) -> Unit)? = null,
     onClick: () -> Unit = {},
@@ -77,4 +76,3 @@ fun PeerListItem(
         }
     }
 }
-

@@ -1,8 +1,9 @@
 package com.ismartcoding.plain.features.feed
 
+import com.ismartcoding.plain.graphql.models.Feed
 import com.ismartcoding.plain.platform.NetworkType
 
-/** Classified reasons a feed sync can fail, persisted on DFeed and shown in the UI. */
+/** Classified reasons a feed sync can fail, persisted on Feed and shown in the UI. */
 enum class FeedSyncErrorCode {
     NONE,
     NO_NETWORK,
@@ -14,7 +15,7 @@ enum class FeedSyncErrorCode {
     UNKNOWN;
 
     companion object {
-        /** Null-safe parse of the DFeed.lastError.code column; "" and garbage map to null. */
+        /** Null-safe parse of the Feed.lastError.code column; "" and garbage map to null. */
         fun fromString(code: String): FeedSyncErrorCode? =
             if (code.isEmpty()) null else entries.firstOrNull { it.name == code }
     }

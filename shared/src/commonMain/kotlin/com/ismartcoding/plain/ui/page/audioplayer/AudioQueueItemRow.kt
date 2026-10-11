@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.page.audioplayer
 
-import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,9 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.audio.DPlaylistAudio
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.audioJustPlayWithNotificationCheck
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.PIconButton
@@ -21,16 +20,17 @@ import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.reorderable.ReorderableCollectionItemScope
 import com.ismartcoding.plain.ui.components.PulsatingWave
 import com.ismartcoding.plain.ui.models.AudioQueueViewModel
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.playlist_remove as ui_drawable_playlist_remove
 import com.ismartcoding.plain.ui.theme.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.ui.resources.playlist_remove as ui_drawable_playlist_remove
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ReorderableCollectionItemScope.AudioQueueItemRow(
-    audio: DPlaylistAudio,
+    audio: AudioHostTrack,
     index: Int,
     isPlaying: Boolean,
     canReorder: Boolean,

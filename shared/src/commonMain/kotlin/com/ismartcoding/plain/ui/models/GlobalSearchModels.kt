@@ -1,20 +1,26 @@
 package com.ismartcoding.plain.ui.models
 
-import com.ismartcoding.plain.i18n.*
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.data.DDoc
 import com.ismartcoding.plain.data.DImage
 import com.ismartcoding.plain.data.DVideo
-import com.ismartcoding.plain.db.DFeedEntry
-import com.ismartcoding.plain.db.DNote
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.has
 import com.ismartcoding.plain.features.file.DFile
+import com.ismartcoding.plain.graphql.models.Audio
+import com.ismartcoding.plain.graphql.models.Doc
+import com.ismartcoding.plain.graphql.models.FeedEntry
+import com.ismartcoding.plain.graphql.models.File
+import com.ismartcoding.plain.graphql.models.Image
+import com.ismartcoding.plain.graphql.models.Note
+import com.ismartcoding.plain.graphql.models.Video
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.i18n.folder
+import com.ismartcoding.plain.i18n.image
+import com.ismartcoding.plain.i18n.video
 import com.ismartcoding.plain.platform.DPackageInfo
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.StringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.file_text as ui_drawable_file_text
 import com.ismartcoding.plain.ui.resources.folder as ui_drawable_folder
@@ -25,9 +31,8 @@ import com.ismartcoding.plain.ui.resources.music as ui_drawable_music
 import com.ismartcoding.plain.ui.resources.notebook_pen as ui_drawable_notebook_pen
 import com.ismartcoding.plain.ui.resources.rss as ui_drawable_rss
 import com.ismartcoding.plain.ui.resources.video as ui_drawable_video
-import com.ismartcoding.plain.i18n.folder
-import com.ismartcoding.plain.i18n.video
-import com.ismartcoding.plain.i18n.image
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.StringResource
 
 /** Content domains of the global search, in the fixed section order of the results page. */
 enum class GlobalSearchDomain(
@@ -57,13 +62,13 @@ sealed interface GlobalSearchAction {
 
 /** Source model for domains whose rows render with the source page's own list item component. */
 sealed interface GlobalSearchSource {
-    data class Note(val note: DNote) : GlobalSearchSource
+    data class Note(val note: com.ismartcoding.plain.graphql.models.Note) : GlobalSearchSource
     data class Audio(val audio: DAudio) : GlobalSearchSource
     data class Image(val image: DImage) : GlobalSearchSource
     data class Video(val video: DVideo) : GlobalSearchSource
     data class Doc(val doc: DDoc) : GlobalSearchSource
     data class File(val file: DFile) : GlobalSearchSource
-    data class Feed(val entry: DFeedEntry) : GlobalSearchSource
+    data class Feed(val entry: FeedEntry) : GlobalSearchSource
     data class App(val info: DPackageInfo) : GlobalSearchSource
 }
 

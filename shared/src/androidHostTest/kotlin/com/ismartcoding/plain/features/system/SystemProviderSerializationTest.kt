@@ -1,15 +1,15 @@
 package com.ismartcoding.plain.features.system
 
-import com.ismartcoding.plain.audio.DPlaylistAudio
 import com.ismartcoding.plain.features.sms.SmsConversationFacts
 import com.ismartcoding.plain.features.sms.SmsCountFacts
 import com.ismartcoding.plain.features.sms.SmsRowsFacts
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
 import com.ismartcoding.plain.lib.JsonHelper
+import java.io.File
 import kotlinx.serialization.SerializationException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
-import java.io.File
 
 class SystemProviderSerializationTest {
     @Test
@@ -67,9 +67,9 @@ class SystemProviderSerializationTest {
         val input = JsonHelper.jsonDecode<kotlinx.serialization.json.JsonElement>(
             """{"title":"Song","artist":"Singer","path":"/song","durationMs":42,"extra":true}""",
         )
-        assertEquals(DPlaylistAudio("Song", "/song", "Singer", 42), JsonHelper.jsonDecodeFromElement<DPlaylistAudio>(input))
+        assertEquals(AudioHostTrack("Song", "/song", "Singer", 42), JsonHelper.jsonDecodeFromElement<AudioHostTrack>(input))
         assertThrows(SerializationException::class.java) {
-            JsonHelper.jsonDecodeFromElement<DPlaylistAudio>(JsonHelper.jsonDecode("""{"title":"Song"}"""))
+            JsonHelper.jsonDecodeFromElement<AudioHostTrack>(JsonHelper.jsonDecode("""{"title":"Song"}"""))
         }
     }
 

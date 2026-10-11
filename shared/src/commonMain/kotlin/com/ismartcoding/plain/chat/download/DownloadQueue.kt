@@ -1,16 +1,17 @@
 package com.ismartcoding.plain.chat.download
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.RustPeerStore
-import com.ismartcoding.plain.db.DMessageFile
-import com.ismartcoding.plain.db.DPeer
 import com.ismartcoding.plain.events.HDownloadTaskDoneEvent
 import com.ismartcoding.plain.features.download.DOWNLOAD_KIND_CHAT
 import com.ismartcoding.plain.features.download.DownloadCenter
 import com.ismartcoding.plain.features.download.DownloadStatus
+import com.ismartcoding.plain.graphql.models.Peer
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.rust.request.RustContentApi
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +38,7 @@ object DownloadQueue {
             }
         }
     }
-    fun addDownloadTask(messageFile: DMessageFile, peer: DPeer, messageId: String): String {
+    fun addDownloadTask(messageFile: MessageFile, peer: PeerRecord, messageId: String): String {
         submit(buildJsonObject {
             put("action", "enqueue"); put("message_id", messageId); put("id", messageFile.id); put("peer_id", peer.id)
         })
@@ -65,7 +66,7 @@ object DownloadQueue {
             val generation = row.getValue("generation").jsonPrimitive.content
             generations += generation
             val task = DownloadTask(
-                messageFile = JsonHelper.jsonDecode<DMessageFile>(row.getValue("file").toString()),
+                messageFile = JsonHelper.jsonDecode<MessageFile>(row.getValue("file").toString()),
                 peer = RustPeerStore.decode(row.getValue("peer")),
                 messageId = row.getValue("messageId").jsonPrimitive.content,
                 status = DownloadStatus.valueOf(row.getValue("status").jsonPrimitive.content),

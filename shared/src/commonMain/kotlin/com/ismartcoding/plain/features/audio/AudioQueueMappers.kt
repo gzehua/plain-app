@@ -1,14 +1,14 @@
 package com.ismartcoding.plain.features.audio
 
-import com.ismartcoding.plain.audio.DPlaylistAudio
-import com.ismartcoding.plain.db.DAudioPlaylistItem
 import com.ismartcoding.plain.db.DAudioQueueItem
+import com.ismartcoding.plain.graphql.models.AudioHostPlaylistItem
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
 
-fun DAudioPlaylistItem.toPlaylistAudio(): DPlaylistAudio =
-    DPlaylistAudio(title = title, path = audioPath, artist = artist, durationMs = durationMs, albumId = albumId)
+fun AudioHostPlaylistItem.toPlaylistAudio(): AudioHostTrack =
+    AudioHostTrack(title = title, path = audioPath, artist = artist, durationMs = durationMs, albumId = albumId)
 
-fun DAudioQueueItem.toPlaylistAudio(): DPlaylistAudio =
-    DPlaylistAudio(title = title, path = path, artist = artist, durationMs = durationMs)
+fun DAudioQueueItem.toPlaylistAudio(): AudioHostTrack =
+    AudioHostTrack(title = title, path = path, artist = artist, durationMs = durationMs)
 
-fun DPlaylistAudio.toQueueItem(sortOrder: Int): DAudioQueueItem =
+fun AudioHostTrack.toQueueItem(sortOrder: Int): DAudioQueueItem =
     DAudioQueueItem(path = path, sortOrder = sortOrder, title = title, artist = artist, durationMs = durationMs)

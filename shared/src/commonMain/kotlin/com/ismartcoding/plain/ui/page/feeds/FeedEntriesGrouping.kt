@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.page.feeds
 
-import com.ismartcoding.plain.db.DFeed
-import com.ismartcoding.plain.db.DFeedEntry
+import com.ismartcoding.plain.graphql.models.Feed
+import com.ismartcoding.plain.graphql.models.FeedEntry
 import com.ismartcoding.plain.platform.formatDate
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -35,7 +35,7 @@ internal sealed interface FeedListRow {
     data class ClusterHeader(
         override val key: String,
         val clusterKey: String,
-        val feed: DFeed?,
+        val feed: Feed?,
         val count: Int,
         val unreadCount: Int,
         val collapsed: Boolean,
@@ -45,14 +45,14 @@ internal sealed interface FeedListRow {
 
     data class Entry(
         override val key: String,
-        val entry: DFeedEntry,
+        val entry: FeedEntry,
     ) : FeedListRow
 
     /** Title-only previews (newest first) representing a collapsed cluster. */
     data class CollapsedDigest(
         override val key: String,
         val clusterKey: String,
-        val entries: List<DFeedEntry>,
+        val entries: List<FeedEntry>,
     ) : FeedListRow
 }
 
@@ -69,8 +69,8 @@ internal enum class DayKind { TODAY, YESTERDAY, DATE }
  * emitted. Pure and cheap enough to run per recomposition on the paging window.
  */
 internal fun buildFeedListRows(
-    items: List<DFeedEntry>,
-    feeds: Map<String, DFeed>,
+    items: List<FeedEntry>,
+    feeds: Map<String, Feed>,
     expandedOverrides: Map<String, Boolean>,
     timeZone: TimeZone,
     today: LocalDate,

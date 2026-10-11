@@ -1,25 +1,23 @@
 package com.ismartcoding.plain.ui.page.videos
-import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Modifier
-import com.ismartcoding.plain.ui.theme.PlainTheme
-
-import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.graphql.models.TagHostRelation
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.getMimeType
-import com.ismartcoding.plain.db.DTag
-import com.ismartcoding.plain.db.DTagRelation
 import com.ismartcoding.plain.platform.formatDateTime
 import com.ismartcoding.plain.platform.getVideoMeta
+import com.ismartcoding.plain.platform.renameAndScanFile
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
@@ -28,19 +26,20 @@ import com.ismartcoding.plain.ui.base.Subtitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
 import com.ismartcoding.plain.ui.components.FileRenameDialog
-import com.ismartcoding.plain.platform.renameAndScanFile
 import com.ismartcoding.plain.ui.components.TagSelector
 import com.ismartcoding.plain.ui.components.VideoMetaRows
 import com.ismartcoding.plain.ui.models.TagsViewModel
 import com.ismartcoding.plain.ui.models.VideosViewModel
+import com.ismartcoding.plain.ui.theme.PlainTheme
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ViewVideoBottomSheet(
     videosVM: VideosViewModel,
     tagsVM: TagsViewModel,
-    tagsMap: Map<String, List<DTagRelation>>,
-    tagsState: List<DTag>,
+    tagsMap: Map<String, List<TagHostRelation>>,
+    tagsState: List<TagHostRecord>,
     dragSelectState: DragSelectState,
 ) {
     val m = videosVM.selectedItem.value ?: return

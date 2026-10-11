@@ -1,35 +1,44 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.chat.RustChatFixtures
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.chat.*
-import com.ismartcoding.plain.chat.peer.PeerCacher
-import com.ismartcoding.plain.chat.peer.RustPeerStore
+import com.ismartcoding.plain.chat.RustChatFixtures
 import com.ismartcoding.plain.chat.channel.ChannelCacher
 import com.ismartcoding.plain.chat.channel.RustChannelStore
+import com.ismartcoding.plain.chat.models.ChatChannelRecord
+import com.ismartcoding.plain.chat.models.ChatItemDataUpdate
+import com.ismartcoding.plain.chat.models.MessageContent
+import com.ismartcoding.plain.chat.models.MessageText
+import com.ismartcoding.plain.chat.models.MessageType
+import com.ismartcoding.plain.chat.models.PeerRecord
+import com.ismartcoding.plain.chat.models.toJSONString
+import com.ismartcoding.plain.chat.peer.PeerCacher
+import com.ismartcoding.plain.chat.peer.RustPeerStore
 import com.ismartcoding.plain.data.DNearbyDevice
 import com.ismartcoding.plain.db.*
 import com.ismartcoding.plain.discover.NearbyDeviceCache
 import com.ismartcoding.plain.enums.*
+import com.ismartcoding.plain.graphql.models.ChatChannelMember
+import com.ismartcoding.plain.graphql.models.ChatItem
+import com.ismartcoding.plain.rust.request.RustContentApi
+import java.util.UUID
+import kotlin.time.Instant
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
-import kotlin.time.Instant
 
 @RunWith(AndroidJUnit4::class)
 class ChatStorageRustHttpTest {
     @Test
     fun sharedChatPeerChannelAndNearbyCallsUseRustWithLiteralSearchAndIsolatedDeletion() = runBlocking {
         val prefix = "synthetic-chat-${UUID.randomUUID()}"
-        val peer = DPeer(id = "$prefix-peer", name = prefix, ip = "127.0.0.1", port = 1)
-        val channel = DChatChannel(id = "$prefix-channel", name = prefix, ownerId = "me", members = listOf(ChannelMember(peer.id)), version = 5_000_000_001)
-        val one = DChat(id = "$prefix-one", fromId = "me", toId = peer.id, status = ChatStatus.SENT, content = DMessageContent(MessageType.TEXT, DMessageText("$prefix literal %_ 中文")), createdAt = Instant.parse("2026-10-04T00:00:00Z"))
-        val two = DChat(id = "$prefix-two", fromId = peer.id, toId = "me", status = ChatStatus.PENDING, content = DMessageContent(MessageType.TEXT, DMessageText("$prefix second")), createdAt = Instant.parse("2026-10-04T00:00:01Z"))
-        val group = DChat(id = "$prefix-group", fromId = peer.id, toId = "me", channelId = channel.id, status = ChatStatus.SENT, content = DMessageContent(MessageType.TEXT, DMessageText("$prefix group")))
+        val peer = PeerRecord(id = "$prefix-peer", name = prefix, ip = "127.0.0.1", port = 1)
+        val channel = ChatChannelRecord(id = "$prefix-channel", name = prefix, ownerId = "me", members = listOf(ChatChannelMember(peer.id)), version = 5_000_000_001)
+        val one = ChatItem(id = "$prefix-one", fromId = "me", toId = peer.id, status = ChatStatus.SENT, content = MessageContent(MessageType.TEXT, MessageText("$prefix literal %_ 中文")).toJSONString(), createdAt = Instant.parse("2026-10-04T00:00:00Z"))
+        val two = ChatItem(id = "$prefix-two", fromId = peer.id, toId = "me", status = ChatStatus.PENDING, content = MessageContent(MessageType.TEXT, MessageText("$prefix second")).toJSONString(), createdAt = Instant.parse("2026-10-04T00:00:01Z"))
+        val group = ChatItem(id = "$prefix-group", fromId = peer.id, toId = "me", channelId = channel.id, status = ChatStatus.SENT, content = MessageContent(MessageType.TEXT, MessageText("$prefix group")).toJSONString())
         val nearby = DNearbyDevice(id = "$prefix-nearby", name = prefix, ips = listOf("127.0.0.1", "::1"), port = 1, deviceType = DeviceType.PHONE, version = "test", platform = "Android", lastSeen = Instant.parse("2026-10-04T00:00:02Z"))
         try {
             RustPeerStore.insert(peer)
@@ -61,8 +70,8 @@ class ChatStorageRustHttpTest {
             assertEquals(setOf(group.id), ChatDbHelper.getIdsAsync("channel:${channel.id}"))
             RustChatFixtures.updateStatusAndData(two.id, ChatStatus.PARTIAL, "{\"results\":[]}")
             assertEquals(ChatStatus.PARTIAL, RustChatStore.getById(two.id)!!.status)
-            RustChatFixtures.updateData(ChatItemDataUpdate(two.id, DMessageContent(MessageType.TEXT, DMessageText("changed"))))
-            assertEquals("changed", (RustChatStore.getById(two.id)!!.content.value as DMessageText).text)
+            RustChatFixtures.updateData(ChatItemDataUpdate(two.id, MessageContent(MessageType.TEXT, MessageText("changed"))))
+            assertEquals("changed", (RustChatStore.getById(two.id)!!.messageContent.value as MessageText).text)
             NearbyDeviceCache.upsertAsync(nearby)
             NearbyDeviceCache.upsertAsync(nearby.copy(name = "stale", lastSeen = Instant.parse("2026-10-04T00:00:01Z")))
             val saved = NearbyDeviceCache.getAllAsync().single { it.id == nearby.id }
@@ -92,9 +101,9 @@ class ChatStorageRustHttpTest {
         val store = com.ismartcoding.plain.helpers.AppFileStore
         val file = store.importBytes(bytes, "text/plain")
         val suffix = file.realPath.substringAfterLast('/')
-        val content = DChat.parseContent("""{"type":"FILES","value":{"items":[{"uri":"fid:$suffix","fileName":"fixture.txt","size":${bytes.size}}]}}""")
-        val direct = DChat(id = "$prefix-direct", fromId = "me", toId = prefix, content = content)
-        val group = DChat(id = "$prefix-group", fromId = prefix, toId = "me", channelId = prefix, content = content)
+        val content = ChatItem.parseContent("""{"type":"FILES","value":{"items":[{"uri":"fid:$suffix","fileName":"fixture.txt","size":${bytes.size}}]}}""")
+        val direct = ChatItem(id = "$prefix-direct", fromId = "me", toId = prefix, content = content.toJSONString())
+        val group = ChatItem(id = "$prefix-group", fromId = prefix, toId = "me", channelId = prefix, content = content.toJSONString())
         val path = java.io.File(store.realPathFromId(suffix))
         try {
             store.importBytes(bytes, "text/plain")
@@ -119,14 +128,14 @@ class ChatStorageRustHttpTest {
     @Test
     fun peerAndChannelBusinessRemovalIsRustOwnedAndPreservesSharedAttachments() = runBlocking {
         val prefix = "synthetic-chat-entity-${UUID.randomUUID()}"
-        val peer = DPeer(id = prefix, name = prefix, status = PeerStatus.PAIRED, key = "", ip = "old", port = 1)
-        val channel = DChatChannel(id = "$prefix-channel", name = prefix, ownerId = "$prefix-owner", members = listOf(ChannelMember(peer.id)))
+        val peer = PeerRecord(id = prefix, name = prefix, status = PeerStatus.PAIRED, key = "", ip = "old", port = 1)
+        val channel = ChatChannelRecord(id = "$prefix-channel", name = prefix, ownerId = "$prefix-owner", members = listOf(ChatChannelMember(peer.id)))
         val store = com.ismartcoding.plain.helpers.AppFileStore
         val file = store.importBytes(prefix.toByteArray(), "text/plain")
         val suffix = file.realPath.substringAfterLast('/')
-        val content = DChat.parseContent("""{"type":"FILES","value":{"items":[{"uri":"fid:$suffix","fileName":"fixture.txt","size":${prefix.toByteArray().size}}]}}""")
-        val direct = DChat(id = "$prefix-direct", fromId = "me", toId = peer.id, content = content)
-        val group = DChat(id = "$prefix-group", fromId = peer.id, toId = "me", channelId = channel.id, content = content)
+        val content = ChatItem.parseContent("""{"type":"FILES","value":{"items":[{"uri":"fid:$suffix","fileName":"fixture.txt","size":${prefix.toByteArray().size}}]}}""")
+        val direct = ChatItem(id = "$prefix-direct", fromId = "me", toId = peer.id, content = content.toJSONString())
+        val group = ChatItem(id = "$prefix-group", fromId = peer.id, toId = "me", channelId = channel.id, content = content.toJSONString())
         try {
             RustPeerStore.insert(peer)
             PeerCacher.load()
@@ -162,9 +171,9 @@ class ChatStorageRustHttpTest {
     fun channelCommandsUseRustKeysMembershipAndOwnerRules() = runBlocking {
         val prefix = "synthetic-channel-state-${UUID.randomUUID()}"
         val actor = com.ismartcoding.plain.TempData.clientId
-        var created: DChatChannel? = null
-        val peer = DPeer(id = "$prefix-peer", name = prefix, ip = "127.0.0.1", port = 1)
-        val foreign = DChatChannel(id = "$prefix-foreign", name = prefix, ownerId = peer.id, members = listOf(ChannelMember(actor, ChannelMemberStatus.PENDING)))
+        var created: ChatChannelRecord? = null
+        val peer = PeerRecord(id = "$prefix-peer", name = prefix, ip = "127.0.0.1", port = 1)
+        val foreign = ChatChannelRecord(id = "$prefix-foreign", name = prefix, ownerId = peer.id, members = listOf(ChatChannelMember(actor, ChannelMemberStatus.PENDING)))
         try {
             val manager = com.ismartcoding.plain.chat.channel.ChannelManager
             val channel = manager.createChannel("  $prefix  ")

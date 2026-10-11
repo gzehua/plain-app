@@ -1,26 +1,26 @@
 package com.ismartcoding.plain.chat
 
-
-import com.ismartcoding.plain.platform.canShowNotifications
-
-import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.TempData
 import com.ismartcoding.plain.chat.data.ChatTarget
 import com.ismartcoding.plain.chat.data.ChatTargetType
-import com.ismartcoding.plain.db.DChat
-import com.ismartcoding.plain.db.DChatChannel
-import com.ismartcoding.plain.db.DPeer
-import com.ismartcoding.plain.db.getMessagePreview
+import com.ismartcoding.plain.chat.models.ChatChannelRecord
+import com.ismartcoding.plain.chat.models.PeerRecord
+import com.ismartcoding.plain.chat.models.getMessagePreview
 import com.ismartcoding.plain.events.ChatMessageNotificationEvent
-import com.ismartcoding.plain.platform.LocaleHelper
+import com.ismartcoding.plain.graphql.models.ChatChannel
+import com.ismartcoding.plain.graphql.models.ChatItem
+import com.ismartcoding.plain.graphql.models.Peer
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.peer_chat
 import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.platform.LocaleHelper
+import com.ismartcoding.plain.platform.canShowNotifications
 
 object ChatMessageReceiver {
 
-    suspend fun applyCommitted(item: DChat, fromPeer: DPeer, fromChannel: DChatChannel?) = withIO {
-        val fromChannelId = item.channelId
+    suspend fun applyCommitted(item: ChatItem, fromPeer: PeerRecord, fromChannel: ChatChannelRecord?) = withIO {
+        val fromChannelId = item.channelId.orEmpty()
         val fromPeerId = item.fromId
         ChatViewModel.onMessagesCreated(
             target = if (fromChannelId.isNotEmpty()) {
@@ -35,9 +35,9 @@ object ChatMessageReceiver {
     }
 
     private fun emitNotificationIfNeeded(
-        item: DChat,
-        fromPeer: DPeer,
-        fromChannel: DChatChannel?,
+        item: ChatItem,
+        fromPeer: PeerRecord,
+        fromChannel: ChatChannelRecord?,
     ) {
         if (!canShowNotifications()) return
         val preview = item.getMessagePreview()

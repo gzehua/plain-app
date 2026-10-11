@@ -4,15 +4,15 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.helpers.SearchHelper
 import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.db.DTag
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.events.MediaStoreChangedEvent
 import com.ismartcoding.plain.features.TagHelper
 import com.ismartcoding.plain.features.file.FileSortBy
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.helpers.SearchHelper
+import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.countMedia
 import com.ismartcoding.plain.platform.deleteMedia
 import com.ismartcoding.plain.platform.restoreMedia
@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.update
 abstract class BaseMediaViewModel<T : IData> : ISearchableViewModel<T>, ViewModel() {
     internal val _itemsFlow = MutableStateFlow<List<T>>(emptyList())
     val itemsFlow: StateFlow<List<T>> = _itemsFlow
-    var tag = mutableStateOf<DTag?>(null)
+    var tag = mutableStateOf<TagHostRecord?>(null)
     var trash = mutableStateOf(false)
     var bucketId = mutableStateOf("")
     var showLoading = mutableStateOf(true)

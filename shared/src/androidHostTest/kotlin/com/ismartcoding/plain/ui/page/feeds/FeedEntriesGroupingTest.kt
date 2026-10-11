@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.page.feeds
 
-import com.ismartcoding.plain.db.DFeed
-import com.ismartcoding.plain.db.DFeedEntry
+import com.ismartcoding.plain.graphql.models.Feed
+import com.ismartcoding.plain.graphql.models.FeedEntry
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -12,8 +12,8 @@ import kotlinx.datetime.TimeZone
 class FeedEntriesGroupingTest {
     private val tz = TimeZone.UTC
     private val today = LocalDate(2026, 9, 16)
-    private val feedA = DFeed(id = "a", name = "Feed A")
-    private val feedB = DFeed(id = "b", name = "Feed B")
+    private val feedA = Feed(id = "a", name = "Feed A")
+    private val feedB = Feed(id = "b", name = "Feed B")
     private val feeds = mapOf("a" to feedA, "b" to feedB)
 
     private fun entry(
@@ -21,7 +21,7 @@ class FeedEntriesGroupingTest {
         feedId: String,
         publishedAt: Instant,
         read: Boolean = false,
-    ) = DFeedEntry(id = id, feedId = feedId, publishedAt = publishedAt, read = read)
+    ) = FeedEntry(id = id, feedId = feedId, publishedAt = publishedAt, read = read)
 
     @Test
     fun groupsByDayThenFeed() {

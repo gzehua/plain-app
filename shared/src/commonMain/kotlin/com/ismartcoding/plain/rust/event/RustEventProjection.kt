@@ -2,12 +2,12 @@ package com.ismartcoding.plain.rust.event
 
 import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.events.HWebRequestReceivedEvent
-import com.ismartcoding.plain.rust.host.*
-import com.ismartcoding.plain.rust.request.ContentApiSession
-import com.ismartcoding.plain.rust.request.RustContentApi
-import com.ismartcoding.plain.rust.request.RecoverDeletionsRequest
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.rust.host.*
+import com.ismartcoding.plain.rust.request.ContentApiSession
+import com.ismartcoding.plain.rust.request.RecoverDeletionsRequest
+import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.ui.models.NotesViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.*
@@ -63,12 +63,12 @@ internal object RustEventProjection {
                 JsonHelper.jsonDecode<JsonElement>(payload).jsonArray.forEach { value ->
                     com.ismartcoding.plain.chat.RustChatStore.getById(value.jsonObject.getValue("id").jsonPrimitive.content)?.let { item ->
                         if (item.fromId == "me") {
-                            val target = if (item.channelId.isEmpty()) com.ismartcoding.plain.chat.data.ChatTarget.parseId("peer:" + item.toId)
+                            val target = if (item.channelId.isNullOrEmpty()) com.ismartcoding.plain.chat.data.ChatTarget.parseId("peer:" + item.toId)
                                 else com.ismartcoding.plain.chat.data.ChatTarget.parseId("channel:" + item.channelId)
                             com.ismartcoding.plain.chat.ChatViewModel.onMessagesCreated(target, listOf(item), scroll = true)
                             com.ismartcoding.plain.chat.ChatCacher.load()
                         } else com.ismartcoding.plain.chat.peer.RustPeerStore.getById(item.fromId)?.let { peer ->
-                            val channel = item.channelId.takeIf { it.isNotEmpty() }?.let { com.ismartcoding.plain.chat.channel.RustChannelStore.getById(it) }
+                            val channel = item.channelId?.takeIf { it.isNotEmpty() }?.let { com.ismartcoding.plain.chat.channel.RustChannelStore.getById(it) }
                             com.ismartcoding.plain.chat.ChatMessageReceiver.applyCommitted(item, peer, channel)
                         }
                     }

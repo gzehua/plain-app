@@ -1,27 +1,27 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.chat.RustChatFixtures
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.TempData
 import com.ismartcoding.plain.ble.server.HttpServiceHandler
+import com.ismartcoding.plain.chat.RustChatFixtures
 import com.ismartcoding.plain.chat.RustChatStore
 import com.ismartcoding.plain.chat.channel.*
 import com.ismartcoding.plain.chat.channel.ChannelSystemMessages.ChannelInvite
 import com.ismartcoding.plain.chat.channel.ChannelSystemMessages.MemberPeerInfo
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.*
-import com.ismartcoding.plain.db.ChannelMember
-import com.ismartcoding.plain.db.DPeer
 import com.ismartcoding.plain.enums.*
+import com.ismartcoding.plain.graphql.models.ChatChannelMember
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.*
 import com.ismartcoding.plain.preferences.UserPrefs
+import java.util.UUID
+import kotlin.io.encoding.Base64
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
-import kotlin.io.encoding.Base64
 
 @RunWith(AndroidJUnit4::class)
 class PeerGraphQLRustHttpTest {
@@ -30,7 +30,7 @@ class PeerGraphQLRustHttpTest {
         val id = "synthetic-peer-graphql-${UUID.randomUUID()}"
         val key = ByteArray(32) { 7 }
         val (privateKey, publicKey) = generateEd25519KeyPair()
-        val peer = DPeer(id = id, name = id, publicKey = Base64.encode(publicKey), key = Base64.encode(key), status = PeerStatus.PAIRED)
+        val peer = PeerRecord(id = id, name = id, publicKey = Base64.encode(publicKey), key = Base64.encode(key), status = PeerStatus.PAIRED)
         val service = UserPrefs.service.value
         val http = UserPrefs.httpPort.value
         val https = UserPrefs.httpsPort.value
@@ -98,13 +98,13 @@ class PeerGraphQLRustHttpTest {
         val prefix = "synthetic-peer-channel-${UUID.randomUUID()}"
         val key = ByteArray(32) { 8 }
         val (privateKey, publicKey) = generateEd25519KeyPair()
-        val owner = DPeer(id = "$prefix-owner", name = prefix, publicKey = Base64.encode(publicKey), key = Base64.encode(key), status = PeerStatus.PAIRED)
+        val owner = PeerRecord(id = "$prefix-owner", name = prefix, publicKey = Base64.encode(publicKey), key = Base64.encode(key), status = PeerStatus.PAIRED)
         val channelId = "$prefix-channel"
         val actor = TempData.clientId
         val service = UserPrefs.service.value
         val signature = Base64.encode(signEd25519(privateKey, channelMessagePayload(channelId, 1, ChannelSystemMessageAction.INVITE, actor).encodeToByteArray()))
         val invite = ChannelInvite(channelId, prefix, Base64.encode(ByteArray(32) { 9 }), owner.id,
-            listOf(ChannelMember(owner.id), ChannelMember(actor, ChannelMemberStatus.PENDING)),
+            listOf(ChatChannelMember(owner.id), ChatChannelMember(actor, ChannelMemberStatus.PENDING)),
             listOf(MemberPeerInfo(id = owner.id, name = prefix, publicKey = owner.publicKey)), 1, signature)
         suspend fun deliver(invite: ChannelInvite): Boolean {
             val content = buildJsonObject {

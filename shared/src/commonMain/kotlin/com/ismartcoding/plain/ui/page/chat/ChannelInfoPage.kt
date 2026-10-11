@@ -1,5 +1,4 @@
 package com.ismartcoding.plain.ui.page.chat
-import com.ismartcoding.plain.ui.theme.PlainTheme
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -18,24 +17,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.lib.extensions.toSortName
 import com.ismartcoding.plain.TempData
+import com.ismartcoding.plain.chat.ChatViewModel
 import com.ismartcoding.plain.chat.channel.ChannelCacher
+import com.ismartcoding.plain.chat.models.ChatChannelRecord
+import com.ismartcoding.plain.chat.models.PeerRecord
+import com.ismartcoding.plain.chat.models.canLeave
+import com.ismartcoding.plain.chat.models.getBestIp
+import com.ismartcoding.plain.chat.models.getName
+import com.ismartcoding.plain.chat.models.getOwner
+import com.ismartcoding.plain.chat.models.isMe
+import com.ismartcoding.plain.chat.models.isOwnedByMe
+import com.ismartcoding.plain.chat.models.mePeer
 import com.ismartcoding.plain.chat.peer.PeerCacher
-import com.ismartcoding.plain.db.DChatChannel
-import com.ismartcoding.plain.db.DPeer
-import com.ismartcoding.plain.db.canLeave
-import com.ismartcoding.plain.db.getOwner
-import com.ismartcoding.plain.db.mePeer
-import com.ismartcoding.plain.db.getBestIp
-import com.ismartcoding.plain.db.getName
-import com.ismartcoding.plain.db.isMe
-import com.ismartcoding.plain.db.isOwnedByMe
 import com.ismartcoding.plain.enums.ButtonSize
 import com.ismartcoding.plain.enums.ButtonType
 import com.ismartcoding.plain.enums.DeviceType
-import com.ismartcoding.plain.enums.getText
 import com.ismartcoding.plain.enums.getIcon
+import com.ismartcoding.plain.enums.getText
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.add_member
 import com.ismartcoding.plain.i18n.cancel
@@ -43,7 +42,7 @@ import com.ismartcoding.plain.i18n.channel_info
 import com.ismartcoding.plain.i18n.channel_name
 import com.ismartcoding.plain.i18n.clear_messages
 import com.ismartcoding.plain.i18n.clear_messages_confirm
-import com.ismartcoding.plain.ui.resources.close as ui_drawable_close
+import com.ismartcoding.plain.i18n.close
 import com.ismartcoding.plain.i18n.delete_channel
 import com.ismartcoding.plain.i18n.delete_channel_warning
 import com.ismartcoding.plain.i18n.device_type
@@ -58,28 +57,29 @@ import com.ismartcoding.plain.i18n.peer_id
 import com.ismartcoding.plain.i18n.port
 import com.ismartcoding.plain.i18n.resend_invite
 import com.ismartcoding.plain.i18n.status
+import com.ismartcoding.plain.lib.extensions.toSortName
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.POutlinedButton
 import com.ismartcoding.plain.ui.base.PScaffold
+import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.base.Subtitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.helpers.DialogHelper
 import com.ismartcoding.plain.ui.models.ChannelViewModel
-import com.ismartcoding.plain.chat.ChatViewModel
 import com.ismartcoding.plain.ui.models.PeerViewModel
 import com.ismartcoding.plain.ui.nav.Routing
 import com.ismartcoding.plain.ui.page.chat.components.ChannelMemberListItem
 import com.ismartcoding.plain.ui.page.chat.components.PeerIconWithStatus
 import com.ismartcoding.plain.ui.page.chat.components.PeerMember
 import com.ismartcoding.plain.ui.page.chat.components.RenameChannelDialog
+import com.ismartcoding.plain.ui.resources.close as ui_drawable_close
+import com.ismartcoding.plain.ui.theme.PlainTheme
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
-import com.ismartcoding.plain.ui.base.PTextButton
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.i18n.close
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,7 +124,7 @@ fun ChannelInfoPage(
         }
         addAll(pendingMembers.sortedBy { it.displayName() })
     }
-    val addablePeers: List<DPeer> = if (ownedByMe) {
+    val addablePeers: List<PeerRecord> = if (ownedByMe) {
         val presentIds = liveChannel.members.map { it.peerId }.toMutableSet().apply {
             ownerPeerId?.let { add(it) }
         }
@@ -340,7 +340,7 @@ fun ChannelInfoPage(
 private fun MemberInfoDialog(
     peerMember: PeerMember,
     ownedByMe: Boolean,
-    liveChannel: DChatChannel?,
+    liveChannel: ChatChannelRecord?,
     channelVM: ChannelViewModel,
     onDismiss: () -> Unit,
 ) {

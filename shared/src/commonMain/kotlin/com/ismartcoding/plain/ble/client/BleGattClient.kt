@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.ble.client
 
 import com.ismartcoding.plain.ble.BleService
+import com.ismartcoding.plain.chat.models.PeerRecord
 import kotlinx.coroutines.flow.Flow
 
 interface BleGattClient {
@@ -63,7 +64,7 @@ interface BleScanner {
      * Finds a discovered BLE device whose shortId matches [clientId]. The
      * shortId is obtained from Rust (8-byte truncated SHA256 of the full
      * clientId), so callers pass the
-     * peer's full clientId (TempData.clientId / DPeer.id) and the scanner
+     * peer's full clientId (TempData.clientId / PeerRecord.id) and the scanner
      * matches it against the shortId broadcast in the scan response.
      */
     suspend fun findOne(clientId: String): BleGattClient?

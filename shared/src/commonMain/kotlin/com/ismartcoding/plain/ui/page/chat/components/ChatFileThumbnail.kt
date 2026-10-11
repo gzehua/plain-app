@@ -10,21 +10,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.ismartcoding.plain.chat.download.DownloadTask
+import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isVideoFast
-import com.ismartcoding.plain.chat.download.DownloadTask
-import com.ismartcoding.plain.db.DMessageFile
-import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.platform.TransformImageView
-import com.ismartcoding.plain.ui.components.mediaviewer.previewer.TransformItemState
 import com.ismartcoding.plain.platform.getFileIconPath
+import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
+import com.ismartcoding.plain.ui.components.mediaviewer.previewer.TransformItemState
 
 @Composable
 fun ChatFileThumbnail(
     fileName: String,
     previewPath: String,
-    item: DMessageFile,
+    item: MessageFile,
     itemState: TransformItemState,
     previewerState: MediaPreviewerState,
     isActive: Boolean,

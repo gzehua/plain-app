@@ -26,19 +26,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.DFeed
+import com.ismartcoding.plain.graphql.models.Feed
 import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.HorizontalSpace
+import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.models.FeedCatalogViewModel
 import com.ismartcoding.plain.ui.models.FeedsViewModel
-import com.ismartcoding.plain.ui.theme.green
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.check as ui_drawable_check
 import com.ismartcoding.plain.ui.resources.rss as ui_drawable_rss
+import com.ismartcoding.plain.ui.theme.green
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * First-run discovery mode for FeedEntriesPage: a short hero + the curated
@@ -51,7 +51,7 @@ import com.ismartcoding.plain.ui.resources.rss as ui_drawable_rss
 fun FeedDiscoveryContent(
     feedsVM: FeedsViewModel,
     catalogVM: FeedCatalogViewModel,
-    feedsState: List<DFeed>,
+    feedsState: List<Feed>,
     paddingValues: PaddingValues,
     onStartReading: () -> Unit,
 ) {
@@ -82,7 +82,7 @@ fun FeedDiscoveryContent(
  * scrolls away with the content.
  */
 @Composable
-private fun DiscoveryHeader(feedsState: List<DFeed>) {
+private fun DiscoveryHeader(feedsState: List<Feed>) {
     Column {
         AnimatedVisibility(visible = feedsState.isEmpty(), enter = fadeIn(), exit = fadeOut()) {
             DiscoveryHero(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))

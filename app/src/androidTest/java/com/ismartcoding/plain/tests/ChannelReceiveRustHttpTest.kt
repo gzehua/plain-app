@@ -4,24 +4,24 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.TempData
 import com.ismartcoding.plain.chat.channel.*
 import com.ismartcoding.plain.chat.channel.ChannelSystemMessages.ChannelInvite
-import com.ismartcoding.plain.chat.channel.ChannelSystemMessages.ChannelUpdate
 import com.ismartcoding.plain.chat.channel.ChannelSystemMessages.ChannelKick
+import com.ismartcoding.plain.chat.channel.ChannelSystemMessages.ChannelUpdate
 import com.ismartcoding.plain.chat.channel.ChannelSystemMessages.MemberPeerInfo
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.PeerCacher
 import com.ismartcoding.plain.chat.peer.RustPeerStore
-import com.ismartcoding.plain.db.ChannelMember
-import com.ismartcoding.plain.db.DPeer
 import com.ismartcoding.plain.enums.*
+import com.ismartcoding.plain.graphql.models.ChatChannelMember
 import com.ismartcoding.plain.lib.JsonHelper.jsonEncode
 import com.ismartcoding.plain.platform.generateEd25519KeyPair
 import com.ismartcoding.plain.platform.signEd25519
-import kotlinx.serialization.json.*
+import java.util.UUID
+import kotlin.io.encoding.Base64
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
-import kotlin.io.encoding.Base64
 
 @RunWith(AndroidJUnit4::class)
 class ChannelReceiveRustHttpTest {
@@ -30,10 +30,10 @@ class ChannelReceiveRustHttpTest {
         val prefix = "synthetic-channel-receive-${UUID.randomUUID()}"
         val actor = TempData.clientId
         val (privateKey, publicKey) = generateEd25519KeyPair()
-        val owner = DPeer(id = "$prefix-owner", name = prefix, publicKey = Base64.encode(publicKey), status = PeerStatus.CHANNEL, ip = "127.0.0.1", port = 1)
+        val owner = PeerRecord(id = "$prefix-owner", name = prefix, publicKey = Base64.encode(publicKey), status = PeerStatus.CHANNEL, ip = "127.0.0.1", port = 1)
         val id = "$prefix-channel"
         fun signature(version: Long, action: ChannelSystemMessageAction, target: String) = Base64.encode(signEd25519(privateKey, channelMessagePayload(id, version, action, target).encodeToByteArray()))
-        val members = listOf(ChannelMember(owner.id), ChannelMember(actor, ChannelMemberStatus.PENDING))
+        val members = listOf(ChatChannelMember(owner.id), ChatChannelMember(actor, ChannelMemberStatus.PENDING))
         val invite = ChannelInvite(id, prefix, Base64.encode(ByteArray(32) { 7 }), owner.id, members, listOf(MemberPeerInfo(id = owner.id, name = prefix, publicKey = owner.publicKey)), 1, signature(1, ChannelSystemMessageAction.INVITE, actor))
         try {
             RustPeerStore.insert(owner)
@@ -73,8 +73,8 @@ class ChannelReceiveRustHttpTest {
     fun outboundPreparationUsesRustSignaturesAndLatestTransportKeys() = runBlocking {
         val prefix = "synthetic-channel-send-${UUID.randomUUID()}"
         val actor = TempData.clientId
-        val paired = DPeer(id = "$prefix-paired", name = prefix, key = Base64.encode(ByteArray(32) { 8 }), status = PeerStatus.PAIRED, ip = "127.0.0.1", port = 1)
-        val group = DPeer(id = "$prefix-group", name = prefix, status = PeerStatus.CHANNEL, ip = "127.0.0.1", port = 1)
+        val paired = PeerRecord(id = "$prefix-paired", name = prefix, key = Base64.encode(ByteArray(32) { 8 }), status = PeerStatus.PAIRED, ip = "127.0.0.1", port = 1)
+        val group = PeerRecord(id = "$prefix-group", name = prefix, status = PeerStatus.CHANNEL, ip = "127.0.0.1", port = 1)
         val publicKey = Base64.decode(com.ismartcoding.plain.helpers.SignatureHelper.getRawPublicKeyBase64Async())
         val channel = RustChannelStore.create("中文 $prefix")
         try {

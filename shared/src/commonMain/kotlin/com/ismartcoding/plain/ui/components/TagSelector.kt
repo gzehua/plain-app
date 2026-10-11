@@ -14,8 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.db.DTag
-import com.ismartcoding.plain.db.DTagRelation
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.graphql.models.TagHostRelation
 import com.ismartcoding.plain.ui.base.PSelectionChip
 import com.ismartcoding.plain.ui.models.TagsViewModel
 import com.ismartcoding.plain.ui.models.launchSafe
@@ -25,8 +25,8 @@ import com.ismartcoding.plain.ui.models.launchSafe
 fun TagSelector(
     data: IData,
     tagsVM: TagsViewModel,
-    tagsMap: Map<String, List<DTagRelation>>,
-    tagsState: List<DTag>,
+    tagsMap: Map<String, List<TagHostRelation>>,
+    tagsState: List<TagHostRecord>,
     onChangedAsync: suspend () -> Unit
 ) {
     val tagIds = remember {

@@ -5,17 +5,17 @@ import com.ismartcoding.plain.TempData
 import com.ismartcoding.plain.chat.channel.ChannelCacher
 import com.ismartcoding.plain.chat.channel.ChannelManager
 import com.ismartcoding.plain.chat.channel.RustChannelStore
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.RustPeerStore
-import com.ismartcoding.plain.db.ChannelMember
-import com.ismartcoding.plain.db.DPeer
 import com.ismartcoding.plain.enums.ChannelMemberStatus
 import com.ismartcoding.plain.enums.PeerStatus
+import com.ismartcoding.plain.graphql.models.ChatChannelMember
+import java.util.UUID
+import kotlin.io.encoding.Base64
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
-import kotlin.io.encoding.Base64
 
 @RunWith(AndroidJUnit4::class)
 class ChannelRuntimeRustHttpTest {
@@ -23,7 +23,7 @@ class ChannelRuntimeRustHttpTest {
     fun lifecycleRunsThroughRustAndOfflineAcceptKeepsInvitationPending() = runBlocking {
         val prefix = "synthetic-channel-runtime-${UUID.randomUUID()}"
         val unknown = "$prefix-missing"
-        val owner = DPeer(id = "$prefix-owner", name = prefix, status = PeerStatus.CHANNEL, ip = "127.0.0.1", port = 1)
+        val owner = PeerRecord(id = "$prefix-owner", name = prefix, status = PeerStatus.CHANNEL, ip = "127.0.0.1", port = 1)
         val channel = ChannelManager.createChannel(" $prefix ")
         var foreignId: String? = null
         try {
@@ -43,7 +43,7 @@ class ChannelRuntimeRustHttpTest {
             RustPeerStore.insert(owner)
             val foreign = RustChannelStore.create(prefix).copy(
                 ownerId = owner.id,
-                members = listOf(ChannelMember(owner.id), ChannelMember(TempData.clientId, ChannelMemberStatus.PENDING)),
+                members = listOf(ChatChannelMember(owner.id), ChatChannelMember(TempData.clientId, ChannelMemberStatus.PENDING)),
             )
             foreignId = foreign.id
             RustChannelStore.update(foreign)

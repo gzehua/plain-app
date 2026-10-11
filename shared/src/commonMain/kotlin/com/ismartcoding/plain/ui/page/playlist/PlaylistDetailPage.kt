@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.page.playlist
 
-import com.ismartcoding.plain.preferences.*
-import com.ismartcoding.plain.ui.components.MediaTopBar
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -9,12 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -25,19 +17,30 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.db.DAudioPlaylistItem
+import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.db.IDData
 import com.ismartcoding.plain.features.audio.AudioPlaylistManager
+import com.ismartcoding.plain.graphql.models.Audio
+import com.ismartcoding.plain.graphql.models.AudioHostPlaylistItem
 import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.i18n.cast
+import com.ismartcoding.plain.i18n.sort
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.PBackHandler
 import com.ismartcoding.plain.platform.audioIsPlayingFlow
 import com.ismartcoding.plain.platform.audioPause
 import com.ismartcoding.plain.platform.audioPlay
+import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.base.*
 import com.ismartcoding.plain.ui.base.dragselect.listDragSelect
 import com.ismartcoding.plain.ui.base.dragselect.rememberListDragSelectState
@@ -45,7 +48,7 @@ import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
-import com.ismartcoding.plain.audio.DAudio
+import com.ismartcoding.plain.ui.components.MediaTopBar
 import com.ismartcoding.plain.ui.components.PlaylistNameDialog
 import com.ismartcoding.plain.ui.helpers.DialogHelper
 import com.ismartcoding.plain.ui.models.AudioQueueViewModel
@@ -58,24 +61,22 @@ import com.ismartcoding.plain.ui.page.audio.components.AudioFilesSelectModeBotto
 import com.ismartcoding.plain.ui.page.audio.components.AudioListItem
 import com.ismartcoding.plain.ui.page.audio.components.ViewAudioBottomSheet
 import com.ismartcoding.plain.ui.page.audioplayer.components.AudioPlayerBar
-import com.ismartcoding.plain.ui.page.cast.CastQueueFab
 import com.ismartcoding.plain.ui.page.cast.CastDialog
+import com.ismartcoding.plain.ui.page.cast.CastQueueFab
 import com.ismartcoding.plain.ui.page.playlist.components.PlaylistActionsRow
+import com.ismartcoding.plain.ui.page.playlist.components.PlaylistHeaderRow
+import com.ismartcoding.plain.ui.page.playlist.components.PlaylistMoreSheet
 import com.ismartcoding.plain.ui.page.playlist.components.playPlaylistFrom
 import com.ismartcoding.plain.ui.page.playlist.components.playPlaylistShuffled
 import com.ismartcoding.plain.ui.page.playlist.components.pruneTrashedRows
-import com.ismartcoding.plain.ui.page.playlist.components.toDAudio
-import com.ismartcoding.plain.ui.page.playlist.components.PlaylistHeaderRow
-import com.ismartcoding.plain.ui.page.playlist.components.PlaylistMoreSheet
 import com.ismartcoding.plain.ui.page.playlist.components.sortedByAudio
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
+import com.ismartcoding.plain.ui.page.playlist.components.toDAudio
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.cast as ui_drawable_cast
 import com.ismartcoding.plain.ui.resources.more_horiz as ui_drawable_more_horiz
 import com.ismartcoding.plain.ui.resources.sort as ui_drawable_sort
-import com.ismartcoding.plain.i18n.sort
-import com.ismartcoding.plain.i18n.cast
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 /** Playlist detail page: state, load/reload, and wiring; pieces live in components/. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,7 +102,7 @@ fun PlaylistDetailPage(
     })
 
     var playlistName by remember { mutableStateOf("") }
-    var items by remember { mutableStateOf<List<DAudioPlaylistItem>>(listOf()) }
+    var items by remember { mutableStateOf<List<AudioHostPlaylistItem>>(listOf()) }
     var albumCovers by remember { mutableStateOf<List<PlaylistAlbumCover>>(emptyList()) }
     var version by remember { mutableIntStateOf(0) }
     var showMore by remember { mutableStateOf(false) }
@@ -346,4 +347,3 @@ fun PlaylistDetailPage(
         }
     }
 }
-

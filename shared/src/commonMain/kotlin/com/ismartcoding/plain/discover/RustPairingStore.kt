@@ -2,6 +2,7 @@ package com.ismartcoding.plain.discover
 
 import com.ismartcoding.plain.TempData
 import com.ismartcoding.plain.chat.callChatStore
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.RustPeerStore
 import com.ismartcoding.plain.data.*
 import com.ismartcoding.plain.lib.JsonHelper
@@ -36,7 +37,7 @@ object RustPairingStore {
         }.takeUnless { it is JsonNull }?.jsonObject ?: return null
         return DPairingOutcome(ticket(result.getValue("ticket")), result.getValue("peer").takeUnless { it is JsonNull }?.let(RustPeerStore::decode), result.getValue("error").jsonPrimitive.content)
     }
-    suspend fun respond(request: DPairingRequest, accepted: Boolean): Pair<DPairingResponse, com.ismartcoding.plain.db.DPeer?>? {
+    suspend fun respond(request: DPairingRequest, accepted: Boolean): Pair<DPairingResponse, com.ismartcoding.plain.chat.models.PeerRecord?>? {
         val result = callChatStore("respondPairing") {
             put("request", Json.parseToJsonElement(JsonHelper.jsonEncode(request)))
             put("accepted", accepted)

@@ -4,8 +4,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,7 +22,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.audio.DAudio
-import com.ismartcoding.plain.db.DTag
+import com.ismartcoding.plain.graphql.models.Audio
+import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.NoDataColumn
 import com.ismartcoding.plain.ui.base.TopSpace
@@ -48,7 +49,7 @@ internal fun ColumnScope.AudioPageList(
     dragSelectState: DragSelectState, itemsState: List<DAudio>,
     audioVM: AudioViewModel, audioQueueVM: AudioQueueViewModel,
     tagsVM: TagsViewModel, castVM: CastViewModel,
-    audioTagsMap: Map<String, List<DTag>>, isAudioPlaying: Boolean,
+    audioTagsMap: Map<String, List<TagHostRecord>>, isAudioPlaying: Boolean,
     topRefreshLayoutState: RefreshLayoutState, paddingValues: PaddingValues,
     extraBottomPadding: Dp = 0.dp,
 ) {

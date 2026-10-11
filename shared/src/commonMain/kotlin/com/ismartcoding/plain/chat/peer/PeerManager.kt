@@ -1,11 +1,10 @@
 package com.ismartcoding.plain.chat.peer
 
-
-import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.chat.ChatCacher
-import com.ismartcoding.plain.db.DPeer
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.enums.DeviceType
+import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.lib.withIO
 
 object PeerManager {
     suspend fun deletePeer(peerId: String): Boolean = withIO {
@@ -29,7 +28,7 @@ object PeerManager {
         port: Int,
         name: String,
         deviceType: DeviceType,
-    ): DPeer? {
+    ): PeerRecord? {
         val peer = RustPeerStore.discovered(deviceId, ips, port, name, deviceType) ?: return null
         PeerCacher.load()
         return peer

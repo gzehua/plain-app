@@ -5,12 +5,13 @@ package com.ismartcoding.plain.platform
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
 import com.ismartcoding.plain.audio.DAudio
-import com.ismartcoding.plain.audio.DPlaylistAudio
-import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.graphql.models.Audio
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.lib.EmbeddedLyrics
 import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.lib.EmbeddedLyrics
 import com.ismartcoding.plain.lib.toByteArray
+import com.ismartcoding.plain.lib.withIO
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
@@ -54,11 +55,11 @@ actual suspend fun getAudioLyrics(path: String): String = withIO {
     }
 }
 
-actual fun playlistAudioFromPath(path: String): DPlaylistAudio {
+actual fun playlistAudioFromPath(path: String): AudioHostTrack {
     val fallbackTitle = path.getFilenameWithoutExtensionFromPath()
     val (title, artist) = tryExtractMetadata(path) ?: (fallbackTitle to "")
     val durationMs = tryExtractDurationMs(path)
-    return DPlaylistAudio(
+    return AudioHostTrack(
         title = title.ifEmpty { fallbackTitle },
         path = path,
         artist = artist,

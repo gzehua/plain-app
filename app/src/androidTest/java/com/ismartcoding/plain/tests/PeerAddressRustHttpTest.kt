@@ -2,16 +2,16 @@ package com.ismartcoding.plain.tests
 
 import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.ismartcoding.plain.chat.models.PeerRecord
+import com.ismartcoding.plain.chat.models.getBestIp
+import com.ismartcoding.plain.chat.models.getName
 import com.ismartcoding.plain.chat.peer.PeerCacher
 import com.ismartcoding.plain.chat.peer.RustPeerStore
-import com.ismartcoding.plain.db.DPeer
-import com.ismartcoding.plain.db.getBestIp
-import com.ismartcoding.plain.db.getName
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class PeerAddressRustHttpTest {
@@ -19,7 +19,7 @@ class PeerAddressRustHttpTest {
     fun rootAddressAndEncodedFileUrlUseCurrentPeerAndRejectStaleRows() = runBlocking {
         val id = "synthetic-address-${UUID.randomUUID()}"
         try {
-            RustPeerStore.insert(DPeer(id = id, name = " ", ip = "bad, 127.0.0.1", port = 443))
+            RustPeerStore.insert(PeerRecord(id = id, name = " ", ip = "bad, 127.0.0.1", port = 443))
             val peer = RustPeerStore.getById(id)!!
             assertEquals("bad, 127.0.0.1", peer.ip)
             assertEquals("127.0.0.1", peer.getBestIp())

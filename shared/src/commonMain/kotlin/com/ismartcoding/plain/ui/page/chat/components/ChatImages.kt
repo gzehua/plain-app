@@ -12,11 +12,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.chat.download.DownloadQueue
-import com.ismartcoding.plain.db.DMessageImages
-import com.ismartcoding.plain.db.DPeer
-import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.chat.ChatViewModel
+import com.ismartcoding.plain.chat.download.DownloadQueue
+import com.ismartcoding.plain.chat.models.MessageImages
+import com.ismartcoding.plain.chat.models.PeerRecord
+import com.ismartcoding.plain.graphql.models.Peer
+import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.models.VChat
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -24,13 +25,13 @@ import com.ismartcoding.plain.ui.models.VChat
 fun ChatImages(
     items: List<VChat>,
     m: VChat,
-    peer: DPeer?,
+    peer: PeerRecord?,
     imageWidthDp: Dp,
     imageWidthPx: Int,
     previewerState: MediaPreviewerState,
     chatViewModel: ChatViewModel,
 ) {
-    val imageItems = (m.value as DMessageImages).items
+    val imageItems = (m.value as MessageImages).items
     val downloadProgressMap by DownloadQueue.downloadProgress.collectAsState(mapOf())
 
     FlowRow(

@@ -1,5 +1,5 @@
 package com.ismartcoding.plain.features.share
 
-import com.ismartcoding.plain.db.DShare
+import com.ismartcoding.plain.graphql.models.ShareRecord
 
-data class SharedAuth(val share: DShare, val token: ByteArray)
+data class SharedAuth(val share: ShareRecord, val token: ByteArray)

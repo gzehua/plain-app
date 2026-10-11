@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.features.share
 
-import com.ismartcoding.plain.rust.request.RustContentApi
-import com.ismartcoding.plain.db.DMessageShare
+import com.ismartcoding.plain.chat.models.MessageShare
 import com.ismartcoding.plain.lib.TimeHelper
+import com.ismartcoding.plain.rust.request.RustContentApi
 import io.ktor.utils.io.readAvailable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -17,11 +17,11 @@ object SharedLinkClient {
         put("action", "ownLink"); put("id", id); put("host", host)
     }))
 
-    suspend fun initialLink(messageId: String, expected: DMessageShare): SharedLink = json.decodeFromJsonElement(call(buildJsonObject {
+    suspend fun initialLink(messageId: String, expected: MessageShare): SharedLink = json.decodeFromJsonElement(call(buildJsonObject {
         put("action", "initialLink"); put("message_id", messageId); put("expected", json.encodeToJsonElement(expected))
     }))
 
-    suspend fun browse(messageId: String, expected: DMessageShare, virtualPath: String?): SharedBrowseResult? = call(buildJsonObject {
+    suspend fun browse(messageId: String, expected: MessageShare, virtualPath: String?): SharedBrowseResult? = call(buildJsonObject {
         put("action", "browse"); put("message_id", messageId); put("expected", json.encodeToJsonElement(expected)); put("virtual_path", virtualPath)
     }).takeUnless { it is JsonNull }?.let { json.decodeFromJsonElement(it) }
 

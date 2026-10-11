@@ -1,14 +1,5 @@
 package com.ismartcoding.plain.ui.page.chat
 
-import com.ismartcoding.plain.preferences.*
-
-import com.ismartcoding.plain.platform.handleChatFileSelection
-import com.ismartcoding.plain.chat.ShareSendHelper
-import com.ismartcoding.plain.chat.peer.PeerTransportPrewarmer
-import com.ismartcoding.plain.features.share.ShareExpiry
-import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.lib.TimeHelper
-import com.ismartcoding.plain.ui.page.chat.components.FolderShareSheet
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,22 +32,31 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextAlign
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.TempData
+import com.ismartcoding.plain.chat.ChatViewModel
+import com.ismartcoding.plain.chat.ShareSendHelper
 import com.ismartcoding.plain.chat.channel.ChannelCacher
-import com.ismartcoding.plain.chat.peer.PeerCacher
 import com.ismartcoding.plain.chat.data.ChatTargetType
-import com.ismartcoding.plain.db.DChatChannel
+import com.ismartcoding.plain.chat.models.ChatChannelRecord
+import com.ismartcoding.plain.chat.peer.PeerCacher
+import com.ismartcoding.plain.chat.peer.PeerTransportPrewarmer
 import com.ismartcoding.plain.enums.ChatChannelStatus
 import com.ismartcoding.plain.enums.PeerStatus
 import com.ismartcoding.plain.enums.PickFileTag
 import com.ismartcoding.plain.enums.PickFileType
 import com.ismartcoding.plain.events.PickFileResultEvent
-import com.ismartcoding.plain.platform.LocaleHelper
+import com.ismartcoding.plain.features.share.ShareExpiry
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.Channel
+import com.ismartcoding.plain.lib.TimeHelper
+import com.ismartcoding.plain.platform.LocaleHelper
+import com.ismartcoding.plain.platform.MediaPreviewer
+import com.ismartcoding.plain.platform.PBackHandler
+import com.ismartcoding.plain.platform.handleChatFileSelection
+import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.base.ActionButtonMore
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.base.BottomActionButtons
@@ -64,7 +64,6 @@ import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.IconTextSmallButtonDelete
 import com.ismartcoding.plain.ui.base.NavigationBackIcon
 import com.ismartcoding.plain.ui.base.NavigationCloseIcon
-import com.ismartcoding.plain.platform.PBackHandler
 import com.ismartcoding.plain.ui.base.PBottomAppBar
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
@@ -73,13 +72,11 @@ import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.fastscroll.LazyColumnScrollbar
 import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
-import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
-import com.ismartcoding.plain.platform.MediaPreviewer
+import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.rememberPreviewerState
 import com.ismartcoding.plain.ui.models.AudioQueueViewModelBase
 import com.ismartcoding.plain.ui.models.ChannelViewModel
-import com.ismartcoding.plain.chat.ChatViewModel
 import com.ismartcoding.plain.ui.models.PeerViewModel
 import com.ismartcoding.plain.ui.models.VChat
 import com.ismartcoding.plain.ui.models.exitSelectMode
@@ -89,11 +86,13 @@ import com.ismartcoding.plain.ui.models.toggleSelectAll
 import com.ismartcoding.plain.ui.nav.Routing
 import com.ismartcoding.plain.ui.page.chat.components.ChatInput
 import com.ismartcoding.plain.ui.page.chat.components.ChatListItem
+import com.ismartcoding.plain.ui.page.chat.components.FolderShareSheet
 import com.ismartcoding.plain.ui.page.chat.components.ForwardTargetDialog
 import com.ismartcoding.plain.ui.page.chat.components.TransportIcon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 internal suspend fun scrollToLatest(
     chatVM: ChatViewModel,

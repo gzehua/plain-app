@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.page.audio
 
-import com.ismartcoding.plain.preferences.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -28,14 +27,16 @@ import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.has
 import com.ismartcoding.plain.features.audio.AudioPlaylistManager
 import com.ismartcoding.plain.features.audio.AudioQueueManager
+import com.ismartcoding.plain.graphql.models.AudioHostPlaylist
+import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.PBackHandler
 import com.ismartcoding.plain.platform.audioIsPlayingFlow
 import com.ismartcoding.plain.platform.audioJustPlayWithNotificationCheck
+import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
-import com.ismartcoding.plain.ui.components.MediaTopBar
 import com.ismartcoding.plain.ui.base.NeedPermissionColumn
 import com.ismartcoding.plain.ui.base.PSheetActionRow
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -44,6 +45,7 @@ import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
+import com.ismartcoding.plain.ui.components.MediaTopBar
 import com.ismartcoding.plain.ui.components.PlaylistNameDialog
 import com.ismartcoding.plain.ui.models.AudioHomeArtist
 import com.ismartcoding.plain.ui.models.AudioHomeViewModel
@@ -54,8 +56,6 @@ import com.ismartcoding.plain.ui.models.MediaFoldersViewModel
 import com.ismartcoding.plain.ui.models.TagsViewModel
 import com.ismartcoding.plain.ui.models.exitSearchMode
 import com.ismartcoding.plain.ui.nav.Routing
-import com.ismartcoding.plain.db.DAudioPlaylist
-import com.ismartcoding.plain.db.DTag
 import com.ismartcoding.plain.ui.page.audio.components.ArtistsRow
 import com.ismartcoding.plain.ui.page.audio.components.AudioFilesSelectModeBottomActions
 import com.ismartcoding.plain.ui.page.audio.components.AudioListItem
@@ -64,15 +64,15 @@ import com.ismartcoding.plain.ui.page.audio.components.HomeSectionHeader
 import com.ismartcoding.plain.ui.page.audio.components.PlaylistsRow
 import com.ismartcoding.plain.ui.page.audio.components.ViewAudioBottomSheet
 import com.ismartcoding.plain.ui.page.audioplayer.components.AudioPlayerBar
-import com.ismartcoding.plain.ui.page.cast.CastQueueFab
 import com.ismartcoding.plain.ui.page.cast.CastDialog
+import com.ismartcoding.plain.ui.page.cast.CastQueueFab
 import com.ismartcoding.plain.ui.page.tags.TagsBottomSheet
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.music as ui_drawable_music
 import com.ismartcoding.plain.ui.resources.plus as ui_drawable_plus
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Audio home: quick actions + artists / playlists / recent sections on top of
@@ -278,7 +278,7 @@ private fun HomeSections(
     audioQueueVM: AudioQueueViewModel,
     tagsVM: TagsViewModel,
     castVM: CastViewModel,
-    audioTagsMap: Map<String, List<DTag>>,
+    audioTagsMap: Map<String, List<TagHostRecord>>,
     isAudioPlaying: Boolean,
     scrollState: LazyListState,
     dragSelectState: DragSelectState,
@@ -288,7 +288,7 @@ private fun HomeSections(
     onViewAllItems: () -> Unit,
     onArtistsViewAll: () -> Unit,
     onArtistClick: (AudioHomeArtist) -> Unit,
-    onPlaylistClick: (DAudioPlaylist) -> Unit,
+    onPlaylistClick: (AudioHostPlaylist) -> Unit,
 ) {
     val artists = homeVM.artists.value
     val playlists = homeVM.playlists.value

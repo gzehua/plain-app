@@ -9,10 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.ismartcoding.plain.data.DMediaBucket
-import com.ismartcoding.plain.db.DTag
-import com.ismartcoding.plain.db.DTagRelation
 import com.ismartcoding.plain.data.DDoc
+import com.ismartcoding.plain.data.DMediaBucket
+import com.ismartcoding.plain.graphql.models.Doc
+import com.ismartcoding.plain.graphql.models.MediaBucket
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.graphql.models.TagHostRelation
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
 import com.ismartcoding.plain.ui.base.dragselect.rememberListDragSelectState
 import com.ismartcoding.plain.ui.models.DocsViewModel
@@ -24,8 +26,8 @@ data class DocsPageState(
     val itemsState: List<DDoc>,
     val dragSelectState: DragSelectState,
     val scrollBehavior: TopAppBarScrollBehavior,
-    val tagsState: List<DTag>,
-    val tagsMapState: Map<String, List<DTagRelation>>,
+    val tagsState: List<TagHostRecord>,
+    val tagsMapState: Map<String, List<TagHostRelation>>,
     val scrollState: LazyListState,
     val bucketsMap: Map<String, DMediaBucket>,
 ) {

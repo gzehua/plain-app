@@ -3,13 +3,13 @@ package com.ismartcoding.plain.ui.models
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.helpers.SearchHelper
-import com.ismartcoding.plain.db.DNote
-import com.ismartcoding.plain.db.DTag
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.NoteHelper
 import com.ismartcoding.plain.features.TagHelper
+import com.ismartcoding.plain.graphql.models.Note
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.helpers.SearchHelper
+import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -20,11 +20,11 @@ import kotlinx.coroutines.flow.update
 // App-lifetime singleton so the HTTP server (GraphQL mutations) and the UI share
 // one notes list state: server writes call [reloadAsync]/[updateItem] and every
 // collector sees the change without event passing.
-object NotesViewModel : ISearchableViewModel<DNote>, ISelectableViewModel<DNote> {
+object NotesViewModel : ISearchableViewModel<Note>, ISelectableViewModel<Note> {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val _itemsFlow = MutableStateFlow<List<DNote>>(emptyList())
-    override val itemsFlow: StateFlow<List<DNote>> = _itemsFlow
+    private val _itemsFlow = MutableStateFlow<List<Note>>(emptyList())
+    override val itemsFlow: StateFlow<List<Note>> = _itemsFlow
     var showLoading = mutableStateOf(true)
     var offset = mutableIntStateOf(0)
     var limit = mutableIntStateOf(200)
@@ -32,9 +32,9 @@ object NotesViewModel : ISearchableViewModel<DNote>, ISelectableViewModel<DNote>
     var trash = mutableStateOf(false)
     var total = mutableIntStateOf(0)
     var totalTrash = mutableIntStateOf(0)
-    var tag = mutableStateOf<DTag?>(null)
+    var tag = mutableStateOf<TagHostRecord?>(null)
     val dataType = DataType.NOTE
-    var selectedItem = mutableStateOf<DNote?>(null)
+    var selectedItem = mutableStateOf<Note?>(null)
     val showTagsDialog = mutableStateOf(false)
 
     override val showSearchBar = mutableStateOf(false)
@@ -76,7 +76,7 @@ object NotesViewModel : ISearchableViewModel<DNote>, ISelectableViewModel<DNote>
         }
     }
 
-    fun updateItem(item: DNote) {
+    fun updateItem(item: Note) {
         _itemsFlow.update {
             val index = it.indexOfFirst { i -> i.id == item.id }
             if (index != -1) {

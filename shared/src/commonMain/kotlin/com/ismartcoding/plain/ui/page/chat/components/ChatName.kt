@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.page.chat.components
 
-import com.ismartcoding.plain.enums.ChatStatus
-import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -16,18 +14,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.chat.models.MessageStatusData
 import com.ismartcoding.plain.chat.peer.PeerCacher
-import com.ismartcoding.plain.db.DMessageStatusData
+import com.ismartcoding.plain.enums.ChatStatus
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.formatTime
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.PIconButton
 import com.ismartcoding.plain.ui.models.VChat
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.rotate_ccw as ui_drawable_rotate_ccw
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ChatName(
@@ -35,7 +35,7 @@ fun ChatName(
     isPeerChat: Boolean = false,
     isLocal: Boolean = false,
     onRetry: (() -> Unit)? = null,
-    onShowDeliveryDetails: ((DMessageStatusData) -> Unit)? = null,
+    onShowDeliveryDetails: ((MessageStatusData) -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier

@@ -1,24 +1,24 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.RustPeerStore
 import com.ismartcoding.plain.chat.peer.transport.PeerTransportHost
 import com.ismartcoding.plain.data.DPairingCancel
-import com.ismartcoding.plain.db.DPeer
 import com.ismartcoding.plain.discover.NearbyHttpClient
 import com.ismartcoding.plain.discover.PairingMessenger
-import com.ismartcoding.plain.platform.startHttpEngineAsync
-import com.ismartcoding.plain.platform.stopHttpEngineAsync
 import com.ismartcoding.plain.platform.isBleReady
 import com.ismartcoding.plain.platform.isWifiAwareSupported
+import com.ismartcoding.plain.platform.startHttpEngineAsync
+import com.ismartcoding.plain.platform.stopHttpEngineAsync
 import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.rust.request.RustContentApi
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class PeerPrewarmNearbyRustHttpTest {
@@ -26,7 +26,7 @@ class PeerPrewarmNearbyRustHttpTest {
     fun rustGatesUnpairedPrewarmAndReadsActualOsCapabilities() = runBlocking {
         val id = "synthetic-prewarm-${UUID.randomUUID()}"
         try {
-            RustPeerStore.insert(DPeer(id = id, name = id))
+            RustPeerStore.insert(PeerRecord(id = id, name = id))
             assertTrue(RustContentApi.postJsonOrThrow("chat/prewarm", buildJsonObject { put("id", id) }).getValue("result") is JsonNull)
             val caps = PeerTransportHost.handle("peerTransportPrewarmCapabilities", buildJsonObject {}).jsonObject
             assertEquals(isBleReady(), caps.getValue("bleReady").jsonPrimitive.boolean)

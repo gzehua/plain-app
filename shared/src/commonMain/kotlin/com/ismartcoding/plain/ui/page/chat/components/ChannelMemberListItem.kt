@@ -3,15 +3,15 @@ package com.ismartcoding.plain.ui.page.chat.components
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.ismartcoding.plain.db.ChannelMember
-import com.ismartcoding.plain.db.DPeer
-import com.ismartcoding.plain.db.getBestIp
-import com.ismartcoding.plain.db.getName
+import com.ismartcoding.plain.chat.models.PeerRecord
+import com.ismartcoding.plain.chat.models.getBestIp
+import com.ismartcoding.plain.chat.models.getName
 import com.ismartcoding.plain.enums.BadgeType
 import com.ismartcoding.plain.enums.ButtonSize
 import com.ismartcoding.plain.enums.ButtonType
 import com.ismartcoding.plain.enums.DeviceType
 import com.ismartcoding.plain.enums.getIcon
+import com.ismartcoding.plain.graphql.models.ChatChannelMember
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.cancel
 import com.ismartcoding.plain.i18n.channel_creator
@@ -23,8 +23,8 @@ import com.ismartcoding.plain.ui.base.PStatusBadge
 import org.jetbrains.compose.resources.stringResource
 
 data class PeerMember(
-    val peer: DPeer,
-    val member: ChannelMember,
+    val peer: PeerRecord,
+    val member: ChatChannelMember,
     val isSelf: Boolean = false,
     val isOwner: Boolean = false,
 ) {

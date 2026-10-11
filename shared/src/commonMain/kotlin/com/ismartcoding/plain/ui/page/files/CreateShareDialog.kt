@@ -17,16 +17,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.DShare
+import com.ismartcoding.plain.chat.ShareSendHelper
 import com.ismartcoding.plain.enums.ButtonSize
 import com.ismartcoding.plain.features.share.ShareExpiry
 import com.ismartcoding.plain.features.share.ShareManager
+import com.ismartcoding.plain.graphql.models.ShareRecord
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.cancel
-import com.ismartcoding.plain.ui.resources.close as ui_drawable_close
+import com.ismartcoding.plain.i18n.close
 import com.ismartcoding.plain.i18n.create
 import com.ismartcoding.plain.i18n.create_share_link
 import com.ismartcoding.plain.i18n.name
+import com.ismartcoding.plain.i18n.sent
 import com.ismartcoding.plain.i18n.share_created
 import com.ismartcoding.plain.i18n.share_expiry
 import com.ismartcoding.plain.i18n.share_expiry_1d
@@ -46,23 +48,21 @@ import com.ismartcoding.plain.ui.base.ActionButtons
 import com.ismartcoding.plain.ui.base.BottomActionButtons
 import com.ismartcoding.plain.ui.base.ClipboardTextField
 import com.ismartcoding.plain.ui.base.CornerCopyCard
-import com.ismartcoding.plain.ui.base.IconTextQrCodeButton
 import com.ismartcoding.plain.ui.base.IconTextForwardButton
+import com.ismartcoding.plain.ui.base.IconTextQrCodeButton
 import com.ismartcoding.plain.ui.base.IconTextShareButton
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.PFilterChip
 import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.WebAddressBarQrDialog
-import com.ismartcoding.plain.ui.page.chat.components.ForwardTargetDialog
-import com.ismartcoding.plain.chat.ShareSendHelper
 import com.ismartcoding.plain.ui.helpers.DialogHelper
-import com.ismartcoding.plain.i18n.sent
+import com.ismartcoding.plain.ui.page.chat.components.ForwardTargetDialog
+import com.ismartcoding.plain.ui.resources.close as ui_drawable_close
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.i18n.close
 
 /**
  * Dialog to create a share link for the selected [paths]. First collects the
@@ -74,14 +74,14 @@ import com.ismartcoding.plain.i18n.close
 fun CreateShareDialog(
     paths: List<String>,
     onDismiss: () -> Unit,
-    onCreated: (DShare) -> Unit = {},
+    onCreated: (ShareRecord) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val defaultName = remember(paths) { if (paths.size == 1) paths[0].getFilenameFromPath() else "" }
     var name by remember { mutableStateOf(defaultName) }
     var expiry by remember { mutableStateOf(ShareExpiry.NEVER) }
     var isLoading by remember { mutableStateOf(false) }
-    var share by remember { mutableStateOf<DShare?>(null) }
+    var share by remember { mutableStateOf<ShareRecord?>(null) }
     var link by remember { mutableStateOf("") }
     var showQr by remember { mutableStateOf(false) }
     var showForwardDialog by remember { mutableStateOf(false) }

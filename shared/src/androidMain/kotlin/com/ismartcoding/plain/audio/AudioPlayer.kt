@@ -1,8 +1,5 @@
 package com.ismartcoding.plain.audio
 
-import com.ismartcoding.plain.preferences.*
-import com.ismartcoding.plain.appContext
-
 import android.content.ComponentName
 import android.content.Context
 import androidx.media3.common.PlaybackException
@@ -10,21 +7,24 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
-import com.ismartcoding.plain.lib.coMain
-import com.ismartcoding.plain.lib.coIO
-import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.TempData
+import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.enums.AudioAction
-import com.ismartcoding.plain.features.audio.AudioCommands
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.withTimeout
 import com.ismartcoding.plain.events.AudioActionEvent
+import com.ismartcoding.plain.features.audio.AudioCommands
 import com.ismartcoding.plain.features.audio.AudioQueueManager
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.lib.coIO
+import com.ismartcoding.plain.lib.coMain
+import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.services.AudioPlayerService
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withTimeout
 
 object AudioPlayer {
     private val _isPlayingFlow = MutableStateFlow(false)
@@ -81,7 +81,7 @@ object AudioPlayer {
 
     private var controller: MediaController? = null
     private var player: Player? = null
-    private var pendingStart: Pair<DPlaylistAudio, Long>? = null
+    private var pendingStart: Pair<AudioHostTrack, Long>? = null
     val currentPath: String get() = player?.currentMediaItem?.mediaId.orEmpty()
     var playerProgress: Long = 0 // player progress in milliseconds
         get() {
@@ -120,7 +120,7 @@ object AudioPlayer {
         }, MoreExecutors.directExecutor())
     }
 
-    suspend fun load(context: Context, audio: DPlaylistAudio, positionMs: Long, speed: Float, revision: Long) {
+    suspend fun load(context: Context, audio: AudioHostTrack, positionMs: Long, speed: Float, revision: Long) {
         val ready = CompletableDeferred<Unit>()
         ensurePlayer(context) {
             try {
@@ -194,7 +194,7 @@ object AudioPlayer {
     }
 
     private fun doPlay(
-        audio: DPlaylistAudio,
+        audio: AudioHostTrack,
         speed: Float,
         revision: Long,
     ) {

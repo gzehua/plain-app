@@ -1,18 +1,22 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.chat.RustChatFixtures
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.chat.ChatManager
+import com.ismartcoding.plain.chat.RustChatFixtures
 import com.ismartcoding.plain.chat.RustChatStore
 import com.ismartcoding.plain.chat.channel.RustChannelStore
+import com.ismartcoding.plain.chat.models.MessageContent
+import com.ismartcoding.plain.chat.models.MessageText
+import com.ismartcoding.plain.chat.models.MessageType
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.RustPeerStore
 import com.ismartcoding.plain.db.*
 import com.ismartcoding.plain.enums.ChatStatus
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class ChatDeliveryRustHttpTest {
@@ -22,8 +26,8 @@ class ChatDeliveryRustHttpTest {
         val chats = mutableListOf<String>()
         val channel = RustChannelStore.create(id)
         try {
-            val content = DMessageContent(MessageType.TEXT, DMessageText("fixture"))
-            RustPeerStore.insert(DPeer(id = id, name = id))
+            val content = MessageContent(MessageType.TEXT, MessageText("fixture"))
+            RustPeerStore.insert(PeerRecord(id = id, name = id))
             val local = RustChatFixtures.create("local", "", content)
             chats += local.id
             local.toId = id

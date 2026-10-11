@@ -15,8 +15,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.TempData
 import com.ismartcoding.plain.chat.download.DownloadQueue
-import com.ismartcoding.plain.db.DMessageFiles
-import com.ismartcoding.plain.db.DPeer
+import com.ismartcoding.plain.chat.models.MessageFiles
+import com.ismartcoding.plain.chat.models.PeerRecord
+import com.ismartcoding.plain.graphql.models.Peer
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.models.AudioQueueViewModelBase
 import com.ismartcoding.plain.ui.models.VChat
@@ -27,11 +28,11 @@ fun ChatFiles(
     items: List<VChat>,
     navController: NavHostController,
     m: VChat,
-    peer: DPeer?,
+    peer: PeerRecord?,
     audioQueueVM: AudioQueueViewModelBase,
     previewerState: MediaPreviewerState,
 ) {
-    val fileItems = (m.value as DMessageFiles).items
+    val fileItems = (m.value as MessageFiles).items
     val currentPlayingPath = audioQueueVM.selectedPath
     val downloadProgressMap by DownloadQueue.downloadProgress.collectAsState(mapOf())
 

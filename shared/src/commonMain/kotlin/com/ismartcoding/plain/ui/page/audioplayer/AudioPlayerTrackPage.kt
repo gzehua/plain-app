@@ -39,17 +39,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.audio.DPlaylistAudio
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
 import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.ui.resources.pause as ui_drawable_pause
-import com.ismartcoding.plain.ui.resources.play_arrow as ui_drawable_play_arrow
+import com.ismartcoding.plain.i18n.pause
 import com.ismartcoding.plain.lib.LrcParser
 import com.ismartcoding.plain.platform.audioPause
 import com.ismartcoding.plain.platform.audioPlay
 import com.ismartcoding.plain.ui.page.audioplayer.components.AudioPlayerCover
-import org.jetbrains.compose.resources.painterResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.i18n.pause
+import com.ismartcoding.plain.ui.resources.pause as ui_drawable_pause
+import com.ismartcoding.plain.ui.resources.play_arrow as ui_drawable_play_arrow
+import org.jetbrains.compose.resources.painterResource
 
 internal enum class PlayerView { COVER, LYRICS }
 private fun dpLerp(start: Dp, stop: Dp, fraction: Float): Dp = start + (stop - start) * fraction
@@ -61,7 +61,7 @@ private fun dpLerp(start: Dp, stop: Dp, fraction: Float): Dp = start + (stop - s
  */
 @Composable
 internal fun AudioPlayerTrackPage(
-    item: DPlaylistAudio,
+    item: AudioHostTrack,
     progressMs: Long,
     isPlaying: Boolean,
     viewMode: PlayerView,

@@ -1,16 +1,16 @@
 package com.ismartcoding.plain.ui.models
 
-import com.ismartcoding.plain.preferences.*
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.data.DPomodoroSettings
 import com.ismartcoding.plain.features.PomodoroHelper
-import com.ismartcoding.plain.ui.page.pomodoro.PomodoroToday
-import com.ismartcoding.plain.db.DPomodoroItem
+import com.ismartcoding.plain.graphql.models.PomodoroRecord
+import com.ismartcoding.plain.graphql.models.PomodoroSettings
 import com.ismartcoding.plain.lib.TimeHelper
+import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.page.pomodoro.PomodoroState
+import com.ismartcoding.plain.ui.page.pomodoro.PomodoroToday
 import kotlinx.coroutines.Job
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -28,7 +28,7 @@ class PomodoroViewModel : ViewModel() {
     var settings = mutableStateOf(UserPrefs.pomodoroSettings.value)
 
     val showSettings = mutableStateOf(false)
-    var todayRecord = mutableStateOf<DPomodoroItem?>(null)
+    var todayRecord = mutableStateOf<PomodoroRecord?>(null)
 
     private var totalSeconds = UserPrefs.pomodoroSettings.value.workDurationMin * 60
 

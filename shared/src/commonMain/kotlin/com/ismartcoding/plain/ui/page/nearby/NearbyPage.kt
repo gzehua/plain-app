@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.page.nearby
 
-import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,13 +21,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.PeerCacher
 import com.ismartcoding.plain.data.DNearbyDevice
 import com.ismartcoding.plain.enums.ButtonSize
+import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.toSortName
 import com.ismartcoding.plain.platform.BleAvailability
 import com.ismartcoding.plain.platform.bleAvailabilityFlow
@@ -40,13 +40,14 @@ import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.NavigationBackIcon
 import com.ismartcoding.plain.ui.base.PAlert
-import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.base.PScaffold
+import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.models.NearbyViewModel
 import com.ismartcoding.plain.ui.models.PeerViewModel
 import com.ismartcoding.plain.ui.page.chat.components.NearbyDeviceItem
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -164,7 +165,7 @@ fun NearbyPage(
 internal fun LazyListScope.nearbyDeviceListItems(
     nearbyDevices: List<DNearbyDevice>,
     peerVM: PeerViewModel,
-    pairedPeers: List<com.ismartcoding.plain.db.DPeer>,
+    pairedPeers: List<com.ismartcoding.plain.chat.models.PeerRecord>,
 ) {
     val sortedDevices = nearbyDevices.sortedBy { it.name.toSortName() }
     items(sortedDevices, key = { it.id }) { item ->

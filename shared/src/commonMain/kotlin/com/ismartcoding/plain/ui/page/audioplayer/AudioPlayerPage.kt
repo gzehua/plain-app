@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.page.audioplayer
 
-import com.ismartcoding.plain.preferences.*
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,29 +31,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.TempData
-import com.ismartcoding.plain.audio.DPlaylistAudio
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
 import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.ui.resources.chevron_left as ui_drawable_chevron_left
-import com.ismartcoding.plain.ui.resources.expand_more as ui_drawable_expand_more
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.platform.PBackHandler
 import com.ismartcoding.plain.platform.audioIsPlayingFlow
 import com.ismartcoding.plain.platform.audioJustPlayWithNotificationCheck
 import com.ismartcoding.plain.platform.audioPause
-import com.ismartcoding.plain.platform.audioPlayerProgress
 import com.ismartcoding.plain.platform.audioPlay
+import com.ismartcoding.plain.platform.audioPlayerProgress
 import com.ismartcoding.plain.platform.audioSeekTo
 import com.ismartcoding.plain.platform.audioSkipToNext
 import com.ismartcoding.plain.platform.audioSkipToPrevious
 import com.ismartcoding.plain.platform.exitImmersiveFullscreen
-import com.ismartcoding.plain.platform.PBackHandler
 import com.ismartcoding.plain.platform.playlistAudioFromPath
+import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.base.PModalBottomSheet
 import com.ismartcoding.plain.ui.models.AudioQueueViewModel
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.chevron_left as ui_drawable_chevron_left
+import com.ismartcoding.plain.ui.resources.expand_more as ui_drawable_expand_more
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
-import com.ismartcoding.plain.ui.resources.Res as UiRes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,7 +77,7 @@ fun AudioPlayerPage(audioQueueVM: AudioQueueViewModel, onDismissRequest: () -> U
 
     // Pager pages mirror the play queue; fall back to the single playing
     // track when the queue is empty (e.g. player opened from chat).
-    var fallbackItem by remember { mutableStateOf<DPlaylistAudio?>(null) }
+    var fallbackItem by remember { mutableStateOf<AudioHostTrack?>(null) }
     LaunchedEffect(currentPlayingPath.value) {
         fallbackItem = null
         if (!isDragging) progress = audioPlayerProgress().toFloat()

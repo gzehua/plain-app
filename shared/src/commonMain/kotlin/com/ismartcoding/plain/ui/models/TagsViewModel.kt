@@ -3,14 +3,14 @@ package com.ismartcoding.plain.ui.models
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.lib.TimeHelper
-import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.db.IData
 import com.ismartcoding.plain.data.TagRelationStub
-import com.ismartcoding.plain.db.DTag
-import com.ismartcoding.plain.db.DTagRelation
+import com.ismartcoding.plain.db.IData
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.TagHelper
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.graphql.models.TagHostRelation
+import com.ismartcoding.plain.lib.TimeHelper
+import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.helpers.LoadingHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,17 +18,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class TagsViewModel : ViewModel() {
-    private val _itemsFlow = MutableStateFlow<List<DTag>>(emptyList())
-    val itemsFlow: StateFlow<List<DTag>> = _itemsFlow
-    private val _tagsMapFlow = MutableStateFlow(mutableMapOf<String, List<DTagRelation>>())
+    private val _itemsFlow = MutableStateFlow<List<TagHostRecord>>(emptyList())
+    val itemsFlow: StateFlow<List<TagHostRecord>> = _itemsFlow
+    private val _tagsMapFlow = MutableStateFlow(mutableMapOf<String, List<TagHostRelation>>())
     val tagsMapFlow = _tagsMapFlow.asStateFlow()
     var showLoading = mutableStateOf(true)
     var tagNameDialogVisible = mutableStateOf(false)
-    var editItem = mutableStateOf<DTag?>(null)
+    var editItem = mutableStateOf<TagHostRecord?>(null)
     var editTagName = mutableStateOf("")
     var dataType = mutableStateOf(DataType.DEFAULT)
 
-    fun updateTagsMap(map: Map<String, List<DTagRelation>>) {
+    fun updateTagsMap(map: Map<String, List<TagHostRelation>>) {
         _tagsMapFlow.value = map.toMutableMap()
     }
 
@@ -89,7 +89,7 @@ class TagsViewModel : ViewModel() {
         tagNameDialogVisible.value = true
     }
 
-    fun showEditDialog(tag: DTag) {
+    fun showEditDialog(tag: TagHostRecord) {
         editTagName.value = tag.name
         editItem.value = tag
         tagNameDialogVisible.value = true

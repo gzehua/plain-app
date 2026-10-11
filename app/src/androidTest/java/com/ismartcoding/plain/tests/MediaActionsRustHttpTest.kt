@@ -6,25 +6,25 @@ import android.net.Uri
 import android.provider.MediaStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.audio.DPlaylistAudio
 import com.ismartcoding.plain.data.TagRelationStub
 import com.ismartcoding.plain.db.DImageEmbedding
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.*
 import com.ismartcoding.plain.features.audio.*
 import com.ismartcoding.plain.features.mediaactions.*
-import com.ismartcoding.plain.platform.getMediaItemUriString
-import com.ismartcoding.plain.platform.trashMedia
-import com.ismartcoding.plain.platform.restoreMedia
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
 import com.ismartcoding.plain.platform.deleteMedia
-import kotlinx.coroutines.runBlocking
-import org.junit.Assert.*
-import org.junit.Test
-import org.junit.runner.RunWith
+import com.ismartcoding.plain.platform.getMediaItemUriString
+import com.ismartcoding.plain.platform.restoreMedia
+import com.ismartcoding.plain.platform.trashMedia
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.UUID
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.*
+import org.junit.Test
+import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class MediaActionsRustHttpTest {
@@ -85,7 +85,7 @@ class MediaActionsRustHttpTest {
             TagHelper.editTagRelations(DataType.AUDIO,TagRelationStub(missingId,"Synthetic missing",1),listOf(audioTag),emptyList())
             TagHelper.editTagRelations(DataType.VIDEO,TagRelationStub(id,"Other domain",1),listOf(videoTag),emptyList())
             MediaDurationHelper.save("audio",id,1000)
-            val track = DPlaylistAudio("Synthetic",path,prefix,1000,"")
+            val track = AudioHostTrack("Synthetic",path,prefix,1000,"")
             playlistId = AudioPlaylistManager.createPlaylist(prefix).id
             AudioPlaylistManager.addPlaylistItems(playlistId,listOf(track))
             AudioQueueManager.enqueue(listOf(track))
@@ -113,7 +113,7 @@ class MediaActionsRustHttpTest {
             TagHelper.editTagRelations(DataType.VIDEO,TagRelationStub(videoId,"Synthetic video",1),listOf(videoTag),emptyList())
             trashMedia(DataType.VIDEO,setOf(videoId))
             assertNull(VideoProgressHelper.getAsync(videoId))
-            assertTrue(MediaDurationHelper.all().none { it.mediaType == "video" && it.mediaId == videoId })
+            assertTrue(MediaDurationHelper.all().none { it.type == DataType.VIDEO && it.mediaId == videoId })
             assertTrue(TagHelper.getTagRelationsByKey(videoId,DataType.VIDEO).isEmpty())
             deleteMedia(DataType.VIDEO,setOf(videoId),true)
             assertFalse(File(videoPath).exists())

@@ -1,17 +1,16 @@
 package com.ismartcoding.plain.ui.page.appfiles.components
 
-import com.ismartcoding.plain.i18n.*
-
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.extensions.resolveAppFileRealPath
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.extensions.isAudioFast
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isPdfFile
 import com.ismartcoding.plain.lib.extensions.isTextFile
 import com.ismartcoding.plain.lib.extensions.isVideoFast
-import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.db.DMessageFile
-import com.ismartcoding.plain.extensions.resolveAppFileRealPath
 import com.ismartcoding.plain.platform.fileToUriString
 import com.ismartcoding.plain.platform.playAudioWithNotificationCheck
 import com.ismartcoding.plain.platform.playlistAudioFromPath
@@ -47,7 +46,7 @@ fun openAppFile(
                             it.appFile.id,
                             p,
                             it.appFile.size,
-                            data = DMessageFile(uri = p, size = it.appFile.size, fileName = it.fileName),
+                            data = MessageFile(uri = p, size = it.appFile.size, fileName = it.fileName),
                         )
                     }
                 }
@@ -55,7 +54,7 @@ fun openAppFile(
                     MediaPreviewData.setDataAsync(
                         itemState,
                         previewItems,
-                        PreviewItem(file.appFile.id, path, file.appFile.size, data = DMessageFile(uri = path, size = file.appFile.size, fileName = fileName)),
+                        PreviewItem(file.appFile.id, path, file.appFile.size, data = MessageFile(uri = path, size = file.appFile.size, fileName = fileName)),
                     )
                 }
                 previewerState.openTransform(

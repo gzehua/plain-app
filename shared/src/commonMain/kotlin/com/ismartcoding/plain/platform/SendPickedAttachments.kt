@@ -2,6 +2,11 @@ package com.ismartcoding.plain.platform
 
 import com.ismartcoding.plain.chat.ChatManager
 import com.ismartcoding.plain.chat.ChatViewModel
+import com.ismartcoding.plain.chat.data.ChatTarget
+import com.ismartcoding.plain.chat.models.MessageContent
+import com.ismartcoding.plain.chat.models.MessageFiles
+import com.ismartcoding.plain.chat.models.MessageImages
+import com.ismartcoding.plain.chat.models.MessageType
 import com.ismartcoding.plain.db.*
 import com.ismartcoding.plain.enums.ChatStatus
 import com.ismartcoding.plain.lib.extensions.isImageFast
@@ -9,7 +14,6 @@ import com.ismartcoding.plain.lib.extensions.isVideoFast
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import com.ismartcoding.plain.chat.data.ChatTarget
 
 suspend fun sendPickedAttachments(
     targets: List<ChatTarget>,
@@ -25,8 +29,8 @@ suspend fun sendPickedAttachments(
         else coroutineScope {
             val content = if (attachments.isEmpty()) null else {
                 val visual = images ?: attachments.all { it.fileName.isImageFast() || it.fileName.isVideoFast() }
-                if (visual) DMessageContent(MessageType.IMAGES, DMessageImages(attachments))
-                else DMessageContent(MessageType.FILES, DMessageFiles(attachments))
+                if (visual) MessageContent(MessageType.IMAGES, MessageImages(attachments))
+                else MessageContent(MessageType.FILES, MessageFiles(attachments))
             }
             if (content == null && text.isNullOrBlank()) return@coroutineScope false
             targets.map { target -> async {

@@ -5,18 +5,19 @@ import android.media.MediaMetadataRetriever
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
+import com.ismartcoding.plain.graphql.models.AudioHostTrack
+import com.ismartcoding.plain.i18n.Res
+import com.ismartcoding.plain.i18n.unknown
 import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
 import com.ismartcoding.plain.lib.extensions.pathToUri
 import com.ismartcoding.plain.platform.LocaleHelper
-import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.i18n.unknown
 
 /**
- * Android-specific extensions on [DPlaylistAudio] kept in androidMain because they
+ * Android-specific extensions on [AudioHostTrack] kept in androidMain because they
  * depend on MediaMetadataRetriever and Media3.
  */
 @OptIn(UnstableApi::class)
-fun DPlaylistAudio.toMediaItem(): MediaItem {
+fun AudioHostTrack.toMediaItem(): MediaItem {
     val mediaMetadata = MediaMetadata.Builder()
         .setTitle(title)
         .setSubtitle(artist)
@@ -32,10 +33,10 @@ fun DPlaylistAudio.toMediaItem(): MediaItem {
         .build()
 }
 
-fun DPlaylistAudio.Companion.fromPath(
+fun AudioHostTrack.Companion.fromPath(
     context: Context,
     path: String,
-): DPlaylistAudio {
+): AudioHostTrack {
     val retriever = MediaMetadataRetriever()
     var title = path.getFilenameWithoutExtensionFromPath()
     var durationMs = 0L
@@ -56,5 +57,5 @@ fun DPlaylistAudio.Companion.fromPath(
     } catch (ex: Throwable) {
         ex.printStackTrace()
     }
-    return DPlaylistAudio(title, path, artist, durationMs)
+    return AudioHostTrack(title, path, artist, durationMs)
 }

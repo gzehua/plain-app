@@ -7,17 +7,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.DClipboard
+import com.ismartcoding.plain.graphql.models.ClipboardItem
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.formatDateTime
 import com.ismartcoding.plain.ui.base.PListItem
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.delete_forever as ui_drawable_delete_forever
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun ClipboardHistoryListItem(entry: DClipboard, sourceName: String, onCopy: () -> Unit, onDelete: () -> Unit) {
+fun ClipboardHistoryListItem(entry: ClipboardItem, sourceName: String, onCopy: () -> Unit, onDelete: () -> Unit) {
     PListItem(
         modifier = Modifier.clickable { onCopy() },
         title = if (entry.sensitive) "••••••••" else entry.text.let { if (it.length > 200) it.take(200) + "…" else it },

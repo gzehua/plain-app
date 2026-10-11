@@ -2,16 +2,16 @@ package com.ismartcoding.plain.helpers
 
 import android.content.Context
 import android.net.Uri
+import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.lib.extensions.queryOpenableFileName
 import java.io.File
-
 
 object ChatFileSaveHelper {
     /**
      * Import a file from a content-resolver [uri] into the content-addressable
      * chat file store with two-step dedup.
      *
-     * Returns a `fid:{sha256}` URI to embed in [com.ismartcoding.plain.db.DMessageFile.uri].
+     * Returns a `fid:{sha256}` URI to embed in [com.ismartcoding.plain.chat.models.MessageFile.uri].
      */
     suspend fun importFromUri(
         context: Context,
@@ -36,7 +36,7 @@ object ChatFileSaveHelper {
      * chat file store.
      *
      * [srcFile] is deleted on success (move semantics via [deleteSrc]).
-     * Returns a `fid:{sha256}` URI to embed in [com.ismartcoding.plain.db.DMessageFile.uri].
+     * Returns a `fid:{sha256}` URI to embed in [com.ismartcoding.plain.chat.models.MessageFile.uri].
      */
     suspend fun importDownloadedFile(
         srcFile: File,

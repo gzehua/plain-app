@@ -1,11 +1,7 @@
 package com.ismartcoding.plain.ui.components.mediaviewer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Modifier
-import com.ismartcoding.plain.ui.theme.PlainTheme
-
-import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -16,16 +12,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.lib.extensions.formatBytes
-import com.ismartcoding.plain.lib.extensions.isUrl
+import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.data.DImage
 import com.ismartcoding.plain.data.DVideo
-import com.ismartcoding.plain.db.DTag
-import com.ismartcoding.plain.db.DTagRelation
-import com.ismartcoding.plain.platform.formatDateTime
+import com.ismartcoding.plain.graphql.models.Image
+import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.graphql.models.TagHostRelation
+import com.ismartcoding.plain.graphql.models.Video
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.lib.extensions.formatBytes
+import com.ismartcoding.plain.lib.extensions.isUrl
+import com.ismartcoding.plain.platform.ImageMetaRows
 import com.ismartcoding.plain.platform.fileLength
+import com.ismartcoding.plain.platform.formatDateTime
+import com.ismartcoding.plain.platform.formatImageMetaTexts
 import com.ismartcoding.plain.platform.getImageMeta
 import com.ismartcoding.plain.platform.getVideoMeta
 import com.ismartcoding.plain.platform.renameMediaFile
@@ -37,23 +39,23 @@ import com.ismartcoding.plain.ui.base.PModalBottomSheet
 import com.ismartcoding.plain.ui.base.Subtitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.FileRenameDialog
-import com.ismartcoding.plain.platform.ImageMetaRows
 import com.ismartcoding.plain.ui.components.QrScanResultBottomSheet
 import com.ismartcoding.plain.ui.components.TagSelector
 import com.ismartcoding.plain.ui.components.VideoMetaRows
-import com.ismartcoding.plain.platform.formatImageMetaTexts
 import com.ismartcoding.plain.ui.models.TagsViewModel
 import com.ismartcoding.plain.ui.page.cast.CastDialog
+import com.ismartcoding.plain.ui.theme.PlainTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ViewMediaBottomSheet(
     m: PreviewItem,
     tagsVM: TagsViewModel? = null,
-    tagsMap: Map<String, List<DTagRelation>>? = null,
-    tagsState: List<DTag> = emptyList(),
+    tagsMap: Map<String, List<TagHostRelation>>? = null,
+    tagsState: List<TagHostRecord> = emptyList(),
     onDismiss: () -> Unit = {},
     onRenamedAsync: suspend () -> Unit = {},
     deleteAction: () -> Unit = {},
@@ -96,7 +98,7 @@ fun ViewMediaBottomSheet(
             }
         }
         // `PreviewItem` rows built from raw markdown (`<img src="app://…">` or
-        // `![alt](app://…)`) have no associated `DMessageFile` / `DImage`, so the
+        // `![alt](app://…)`) have no associated `MessageFile` / `DImage`, so the
         // caller never gets a chance to set `size` at construction time. Stat
         // the file lazily here so we don't pay the cost for every image in the
         // document on every recomposition — only the one the user is currently
