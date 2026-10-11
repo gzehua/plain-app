@@ -18,7 +18,9 @@ import com.ismartcoding.plain.ui.resources.phone_call as ui_drawable_phone_call
 import com.ismartcoding.plain.i18n.folder
 
 suspend fun checkEnabledAsync(permissions: Set<Permission>) {
-    if (!com.ismartcoding.plain.features.system.RustSystemProviders.permissionsAllowed(permissions.map { it.name })) {
+    val enabled = com.ismartcoding.plain.preferences.RustSystemState.state.value.apiPermissions
+    val missing = permissions.map { it.name }.filterNot { it in enabled }
+    if (missing.isNotEmpty()) {
         throw Exception("no_permission")
     }
 }

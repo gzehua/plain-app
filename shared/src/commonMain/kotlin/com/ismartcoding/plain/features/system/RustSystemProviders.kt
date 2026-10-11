@@ -10,11 +10,6 @@ import com.ismartcoding.plain.platform.DPackageInfo
 import kotlinx.serialization.json.*
 
 object RustSystemProviders {
-    suspend fun permissionsAllowed(permissions: Collection<String>, requireGranted: Boolean = false): Boolean =
-        RustContentApi.postJsonOrThrow("system/permissions", buildJsonObject {
-            put("permissions", JsonArray(permissions.map(::JsonPrimitive)))
-            put("requireGranted", requireGranted)
-        }).getValue("allowed").jsonPrimitive.boolean
 
     private suspend fun call(action: String, query: String, offset: Int = 0, limit: Int = 0, sortBy: FileSortBy = FileSortBy.NAME_ASC): JsonObject =
         RustContentApi.postJsonOrThrow("system/providers", buildJsonObject {

@@ -118,16 +118,19 @@ fun Permission.grant(): Boolean {
     return false
 }
 
-suspend fun Permission.isEnabledAsync(): Boolean {
-    return com.ismartcoding.plain.features.system.RustSystemProviders.permissionsAllowed(listOf(name))
-}
+/**
+ * Whether the user handed this permission to the web client. The list already
+ * arrives with [com.ismartcoding.plain.preferences.SystemState] over the prefs
+ * bridge, so this is a local read — the core has nothing to add.
+ */
+suspend fun Permission.isEnabledAsync(): Boolean =
+    name in com.ismartcoding.plain.preferences.RustSystemState.state.value.apiPermissions
 
-suspend fun Permission.enabledAndIsGrantedAsync(): Boolean {
-    return com.ismartcoding.plain.features.system.RustSystemProviders.permissionsAllowed(listOf(name), requireGranted = true)
-}
+/** Enabled for the web client *and* granted by the OS. Both answers are local. */
+suspend fun Permission.enabledAndIsGrantedAsync(): Boolean = isEnabledAsync() && isGranted()
 
 suspend fun Permission.checkEnabledAsync() {
-    if (!com.ismartcoding.plain.features.system.RustSystemProviders.permissionsAllowed(listOf(name))) {
+    if (!isEnabledAsync()) {
         throw Exception("no_permission")
     }
 }
