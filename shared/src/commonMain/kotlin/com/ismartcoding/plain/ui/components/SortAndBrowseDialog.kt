@@ -2,6 +2,7 @@ package com.ismartcoding.plain.ui.components
 
 import com.ismartcoding.plain.i18n.*
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,7 +38,7 @@ fun <T : IData> SortAndBrowseDialog(
         onDismissRequest = onDismiss,
         title = null,
         text = {
-            LazyColumn {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 item {
                     Text(
                         text = stringResource(Res.string.sort),

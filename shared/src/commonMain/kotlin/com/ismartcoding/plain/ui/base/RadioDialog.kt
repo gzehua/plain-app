@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.base
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -34,7 +35,7 @@ fun RadioDialog(
             )
         },
         text = {
-            LazyColumn(Modifier.selectableGroup()) {
+            LazyColumn(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 items(options) { option ->
                     PDialogRadioRow(selected = option.selected, onClick = {
                         option.onClick()

@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.ui.base
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
@@ -24,6 +25,7 @@ fun PDialogRadioRow(selected: Boolean, onClick: () -> Unit, text: String, modifi
         modifier =
         modifier
             .fillMaxWidth()
+            .defaultMinSize(minHeight = 56.dp)
             .clip(CircleShape)
             .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,

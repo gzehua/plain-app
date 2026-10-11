@@ -2,6 +2,7 @@ package com.ismartcoding.plain.ui.components
 
 import com.ismartcoding.plain.i18n.*
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -74,7 +75,7 @@ fun MdnsAndPortEditDialog(
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                LazyColumn(modifier = Modifier.height(200.dp)) {
+                LazyColumn(modifier = Modifier.height(200.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     items(ports.toList()) { p ->
                         PDialogRadioRow(
                             selected = p == selectedPort,
