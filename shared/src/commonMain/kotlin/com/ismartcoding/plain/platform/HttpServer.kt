@@ -67,10 +67,20 @@ expect suspend fun onHttpServerStopped()
 expect fun startHttpServerService()
 expect suspend fun stopHttpServiceAsync()
 
+/**
+ * Diagnostic for the desktop-access page. It deliberately goes over loopback
+ * HTTP: a check for "is my HTTP server reachable" that skipped HTTP would pass
+ * with a broken listener. The round trip also proves the core can still reach
+ * this app, since `/health` answers through the host bridge.
+ */
 suspend fun checkHttpServerAsync(): Boolean = withIO {
+    val base = RustContentApi.startedSession()?.baseUrl
+    if (base == null) {
+        LogCat.e("Rust HTTP server diagnostic failed: core not started")
+        return@withIO false
+    }
     try {
-        com.ismartcoding.plain.rust.PlainRust.mainQuery("coreHttpServerHealthy")
-            .getValue("coreHttpServerHealthy").jsonPrimitive.boolean
+        createPlainHttpClient(PlainHttpClientSpec.Local(2)).get("$base/health").isOk()
     } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (error: Exception) {
