@@ -1,6 +1,14 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.chat.RustChatService
+import com.ismartcoding.plain.chat.ChatManager
+import com.ismartcoding.plain.chat.ChatViewModel
+import com.ismartcoding.plain.db.*
+import com.ismartcoding.plain.enums.ChatStatus
+import com.ismartcoding.plain.lib.extensions.isImageFast
+import com.ismartcoding.plain.lib.extensions.isVideoFast
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import com.ismartcoding.plain.chat.data.ChatTarget
 
 suspend fun sendPickedAttachments(
@@ -12,8 +20,22 @@ suspend fun sendPickedAttachments(
     normalize: Boolean = false,
 ): Boolean {
     if (targets.isEmpty()) return false
-    return PickedAttachments.withFiles(uris) { attachments ->
+    return PickedAttachments.withFiles(uris, normalize) { attachments ->
         if (uris.isNotEmpty() && attachments.isEmpty()) false
-        else RustChatService.share(targets, attachments, text, caption, images, normalize)
+        else coroutineScope {
+            val content = if (attachments.isEmpty()) null else {
+                val visual = images ?: attachments.all { it.fileName.isImageFast() || it.fileName.isVideoFast() }
+                if (visual) DMessageContent(MessageType.IMAGES, DMessageImages(attachments))
+                else DMessageContent(MessageType.FILES, DMessageFiles(attachments))
+            }
+            if (content == null && text.isNullOrBlank()) return@coroutineScope false
+            targets.map { target -> async {
+                val item = if (content == null) ChatManager.sendText(target, text!!) else ChatManager.sendContent(target, content)
+                ChatViewModel.onMessagesCreated(target, listOf(item), scroll = true)
+                val captionItem = if (content != null && !caption.isNullOrBlank()) ChatManager.sendText(target, caption) else null
+                captionItem?.let { ChatViewModel.onMessagesCreated(target, listOf(it), scroll = true) }
+                item.status == ChatStatus.SENT && (captionItem == null || captionItem.status == ChatStatus.SENT)
+            } }.awaitAll().all { it }
+        }
     }
 }

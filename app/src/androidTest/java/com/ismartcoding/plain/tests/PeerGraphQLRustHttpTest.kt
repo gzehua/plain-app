@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.chat.RustChatFixtures
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.TempData
 import com.ismartcoding.plain.ble.server.HttpServiceHandler
@@ -79,7 +80,7 @@ class PeerGraphQLRustHttpTest {
             client.post(url, encrypted, "application/octet-stream", mapOf("c-id" to id)).use { assertEquals(403, it.status.value) }
         } finally {
             client.close()
-            RustChatStore.deleteByPeerId(id)
+            RustChatFixtures.deleteByPeerId(id)
             RustPeerStore.delete(id)
             PeerCacher.load()
             com.ismartcoding.plain.chat.ChatCacher.load()

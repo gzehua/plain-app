@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.features
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.chat.RustChatStore
 import com.ismartcoding.plain.chat.ChatCacher
 import com.ismartcoding.plain.db.DChat
@@ -8,10 +9,8 @@ import kotlinx.serialization.json.*
 
 object ChatMessageEditor {
     suspend fun updateTextAsync(item: DChat, newText: String): Boolean {
-        val result = RustContentApi.postJsonOrThrow("chat/link-preview", buildJsonObject {
-            put("action", "edit"); put("id", item.id); put("text", newText)
-        }).getValue("result").jsonObject
-        val current = RustChatStore.decode(result.getValue("chat"))
+        val result = PlainRust.mainMutate("editChatText(id: ${gql(item.id)}, text: ${gql(newText)}) { changed chat { ${RustChatStore.FIELDS} } }").getValue("editChatText").jsonObject
+        val current = RustChatStore.decodeGraphql(result.getValue("chat"))
         item.fromId = current.fromId
         item.toId = current.toId
         item.channelId = current.channelId

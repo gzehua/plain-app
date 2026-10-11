@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.platform
 
 import androidx.compose.ui.unit.IntSize
-import com.ismartcoding.plain.chat.ChatAttachment
+import com.ismartcoding.plain.db.DMessageFile
 import com.ismartcoding.plain.helpers.AppFileStore
 import com.ismartcoding.plain.helpers.StringHelper
 import com.ismartcoding.plain.lib.extensions.isImageFast
@@ -15,7 +15,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
 internal object PickedAttachments {
-    suspend fun <T> withFiles(uris: List<String>, send: suspend (List<ChatAttachment>) -> T): T = withIO {
+    suspend fun <T> withFiles(uris: List<String>, normalize: Boolean, send: suspend (List<DMessageFile>) -> T): T = withIO {
         val imports = mutableListOf<String>()
         try {
             val attachments = uris.distinct().mapNotNull { uri ->
@@ -41,7 +41,10 @@ internal object PickedAttachments {
                             getVideoIntrinsicSize(path)
                         else -> IntSize.Zero
                     }
-                    ChatAttachment(file.id, info.displayName, size.width, size.height, getMediaDurationMs(path))
+                    val extension = getExtensionFromMimeType(info.mimeType)
+                    val name = if (normalize && extension.isNotEmpty()) "${info.displayName.substringBeforeLast('.', info.displayName)}.$extension" else info.displayName
+                    DMessageFile(uri = AppFileStore.toFidUri(file), size = file.size, fileName = name,
+                        width = size.width, height = size.height, durationMs = getMediaDurationMs(path))
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (error: Exception) {

@@ -21,7 +21,7 @@ import java.util.UUID
 @RunWith(AndroidJUnit4::class)
 class ChatServiceRustHttpTest {
     @Test
-    fun pageShareForwardAndFolderUseRootCommandsWithActualOsSources() = runBlocking {
+    fun pageShareForwardAndFolderUseNativeGraphqlWithActualOsSources() = runBlocking {
         val marker = "synthetic-chat-service-${UUID.randomUUID()}"
         val local = ChatTarget.parseId("peer:local")
         val root = File(com.ismartcoding.plain.appContext.cacheDir, marker).apply { mkdirs() }
@@ -41,7 +41,7 @@ class ChatServiceRustHttpTest {
             assertEquals(longText.toByteArray().size.toLong(), textFile.size)
             val record = AppFileStore.getById(files.single())!!
             assertArrayEquals(longText.toByteArray(), File(RustContentApi.directory, record.realPath).readBytes())
-            assertTrue(ShareSendHelper.sendAsync(listOf(local, local), listOf(androidx.core.content.FileProvider.getUriForFile(com.ismartcoding.plain.appContext, com.ismartcoding.plain.AppIntents.AUTHORITY, source).toString()), null, "$marker caption"))
+            assertTrue(com.ismartcoding.plain.platform.sendPickedAttachments(listOf(local, local), listOf(androidx.core.content.FileProvider.getUriForFile(com.ismartcoding.plain.appContext, com.ismartcoding.plain.AppIntents.AUTHORITY, source).toString()), null, "$marker caption"))
             val picked = created().filter { (it.content.value as? DMessageFiles)?.items?.any { item -> item.fileName == source.name } == true }
             assertEquals(2, picked.size)
             val attachment = (picked.first().content.value as DMessageFiles).items.single()
@@ -60,14 +60,14 @@ class ChatServiceRustHttpTest {
             assertArrayEquals(source.readBytes(), body)
             ChatManager.deleteOne(picked.first().id)
             assertEquals(2, AppFileStore.getById(hash)!!.refCount)
-            val page = RustContentApi.query("""chatItems(target: "peer:local", offset: 0, limit: 20, query: "text:$marker") { id }""")["data"]!!.jsonObject["chatItems"]!!.jsonArray
+            val page = RustContentApi.query("""chatItems(target: "peer:local", offset: 0, limit: 20, query: "text:$marker") { id }""")["chatItems"]!!.jsonArray
             assertTrue("the sent message must appear in the contract page, got $page", page.any { it.jsonObject["id"]!!.jsonPrimitive.content == forward.id })
             val image = File(root, "$marker.png")
             val bitmap = android.graphics.Bitmap.createBitmap(7, 5, android.graphics.Bitmap.Config.ARGB_8888)
             image.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
             bitmap.recycle()
             val imageUri = androidx.core.content.FileProvider.getUriForFile(com.ismartcoding.plain.appContext, com.ismartcoding.plain.AppIntents.AUTHORITY, image).toString()
-            assertTrue(ShareSendHelper.sendAsync(listOf(local), listOf(imageUri), null, null))
+            assertTrue(com.ismartcoding.plain.platform.sendPickedAttachments(listOf(local), listOf(imageUri), null, null))
             val picture = created().mapNotNull { it.content.value as? DMessageImages }.single().items.single()
             files += picture.uri.removePrefix("fid:").substringBefore('.')
             assertEquals(7, picture.width)

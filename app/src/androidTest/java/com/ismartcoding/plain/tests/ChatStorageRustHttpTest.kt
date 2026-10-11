@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.chat.RustChatFixtures
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.chat.*
@@ -49,7 +50,7 @@ class ChatStorageRustHttpTest {
             RustChannelStore.patch(before, before.copy(version = before.version + 1, name = "$prefix patched"))
             ChannelCacher.load()
             assertEquals(channel.version + 1, RustChannelStore.getById(channel.id)!!.version)
-            RustChatStore.insert(one, two, group)
+            RustChatFixtures.insert(one, two, group)
             assertEquals(listOf(one.id, two.id), RustChatStore.getByPeerId(peer.id).map { it.id })
             assertEquals(two.id, RustChatStore.getByPeerIdPage(peer.id, 1, 0).single().id)
             assertEquals(1, ChatDbHelper.countAsync("$prefix literal %_"))
@@ -58,9 +59,9 @@ class ChatStorageRustHttpTest {
             assertEquals(one.id, queried.single().jsonObject["id"]!!.jsonPrimitive.content)
             assertEquals(setOf(one.id, two.id), ChatDbHelper.getIdsAsync("peer:${peer.id}"))
             assertEquals(setOf(group.id), ChatDbHelper.getIdsAsync("channel:${channel.id}"))
-            RustChatStore.updateStatusAndData(two.id, ChatStatus.PARTIAL, "{\"results\":[]}")
+            RustChatFixtures.updateStatusAndData(two.id, ChatStatus.PARTIAL, "{\"results\":[]}")
             assertEquals(ChatStatus.PARTIAL, RustChatStore.getById(two.id)!!.status)
-            RustChatStore.updateData(ChatItemDataUpdate(two.id, DMessageContent(MessageType.TEXT, DMessageText("changed"))))
+            RustChatFixtures.updateData(ChatItemDataUpdate(two.id, DMessageContent(MessageType.TEXT, DMessageText("changed"))))
             assertEquals("changed", (RustChatStore.getById(two.id)!!.content.value as DMessageText).text)
             NearbyDeviceCache.upsertAsync(nearby)
             NearbyDeviceCache.upsertAsync(nearby.copy(name = "stale", lastSeen = Instant.parse("2026-10-04T00:00:01Z")))
@@ -75,7 +76,7 @@ class ChatStorageRustHttpTest {
             assertNull(RustChatStore.getById(two.id))
             assertNotNull(RustChatStore.getById(group.id))
         } finally {
-            RustChatStore.deleteByIds(listOf(one.id, two.id, group.id))
+            RustChatFixtures.deleteByIds(listOf(one.id, two.id, group.id))
             RustChannelStore.delete(channel.id)
             RustPeerStore.delete(peer.id)
             NearbyDeviceCache.removeAsync(nearby.id)
@@ -97,7 +98,7 @@ class ChatStorageRustHttpTest {
         val path = java.io.File(store.realPathFromId(suffix))
         try {
             store.importBytes(bytes, "text/plain")
-            RustChatStore.insert(direct, group)
+            RustChatFixtures.insert(direct, group)
             assertEquals(2, store.getById(file.id)!!.refCount)
             ChatManager.clearAllMessages(com.ismartcoding.plain.chat.data.ChatTarget.parseId("peer:$prefix"))
             assertNull(RustChatStore.getById(direct.id))
@@ -108,9 +109,9 @@ class ChatStorageRustHttpTest {
             assertNull(RustChatStore.getById(group.id))
             assertNull(store.getById(file.id))
             assertFalse(path.exists())
-            RustChatStore.deleteByIds(listOf(direct.id, direct.id, group.id))
+            RustChatFixtures.deleteByIds(listOf(direct.id, direct.id, group.id))
         } finally {
-            RustChatStore.deleteByIds(listOf(direct.id, group.id))
+            RustChatFixtures.deleteByIds(listOf(direct.id, group.id))
             while (store.getById(file.id) != null) store.release(file.id)
         }
     }
@@ -136,7 +137,7 @@ class ChatStorageRustHttpTest {
             assertNull(com.ismartcoding.plain.chat.peer.PeerManager.applyDeviceDiscovered(peer.id, emptyList(), 1, "stale", DeviceType.PHONE))
             RustChannelStore.insert(channel)
             store.importBytes(prefix.toByteArray(), "text/plain")
-            RustChatStore.insert(direct, group)
+            RustChatFixtures.insert(direct, group)
             assertTrue(com.ismartcoding.plain.chat.peer.PeerManager.deletePeer(peer.id))
             assertEquals(PeerStatus.CHANNEL, RustPeerStore.getById(peer.id)!!.status)
             assertNull(RustChatStore.getById(direct.id))
@@ -149,7 +150,7 @@ class ChatStorageRustHttpTest {
             assertTrue(com.ismartcoding.plain.chat.peer.PeerManager.deletePeer(peer.id))
             assertFalse(com.ismartcoding.plain.chat.peer.PeerManager.deletePeer(peer.id))
         } finally {
-            RustChatStore.deleteByIds(listOf(direct.id, group.id))
+            RustChatFixtures.deleteByIds(listOf(direct.id, group.id))
             RustChannelStore.delete(channel.id)
             RustPeerStore.delete(peer.id)
             while (store.getById(file.id) != null) store.release(file.id)

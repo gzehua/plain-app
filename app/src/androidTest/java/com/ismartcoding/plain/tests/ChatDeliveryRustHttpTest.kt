@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.chat.RustChatFixtures
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.chat.ChatManager
 import com.ismartcoding.plain.chat.RustChatStore
@@ -23,21 +24,21 @@ class ChatDeliveryRustHttpTest {
         try {
             val content = DMessageContent(MessageType.TEXT, DMessageText("fixture"))
             RustPeerStore.insert(DPeer(id = id, name = id))
-            val local = RustChatStore.create("local", "", content)
+            val local = RustChatFixtures.create("local", "", content)
             chats += local.id
             local.toId = id
             local.status = ChatStatus.FAILED
             val savedLocal = ChatManager.deliver(local.id)
             assertEquals(ChatStatus.SENT, savedLocal.status)
             assertEquals("local", savedLocal.toId)
-            val peer = RustChatStore.create(id, "", content)
+            val peer = RustChatFixtures.create(id, "", content)
             chats += peer.id
             peer.toId = "local"
             val savedPeer = ChatManager.deliver(peer.id)
             assertEquals(ChatStatus.FAILED, savedPeer.status)
             assertEquals(id, savedPeer.toId)
             assertEquals("peer unpaired", savedPeer.parseStatusData()!!.results.single().error)
-            val group = RustChatStore.create("", channel.id, content)
+            val group = RustChatFixtures.create("", channel.id, content)
             chats += group.id
             val savedGroup = ChatManager.deliver(group.id)
             assertEquals(ChatStatus.SENT, savedGroup.status)
@@ -47,7 +48,7 @@ class ChatDeliveryRustHttpTest {
             assertTrue(rejected)
             assertEquals(ChatStatus.SENT, RustChatStore.getById(group.id)!!.status)
         } finally {
-            RustChatStore.deleteByIds(chats)
+            RustChatFixtures.deleteByIds(chats)
             RustChannelStore.remove(channel.id)
             RustPeerStore.delete(id)
             com.ismartcoding.plain.chat.ChatCacher.load()

@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.chat.RustChatFixtures
 import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -48,7 +49,7 @@ class SharedClientRustHttpTest {
             val share = ShareManager.createShare(marker, listOf(folder.absolutePath), true, null)
             shareId = share.id
             val old = DMessageShare(shareId = share.id, urlToken = ShareManager.sharedToken(share.id), peerInfo = DSharePeerInfo(RustSystemState.state.value.clientId, "bad,127.0.0.1", 1), name = "old", itemCount = 1, totalSize = file.length(), expiresAt = Instant.parse("2030-01-01T00:00:00Z"))
-            RustChatStore.insert(DChat(id = messageId, fromId = "me", toId = "local", content = DMessageContent(MessageType.SHARE, old)))
+            RustChatFixtures.insert(DChat(id = messageId, fromId = "me", toId = "local", content = DMessageContent(MessageType.SHARE, old)))
             val initial = SharedLinkClient.initialLink(messageId, old)
             assertEquals("127.0.0.1", initial.host)
             assertEquals(UserPrefs.httpsPort.value, initial.port)
@@ -154,7 +155,7 @@ class SharedClientRustHttpTest {
             assertTrue(rejected)
         } finally {
             stopHttpEngineAsync()
-            RustChatStore.delete(messageId)
+            RustChatFixtures.delete(messageId)
             shareId?.let { ShareManager.deleteShare(it) }
             UserPrefs.httpPort.value = http
             UserPrefs.httpsPort.value = https

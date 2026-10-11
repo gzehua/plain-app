@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.chat.RustChatFixtures
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.chat.RustChatStore
@@ -30,7 +31,7 @@ class DownloadQueueRustHttpTest {
         suspend fun snapshot() = queue(buildJsonObject { put("action", "snapshot") }).jsonObject.getValue("tasks").jsonArray.firstOrNull { it.jsonObject.getValue("id").jsonPrimitive.content == file.id }?.jsonObject
         try {
             RustPeerStore.insert(peer)
-            RustChatStore.insert(chat)
+            RustChatFixtures.insert(chat)
             val capabilities = PeerTransportHost.handle("peerTransportCapabilities", buildJsonObject {}).jsonArray
             for (type in capabilities.filter { it.jsonPrimitive.content != "LAN" }) repeat(2) {
                 val ticket = transport(buildJsonObject { put("action", "beginDownload"); put("id", id); put("available", JsonArray(listOf(type))) }).jsonObject.getValue("ticket")
@@ -63,7 +64,7 @@ class DownloadQueueRustHttpTest {
         } finally {
             queue(buildJsonObject { put("action", "control"); put("id", file.id); put("command", "remove") })
             DownloadQueue.refresh()
-            RustChatStore.delete(id)
+            RustChatFixtures.delete(id)
             RustPeerStore.delete(id)
             com.ismartcoding.plain.chat.ChatCacher.load()
             com.ismartcoding.plain.chat.peer.PeerCacher.load()
@@ -91,7 +92,7 @@ class DownloadQueueRustHttpTest {
             val peer = DPeer(id = id, name = id, ip = "127.0.0.1", port = com.ismartcoding.plain.preferences.UserPrefs.httpsPort.value)
             val file = DMessageFile(id = fileId, uri = "fsid:${com.ismartcoding.plain.helpers.UrlHelper.encrypt(source.absolutePath)}", size = payload.size.toLong(), fileName = "fixture.bin")
             RustPeerStore.insert(peer)
-            RustChatStore.insert(DChat(id = id, fromId = id, toId = "me", content = DMessageContent(MessageType.FILES, DMessageFiles(listOf(file)))))
+            RustChatFixtures.insert(DChat(id = id, fromId = id, toId = "me", content = DMessageContent(MessageType.FILES, DMessageFiles(listOf(file)))))
             DownloadQueue.addDownloadTask(file, peer, id)
             val downloaded = withTimeout(15000) {
                 while (true) {
@@ -113,7 +114,7 @@ class DownloadQueueRustHttpTest {
         } finally {
             RustContentApi.postJsonOrThrow("chat/download", buildJsonObject { put("action", "control"); put("id", fileId); put("command", "remove") })
             DownloadQueue.refresh()
-            RustChatStore.delete(id)
+            RustChatFixtures.delete(id)
             hash?.let { value -> while (com.ismartcoding.plain.helpers.AppFileStore.getById(value) != null) com.ismartcoding.plain.helpers.AppFileStore.release(value) }
             RustPeerStore.delete(id)
             root.deleteRecursively()

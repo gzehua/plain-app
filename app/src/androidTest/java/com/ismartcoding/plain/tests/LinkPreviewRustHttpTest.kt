@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.chat.RustChatFixtures
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.chat.ChatCacher
 import com.ismartcoding.plain.chat.RustChatStore
@@ -26,7 +27,7 @@ class LinkPreviewRustHttpTest {
             val chat = DChat(id = id, fromId = "local", toId = "local", status = ChatStatus.SENT,
                 content = DMessageContent(MessageType.TEXT, DMessageText(url,
                     listOf(DLinkPreview(url = url, title = id, imageLocalPath = AppFileStore.toFidUri(image))))))
-            RustChatStore.insert(chat)
+            RustChatFixtures.insert(chat)
             val stale = DChat(id = id, toId = "stale", content = DMessageContent(MessageType.TEXT, DMessageText("stale")))
             assertTrue(ChatMessageEditor.updateTextAsync(stale, "edited $id"))
             assertEquals("local", stale.toId)
@@ -37,7 +38,7 @@ class LinkPreviewRustHttpTest {
             assertFalse(ChatMessageEditor.updateTextAsync(stale, "edited $id"))
             assertEquals(stale.content.toJSONString(), RustChatStore.getById(id)!!.content.toJSONString())
         } finally {
-            RustChatStore.delete(id)
+            RustChatFixtures.delete(id)
             hash?.let { while (AppFileStore.getById(it) != null) AppFileStore.release(it) }
             ChatCacher.load()
         }
