@@ -20,14 +20,6 @@ import kotlin.concurrent.Volatile
 /** A refusal or transport failure from the local Rust core. */
 class RustApiException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
-/**
- * Owns the local Rust core's lifecycle and the legacy JSON-RPC calls that have no
- * GraphQL equivalent yet.
- *
- * GraphQL goes through [PlainRust], which owns the local-remote transport
- * choice; these entry points delegate there and exist only so existing callers
- * keep working while the remaining REST routes are migrated.
- */
 object RustContentApi {
     private val lock = PlatformLock()
     private val client by lazy { createPlainHttpClient(PlainHttpClientSpec.Local()) }
