@@ -28,7 +28,8 @@ object RustMdnsRuntime {
                     apply(row)
                     if (command.body["action"]?.jsonPrimitive?.content == "restart") {
                         PeerCacher.load()
-                        RustNearbyDevices.refresh()
+                        val devices = RustNearbyDevices.snapshot()
+                        RustNearbyDevices.apply(devices)
                     }
                     command.reply.complete(row)
                 } catch (cancelled: CancellationException) {
@@ -87,7 +88,7 @@ object RustMdnsRuntime {
         if (row.getValue("revision").jsonPrimitive.long != revision) return
         val latest = snapshot()
         if (latest["runtimeId"] == event["runtimeId"] && latest.getValue("revision").jsonPrimitive.long == revision && latest.getValue("scanning").jsonPrimitive.boolean) {
-            com.ismartcoding.plain.chat.peer.PeerStatusProjection.refresh()
+            com.ismartcoding.plain.chat.peer.PeerStatusManager.refresh()
         }
     }
     fun services(row: JsonObject): List<MdnsServiceSnapshot> = row.getValue("services").jsonArray.map {

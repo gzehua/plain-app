@@ -22,13 +22,14 @@ internal object RustEventProjection {
         com.ismartcoding.plain.chat.download.DownloadQueue.refresh()
         com.ismartcoding.plain.features.share.SharedFolderDownloadEngine.refresh()
         com.ismartcoding.plain.discover.PairingProjection.reconcile()
-        com.ismartcoding.plain.discover.RustNearbyDevices.refresh()
+        val devices = com.ismartcoding.plain.discover.RustNearbyDevices.snapshot()
+        com.ismartcoding.plain.discover.RustNearbyDevices.apply(devices)
         com.ismartcoding.plain.discover.RustMdnsRuntime.refresh()
         com.ismartcoding.plain.features.dlna.DlnaRendererState.refresh()
         com.ismartcoding.plain.features.dlna.sender.RustDlnaSender.refresh()
         com.ismartcoding.plain.ai.RustImageModels.refresh()
         com.ismartcoding.plain.chat.peer.PeerTransportProjection.refresh()
-        com.ismartcoding.plain.chat.peer.PeerStatusProjection.refresh()
+        com.ismartcoding.plain.chat.peer.PeerStatusManager.refresh()
         com.ismartcoding.plain.chat.peer.PeerCacher.load()
         com.ismartcoding.plain.chat.channel.ChannelCacher.load()
         com.ismartcoding.plain.chat.ChatCacher.load()
@@ -44,16 +45,28 @@ internal object RustEventProjection {
                 com.ismartcoding.plain.platform.onRustHttpServerFailed(failure.generation, failure.message)
             }
             EventType.PEER_STATUS_UPDATED.name -> {
-                com.ismartcoding.plain.chat.peer.PeerStatusProjection.refresh()
+                com.ismartcoding.plain.chat.peer.PeerStatusManager.refresh()
                 com.ismartcoding.plain.chat.peer.PeerCacher.load()
                 com.ismartcoding.plain.chat.ChatCacher.load()
             }
             EventType.PEER_TRANSPORT_UPDATED.name -> com.ismartcoding.plain.chat.peer.PeerTransportProjection.refresh()
-            EventType.PEER_CONNECTIONS_UPDATED.name -> com.ismartcoding.plain.chat.peer.PeerStatusProjection.refresh(payload)
+            EventType.PEER_CONNECTIONS_UPDATED.name -> {
+                val obj = JsonHelper.jsonDecode<JsonObject>(payload)
+                val id = obj["id"]?.jsonPrimitive?.contentOrNull
+                val online = obj["online"]?.jsonPrimitive?.booleanOrNull
+                if (id != null && online != null) {
+                    com.ismartcoding.plain.chat.peer.PeerStatusManager.applyOne(id, online)
+                } else {
+                    com.ismartcoding.plain.chat.peer.PeerStatusManager.refresh()
+                }
+            }
             EventType.MDNS_UPDATED.name, EventType.NEARBY_DISCOVERY_STARTED.name, EventType.NEARBY_DISCOVERY_STOPPED.name -> com.ismartcoding.plain.discover.RustMdnsRuntime.refresh(if (type == EventType.MDNS_UPDATED.name) payload else null)
             EventType.DLNA_RENDERER_UPDATED.name -> com.ismartcoding.plain.features.dlna.DlnaRendererState.apply(
                 JsonHelper.jsonDecode<JsonObject>(payload).getValue("renderer").jsonObject)
-            EventType.NEARBY_DEVICES_UPDATED.name -> com.ismartcoding.plain.discover.RustNearbyDevices.refresh()
+            EventType.NEARBY_DEVICES_UPDATED.name -> {
+                val devices = com.ismartcoding.plain.discover.RustNearbyDevices.snapshot()
+                com.ismartcoding.plain.discover.RustNearbyDevices.apply(devices)
+            }
             EventType.PAIRING_REQUEST_RECEIVED.name -> com.ismartcoding.plain.discover.PairingProjection.request(payload)
             EventType.PAIRING_STARTED.name -> com.ismartcoding.plain.discover.PairingProjection.started(payload)
             EventType.PAIRING_CANCELED.name -> com.ismartcoding.plain.discover.PairingProjection.canceled(payload)
@@ -110,8 +123,9 @@ internal object RustEventProjection {
             EventType.SHARED_FOLDER_DOWNLOAD_UPDATED.name -> com.ismartcoding.plain.features.share.SharedFolderDownloadEngine.refresh()
             EventType.CONTENT_CHANGED.name -> {
                 com.ismartcoding.plain.preferences.Prefs.refresh()
-                val channels = com.ismartcoding.plain.chat.channel.RustChannelRuntime.call(com.ismartcoding.plain.chat.channel.ChannelCommand.Snapshot)
-                com.ismartcoding.plain.chat.channel.ChannelSystemMessageReceiver.applyCommitted(channels)
+                com.ismartcoding.plain.chat.peer.PeerCacher.load()
+                com.ismartcoding.plain.chat.channel.ChannelCacher.load()
+                com.ismartcoding.plain.chat.ChatManager.refreshLatestChats()
                 try { com.ismartcoding.plain.features.FavoriteFolderHelper.refresh() }
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) { com.ismartcoding.plain.lib.logcat.LogCat.e("Favorite folders refresh",error) }

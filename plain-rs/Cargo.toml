@@ -11,9 +11,17 @@ crate-type = ["cdylib", "staticlib"]
 # Tracks plain-desktop's main branch so the two repos never drift; Cargo.lock
 # pins the exact commit that was built.
 plain-server = { git = "https://github.com/plainhub/plain-desktop.git", branch = "main", features = ["host-api", "mobile", "image-inference", "http_transport", "ble-native"] }
-plain-rs = { git = "https://github.com/plainhub/plain-desktop.git", branch = "main", default-features = false, features = ["ble-native", "prefs"] }
+# 启用 chat 特性为了让 plain-rs/src/ffi/discovery.rs 能引用 `crate::discovery` 下的
+# advertisement / nearby_wire（这两个不属于 chat 业务逻辑，但被 chat feature 门控）。
+plain-rs = { git = "https://github.com/plainhub/plain-desktop.git", branch = "main", default-features = false, features = ["ble-native", "prefs", "chat"] }
 serde_json = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "sync"] }
+
+# 临时指向本地 plain-desktop，让 plain-rs/src/ffi/ 的新接口对齐已删 REST 的源码。
+# 等 plain-desktop 上游合并这两个 REST 删除后把这段移除，回滚到 git pin。
+[patch."https://github.com/plainhub/plain-desktop.git"]
+plain-server = { path = "../../plain-desktop/crates/plain-server" }
+plain-rs = { path = "../../plain-desktop/plain-rs" }
 
 [target.'cfg(target_os = "android")'.dependencies]
 jni = "0.22"
