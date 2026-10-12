@@ -17,7 +17,6 @@ char *plain_prefs_update_user(const char *patch_json);
 char *plain_prefs_user_action(const char *action_json);
 void plain_prefs_string_free(char *pointer);
 
-char *plain_discovery_action(const char *facts_json, const char *request_json);
 char *plain_peer_status_action(const char *command_json);
 
 char *plain_core_start(const char *database_path, const char *token, const char *config_json);

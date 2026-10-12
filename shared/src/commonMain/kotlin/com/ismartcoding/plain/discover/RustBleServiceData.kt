@@ -1,27 +1,22 @@
 package com.ismartcoding.plain.discover
 
-import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.bridge.RustDiscoveryBridge
-import kotlinx.serialization.json.*
+import com.ismartcoding.plain.lib.crypto.sha256
+import com.ismartcoding.plain.lib.extensions.toHexString
 
 object RustBleServiceData {
-    private val EMPTY_FACTS = "{}"
-
-    suspend fun decode(data: ByteArray?): BleAdvertisement? {
-        val payload = data?.joinToString(",") { (it.toInt() and 255).toString() }?.let { "[$it]" }
-        val request = buildJsonObject {
-            put("action", "bleDecode")
-            payload?.let { put("payload", Json.parseToJsonElement(it)) } ?: put("payload", JsonNull)
-        }
-        val raw = RustDiscoveryBridge.action(EMPTY_FACTS, request.toString())
-        if (raw.isBlank() || raw == "null") return null
-        val parsed = JsonHelper.jsonDecode<JsonElement>(raw)
-        return if (parsed is JsonNull) null else JsonHelper.jsonDecode<BleAdvertisement>(raw)
+    fun decode(data: ByteArray?): BleAdvertisement? {
+        if (data == null || data.size < 9) return null
+        val flags = data[0].toInt() and 0xff
+        val shortId = data.copyOfRange(1, 9).toHexString()
+        return BleAdvertisement(
+            shortId = shortId,
+            awareSupported = (flags and 1) != 0,
+            awareRunning = (flags and 2) != 0,
+        )
     }
 
-    suspend fun shortIdOf(clientId: String): String {
-        val request = buildJsonObject { put("action", "bleShortId"); put("id", clientId) }
-        val raw = RustDiscoveryBridge.action(EMPTY_FACTS, request.toString())
-        return JsonHelper.jsonDecode<JsonElement>(raw).jsonPrimitive.content
+    fun shortIdOf(clientId: String): String {
+        require(clientId.isNotEmpty() && clientId.length <= 1024) { "Invalid peer identity" }
+        return sha256(clientId.toByteArray(Charsets.UTF_8)).copyOfRange(0, 8).toHexString()
     }
 }
