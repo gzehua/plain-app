@@ -32,7 +32,7 @@ object ChannelCacher {
     fun getChannel(channelId: String): ChatChannelRecord? = channelsMap.value[channelId]
 
     suspend fun load() = withIO {
-        val channels = RustChannelStore.getAll()
+        val channels = snapshotChannelsGraphql()
         val runtimeMap = channels.associate { channel ->
             channel.id to channel
         }

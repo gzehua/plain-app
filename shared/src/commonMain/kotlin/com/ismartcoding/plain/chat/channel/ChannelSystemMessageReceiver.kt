@@ -5,7 +5,6 @@ import com.ismartcoding.plain.events.HChannelInviteReceivedEvent
 import com.ismartcoding.plain.events.HChannelInviteCanceledEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
-import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 
 object ChannelSystemMessageReceiver {
@@ -17,15 +16,14 @@ object ChannelSystemMessageReceiver {
             com.ismartcoding.plain.chat.ChatManager.refreshLatestChats()
         }
         event.invite?.let { invite ->
-            val state = RustChannelRuntime.call(ChannelCommand.Invitation(invite.channelId, invite.ownerPeerId))
-            state.getValue("channel").takeUnless { it is JsonNull }?.let { value ->
-                val channel = RustChannelStore.decode(value)
+            val channel = snapshotChannelsGraphql().firstOrNull { it.id == invite.channelId }
+            if (channel != null) {
                 sendEvent(HChannelInviteReceivedEvent(channel.id, channel.name, invite.ownerPeerId, invite.ownerPeerName))
             }
         }
         event.cancel?.let { cancel ->
-            val state = RustChannelRuntime.call(ChannelCommand.Invitation(cancel.channelId, null))
-            if (state.getValue("channel") is JsonNull) {
+            val stillExists = snapshotChannelsGraphql().any { it.id == cancel.channelId }
+            if (!stillExists) {
                 sendEvent(HChannelInviteCanceledEvent(cancel.channelId, cancel.ownerPeerId))
             }
         }
