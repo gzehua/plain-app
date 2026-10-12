@@ -62,6 +62,7 @@ fn send(action: &str, message: &str, bytes: Vec<u8>) -> Result<(), String> {
             )
         }
         "binary" => bridge.publish_binary(message, bytes),
+        "thumbnail" => bridge.submit_thumbnail(message, bytes),
         _ => Err("Unknown Rust event action".into()),
     }
 }

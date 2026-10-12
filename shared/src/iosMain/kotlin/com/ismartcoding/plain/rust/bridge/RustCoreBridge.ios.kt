@@ -5,9 +5,16 @@ import com.ismartcoding.plain.rustprefs.plain_events_next
 import com.ismartcoding.plain.rustprefs.plain_events_send
 import kotlinx.serialization.json.*
 import com.ismartcoding.plain.rustprefs.plain_graphql
+import com.ismartcoding.plain.rustprefs.plain_graphql_private
 import com.ismartcoding.plain.rustprefs.plain_http_stop
 import com.ismartcoding.plain.rustprefs.plain_core_start
 import com.ismartcoding.plain.rustprefs.plain_prefs_string_free
+import com.ismartcoding.plain.rustprefs.plain_resource_close
+import com.ismartcoding.plain.rustprefs.plain_resource_open
+import com.ismartcoding.plain.rustprefs.plain_resource_write
+import com.ismartcoding.plain.rustprefs.plain_archive_open
+import com.ismartcoding.plain.rustprefs.plain_archive_read
+import com.ismartcoding.plain.rustprefs.plain_archive_close
 import kotlinx.cinterop.*
 
 @OptIn(ExperimentalForeignApi::class)
@@ -16,8 +23,12 @@ internal actual object RustCoreBridge {
         val result = plain_core_start(databasePath.cstr.ptr, token.cstr.ptr, configJson.cstr.ptr) ?: error("Rust core returned no response")
         try { result.toKString() } finally { plain_prefs_string_free(result) }
     }
-    actual fun graphql(request: String, hostApi: Boolean): String = memScoped {
-        val result = checkNotNull(plain_graphql(request.cstr.ptr, hostApi))
+    actual fun graphql(request: String): String = memScoped {
+        val result = checkNotNull(plain_graphql(request.cstr.ptr))
+        try { result.toKString() } finally { plain_prefs_string_free(result) }
+    }
+    actual fun hostGraphql(request: String): String = memScoped {
+        val result = checkNotNull(plain_graphql_private(request.cstr.ptr))
         try { result.toKString() } finally { plain_prefs_string_free(result) }
     }
     actual fun next(stream: String): String = memScoped {
@@ -32,6 +43,35 @@ internal actual object RustCoreBridge {
                 if (bytes.isEmpty()) null else pinned.addressOf(0).reinterpret(), bytes.size.toULong()))
             try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
         }
+    }
+    actual fun resourceOpen(id: String): String = memScoped {
+        val pointer = checkNotNull(plain_resource_open(id.cstr.ptr))
+        try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+    }
+    actual fun resourceWrite(id: String, bytes: ByteArray): String = memScoped {
+        bytes.usePinned { pinned ->
+            val pointer = checkNotNull(plain_resource_write(id.cstr.ptr,
+                if (bytes.isEmpty()) null else pinned.addressOf(0).reinterpret(), bytes.size.toULong()))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual fun resourceClose(id: String, failed: Boolean): String = memScoped {
+        val pointer = checkNotNull(plain_resource_close(id.cstr.ptr, failed))
+        try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+    }
+    actual fun archiveOpen(entries: String): String = memScoped {
+        val pointer = checkNotNull(plain_archive_open(entries.cstr.ptr))
+        try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+    }
+    actual fun archiveRead(handle: ULong, buffer: ByteArray): String = buffer.usePinned { pinned ->
+        memScoped {
+            val pointer = checkNotNull(plain_archive_read(handle, pinned.addressOf(0).reinterpret(), buffer.size.toULong()))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual fun archiveClose(handle: ULong): String = memScoped {
+        val pointer = plain_archive_close(handle) ?: return ""
+        try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
     }
     actual fun stop() {
         val result = plain_http_stop() ?: return

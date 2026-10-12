@@ -1,11 +1,11 @@
 package com.ismartcoding.plain.thumbnail
 
 import kotlinx.serialization.json.*
+import com.ismartcoding.plain.rust.bridge.RustCoreBridge
 import com.ismartcoding.plain.rust.request.ContentApiSession
 import com.ismartcoding.plain.platform.*
 
 object ThumbnailHost {
-    private val client by lazy { createPlainHttpClient(PlainHttpClientSpec.HttpHost) }
     suspend fun handle(session: ContentApiSession, method: String, params: JsonObject): JsonElement {
         if (method == "thumbnailAuthorize") {
             check(readFileRange(params.getValue("paths").jsonArray.single().jsonPrimitive.content, 0, 1) != null) { "Thumbnail source access denied" }
@@ -22,9 +22,8 @@ object ThumbnailHost {
             params.getValue("fileName").jsonPrimitive.content,
         ) ?: return JsonNull
         val token = params.getValue("outputToken").jsonPrimitive.content
-        client.request(PlainRequest("POST", "${session.baseUrl}/files/thumbnail/output/$token", session.headers(), bytes, "application/octet-stream")).use {
-            check(it.status.value == 204) { "Thumbnail output refused: ${it.status}" }
-        }
+        val error = RustCoreBridge.send("thumbnail", token, bytes)
+        check(error.isEmpty()) { error }
         return JsonPrimitive(true)
     }
 }

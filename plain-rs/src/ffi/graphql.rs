@@ -1,29 +1,48 @@
 use super::values::{c_string, input};
+use plain_server::native::graphql::NativeGraphqlExecutor;
 use std::ffi::c_char;
+use tokio::runtime::Handle;
 
-fn execute(request: &str, host_api: bool) -> String {
+fn parts() -> Result<(Handle, NativeGraphqlExecutor), String> {
+    super::server::with_core(|core| {
+        core.server
+            .native_graphql()
+            .map(|executor| (core.runtime.handle().clone(), executor))
+    })?
+}
+fn errors(error: String) -> String {
+    serde_json::json!({"errors":[{"message":error}]}).to_string()
+}
+fn public(request: &str) -> String {
     let result = (|| {
+        let (runtime, executor) = parts()?;
         let parsed = serde_json::from_str(request).map_err(|e| e.to_string())?;
-        let (runtime, executor) = {
-            let core = super::server::CORE.lock().map_err(|e| e.to_string())?;
-            let core = core.as_ref().ok_or("Rust core not initialized")?;
-            (
-                core.runtime.handle().clone(),
-                core.server.graphql_executor(),
-            )
-        };
-        serde_json::to_string(&runtime.block_on(executor.execute(parsed, host_api)))
+        serde_json::to_string(&runtime.block_on(executor.execute(parsed)))
             .map_err(|e| e.to_string())
     })();
-    result.unwrap_or_else(|error: String| {
-        serde_json::json!({"errors":[{"message":error}]}).to_string()
+    result.unwrap_or_else(errors)
+}
+fn host(request: &str) -> String {
+    let result = (|| {
+        let (runtime, executor) = parts()?;
+        let parsed = serde_json::from_str(request).map_err(|e| e.to_string())?;
+        serde_json::to_string(&runtime.block_on(executor.execute_private(parsed)))
+            .map_err(|e| e.to_string())
+    })();
+    result.unwrap_or_else(errors)
+}
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_graphql(request: *const c_char) -> *mut c_char {
+    c_string(match input(request) {
+        Ok(request) => public(&request),
+        Err(error) => errors(error),
     })
 }
 #[unsafe(no_mangle)]
-pub extern "C" fn plain_graphql(request: *const c_char, host_api: bool) -> *mut c_char {
+pub extern "C" fn plain_graphql_private(request: *const c_char) -> *mut c_char {
     c_string(match input(request) {
-        Ok(request) => execute(&request, host_api),
-        Err(error) => serde_json::json!({"errors":[{"message":error}]}).to_string(),
+        Ok(request) => host(&request),
+        Err(error) => errors(error),
     })
 }
 #[cfg(target_os = "android")]
@@ -33,19 +52,28 @@ mod android {
         EnvUnowned,
         errors::ThrowRuntimeExAndDefault,
         objects::{JObject, JString},
-        sys::{jboolean, jstring},
+        sys::jstring,
     };
     #[unsafe(no_mangle)]
     pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_graphqlNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         request: JString<'_>,
-        host_api: jboolean,
     ) -> jstring {
         env.with_env(|env| -> jni::errors::Result<_> {
-            env.new_string(execute(&request.to_string(), host_api))
+            env.new_string(public(&request.to_string()))
         })
         .resolve::<ThrowRuntimeExAndDefault>()
         .into_raw()
+    }
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_hostGraphqlNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        request: JString<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> { env.new_string(host(&request.to_string())) })
+            .resolve::<ThrowRuntimeExAndDefault>()
+            .into_raw()
     }
 }

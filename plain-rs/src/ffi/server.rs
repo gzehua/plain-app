@@ -11,6 +11,11 @@ pub(crate) struct Core {
     pub(crate) runtime: Runtime,
 }
 pub(crate) static CORE: Mutex<Option<Core>> = Mutex::new(None);
+pub(crate) fn with_core<T>(action: impl FnOnce(&Core) -> T) -> Result<T, String> {
+    let core = CORE.lock().map_err(|e| e.to_string())?;
+    let core = core.as_ref().ok_or("Rust core not initialized")?;
+    Ok(action(core))
+}
 
 #[unsafe(no_mangle)]
 pub extern "C" fn plain_core_start(
@@ -34,6 +39,8 @@ pub extern "C" fn plain_core_stop() {
     if let Ok(mut core) = CORE.lock() {
         if let Some(core) = core.take() {
             crate::ffi::events::clear();
+            crate::ffi::resources::clear();
+            crate::ffi::archives::clear();
             core.runtime.block_on(core.server.shutdown());
         }
     }

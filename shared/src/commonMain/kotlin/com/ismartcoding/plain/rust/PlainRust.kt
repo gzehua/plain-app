@@ -45,8 +45,6 @@ object PlainRust {
         Guest("/guest_graphql"),
     }
 
-    private const val HOST_API = true
-
     private val client by lazy { createPlainHttpClient(PlainHttpClientSpec.Local()) }
     private val transferClient by lazy { createPlainHttpClient(PlainHttpClientSpec.Local(15 * 60)) }
 
@@ -121,7 +119,7 @@ object PlainRust {
 
     private suspend fun native(document: String, variables: Map<String, JsonElement>, operationName: String?): JsonObject =
         withContext(RustDispatchers.requests) {
-            JsonHelper.jsonDecode(RustCoreBridge.graphql(JsonHelper.jsonEncode(GraphqlRequest(document, variables, operationName)), HOST_API))
+            JsonHelper.jsonDecode(RustCoreBridge.hostGraphql(JsonHelper.jsonEncode(GraphqlRequest(document, variables, operationName))))
         }
 
     /**
