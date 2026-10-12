@@ -30,13 +30,13 @@ object RustNearbyDevices {
      * caller can populate the UI without waiting for the first event.
      */
     suspend fun startDiscovery(): List<NearbyDevice> =
-        PlainRust.mainMutate("startDiscovery { $NEARBY_DEVICE_FIELDS }")
+        PlainRust.privateMutate("startDiscovery { $NEARBY_DEVICE_FIELDS }")
             .getValue("startDiscovery")
             .jsonArray
             .map { JsonHelper.jsonDecode<NearbyDevice>(it.toString()) }
 
     suspend fun stopDiscovery(): Boolean =
-        PlainRust.mainMutate("stopDiscovery")
+        PlainRust.privateMutate("stopDiscovery")
             .getValue("stopDiscovery").jsonPrimitive.content == "true"
 
     /**
@@ -44,7 +44,7 @@ object RustNearbyDevices {
      * handler — the event payload only carries the revision.
      */
     suspend fun snapshot(): List<NearbyDevice> =
-        PlainRust.mainQuery("nearbyDevices { $NEARBY_DEVICE_FIELDS }")
+        PlainRust.privateQuery("nearbyDevices { $NEARBY_DEVICE_FIELDS }")
             .getValue("nearbyDevices")
             .jsonArray
             .map { JsonHelper.jsonDecode<NearbyDevice>(it.toString()) }
