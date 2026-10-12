@@ -29,10 +29,15 @@ object NearbyViewModel {
 
     fun startDiscovering() {
         MdnsDiscoverManager.startPeriodicDiscovery()
+        scope.launchSafe {
+            val devices = com.ismartcoding.plain.discover.RustNearbyDevices.startDiscovery()
+            com.ismartcoding.plain.discover.RustNearbyDevices.apply(devices)
+        }
     }
 
     fun stopDiscovering() {
         MdnsDiscoverManager.stopPeriodicDiscovery()
+        scope.launchSafe { com.ismartcoding.plain.discover.RustNearbyDevices.stopDiscovery() }
     }
 
     fun requestBlePermission() {
@@ -53,7 +58,6 @@ object NearbyViewModel {
         if (isBleScanning.value) return
         if (!isBluetoothReadyToUse()) return
         isBleScanning.value = true
-        scope.launchSafe { com.ismartcoding.plain.discover.RustNearbyDevices.scanning() }
         // The App only runs the BLE radio loop; Rust owns the session, drives
         // GATT reads, and publishes discovered devices over the event stream.
         com.ismartcoding.plain.discover.BleScanDriver.start()
@@ -62,7 +66,6 @@ object NearbyViewModel {
     fun stopBleScanning() {
         isBleScanning.value = false
         com.ismartcoding.plain.discover.BleScanDriver.stop()
-        scope.launchSafe { com.ismartcoding.plain.discover.RustNearbyDevices.scanning() }
     }
 
     fun startPairing(device: DNearbyDevice) {

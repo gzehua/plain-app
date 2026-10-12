@@ -1,62 +1,76 @@
 package com.ismartcoding.plain.discover
 
-import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.ble.client.BleGattClient
 import com.ismartcoding.plain.data.DNearbyDevice
+import com.ismartcoding.plain.graphql.models.NearbyDevice
 import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.ui.models.NearbyViewModel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonPrimitive
+
+private const val NEARBY_DEVICE_FIELDS =
+    "id name ips port deviceType version platform lastSeen discoveryMethods bestIp status"
 
 object RustNearbyDevices {
     private val mutex = Mutex()
     private val clients = mutableMapOf<String, BleGattClient>()
-    private var revision = -1L
 
     internal suspend fun client(id: String): BleGattClient? = mutex.withLock { clients[id] }
 
-    /**
-     * Records the live GATT client for a discovered peer so a later BLE pairing
-     * ([BlePairingHost]) can connect to it. Populated by [BleScanDriver] when a
-     * scan read resolves a device, because Rust — not [seen] — now performs the
-     * DISCOVER read and emits the device.
-     */
     internal suspend fun rememberClient(id: String, client: BleGattClient) = mutex.withLock {
         clients[id] = client
     }
 
-    suspend fun scanning() = mutex.withLock {
-        apply(call(buildJsonObject {
-            put("action", "bleScanning"); put("ble", NearbyViewModel.isBleScanning.value)
-        }))
-    }
+    /**
+     * Kicks off the background scan and returns the cached list so the
+     * caller can populate the UI without waiting for the first event.
+     */
+    suspend fun startDiscovery(): List<NearbyDevice> =
+        PlainRust.mainMutate("startDiscovery { $NEARBY_DEVICE_FIELDS }")
+            .getValue("startDiscovery")
+            .jsonArray
+            .map { JsonHelper.jsonDecode<NearbyDevice>(it.toString()) }
 
-    suspend fun seen(device: DNearbyDevice, visible: Boolean = true, resident: Boolean = false) = mutex.withLock {
-        device.bleClient?.let { clients[device.id] = it }
-        val snapshot = call(buildJsonObject {
-            put("action", "seen"); put("device", Json.parseToJsonElement(JsonHelper.jsonEncode(device))); put("visible", visible); put("resident", resident)
-        })
-        if (snapshot["ignored"]?.jsonPrimitive?.booleanOrNull == true) return@withLock false
-        apply(snapshot)
-        true
-    }
+    suspend fun stopDiscovery(): Boolean =
+        PlainRust.mainMutate("stopDiscovery")
+            .getValue("stopDiscovery").jsonPrimitive.content == "true"
 
-    suspend fun refresh() = mutex.withLock {
-        apply(call(buildJsonObject { put("action", "snapshot") }))
-    }
+    /**
+     * Pulls the current cache. Used by the `NEARBY_DEVICES_UPDATED` event
+     * handler — the event payload only carries the revision.
+     */
+    suspend fun snapshot(): List<NearbyDevice> =
+        PlainRust.mainQuery("nearbyDevices { $NEARBY_DEVICE_FIELDS }")
+            .getValue("nearbyDevices")
+            .jsonArray
+            .map { JsonHelper.jsonDecode<NearbyDevice>(it.toString()) }
 
-    private suspend fun call(body: JsonObject) = RustContentApi.postJsonOrThrow("chat/nearby-devices", body).getValue("result").jsonObject
-
-    private fun apply(snapshot: JsonObject) {
-        val next = snapshot["revision"]?.jsonPrimitive?.long ?: return
-        if (next < revision) return
-        revision = next
-        val devices = snapshot.getValue("devices").jsonArray.map {
-            val device = JsonHelper.jsonDecode<DNearbyDevice>(it.toString())
-            device.copy(bestIp = it.jsonObject.getValue("bestIp").jsonPrimitive.content, bleClient = clients[device.id], status = NearbyViewModel.getStatus(device.id, device.status == com.ismartcoding.plain.ui.models.NearbyItemStatus.PAIRED))
+    fun apply(devices: List<NearbyDevice>) {
+        val mapped = devices.map { device ->
+            DNearbyDevice(
+                id = device.id,
+                name = device.name,
+                ips = device.ips,
+                port = device.port,
+                deviceType = runCatching { com.ismartcoding.plain.enums.DeviceType.valueOf(device.deviceType) }
+                    .getOrDefault(com.ismartcoding.plain.enums.DeviceType.OTHER),
+                version = device.version,
+                platform = device.platform,
+                lastSeen = runCatching { kotlin.time.Instant.parse(device.lastSeen) }
+                    .getOrDefault(kotlin.time.Instant.fromEpochMilliseconds(0)),
+                status = NearbyViewModel.getStatus(device.id, device.status == "PAIRED"),
+                discoveryMethods = device.discoveryMethods
+                    .mapNotNull { runCatching { com.ismartcoding.plain.enums.DiscoveryMethod.valueOf(it) }.getOrNull() }
+                    .toSet(),
+                bestIp = device.bestIp,
+                bleClient = clients[device.id],
+            )
         }
-        clients.keys.retainAll(devices.map { it.id }.toSet())
-        NearbyViewModel.nearbyDevices.value = devices
+        clients.keys.retainAll(mapped.map { it.id }.toSet())
+        NearbyViewModel.nearbyDevices.value = mapped
     }
 }
