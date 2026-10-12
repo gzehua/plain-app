@@ -48,69 +48,81 @@ fun PListItem(
     action: (@Composable () -> Unit)? = null,
 ) {
     require(titleTrailing == null || titleSuffix == null) { "Choose either titleTrailing or titleSuffix" }
+    val headline: @Composable () -> Unit = {
+        PListItemTitle(title, titleTrailing, titleSuffix, !value.isNullOrEmpty())
+    }
+    val supporting: (@Composable () -> Unit)? = if (subtitle.isNotEmpty()) {
+        {
+            Text(
+                text = subtitle,
+                modifier = Modifier.padding(top = 4.dp),
+                style = MaterialTheme.typography.listItemSubtitle(),
+            )
+        }
+    } else null
+    val valueLeading: @Composable () -> Unit = {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (separatedActions) {
+                VerticalDivider(
+                    modifier = Modifier.height(24.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(0.2f),
+                )
+                HorizontalSpace(16.dp)
+            }
+            action?.invoke()
+        }
+    }
+    val valueText: @Composable () -> Unit = {
+        value?.let {
+            SelectionContainer {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.listItemValue(),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.End,
+                )
+            }
+        }
+    }
+    val valueTrailing: @Composable () -> Unit = {
+        if (showMore) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (!value.isNullOrEmpty() || action != null) HorizontalSpace(8.dp)
+                Icon(
+                    painter = painterResource(UiRes.drawable.ui_drawable_chevron_right),
+                    modifier = Modifier.size(16.dp),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+    val trailing: (@Composable () -> Unit)? = if (action != null || showMore || separatedActions) {
+        {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                valueLeading()
+                valueTrailing()
+            }
+        }
+    } else null
     ListItem(
         modifier = modifier.alpha(if (dimmed) 0.5f else 1f),
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         headlineContent = {
-            when {
-                titleTrailing != null -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.listItemTitle(),
-                            modifier = Modifier.weight(1f),
-                        )
-                        titleTrailing()
-                    }
-                }
-                titleSuffix != null -> {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.listItemTitle(),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false),
-                        )
-                        HorizontalSpace(4.dp)
-                        titleSuffix()
-                    }
-                }
-                else -> if (value != null) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.listItemTitle(),
-                            // The key keeps its own line and is never broken or ellipsized mid-word.
-                            maxLines = 1,
-                            softWrap = false,
-                            overflow = TextOverflow.Clip,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
-                } else {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.listItemTitle(),
-                    )
-                }
+            if (!value.isNullOrEmpty()) {
+                PListItemValueLayout(
+                    modifier = Modifier.fillMaxWidth(),
+                    title = headline,
+                    supporting = supporting,
+                    value = valueText,
+                    valueLeading = valueLeading,
+                    valueTrailing = valueTrailing,
+                )
+            } else {
+                headline()
             }
         },
-        supportingContent = if (subtitle.isNotEmpty()) {
-            {
-                Text(
-                    text = subtitle,
-                    modifier = Modifier.padding(top = 4.dp),
-                    style = MaterialTheme.typography.listItemSubtitle(),
-                )
-            }
-        } else null,
+        supportingContent = if (value.isNullOrEmpty()) supporting else null,
         leadingContent = when {
             start != null -> {
                 { Row(verticalAlignment = Alignment.CenterVertically, content = start) }
@@ -127,41 +139,47 @@ fun PListItem(
             }
             else -> null
         },
-        trailingContent = if (value != null || action != null || showMore || separatedActions) {
-            {
-                Row(
-                    modifier = if (value != null) Modifier.fillMaxWidth(0.5f) else Modifier,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    if (separatedActions) {
-                        VerticalDivider(
-                            modifier = Modifier.height(24.dp),
-                            color = MaterialTheme.colorScheme.onSurface.copy(0.2f),
-                        )
-                        HorizontalSpace(16.dp)
-                    }
-                    action?.invoke()
-                    value?.let {
-                        SelectionContainer(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = it,
-                                style = MaterialTheme.typography.listItemValue(),
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.End,
-                            )
-                        }
-                    }
-                    if (showMore) {
-                        if (value != null || action != null) HorizontalSpace(8.dp)
-                        Icon(
-                            painter = painterResource(UiRes.drawable.ui_drawable_chevron_right),
-                            modifier = Modifier.size(16.dp),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-            }
-        } else null,
+        trailingContent = if (value.isNullOrEmpty()) trailing else null,
     )
+}
+
+@Composable
+private fun PListItemTitle(
+    title: String,
+    titleTrailing: (@Composable () -> Unit)?,
+    titleSuffix: (@Composable () -> Unit)?,
+    completeTitle: Boolean,
+) {
+    when {
+        titleTrailing != null -> {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.listItemTitle(),
+                    modifier = Modifier.weight(1f),
+                )
+                titleTrailing()
+            }
+        }
+        titleSuffix != null -> {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.listItemTitle(),
+                    maxLines = if (completeTitle) Int.MAX_VALUE else 1,
+                    overflow = if (completeTitle) TextOverflow.Clip else TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                HorizontalSpace(4.dp)
+                titleSuffix()
+            }
+        }
+        else -> Text(
+            text = title,
+            style = MaterialTheme.typography.listItemTitle(),
+        )
+    }
 }

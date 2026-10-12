@@ -1,34 +1,51 @@
 package com.ismartcoding.plain.ui.base
 
-import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.test.assertEquals
 
 class PListItemGuardTest {
     @Test
-    fun keyWithValueStaysOnOneLineWithoutEllipsis() {
-        val source = source()
-        val keyRow = source.substringAfter("else -> if (value != null) {").substringBefore("\n                } else {")
-        assertTrue(keyRow.contains("maxLines = 1"), "Key must stay on one line when a value is shown")
-        assertTrue(keyRow.contains("softWrap = false"), "Key must not break mid-word")
-        assertTrue(keyRow.contains("TextOverflow.Clip"), "Key must not be ellipsized")
-        assertTrue(!keyRow.contains("TextOverflow.Ellipsis"), "Key must not be ellipsized")
-        assertTrue(keyRow.contains("Modifier.weight(1f)"), "Key must take only the space the value leaves")
+    fun fittingTextKeepsBothSidesComplete() {
+        assertEquals(40, listItemValueWidth(300, 160, 40))
+        assertEquals(160, listItemValueWidth(300, 40, 160))
+        assertEquals(100, listItemValueWidth(300, 100, 100))
     }
 
     @Test
-    fun valueStaysWithinHalfTheRowAndWraps() {
-        val source = source()
-        val trailing = source.substringAfter("trailingContent = if (value != null").substringBefore("if (showMore)")
-        assertTrue(trailing.contains("Modifier.fillMaxWidth(0.5f)"), "Value column must not exceed half the row")
-        assertTrue(trailing.contains("Modifier.weight(1f)"), "Value must wrap inside its own column")
-        assertTrue(!trailing.contains("maxLines"), "Value must be allowed to wrap onto multiple lines")
+    fun exactlyFittingTextKeepsBothSidesComplete() {
+        assertEquals(100, listItemValueWidth(300, 200, 100))
+        assertEquals(200, listItemValueWidth(300, 100, 200))
+        assertEquals(150, listItemValueWidth(300, 150, 150))
     }
 
-    private fun source(): String {
-        val relative = "src/commonMain/kotlin/com/ismartcoding/plain/ui/base/PListItem.kt"
-        return listOf(File(relative), File("plain-ui/$relative"))
-            .firstOrNull { it.isFile }?.readText()
-            ?: error("PListItem source not found")
+    @Test
+    fun overflowingTextAlwaysPreservesTitleWidth() {
+        assertEquals(60, listItemValueWidth(300, 240, 160))
+        assertEquals(220, listItemValueWidth(300, 80, 400))
+        assertEquals(100, listItemValueWidth(300, 200, 200))
+    }
+
+    @Test
+    fun titleConsumesAllAvailableSpaceWithoutNegativeWidths() {
+        assertEquals(0, listItemValueWidth(300, 300, 100))
+        assertEquals(0, listItemValueWidth(300, 600, 100))
+        assertEquals(0, listItemValueWidth(0, 100, 100))
+    }
+
+    @Test
+    fun fullWidthTitleAndControlsMoveValueBelow() {
+        assertFalse(listItemStacksValue(300, 200, 24))
+        assertTrue(listItemStacksValue(300, 276, 24))
+        assertTrue(listItemStacksValue(300, 300, 0))
+        assertTrue(listItemStacksValue(300, 600, 0))
+        assertTrue(listItemStacksValue(0, 100, 24))
+    }
+
+    @Test
+    fun emptyTextDoesNotReserveHalfTheRow() {
+        assertEquals(0, listItemValueWidth(300, 100, 0))
+        assertEquals(300, listItemValueWidth(300, 0, 500))
     }
 }

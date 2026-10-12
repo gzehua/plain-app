@@ -6,7 +6,6 @@ import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.audio.AudioMediaStoreHelper
 import com.ismartcoding.plain.data.DImage
 import com.ismartcoding.plain.data.DMediaBucket
-import com.ismartcoding.plain.db.DTrashedMessage
 import com.ismartcoding.plain.db.IData
 import com.ismartcoding.plain.data.TagRelationStub
 import com.ismartcoding.plain.docs.DocMediaStoreHelper
