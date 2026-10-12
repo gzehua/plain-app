@@ -22,15 +22,15 @@ object RustChatStore {
     suspend fun getByChannelIdPageText(id: String, text: String, limit: Int, offset: Int): List<ChatItem> = page(channel = id, text = text, limit = limit, offset = offset, descending = true)
     suspend fun getLatestConversations(): Map<String, ChatItem> =
         JsonHelper.jsonDecodeFromElement<List<com.ismartcoding.plain.graphql.models.ChatConversation>>(
-            PlainRust.mainQuery("chatConversations { id chat { $FIELDS } }").getValue("chatConversations"),
+            PlainRust.privateQuery("chatConversations { id chat { $FIELDS } }").getValue("chatConversations"),
         ).associate { it.id to it.chat }
     suspend fun search(text: String, limit: Int, offset: Int): List<ChatItem> = page(text = text, limit = limit, offset = offset, descending = true)
-    suspend fun count(text: String): Int = PlainRust.mainQuery("chatCount(query: ${gql("text:${term(text)}")})").getValue("chatCount").jsonPrimitive.int
-    suspend fun getIds(query: String): Set<String> = PlainRust.mainQuery("chatIds(query: ${gql(query)})").getValue("chatIds").jsonArray.map { it.jsonPrimitive.content }.toSet()
+    suspend fun count(text: String): Int = PlainRust.privateQuery("chatCount(query: ${gql("text:${term(text)}")})").getValue("chatCount").jsonPrimitive.int
+    suspend fun getIds(query: String): Set<String> = PlainRust.privateQuery("chatIds(query: ${gql(query)})").getValue("chatIds").jsonArray.map { it.jsonPrimitive.content }.toSet()
     suspend fun page(peer: String? = null, channel: String? = null, text: String = "", offset: Int = 0, limit: Int? = null, descending: Boolean = false, latest: Boolean = false): List<ChatItem> {
         val query = listOfNotNull(peer?.let { "peer:${term(it)}" }, channel?.let { "channel:${term(it)}" }, "text:${term(text)}", if (descending) "sort:desc" else null, if (latest) "latest:true" else null).joinToString(" ")
-        return PlainRust.mainQuery("chatRecords(query: ${gql(query)}, offset: $offset, limit: ${limit ?: Int.MAX_VALUE}) { $FIELDS }").getValue("chatRecords").jsonArray.map(::decodeGraphql)
+        return PlainRust.privateQuery("chatRecords(query: ${gql(query)}, offset: $offset, limit: ${limit ?: Int.MAX_VALUE}) { $FIELDS }").getValue("chatRecords").jsonArray.map(::decodeGraphql)
     }
-    suspend fun getById(id: String): ChatItem? = PlainRust.mainQuery("chatItem(id: ${gql(id)}) { $FIELDS }").getValue("chatItem").takeUnless { it is JsonNull }?.let(::decodeGraphql)
+    suspend fun getById(id: String): ChatItem? = PlainRust.privateQuery("chatItem(id: ${gql(id)}) { $FIELDS }").getValue("chatItem").takeUnless { it is JsonNull }?.let(::decodeGraphql)
     private fun term(value: String): String = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 }

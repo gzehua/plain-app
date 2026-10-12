@@ -66,6 +66,22 @@ object PlainRust {
     suspend fun mainGraphql(document: String, variables: Map<String, JsonElement> = emptyMap(), session: ContentApiSession? = null): JsonObject =
         data(document, variables = variables, endpoint = Endpoint.Main, session = session)
 
+    // ── Private schema: this device's own roots, in process only ─────────
+
+    /**
+     * Roots the shared core serves privately for this device. They run over the
+     * native bridge, so they carry no session and reach no other device.
+     */
+    suspend fun privateQuery(selection: String): JsonObject =
+        unwrap(native("query { $selection }", emptyMap(), null))
+
+    /** `longRunning` mirrors the remote entries; an in-process call has no transfer to keep alive. */
+    suspend fun privateMutate(selection: String, longRunning: Boolean = false): JsonObject =
+        unwrap(native("mutation { $selection }", emptyMap(), null))
+
+    suspend fun privateGraphql(document: String, variables: Map<String, JsonElement> = emptyMap()): JsonObject =
+        unwrap(native(document, variables, null))
+
     // ── Peer and guest schemas: another device only ────────────────────────
 
     suspend fun peerQuery(selection: String, session: ContentApiSession): JsonObject =
