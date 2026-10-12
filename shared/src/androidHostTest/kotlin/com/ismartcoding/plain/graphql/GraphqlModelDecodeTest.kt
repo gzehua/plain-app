@@ -57,6 +57,20 @@ class GraphqlModelDecodeTest {
     }
 
     @Test
+    fun playlistItemsDecodeTheOriginalPathContract() {
+        val item = JsonHelper.jsonDecode<AudioItem>("""{"path":"/track.mp3","title":"Track","artist":"Artist","durationMs":1000}""")
+        assertEquals("/track.mp3", item.path)
+        assertEquals(1000L, item.durationMs)
+    }
+
+    @Test
+    fun allMediaModelsImplementTheSharedFields() {
+        listOf(Audio::class.java, Image::class.java, Video::class.java, Doc::class.java).forEach { type ->
+            assertEquals(true, MediaItem::class.java.isAssignableFrom(type), type.simpleName)
+        }
+    }
+
+    @Test
     fun hostModelsPreserveLongScalarsAndSchemaFieldNames() {
         val relation = JsonHelper.jsonDecode<TagHostRelation>("""{"tagId":"tag-1","key":"file-1","type":1,"title":"file","sizeBytes":4294967296,"createdAt":"2026-10-12T00:00:00Z"}""")
         assertEquals(4294967296L, relation.sizeBytes)

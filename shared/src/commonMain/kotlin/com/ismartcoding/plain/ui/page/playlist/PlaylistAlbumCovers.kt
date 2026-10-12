@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.page.playlist
 
-import com.ismartcoding.plain.graphql.models.AudioPlaylistItem
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.lib.withIO
 
 /** One album inside a playlist: how many tracks it contributes and where a cover may come from. */
@@ -18,8 +18,8 @@ data class PlaylistAlbumCover(
  * decode a cover.
  *
  */
-internal suspend fun loadPlaylistAlbumCovers(items: List<AudioPlaylistItem>): List<PlaylistAlbumCover> = withIO {
-    val byAlbum = LinkedHashMap<String, MutableList<AudioPlaylistItem>>()
+internal suspend fun loadPlaylistAlbumCovers(items: List<AudioItem>): List<PlaylistAlbumCover> = withIO {
+    val byAlbum = LinkedHashMap<String, MutableList<AudioItem>>()
     items.forEach { row ->
         val album = row.albumId
         if (!album.isNullOrBlank()) byAlbum.getOrPut(album) { mutableListOf() }.add(row)
@@ -28,7 +28,7 @@ internal suspend fun loadPlaylistAlbumCovers(items: List<AudioPlaylistItem>): Li
         .sortedByDescending { it.value.size }
         .take(MAX_ALBUMS)
         .map { (album, tracks) ->
-            PlaylistAlbumCover(album ?: "", tracks.size, tracks.take(CANDIDATES_PER_ALBUM).map { it.audioPath })
+            PlaylistAlbumCover(album, tracks.size, tracks.take(CANDIDATES_PER_ALBUM).map { it.path })
         }
 }
 

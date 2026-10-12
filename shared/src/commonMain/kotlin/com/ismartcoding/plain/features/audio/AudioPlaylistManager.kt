@@ -2,7 +2,6 @@ package com.ismartcoding.plain.features.audio
 
 import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.graphql.models.AudioPlaylist
-import com.ismartcoding.plain.graphql.models.AudioPlaylistItem
 import com.ismartcoding.plain.rust.bridge.*
 import com.ismartcoding.plain.rust.content.*
 import com.ismartcoding.plain.rust.event.*
@@ -24,8 +23,8 @@ object AudioPlaylistManager {
         RustContentApi.mutate("audioHostAddPlaylistItems(id: ${gql(playlistId)}, items: ${items.audioInput()})").getValue("audioHostAddPlaylistItems").jsonPrimitive.int
     suspend fun removePlaylistItem(playlistId: String, path: String) = removePlaylistItems(playlistId,listOf(path))
     suspend fun removePlaylistItems(playlistId: String, paths: Collection<String>) { RustContentApi.mutate("audioHostRemovePlaylistItems(id: ${gql(playlistId)}, paths: ${gqlIds(paths)})") }
-    suspend fun playlistItemsPage(playlistId: String, offset: Int, limit: Int): List<AudioPlaylistItem> = playlistItemsPageFiltered(playlistId,"",offset,limit)
-    suspend fun playlistItemsPageFiltered(playlistId: String, text: String, offset: Int, limit: Int): List<AudioPlaylistItem> =
+    suspend fun playlistItemsPage(playlistId: String, offset: Int, limit: Int): List<AudioItem> = playlistItemsPageFiltered(playlistId,"",offset,limit)
+    suspend fun playlistItemsPageFiltered(playlistId: String, text: String, offset: Int, limit: Int): List<AudioItem> =
         RustContentApi.query("audioPlaylistItems(id: ${gql(playlistId)}, offset: $offset, limit: $limit, query: ${gql(text)}) { $AUDIO_ITEM_FIELDS }")
             .getValue("audioPlaylistItems").jsonArray.map { it.audioItem() }
     suspend fun playlistItemCount(playlistId: String): Int = RustContentApi.query("audioPlaylistItemCount(id: ${gql(playlistId)})").getValue("audioPlaylistItemCount").jsonPrimitive.int

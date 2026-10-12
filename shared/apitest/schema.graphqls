@@ -53,7 +53,7 @@ type Query {
   audioLyrics(path: String!): String
   audioPlaylists: [AudioPlaylist!]!
   audioPlaylist(id: ID!): AudioPlaylist
-  audioPlaylistItems(id: ID!, offset: Int!, limit: Int!, query: String!): [AudioPlaylistItem!]!
+  audioPlaylistItems(id: ID!, offset: Int!, limit: Int!, query: String!): [AudioItem!]!
   audioPlaylistItemCount(id: ID!): Int!
   audioPlayHistory(offset: Int!, limit: Int!, query: String!): [AudioPlayHistory!]!
   imageCount(query: String!): Int!
@@ -319,7 +319,7 @@ type AppFile {
   updatedAt: Instant!
 }
 
-type Audio {
+type Audio implements MediaItem {
   id: ID!
   title: String!
   artist: String!
@@ -374,18 +374,6 @@ type AudioPlaylist {
   itemCount: Int!
   createdAt: Instant!
   updatedAt: Instant!
-}
-
-type AudioPlaylistItem {
-  id: ID!
-  playlistId: ID!
-  audioPath: String!
-  title: String!
-  artist: String!
-  albumId: ID
-  durationMs: Long!
-  sortOrder: Long!
-  addedAt: Instant!
 }
 
 type Bookmark {
@@ -765,7 +753,7 @@ type DisplayInfo {
   density: Float!
 }
 
-type Doc {
+type Doc implements MediaItem {
   id: ID!
   title: String!
   path: String!
@@ -899,7 +887,7 @@ enum ImProtocol {
   NETMEETING
 }
 
-type Image {
+type Image implements MediaItem {
   id: ID!
   title: String!
   path: String!
@@ -1348,7 +1336,7 @@ type Temperature {
   celsius: Float!
 }
 
-type Video {
+type Video implements MediaItem {
   id: ID!
   title: String!
   path: String!
@@ -1610,4 +1598,14 @@ input UserSettingsInput {
 	docSortBy: Int
 	fileSortBy: Int
 	packageSortBy: Int
+}
+
+interface MediaItem {
+  id: ID!
+  title: String!
+  path: String!
+  size: Long!
+  bucketId: ID!
+  createdAt: Instant!
+  updatedAt: Instant!
 }

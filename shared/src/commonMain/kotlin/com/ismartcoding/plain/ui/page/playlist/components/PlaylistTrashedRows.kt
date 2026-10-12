@@ -4,8 +4,7 @@ import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.audio.AudioPlaylistManager
 import com.ismartcoding.plain.features.file.FileSortBy
-import com.ismartcoding.plain.graphql.models.Audio
-import com.ismartcoding.plain.graphql.models.AudioPlaylistItem
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.searchMedia
 
@@ -24,12 +23,12 @@ private suspend fun trashedAudioPaths(): Set<String> = withIO {
  * count, covers and playback agree with the visible list. Trashing cascades at
  * trash time; this heals rows orphaned before that.
  */
-internal suspend fun List<AudioPlaylistItem>.pruneTrashedRows(playlistId: String): List<AudioPlaylistItem> {
+internal suspend fun List<AudioItem>.pruneTrashedRows(playlistId: String): List<AudioItem> {
     if (isEmpty()) return this
     val trashed = trashedAudioPaths()
     if (trashed.isEmpty()) return this
-    val orphanPaths = filter { it.audioPath in trashed }.map { it.audioPath }
+    val orphanPaths = filter { it.path in trashed }.map { it.path }
     if (orphanPaths.isEmpty()) return this
     withIO { AudioPlaylistManager.removePlaylistItems(playlistId, orphanPaths) }
-    return filterNot { it.audioPath in trashed }
+    return filterNot { it.path in trashed }
 }

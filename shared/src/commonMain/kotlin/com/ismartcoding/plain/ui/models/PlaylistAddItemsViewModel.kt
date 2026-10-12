@@ -27,7 +27,7 @@ class PlaylistAddItemsViewModel : ViewModel(), ISearchableViewModel<DAudio> {
     val selected = mutableStateOf<Set<String>>(emptySet())
 
     suspend fun loadAsync(playlistId: String) {
-        val paths = withIO { AudioPlaylistManager.playlistItemsPage(playlistId, 0, 5000).map { it.audioPath } }
+        val paths = withIO { AudioPlaylistManager.playlistItemsPage(playlistId, 0, 5000).map { it.path } }
         existing.value = paths.toSet()
         selected.value = paths.toSet()
         searchAsync()

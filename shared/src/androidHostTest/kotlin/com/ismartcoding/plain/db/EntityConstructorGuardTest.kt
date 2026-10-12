@@ -5,7 +5,7 @@ import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.graphql.models.AppFileRecord
 import com.ismartcoding.plain.graphql.models.AudioPlayHistory
 import com.ismartcoding.plain.graphql.models.AudioPlaylist
-import com.ismartcoding.plain.graphql.models.AudioPlaylistItem
+import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.graphql.models.AudioHostSource
 import com.ismartcoding.plain.graphql.models.Bookmark
 import com.ismartcoding.plain.graphql.models.BookmarkGroup
@@ -52,7 +52,7 @@ class EntityConstructorGuardTest {
         DImageEmbedding::class, MediaHostDuration::class, Note::class, PeerRecord::class,
         PomodoroRecord::class, DSession::class, ShareRecord::class, TagHostRecord::class,
         TagHostRelation::class, VideoPlayProgress::class,
-        AudioPlaylist::class, AudioPlaylistItem::class, AudioPlayHistory::class,
+        AudioPlaylist::class, AudioItem::class, AudioPlayHistory::class,
         AudioHostSource::class, DAudioQueueItem::class, DNearbyDeviceCache::class,
     )
 

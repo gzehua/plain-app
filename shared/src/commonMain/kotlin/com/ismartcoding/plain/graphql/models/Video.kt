@@ -5,14 +5,14 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Video(
-    var id: String,
-    var title: String,
-    var path: String,
+    override var id: String,
+    override var title: String,
+    override var path: String,
     var durationMs: Long,
-    var size: Long,
-    var bucketId: String,
-    var createdAt: Instant,
-    var updatedAt: Instant,
+    override var size: Long,
+    override var bucketId: String,
+    override var createdAt: Instant,
+    override var updatedAt: Instant,
     var takenAt: Instant?,
     var isFavorite: Boolean,
-)
+) : MediaItem

@@ -5,15 +5,15 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Audio(
-    var id: String,
-    var title: String,
+    override var id: String,
+    override var title: String,
     var artist: String,
-    var path: String,
+    override var path: String,
     var durationMs: Long,
-    var size: Long,
-    var bucketId: String,
+    override var size: Long,
+    override var bucketId: String,
     var albumFileId: String,
-    var createdAt: Instant,
-    var updatedAt: Instant,
+    override var createdAt: Instant,
+    override var updatedAt: Instant,
     var isFavorite: Boolean,
-)
+) : MediaItem

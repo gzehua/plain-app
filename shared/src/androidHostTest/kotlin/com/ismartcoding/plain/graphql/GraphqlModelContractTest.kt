@@ -105,7 +105,7 @@ class GraphqlModelContractTest {
             "UserSettings" to com.ismartcoding.plain.graphql.models.UserSettings.serializer().descriptor,
             "UserSettingsInput" to com.ismartcoding.plain.graphql.models.UserSettingsInput.serializer().descriptor,
         )
-        val blocks = Regex("""(?:type|input) (\w+)\s*\{([^}]+)}""").findAll(sdl)
+        val blocks = Regex("""(?:type|input) (\w+)(?:\s+implements\s+\w+)?\s*\{([^}]+)}""").findAll(sdl)
             .associate { it.groupValues[1] to it.groupValues[2] }
         val lazyTags = setOf("Audio", "Call", "Contact", "Sms", "Doc", "Image", "Video", "Note", "FeedEntry")
         models.forEach { (name, descriptor) ->
