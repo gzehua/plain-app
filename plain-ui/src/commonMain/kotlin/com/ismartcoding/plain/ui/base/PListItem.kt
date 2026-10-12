@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -35,6 +36,7 @@ import org.jetbrains.compose.resources.painterResource
 fun PListItem(
     modifier: Modifier = Modifier,
     dimmed: Boolean = false,
+    contentColor: Color? = null,
     title: String,
     subtitle: String = "",
     value: String? = null,
@@ -49,14 +51,14 @@ fun PListItem(
 ) {
     require(titleTrailing == null || titleSuffix == null) { "Choose either titleTrailing or titleSuffix" }
     val headline: @Composable () -> Unit = {
-        PListItemTitle(title, titleTrailing, titleSuffix, !value.isNullOrEmpty())
+        PListItemTitle(title, contentColor, titleTrailing, titleSuffix, !value.isNullOrEmpty())
     }
     val supporting: (@Composable () -> Unit)? = if (subtitle.isNotEmpty()) {
         {
             Text(
                 text = subtitle,
                 modifier = Modifier.padding(top = 4.dp),
-                style = MaterialTheme.typography.listItemSubtitle(),
+                style = MaterialTheme.typography.listItemSubtitle().contentColored(contentColor),
             )
         }
     } else null
@@ -77,7 +79,7 @@ fun PListItem(
             SelectionContainer {
                 Text(
                     text = it,
-                    style = MaterialTheme.typography.listItemValue(),
+                    style = MaterialTheme.typography.listItemValue().contentColored(contentColor),
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.End,
                 )
@@ -92,7 +94,7 @@ fun PListItem(
                     painter = painterResource(UiRes.drawable.ui_drawable_chevron_right),
                     modifier = Modifier.size(16.dp),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = contentColor?.copy(alpha = 0.55f) ?: MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -132,7 +134,7 @@ fun PListItem(
                     Image(
                         modifier = Modifier.size(24.dp),
                         painter = painterResource(icon),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                        colorFilter = ColorFilter.tint(contentColor ?: MaterialTheme.colorScheme.primary),
                         contentDescription = null,
                     )
                 }
@@ -146,6 +148,7 @@ fun PListItem(
 @Composable
 private fun PListItemTitle(
     title: String,
+    contentColor: Color?,
     titleTrailing: (@Composable () -> Unit)?,
     titleSuffix: (@Composable () -> Unit)?,
     completeTitle: Boolean,
@@ -158,7 +161,7 @@ private fun PListItemTitle(
             ) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.listItemTitle(),
+                    style = MaterialTheme.typography.listItemTitle().contentColored(contentColor),
                     modifier = Modifier.weight(1f),
                 )
                 titleTrailing()
@@ -168,7 +171,7 @@ private fun PListItemTitle(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.listItemTitle(),
+                    style = MaterialTheme.typography.listItemTitle().contentColored(contentColor),
                     maxLines = if (completeTitle) Int.MAX_VALUE else 1,
                     overflow = if (completeTitle) TextOverflow.Clip else TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false),
@@ -179,7 +182,10 @@ private fun PListItemTitle(
         }
         else -> Text(
             text = title,
-            style = MaterialTheme.typography.listItemTitle(),
+            style = MaterialTheme.typography.listItemTitle().contentColored(contentColor),
         )
     }
 }
+
+private fun TextStyle.contentColored(contentColor: Color?): TextStyle =
+    if (contentColor == null) this else copy(color = contentColor)
