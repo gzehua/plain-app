@@ -12,7 +12,7 @@ set -uo pipefail
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:$HOME/.cargo/bin:$PATH
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DESKTOP_ROOT="${PLAIN_DESKTOP_ROOT:-$REPO_ROOT/../plain-desktop}"
+CORE_ROOT="${PLAIN_CORE_ROOT:-$REPO_ROOT/../plain-core}"
 
 # The package under test, derived from the build rather than written down here:
 # `applicationId` plus the `debug` flavor's `applicationIdSuffix`. A hardcoded

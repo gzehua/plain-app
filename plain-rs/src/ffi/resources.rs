@@ -89,14 +89,13 @@ fn close(id: &str, failed: bool) -> Result<(), String> {
     };
     let runtime = runtime()?;
     let outcome = runtime.block_on(async {
-        tokio::time::timeout(
-            STREAM_TIMEOUT,
+        tokio::time::timeout(STREAM_TIMEOUT, async {
             if failed {
-                stream.fail()
+                stream.fail().await
             } else {
-                stream.finish()
-            },
-        )
+                stream.finish().await
+            }
+        })
         .await
     });
     let result = match outcome {

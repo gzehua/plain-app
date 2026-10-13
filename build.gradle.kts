@@ -25,3 +25,12 @@ allprojects {
 tasks.register<Delete>("clean").configure {
     delete(rootProject.layout.buildDirectory)
 }
+
+subprojects {
+    tasks.withType<Exec>().configureEach {
+        if (name.startsWith("buildPlainRust")) {
+            workingDir(rootProject.projectDir)
+            outputs.upToDateWhen { false }
+        }
+    }
+}

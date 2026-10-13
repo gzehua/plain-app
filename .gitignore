@@ -126,3 +126,6 @@ plain-rs/target/
 
 # wrangler local cache (account selection), never commit
 .wrangler/
+
+.cargo/config.toml
+.cargo/core-dependency-state/

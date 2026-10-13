@@ -37,7 +37,8 @@ fn open(entries: &str) -> Result<serde_json::Value, String> {
     let entries: Vec<ArchiveEntry> = serde_json::from_str(entries).map_err(|e| e.to_string())?;
     let (runtime, archives) = super::server::with_core(|core| {
         (core.runtime.handle().clone(), core.server.native_archives())
-    })??;
+    })?;
+    let archives = archives?;
     let reader = runtime.block_on(archives.files(entries))?;
     let size = reader.size;
     let handle = NEXT_HANDLE.fetch_add(1, Ordering::Relaxed);

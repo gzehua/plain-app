@@ -55,32 +55,26 @@ run_rust() {
     case_block "rust_plain_rs" "cargo not on PATH"
     return
   fi
-  # plain-server is a git dependency, so its tests have to run inside a worktree
-  # checked out at the rev Cargo.lock pinned — the local plain-desktop tree may
-  # be on any commit, and testing that would not test what ships.
-  local rev
-  rev=$(awk '/name = "plain-server"/{f=1} f&&/source = "git/{print; exit}' plain-rs/Cargo.lock 2>/dev/null \
-        | sed -n 's/.*#\([0-9a-f]\{40\}\).*/\1/p')
-  if [ -z "$rev" ]; then
-    case_block "rust_plain_rs" "cannot resolve the pinned plain-server rev from Cargo.lock"
-    return
+  local wt rev
+  if [ -d "$REPO_ROOT/.cargo/core-dependency-state" ]; then
+    wt=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["core"])' \
+         "$REPO_ROOT/.cargo/core-dependency-state/state.json") || return
+  else
+    rev=$(awk '/name = "plain-server"/{f=1} f&&/source = "git/{print; exit}' plain-rs/Cargo.lock 2>/dev/null \
+          | sed -n 's/.*#\([0-9a-f]\{40\}\).*/\1/p')
+    if [ -z "$rev" ]; then
+      case_block "rust_plain_rs" "cannot resolve the pinned plain-server rev from Cargo.lock"
+      return
+    fi
+    wt=$(mktemp -d)/plain-core
+    say "  pinned rev $rev"
+    if ! git -C "$CORE_ROOT" worktree add --detach "$wt" "$rev" >/dev/null 2>&1; then
+      case_block "rust_plain_rs" "cannot create a core worktree at $rev"
+      return
+    fi
+    trap 'git -C "$CORE_ROOT" worktree remove --force "$wt" 2>/dev/null' RETURN
   fi
-  local wt
-  wt=$(mktemp -d)/plain-rs
-  say "  pinned rev $rev"
-  if ! git -C "$DESKTOP_ROOT" worktree add --detach "$wt" "$rev" >/dev/null 2>&1; then
-    case_block "rust_plain_rs" "cannot create a worktree at $rev"
-    return
-  fi
-  # Always drop the worktree, even when the tests fail — a stale checkout makes
-  # the next run test the wrong code.
-  trap 'git -C "$DESKTOP_ROOT" worktree remove --force "$wt" 2>/dev/null' RETURN
-
-  # -p plain-server --lib: this suite is about the server, not every workspace member.
-  # Running from the workspace root would also build nas and src-tauri, whose
-  # feature requests unify into plain-server and change what its tests compile
-  # against.
-  if ! (cd "$wt" && cargo test --quiet -p plain-server --lib --features content_api,http_transport) \
+  if ! (cd "$wt" && cargo test --locked --quiet -p plain-server --lib --features host-api,http_transport) \
         > /tmp/plain-unit-rust.log 2>&1; then
     tail -40 /tmp/plain-unit-rust.log
     case_fail "rust_plain_rs" "cargo test failed, see /tmp/plain-unit-rust.log"
