@@ -164,29 +164,21 @@ If you run into issues, feel free to open a GitHub issue — I'm always happy to
 
 Please don’t leave a one-star review without giving it a fair try.
 
-## Shared Rust development
+## Work on plain-core
 
-Check out [plain-core](https://github.com/plainhub/plain-core) next to this repository. From this repository root:
-
-```sh
-python3 ../plain-core/scripts/core-dependencies.py local --project app
-```
-
-Build normally to use local core changes, including uncommitted edits. No core push is needed. Switching uses cached Cargo dependencies; fetch missing dependencies first.
-
-Before committing the lock file or building a release:
+Keep [plain-core](https://github.com/plainhub/plain-core) next to this repository. Run from this repository root:
 
 ```sh
-python3 ../plain-core/scripts/core-dependencies.py pinned --project app
+./scripts/core local
 ```
 
-To upgrade core, publish its changes first, then update the lock and build/test:
+Use local plain-core changes and build normally; no push is needed. To stop using the local checkout: `./scripts/core local --off`.
 
 ```sh
-python3 ../plain-core/scripts/core-dependencies.py update --project app
+./scripts/core update
 ```
 
-Commit `plain-rs/Cargo.lock` with the consumer changes. Normal builds keep this locked core commit. See [release steps](https://github.com/plainhub/plain-core#release-and-core-updates) to update both consumers together or select a specific commit.
+Stop using local paths and lock this project to the latest commit on GitHub's plain-core/main. Commit the updated `plain-rs/Cargo.lock`.
 
 ## Build
 
