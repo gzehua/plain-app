@@ -77,18 +77,16 @@ class MessageLifecycleRustHttpTest {
             val second = manager.insertFilesImmediate(local, listOf(file), false).also { chats += it.id }
             val imported = file.copy(uri = com.ismartcoding.plain.helpers.AppFileStore.toFidUri(owned))
             chats.forEach { manager.updateFilesMessage(it, listOf(imported)) }
-            assertEquals(2, com.ismartcoding.plain.helpers.AppFileStore.getById(owned.id)!!.refCount)
             val saved = manager.updateFilesMessage(first.id, listOf(imported))!!
             assertEquals(ChatStatus.SENT, saved.status)
             assertEquals(bytes.size.toLong(), (saved.messageContent.value as MessageFiles).items.single().size)
             RustChatFixtures.delete(first.id)
-            assertEquals(1, com.ismartcoding.plain.helpers.AppFileStore.getById(owned.id)!!.refCount)
             assertTrue(java.io.File(com.ismartcoding.plain.helpers.AppFileStore.resolveUri(imported.uri)).exists())
             RustChatFixtures.delete(second.id)
-            assertNull(com.ismartcoding.plain.helpers.AppFileStore.getById(owned.id))
+            assertFalse(AppFileFixtures.exists(owned.id))
         } finally {
             RustChatFixtures.deleteByIds(chats)
-            while (com.ismartcoding.plain.helpers.AppFileStore.getById(owned.id) != null) com.ismartcoding.plain.helpers.AppFileStore.release(owned.id)
+            if (AppFileFixtures.exists(owned.id)) com.ismartcoding.plain.helpers.AppFileStore.release(owned.id)
             com.ismartcoding.plain.chat.ChatCacher.load()
         }
     }

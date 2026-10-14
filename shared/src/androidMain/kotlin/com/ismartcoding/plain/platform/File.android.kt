@@ -3,7 +3,6 @@ package com.ismartcoding.plain.platform
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.extensions.resolveAppFileRealPath
 import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.helpers.AppHelper
 import com.ismartcoding.plain.helpers.AppFileStore
@@ -21,18 +20,10 @@ import com.ismartcoding.plain.platform.StreamSink
 import android.net.Uri
 import androidx.core.net.toUri
 import com.ismartcoding.plain.rust.http.OkHttpClientFactory
-import com.ismartcoding.plain.data.DownloadFileItem
-import com.ismartcoding.plain.enums.DataType
-import com.ismartcoding.plain.features.file.FileSortBy
-import com.ismartcoding.plain.lib.JsonHelper.jsonDecode
 import com.ismartcoding.plain.helpers.Mp4Helper
 import com.ismartcoding.plain.helpers.ZipHelper
-import com.ismartcoding.plain.helpers.TempHelper
-import com.ismartcoding.plain.audio.AudioMediaStoreHelper
 import com.ismartcoding.plain.features.PackageHelper
 import com.ismartcoding.plain.features.media.FileMediaStoreHelper
-import com.ismartcoding.plain.features.media.ImageMediaStoreHelper
-import com.ismartcoding.plain.features.media.VideoMediaStoreHelper
 import com.ismartcoding.plain.lib.extensions.compress
 import com.ismartcoding.plain.thumbnail.DecodeLimiter
 import com.ismartcoding.plain.thumbnail.DecodePolicy
@@ -441,45 +432,6 @@ actual suspend fun fetchUrlToStream(url: String, sink: StreamSink): Pair<Int, St
 }
 
 actual fun isContentUri(path: String): Boolean = path.startsWith("content://")
-
-actual suspend fun searchZipItems(type: String, query: String, tempId: String): List<ZipStreamEntry> = withIO {
-    val context = appContext
-    when (type) {
-        DataType.PACKAGE.name -> {
-            PackageHelper.searchAsync(query, Int.MAX_VALUE, 0, FileSortBy.NAME_ASC).map {
-                ZipStreamEntry(it.path, "${it.name.replace(" ", "")}-${it.id}.apk")
-            }
-        }
-        DataType.VIDEO.name -> {
-            VideoMediaStoreHelper.searchAsync(context, query, Int.MAX_VALUE, 0, FileSortBy.DATE_DESC).map {
-                ZipStreamEntry(it.path, "")
-            }
-        }
-        DataType.AUDIO.name -> {
-            AudioMediaStoreHelper.searchAsync(context, query, Int.MAX_VALUE, 0, FileSortBy.DATE_DESC).map {
-                ZipStreamEntry(it.path, "")
-            }
-        }
-        DataType.IMAGE.name -> {
-            ImageMediaStoreHelper.searchAsync(context, query, Int.MAX_VALUE, 0, FileSortBy.DATE_DESC).map {
-                ZipStreamEntry(it.path, "")
-            }
-        }
-        DataType.APP_FILE.name -> {
-            val ids = query.removePrefix("ids:").split(",").filter { it.isNotEmpty() }
-            val files = if (ids.isEmpty()) AppFileStore.page(0, Int.MAX_VALUE)
-                else ids.mapNotNull { id -> AppFileStore.getById(id)?.let { com.ismartcoding.plain.ui.models.VAppFile(it,AppFileStore.displayName(it.id)) } }
-            files.map { ZipStreamEntry(it.appFile.realPath.resolveAppFileRealPath(),it.fileName) }
-        }
-        DataType.FILE.name -> {
-            val value = TempHelper.getValue(tempId)
-            TempHelper.clearValue(tempId)
-            if (value.isEmpty()) emptyList()
-            else jsonDecode<List<DownloadFileItem>>(value).map { ZipStreamEntry(it.path, it.name) }
-        }
-        else -> emptyList()
-    }
-}
 
 actual suspend fun readTextFile(path: String): String = withIO {
     try {

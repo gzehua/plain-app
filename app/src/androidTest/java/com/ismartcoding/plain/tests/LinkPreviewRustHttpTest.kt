@@ -40,12 +40,12 @@ class LinkPreviewRustHttpTest {
             assertEquals(ChatStatus.SENT, stale.status)
             assertEquals("edited $id", (stale.messageContent.value as MessageText).text)
             assertTrue((stale.messageContent.value as MessageText).linkPreviews.isEmpty())
-            assertNull(AppFileStore.getById(image.id))
+            assertFalse(AppFileFixtures.exists(image.id))
             assertFalse(ChatMessageEditor.updateTextAsync(stale, "edited $id"))
             assertEquals(stale.content, RustChatStore.getById(id)!!.content)
         } finally {
             RustChatFixtures.delete(id)
-            hash?.let { while (AppFileStore.getById(it) != null) AppFileStore.release(it) }
+            hash?.let { if (AppFileFixtures.exists(it)) AppFileStore.release(it) }
             ChatCacher.load()
         }
     }

@@ -53,7 +53,6 @@ object SystemProviderHost {
         "systemImageModelsObserve" -> SystemImageSearchHost.handle(method, params)
         "systemCastAddressFacts" -> com.ismartcoding.plain.platform.CastHost.handle(method, params)
         "systemFileResource" -> com.ismartcoding.plain.platform.FileResourceHost.handle(params)
-        "zipItemsFacts",
         "scanFilesFacts",
         "fileMetadataFacts",
         "systemMountFacts",
@@ -87,7 +86,6 @@ object SystemProviderHost {
         "systemAppFacts",
         "systemAppLogFacts",
         "systemClearAppLogs",
-        "systemSetTempValue",
         "systemRelaunchApp" -> SystemAppHost.handle(method, params)
         else -> error("Unsupported provider operation")
     }

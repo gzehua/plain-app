@@ -16,6 +16,7 @@ import com.ismartcoding.plain.db.*
 import com.ismartcoding.plain.features.download.DownloadCenter
 import com.ismartcoding.plain.features.download.DownloadStatus
 import com.ismartcoding.plain.graphql.models.ChatItem
+import com.ismartcoding.plain.helpers.AppFileStore
 import com.ismartcoding.plain.rust.request.RustContentApi
 import java.io.File
 import java.util.UUID
@@ -112,8 +113,7 @@ class DownloadQueueRustHttpTest {
                 error("Unreachable")
             }
             hash = downloaded.uri.removePrefix("fid:").substringBefore('.')
-            val stored = com.ismartcoding.plain.helpers.AppFileStore.getById(hash!!)!!
-            assertEquals(1, stored.refCount)
+            val stored = AppFileStore.page(0, 1, "text:$hash").single().appFile
             assertArrayEquals(payload, File(RustContentApi.directory, stored.realPath).readBytes())
             withTimeout(10000) {
                 while (DownloadQueue.downloadProgress.value.containsKey(fileId) || DownloadCenter.progress.value.containsKey(fileId)) delay(20)
@@ -122,7 +122,7 @@ class DownloadQueueRustHttpTest {
             RustContentApi.postJsonOrThrow("chat/download", buildJsonObject { put("action", "control"); put("id", fileId); put("command", "remove") })
             DownloadQueue.refresh()
             RustChatFixtures.delete(id)
-            hash?.let { value -> while (com.ismartcoding.plain.helpers.AppFileStore.getById(value) != null) com.ismartcoding.plain.helpers.AppFileStore.release(value) }
+            hash?.let { value -> if (AppFileFixtures.exists(value)) AppFileStore.release(value) }
             RustPeerStore.delete(id)
             root.deleteRecursively()
             com.ismartcoding.plain.platform.stopHttpEngineAsync()

@@ -49,11 +49,6 @@ internal object SystemAppHost {
             com.ismartcoding.plain.platform.clearLatestLogFile()
             JsonHelper.jsonEncodeToElement(true)
         }
-        "systemSetTempValue" -> {
-            com.ismartcoding.plain.helpers.TempHelper.setValue(
-                params.getValue("key").jsonPrimitive.content, params.getValue("value").jsonPrimitive.content)
-            JsonHelper.jsonEncodeToElement(true)
-        }
         "systemRelaunchApp" -> {
             com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.events.RestartAppEvent())
             JsonHelper.jsonEncodeToElement(true)

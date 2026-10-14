@@ -5,22 +5,6 @@ import kotlinx.serialization.json.*
 
 internal object SystemFilesHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
-        "zipItemsFacts" -> {
-            val type = params.getValue("type").jsonPrimitive.content
-            val items = com.ismartcoding.plain.platform.searchZipItems(
-                type,
-                params.getValue("query").jsonPrimitive.content,
-                params.getValue("id").jsonPrimitive.content,
-            ).filter { com.ismartcoding.plain.platform.fileExists(it.sourcePath) }
-            JsonHelper.jsonEncodeToElement(ZipItemsFacts(
-                items = items.map { entry ->
-                    ZipEntryFacts(
-                        path = entry.sourcePath,
-                        name = entry.entryName,
-                    )
-                },
-            ))
-        }
         "scanFilesFacts" -> {
             com.ismartcoding.plain.platform.scanFiles(
                 params.getValue("paths").jsonArray.map { it.jsonPrimitive.content }.toTypedArray()

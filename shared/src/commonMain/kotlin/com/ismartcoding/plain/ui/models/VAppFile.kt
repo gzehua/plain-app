@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.ui.models
 
-import com.ismartcoding.plain.graphql.models.AppFileRecord
+import com.ismartcoding.plain.graphql.models.AppFile
 
 data class VAppFile(
-    val appFile: AppFileRecord,
+    val appFile: AppFile,
     val fileName: String,
 )

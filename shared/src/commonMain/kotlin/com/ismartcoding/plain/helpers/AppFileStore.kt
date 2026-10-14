@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.helpers
 
-import com.ismartcoding.plain.graphql.models.AppFileRecord
+import com.ismartcoding.plain.graphql.models.AppFile
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.*
@@ -19,10 +19,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.*
 
 object AppFileStore {
-    private const val FIELDS = "id size mimeType realPath refCount weakHash createdAt updatedAt fileName"
+    private const val FIELDS = "id size mimeType realPath createdAt updatedAt fileName"
 
     fun toFidUri(fileId: String, ext: String = ""): String = if (ext.isEmpty()) "fid:$fileId" else "fid:$fileId.$ext"
-    fun toFidUri(file: AppFileRecord): String = "fid:${file.realPath.substringAfterLast('/')}"
+    fun toFidUri(file: AppFile): String = "fid:${file.realPath.substringAfterLast('/')}"
     fun extFromMime(mimeType: String): String = if (mimeType.isEmpty()) "" else getExtensionFromMimeType(mimeType).lowercase()
     fun extFromFileName(fileName: String, mimeType: String): String {
         val dot = fileName.lastIndexOf('.')
@@ -41,7 +41,7 @@ object AppFileStore {
     }
     fun resolveUri(uri: String): String = if (uri.startsWith("fid:", true)) realPathFromId(uri.substring(4)) else uri
 
-    suspend fun importFile(srcPath: String, fileName: String = "", mimeType: String = "", deleteSrc: Boolean = false): AppFileRecord = withIO {
+    suspend fun importFile(srcPath: String, fileName: String = "", mimeType: String = "", deleteSrc: Boolean = false): AppFile = withIO {
         if (srcPath.startsWith("content://")) {
             val relative = ".rust-import/${StringHelper.shortUUID()}"
             ensureDir("${appDir()}/.rust-import")
@@ -56,7 +56,7 @@ object AppFileStore {
         importPath(srcPath.removePrefix("file://"), fileName, mimeType, deleteSrc)
     }
 
-    private suspend fun importPath(path: String, name: String, mime: String, deleteSource: Boolean): AppFileRecord {
+    private suspend fun importPath(path: String, name: String, mime: String, deleteSource: Boolean): AppFile {
         val file = withContext(NonCancellable) {
             RustContentApi.mutate("importAppFile(source: ${gql(path)}, fileName: ${gql(name)}, mimeType: ${gql(mime)}, deleteSource: $deleteSource) { $FIELDS }", longRunning = true)
                 .getValue("importAppFile").file()
@@ -70,7 +70,7 @@ object AppFileStore {
         }
     }
 
-    suspend fun importBytes(data: ByteArray, mimeType: String = ""): AppFileRecord = withIO {
+    suspend fun importBytes(data: ByteArray, mimeType: String = ""): AppFile = withIO {
         val root = "${appDir()}/.rust-import"
         ensureDir(root)
         val temporary = "$root/${StringHelper.shortUUID()}"
@@ -80,21 +80,14 @@ object AppFileStore {
         } finally { deleteFileAt(temporary) }
     }
 
-    suspend fun getById(id: String): AppFileRecord? = RustContentApi.query("appFileRecord(id: ${gql(id.substringBefore('.'))}) { $FIELDS }")
-        .getValue("appFileRecord").takeUnless { it is JsonNull }?.file()
-
-    suspend fun records(offset: Int, limit: Int, query: String = ""): List<AppFileRecord> =
-        RustContentApi.query("appFileRecords(offset: $offset, limit: $limit, query: ${gql(query)}) { $FIELDS }")
-            .getValue("appFileRecords").jsonArray.map { it.file() }
-
     suspend fun page(offset: Int, limit: Int, query: String = ""): List<VAppFile> =
-        RustContentApi.query("appFileRecords(offset: $offset, limit: $limit, query: ${gql(query)}) { $FIELDS }")
-            .getValue("appFileRecords").jsonArray.map { VAppFile(it.file(), it.jsonObject.string("fileName")) }
+        RustContentApi.query("appFiles(offset: $offset, limit: $limit, query: ${gql(query)}) { $FIELDS }")
+            .getValue("appFiles").jsonArray.map { VAppFile(it.file(), it.jsonObject.string("fileName")) }
     suspend fun count(query: String = ""): Int = RustContentApi.query("appFileCount(query: ${gql(query)})").getValue("appFileCount").jsonPrimitive.int
     suspend fun displayName(id: String): String = RustContentApi.query("appFiles(offset: 0, limit: 1, query: ${gql("text:$id")}) { fileName }")
         .getValue("appFiles").jsonArray.firstOrNull()?.jsonObject?.string("fileName").orEmpty()
     suspend fun release(id: String) {
         RustContentApi.mutate("releaseAppFile(id: ${gql(id.substringBefore('.'))})")
     }
-    private fun JsonElement.file(): AppFileRecord = JsonHelper.jsonDecodeFromElement<AppFileRecord>(this)
+    private fun JsonElement.file(): AppFile = JsonHelper.jsonDecodeFromElement<AppFile>(this)
 }

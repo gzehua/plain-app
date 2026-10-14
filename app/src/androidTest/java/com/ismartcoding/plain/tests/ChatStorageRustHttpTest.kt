@@ -108,20 +108,19 @@ class ChatStorageRustHttpTest {
         try {
             store.importBytes(bytes, "text/plain")
             RustChatFixtures.insert(direct, group)
-            assertEquals(2, store.getById(file.id)!!.refCount)
             ChatManager.clearAllMessages(com.ismartcoding.plain.chat.data.ChatTarget.parseId("peer:$prefix"))
             assertNull(RustChatStore.getById(direct.id))
             assertNotNull(RustChatStore.getById(group.id))
-            assertEquals(1, store.getById(file.id)!!.refCount)
+            assertTrue(AppFileFixtures.exists(file.id))
             assertArrayEquals(bytes, path.readBytes())
             ChatManager.clearAllMessages(com.ismartcoding.plain.chat.data.ChatTarget.parseId("channel:$prefix"))
             assertNull(RustChatStore.getById(group.id))
-            assertNull(store.getById(file.id))
+            assertFalse(AppFileFixtures.exists(file.id))
             assertFalse(path.exists())
             RustChatFixtures.deleteByIds(listOf(direct.id, direct.id, group.id))
         } finally {
             RustChatFixtures.deleteByIds(listOf(direct.id, group.id))
-            while (store.getById(file.id) != null) store.release(file.id)
+            if (AppFileFixtures.exists(file.id)) store.release(file.id)
         }
     }
 
@@ -151,18 +150,18 @@ class ChatStorageRustHttpTest {
             assertEquals(PeerStatus.CHANNEL, RustPeerStore.getById(peer.id)!!.status)
             assertNull(RustChatStore.getById(direct.id))
             assertNotNull(RustChatStore.getById(group.id))
-            assertEquals(1, store.getById(file.id)!!.refCount)
+            assertTrue(AppFileFixtures.exists(file.id))
             com.ismartcoding.plain.chat.channel.ChannelManager.deleteChannel(channel.id)
             assertNull(RustChannelStore.getById(channel.id))
             assertNull(RustChatStore.getById(group.id))
-            assertNull(store.getById(file.id))
+            assertFalse(AppFileFixtures.exists(file.id))
             assertTrue(com.ismartcoding.plain.chat.peer.PeerManager.deletePeer(peer.id))
             assertFalse(com.ismartcoding.plain.chat.peer.PeerManager.deletePeer(peer.id))
         } finally {
             RustChatFixtures.deleteByIds(listOf(direct.id, group.id))
             RustChannelStore.delete(channel.id)
             RustPeerStore.delete(peer.id)
-            while (store.getById(file.id) != null) store.release(file.id)
+            if (AppFileFixtures.exists(file.id)) store.release(file.id)
             ChannelCacher.load(); PeerCacher.load(); ChatCacher.load()
         }
     }

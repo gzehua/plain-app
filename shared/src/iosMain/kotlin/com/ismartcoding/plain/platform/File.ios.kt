@@ -421,8 +421,6 @@ actual suspend fun fetchUrlToStream(url: String, sink: StreamSink): Pair<Int, St
 
 actual fun isContentUri(path: String): Boolean = false
 
-actual suspend fun searchZipItems(type: String, query: String, tempId: String): List<ZipStreamEntry> = emptyList()
-
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 actual suspend fun readTextFile(path: String): String = withIO {
     try {

@@ -280,17 +280,6 @@ expect suspend fun fetchUrlToStream(url: String, sink: StreamSink): Pair<Int, St
 expect fun isContentUri(path: String): Boolean
 
 /**
- * Search installed packages, media, or app files matching [query] for the purpose
- * of building a zip download. Returns a list of [ZipStreamEntry] with the source
- * path and a display name. Used by the `/zip/files` route.
- *
- * [type] is a [DataType] name (PACKAGE, VIDEO, AUDIO, IMAGE, APP_FILE, FILE).
- * When [type] is FILE, [tempId] holds a temporary key previously stored via
- * `TempHelper` that resolves to the serialized list of [DownloadFileItem]s.
- */
-expect suspend fun searchZipItems(type: String, query: String, tempId: String): List<ZipStreamEntry>
-
-/**
  * Read the contents of a text file at [path] as a UTF-8 string.
  *
  * On Android, supports both regular filesystem paths and `content://` URIs

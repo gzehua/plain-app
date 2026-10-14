@@ -3,7 +3,7 @@ package com.ismartcoding.plain.ui.page.appfiles
 import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.chat.models.MessageFiles
 import com.ismartcoding.plain.chat.models.MessageImages
-import com.ismartcoding.plain.graphql.models.AppFileRecord
+import com.ismartcoding.plain.graphql.models.AppFile
 import com.ismartcoding.plain.graphql.models.ChatItem
 import com.ismartcoding.plain.helpers.AppFileStore
 import com.ismartcoding.plain.lib.withIO
@@ -23,7 +23,7 @@ object AppFileDisplayNameHelper {
         return map
     }
 
-    fun resolveDisplayName(file: AppFileRecord, nameMap: Map<String, String>): String {
+    fun resolveDisplayName(file: AppFile, nameMap: Map<String, String>): String {
         val fromChat = nameMap[file.id].orEmpty().trim()
         if (fromChat.isNotEmpty()) return fromChat
         val ext = getExtensionFromMimeType(file.mimeType)
