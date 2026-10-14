@@ -81,7 +81,7 @@ object AudioMediaStoreHelper : BaseMediaContentHelper() {
             // MediaDurationFixQueue, stored in milliseconds — same unit as
             // DAudio.durationMs and the MediaStore column) before reporting zero to the UI.
             val effectiveDurationMs = if (durationMs <= 0L) {
-                TempData.mediaDurationMap["audio:$id"] ?: 0L
+                com.ismartcoding.plain.features.MediaDurationHelper.cachedDuration("audio", id, path, size, updatedAt)
             } else {
                 durationMs
             }
@@ -89,7 +89,7 @@ object AudioMediaStoreHelper : BaseMediaContentHelper() {
             audios.add(audio)
 
             if (effectiveDurationMs <= 0L && path.isNotEmpty()) {
-                zeroDurationItems.add(MediaDurationZeroItem(id, path))
+                zeroDurationItems.add(MediaDurationZeroItem(id, path, size, updatedAt))
             }
         }
         

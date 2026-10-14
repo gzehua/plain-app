@@ -3,6 +3,7 @@ package com.ismartcoding.plain
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import com.ismartcoding.plain.graphql.models.MediaHostDuration
 import com.ismartcoding.plain.preferences.*
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -31,10 +32,7 @@ object TempData {
     // plain mutableMapOf (LinkedHashMap) is not safe here.
     val videoPlayProgressMap = mutableStateMapOf<String, Long>()
 
-    // "<mediaType>:<mediaId>" -> duration in milliseconds; pre-loaded from DB on
-    // startup. Used to patch zero-duration MediaStore rows (fMP4 files whose
-    // DURATION column is read-only and reports 0). Unit matches DVideo/DAudio.durationMs.
-    val mediaDurationMap = mutableStateMapOf<String, Long>()
+    val mediaDurationMap = mutableStateMapOf<String, MediaHostDuration>()
 
     // Encoded target id of the chat page currently in the foreground. Set by
     // ChatPageEffects so the chat receiver can suppress notifications for the

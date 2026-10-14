@@ -120,18 +120,16 @@ class SleepTimerEvent(val durationMs: Long) : ChannelEvent()
 
 class CancelSleepTimerEvent : ChannelEvent()
 
-/**
- * Fired when media items with zero duration are found during list queries.
- * AppEvents handles this asynchronously to compute actual duration and update MediaStore.
- */
 data class MediaDurationZeroEvent(
-    val mediaType: String, // "video" or "audio"
+    val mediaType: String,
     val items: List<MediaDurationZeroItem>,
 ) : ChannelEvent()
 
 data class MediaDurationZeroItem(
     val id: String,
     val path: String,
+    val sizeBytes: Long,
+    val modifiedAt: kotlin.time.Instant,
 )
 
 class StartNearbyServiceEvent : ChannelEvent()

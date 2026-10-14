@@ -11,7 +11,7 @@ data class Peer(
     var name: String,
     var ip: String,
     var status: PeerStatus,
-    var port: Int,
+    var port: Int?,
     var deviceType: DeviceType,
     var createdAt: Instant,
     var updatedAt: Instant,

@@ -10,4 +10,7 @@ data class MediaHostDuration(
     var mediaId: String,
     var durationMs: Long,
     var updatedAt: Instant,
+    var path: String,
+    var sizeBytes: Long,
+    var modifiedAt: Instant,
 )

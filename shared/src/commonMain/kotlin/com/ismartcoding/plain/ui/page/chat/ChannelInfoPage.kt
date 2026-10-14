@@ -387,7 +387,7 @@ private fun MemberInfoDialog(
             Column {
                 PListItem(title = stringResource(Res.string.peer_id), value = peer.id)
                 PListItem(title = stringResource(Res.string.ip_address), value = peer.getBestIp())
-                PListItem(title = stringResource(Res.string.port), value = peer.port.toString())
+                PListItem(title = stringResource(Res.string.port), value = peer.port?.toString().orEmpty())
                 PListItem(title = stringResource(Res.string.device_type), value = peer.deviceType.getText())
                 val status = peer.status.getText()
                 if (status.isNotEmpty()) {

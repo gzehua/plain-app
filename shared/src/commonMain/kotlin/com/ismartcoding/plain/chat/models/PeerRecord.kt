@@ -13,7 +13,7 @@ data class PeerRecord(
     @kotlinx.serialization.Required var key: String = "",
     @kotlinx.serialization.Required @kotlinx.serialization.SerialName("public_key") var publicKey: String = "",
     @kotlinx.serialization.Required var status: PeerStatus = PeerStatus.UNPAIRED,
-    @kotlinx.serialization.Required var port: Int = 0,
+    @kotlinx.serialization.Required var port: Int? = null,
     @kotlinx.serialization.Required @kotlinx.serialization.SerialName("device_type") var deviceType: DeviceType = DeviceType.PHONE,
 
     @kotlinx.serialization.Required @kotlinx.serialization.SerialName("created_at") var createdAt: Instant = TimeHelper.now(),

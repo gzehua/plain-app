@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.audio
 
 import com.ismartcoding.plain.features.file.FileSortBy
-import com.ismartcoding.plain.graphql.models.AudioItem
+import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.PlatformLock
 import com.ismartcoding.plain.rust.content.string
 import kotlinx.serialization.json.*
@@ -17,17 +17,22 @@ object AudioLibraryHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement {
         val provider = lock.withLock { currentProvider }
         return when (method) {
-            "audioMetadata" -> provider.metadata(params.string("path")).let { row ->
-                buildJsonObject { put("path",row.path);put("title",row.title);put("artist",row.artist);put("albumId",row.albumId);put("durationMs",row.durationMs) }
+            "audioMetadata" -> {
+                val path = params.string("path")
+                val row = provider.resolve(emptyList(), listOf(path)).firstOrNull()
+                    ?: AudioMedia(provider.metadata(path), null)
+                JsonHelper.jsonEncodeToElement(row)
             }
+            "audioLibraryResolve" -> JsonHelper.jsonEncodeToElement(provider.resolve(
+                params.getValue("ids").jsonArray.map { it.jsonPrimitive.content },
+                params.getValue("paths").jsonArray.map { it.jsonPrimitive.content },
+            ))
             "audioLibraryCount" -> JsonPrimitive(provider.count())
             "audioLibraryPath" -> provider.page(params.getValue("offset").jsonPrimitive.int, 1, sort(params)).firstOrNull()?.path?.let(::JsonPrimitive) ?: JsonNull
-            "audioLibraryPage" -> JsonArray(provider.page(params.getValue("offset").jsonPrimitive.int, params.getValue("limit").jsonPrimitive.int, sort(params)).map { row ->
-                buildJsonObject {
-                    put("path", row.path); put("title", row.title); put("artist", row.artist)
-                    put("albumId", row.albumId); put("durationMs", row.durationMs)
-                }
-            })
+            "audioLibraryPage" -> {
+                val rows = provider.page(params.getValue("offset").jsonPrimitive.int, params.getValue("limit").jsonPrimitive.int, sort(params))
+                JsonHelper.jsonEncodeToElement(provider.resolve(emptyList(), rows.map { it.path }))
+            }
             "audioLibraryLocate" -> JsonPrimitive(locate(provider, params.string("path"), sort(params)))
             "audioLibraryContains" -> JsonPrimitive(provider.contains(params.string("path")))
             else -> error("Unknown Rust host operation: $method")

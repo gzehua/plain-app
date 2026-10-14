@@ -80,15 +80,17 @@ abstract class BaseMediaContentHelper {
         }?.toSet() ?: emptySet()
     }
 
-    suspend fun isCurrentItemAsync(context: Context, id: String, path: String): Boolean = withIO {
-        val where = ContentWhere().apply { addIn(BaseColumns._ID, listOf(id)) }
+    suspend fun isCurrentItemAsync(context: Context, item: com.ismartcoding.plain.events.MediaDurationZeroItem): Boolean = withIO {
+        val where = ContentWhere().apply { addIn(BaseColumns._ID, listOf(item.id)) }
         context.contentResolver.getSearchCursor(
             uriExternal,
-            arrayOf(BaseColumns._ID, MediaStore.MediaColumns.DATA),
+            arrayOf(BaseColumns._ID, MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.SIZE, MediaStore.MediaColumns.DATE_MODIFIED),
             where,
         )?.map { cursor, cache ->
-            cursor.getStringValue(BaseColumns._ID, cache) == id &&
-                cursor.getStringValue(MediaStore.MediaColumns.DATA, cache) == path
+            cursor.getStringValue(BaseColumns._ID, cache) == item.id &&
+                cursor.getStringValue(MediaStore.MediaColumns.DATA, cache) == item.path &&
+                cursor.getLongValue(MediaStore.MediaColumns.SIZE, cache) == item.sizeBytes &&
+                cursor.getLongValue(MediaStore.MediaColumns.DATE_MODIFIED, cache) == item.modifiedAt.epochSeconds
         }?.any { it } == true
     }
 

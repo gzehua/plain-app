@@ -8,3 +8,5 @@ expect suspend fun audioLibraryPage(offset: Int, limit: Int, sort: FileSortBy): 
 expect suspend fun audioLibraryContains(path: String): Boolean
 
 expect suspend fun audioLibraryMetadata(path: String): AudioItem
+
+expect suspend fun audioLibraryResolve(ids: List<String>, paths: List<String>): List<com.ismartcoding.plain.features.audio.AudioMedia>

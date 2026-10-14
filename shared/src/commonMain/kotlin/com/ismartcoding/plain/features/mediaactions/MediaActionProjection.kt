@@ -10,12 +10,10 @@ internal object MediaActionProjection {
         val result = JsonHelper.jsonDecode<MediaActionFinished>(payload)
         val type = DataType.entries.single { it.value == result.type }
         val action = MediaAction.valueOf(result.action)
-        if (action == MediaAction.TRASH || action == MediaAction.DELETE) {
-            Snapshot.withMutableSnapshot {
-                result.ids.forEach { id ->
-                    TempData.mediaDurationMap.remove("${type.name.lowercase()}:$id")
-                    if (type == DataType.VIDEO) TempData.videoPlayProgressMap.remove(id)
-                }
+        Snapshot.withMutableSnapshot {
+            result.ids.forEach { id ->
+                TempData.mediaDurationMap.remove("${type.name.lowercase()}:$id")
+                if (type == DataType.VIDEO && (action == MediaAction.TRASH || action == MediaAction.DELETE)) TempData.videoPlayProgressMap.remove(id)
             }
         }
     }

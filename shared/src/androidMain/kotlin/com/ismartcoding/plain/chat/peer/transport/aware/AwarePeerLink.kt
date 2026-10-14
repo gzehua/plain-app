@@ -101,6 +101,7 @@ class AwarePeerLink(
         //
         // If the publisher also retried independently, its retry cycle would drift from the
         // subscriber's, and the two would never overlap inside the 500ms window.
+        val port = d.port?.takeIf { it in 1..65535 } ?: error("Missing peer port")
         val maxAttempts = if (isClient) MAX_BUILD_ATTEMPTS else 1
         var lastError: Throwable? = null
         repeat(maxAttempts) { attempt ->
@@ -119,7 +120,7 @@ class AwarePeerLink(
                         h
                     }
                     LogCat.d("[AWARE] build handle ok peer=${d.id} attempt=${attempt + 1}/$maxAttempts hasPeerHandle=${peerHandle != null}")
-                    val conn = openNetwork(handle, d.port)
+                    val conn = openNetwork(handle, port)
                     check(!closed.get()) { "Aware link closed" }
                     state = LinkState.CONNECTED
                     connection.set(conn)

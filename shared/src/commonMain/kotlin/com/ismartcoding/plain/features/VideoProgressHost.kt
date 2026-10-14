@@ -20,6 +20,17 @@ object VideoProgressHost {
         }
     }
 
+    fun started(mediaId: String, positionMs: Long) {
+        if (mediaId.isEmpty() || positionMs < 0) return
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            lock.withLock {
+                try { VideoProgressHelper.recordPlayAsync(mediaId, positionMs) }
+                catch (cancelled: CancellationException) { throw cancelled }
+                catch (e: Exception) { LogCat.e("Video history: ${e.message}") }
+            }
+        }
+    }
+
     fun save(mediaId: String, positionMs: Long) {
         if (mediaId.isEmpty() || positionMs < 0) return
         TempData.videoPlayProgressMap[mediaId] = positionMs

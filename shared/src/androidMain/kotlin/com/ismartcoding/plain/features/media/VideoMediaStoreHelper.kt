@@ -85,7 +85,7 @@ object VideoMediaStoreHelper : BaseMediaContentHelper() {
             // MediaDurationFixQueue, stored in milliseconds — same unit as
             // DVideo.durationMs and the MediaStore column) before reporting zero to the UI.
             val effectiveDurationMs = if (durationMs <= 0L) {
-                TempData.mediaDurationMap["video:$id"] ?: 0L
+                com.ismartcoding.plain.features.MediaDurationHelper.cachedDuration("video", id, path, size, updatedAt)
             } else {
                 durationMs
             }
@@ -93,7 +93,7 @@ object VideoMediaStoreHelper : BaseMediaContentHelper() {
             videos.add(video)
 
             if (effectiveDurationMs <= 0L && path.isNotEmpty()) {
-                zeroDurationItems.add(MediaDurationZeroItem(id, path))
+                zeroDurationItems.add(MediaDurationZeroItem(id, path, size, updatedAt))
             }
         }
         

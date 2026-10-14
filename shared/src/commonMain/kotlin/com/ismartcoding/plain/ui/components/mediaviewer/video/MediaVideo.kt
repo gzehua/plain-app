@@ -92,7 +92,9 @@ fun MediaVideo(
     }
 
     val controller = rememberVideoPlayerController()
+    var mediaId by remember(model.path, model.mediaId) { mutableStateOf(model.mediaId) }
     var wasActive by remember { mutableStateOf(false) }
+    var playRecorded by remember { mutableStateOf(false) }
     var firstFrameRendered by remember { mutableStateOf(false) }
     // Track which media item is already prepared on this controller so an
     // already-preloaded (adjacent) video is not reset when it becomes active.
@@ -104,6 +106,10 @@ fun MediaVideo(
                 if (!videoState.isPreviewerOpen || pagerState.settledPage != page) return@setEventListener
                 if (event.durationMs > 0L) {
                     videoState.totalTime = event.durationMs
+                }
+                if (event.isPlaying && !playRecorded) {
+                    VideoProgressHost.started(mediaId, controller.currentPositionMs)
+                    playRecorded = true
                 }
                 videoState.isPlaying = event.isPlaying
                 videoState.updateTime()
@@ -131,8 +137,9 @@ fun MediaVideo(
     LaunchedEffect(controller, pagerState.settledPage, videoState.isPreviewerOpen) {
         val isActive = videoState.isPreviewerOpen && pagerState.settledPage == page
         if (wasActive && !isActive) {
-            VideoProgressHost.save(model.mediaId, controller.currentPositionMs)
+            VideoProgressHost.save(mediaId, controller.currentPositionMs)
         }
+        if (!isActive) playRecorded = false
         wasActive = isActive
         if (!videoState.isPreviewerOpen) {
             controller.abandonAudioFocus()
@@ -141,12 +148,13 @@ fun MediaVideo(
             return@LaunchedEffect
         }
         if (isActive) {
+            if (mediaId.isEmpty()) mediaId = com.ismartcoding.plain.platform.getVideoMediaId(model.path).orEmpty()
             videoState.initData(controller)
             val expectedTotalMs = (model.data as? DVideo)?.durationMs ?: 0L
             if (expectedTotalMs > 0L) {
                 videoState.totalTime = expectedTotalMs
             }
-            val savedPos = if (model.mediaId.isNotEmpty()) TempData.videoPlayProgressMap[model.mediaId] else null
+            val savedPos = if (mediaId.isNotEmpty()) TempData.videoPlayProgressMap[mediaId] else null
             val atEnd = savedPos != null && savedPos > 0 && expectedTotalMs > 0 && savedPos >= expectedTotalMs - 1000
             if (savedPos != null && savedPos > 0L && !atEnd) {
                 videoState.currentTime = savedPos
@@ -179,7 +187,7 @@ fun MediaVideo(
 
     DisposableEffect(Unit) {
         onDispose {
-            if (wasActive) VideoProgressHost.save(model.mediaId, controller.currentPositionMs)
+            if (wasActive) VideoProgressHost.save(mediaId, controller.currentPositionMs)
             controller.abandonAudioFocus()
             controller.stop()
             controller.release()

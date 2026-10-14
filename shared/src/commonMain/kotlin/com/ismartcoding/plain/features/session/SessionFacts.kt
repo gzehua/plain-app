@@ -14,7 +14,7 @@ internal data class SessionFacts(
     @SerialName("os_version") val osVersion: String,
     @SerialName("browser_name") val browserName: String,
     @SerialName("browser_version") val browserVersion: String,
-    @SerialName("created_at") val createdAt: Long,
-    @SerialName("updated_at") val updatedAt: Long,
-    @SerialName("last_active_at") val lastActiveAt: Long?,
+    @SerialName("created_at") val createdAt: String,
+    @SerialName("updated_at") val updatedAt: String,
+    @SerialName("last_seen_at") val lastSeenAt: String?,
 )

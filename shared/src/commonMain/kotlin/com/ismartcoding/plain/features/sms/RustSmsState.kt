@@ -12,7 +12,7 @@ object RustSmsState {
     suspend fun archives(): List<DArchivedConversation> = call("archives").getValue("items").jsonArray.map {
         val row = it.jsonObject
         DArchivedConversation(row.getValue("conversation_id").jsonPrimitive.content,
-            Instant.parse(row.getValue("conversation_date").jsonPrimitive.content))
+            Instant.parse(row.getValue("archived_at").jsonPrimitive.content))
     }
 
     suspend fun archive(id: String, date: Instant) { call("archive") { put("id", id); put("date", date.toString()) } }

@@ -26,6 +26,10 @@ object VideoProgressHelper {
         PlainRust.privateMutate("saveVideoPlayProgress(mediaId: ${gql(mediaId)}, positionMs: $positionMs) { $FIELDS }")
             .getValue("saveVideoPlayProgress").progress()
 
+    suspend fun recordPlayAsync(mediaId: String, positionMs: Long) {
+        PlainRust.privateMutate("recordVideoPlay(mediaId: ${gql(mediaId)}, positionMs: $positionMs) { mediaId }")
+    }
+
     suspend fun deleteAsync(mediaId: String) {
         PlainRust.privateMutate("deleteVideoPlayProgress(mediaId: ${gql(mediaId)})")
     }

@@ -4,5 +4,5 @@ import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.ui.components.mediaviewer.PreviewItem
 
 fun DFile.toPreviewItem(): PreviewItem {
-    return PreviewItem(path, path, size, path, this)
+    return PreviewItem(id = path, path = path, size = size, mediaId = mediaId, data = this)
 }
