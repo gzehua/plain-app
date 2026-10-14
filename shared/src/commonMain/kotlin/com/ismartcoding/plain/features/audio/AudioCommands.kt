@@ -31,7 +31,11 @@ object AudioCommands {
     }
     fun submit(action: String, positionMs: Long = 0, speed: Float = 1f) = submit { command(action, positionMs, speed) }
     fun playTrack(audio: AudioItem) = submit {
-        PlainRust.privateMutate("audioPlayTrack(track: ${listOf(audio).audioInput().removePrefix("[").removeSuffix("]")}, enqueue: false) { path positionMs revision }")
+        if (!audio.mediaId.isNullOrEmpty()) {
+            PlainRust.privateMutate("audioPlayTrack(mediaId: ${gql(audio.mediaId!!)}) { path positionMs revision }")
+        } else {
+            PlainRust.privateMutate("audioPlayPath(path: ${gql(audio.path)}) { path positionMs revision }")
+        }
     }
     fun playPath(path: String) = submit {
         PlainRust.privateMutate("audioPlayPath(path: ${gql(path)}) { path positionMs revision }")

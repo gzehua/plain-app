@@ -20,8 +20,10 @@ data class PlaylistAlbumCover(
  */
 internal suspend fun loadPlaylistAlbumCovers(items: List<AudioItem>): List<PlaylistAlbumCover> = withIO {
     val byAlbum = LinkedHashMap<String, MutableList<AudioItem>>()
+    val albums = com.ismartcoding.plain.platform.audioLibraryResolve(items.mapNotNull { it.mediaId }, emptyList())
+        .associate { it.mediaId to it.albumId }
     items.forEach { row ->
-        val album = row.albumId
+        val album = albums[row.mediaId]
         if (!album.isNullOrBlank()) byAlbum.getOrPut(album) { mutableListOf() }.add(row)
     }
     byAlbum.entries

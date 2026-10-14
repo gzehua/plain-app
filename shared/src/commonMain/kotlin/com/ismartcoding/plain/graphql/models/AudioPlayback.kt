@@ -5,7 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AudioPlayback(
-    var currentPath: String?,
+    var mediaId: String?,
+    var path: String?,
     var mode: MediaPlayMode,
     var isPlaying: Boolean,
     var positionMs: Long,

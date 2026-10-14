@@ -18,8 +18,8 @@ import java.util.UUID
 class AudioNativeRustHttpTest {
     @Test
     fun silentNativePlaybackReportsActualStartAndResumeThroughRust() = runBlocking {
-        assertTrue(AudioQueueManager.queuedPaths().isEmpty())
-        assertTrue(AudioQueueManager.source().currentPath.isEmpty())
+        assertTrue(AudioQueueManager.queuedMediaIds().isEmpty())
+        assertTrue(AudioQueueManager.playback().path.isNullOrEmpty())
         val file = File(appContext.cacheDir, "audio-native-${UUID.randomUUID()}.wav")
         val samples = 8_000 * 20 * 2
         val header = ByteBuffer.allocate(44).order(ByteOrder.LITTLE_ENDIAN)
@@ -28,13 +28,12 @@ class AudioNativeRustHttpTest {
             .put("data".toByteArray()).putInt(samples).array()
         file.outputStream().use { it.write(header); it.write(ByteArray(samples)) }
         val oldEngine = AudioEngineHost.install(null)
-        suspend fun playback() = RustContentApi.query("audioPlayback { path positionMs revision }").getValue("audioPlayback").jsonObject
+        suspend fun playback() = com.ismartcoding.plain.rust.PlainRust.privateQuery("audioPlayback { path positionMs revision }").getValue("audioPlayback").jsonObject
         try {
-            RustContentApi.mutate("audioPlayPath(path: ${JsonPrimitive(file.absolutePath)}) {path positionMs revision}")
-            withTimeout(10_000) {
-                while (AudioPlayHistoryManager.recentPageFiltered(file.name,20,0).isEmpty()) delay(100)
-            }
-            assertEquals(1, AudioPlayHistoryManager.recentPageFiltered(file.name,20,0).single().playCount)
+            com.ismartcoding.plain.rust.PlainRust.privateMutate("audioPlayPath(path: ${JsonPrimitive(file.absolutePath)}) {path positionMs revision}")
+            assertTrue(AudioPlayHistoryManager.recentPageFiltered(file.name,20,0).isEmpty())
+            assertTrue(AudioQueueManager.queuedMediaIds().isEmpty())
+            assertNull(AudioQueueManager.playback().mediaId)
             withTimeout(5_000) {
                 while (playback().getValue("positionMs").jsonPrimitive.long < 100) delay(100)
             }
@@ -46,12 +45,11 @@ class AudioNativeRustHttpTest {
             AudioCommands.command("PLAY")
             delay(300)
             assertTrue(playback().getValue("positionMs").jsonPrimitive.long >= paused)
-            assertEquals(1, AudioPlayHistoryManager.recentPageFiltered(file.name,20,0).single().playCount)
+            assertTrue(AudioPlayHistoryManager.recentPageFiltered(file.name,20,0).isEmpty())
         } finally {
             try {
                 AudioCommands.command("CLEAR")
                 AudioQueueManager.clearQueue()
-                AudioQueueManager.removePaths(listOf(file.absolutePath))
             } finally {
                 AudioEngineHost.install(oldEngine)
                 file.delete()

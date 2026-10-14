@@ -3,13 +3,11 @@ package com.ismartcoding.plain.ui.models
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.ismartcoding.plain.audio.DAudio
-import com.ismartcoding.plain.db.AudioPlaySource
 import com.ismartcoding.plain.events.ClearAudioQueueEvent
 import com.ismartcoding.plain.features.audio.AudioQueueManager
 import com.ismartcoding.plain.graphql.models.Audio
 import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.platform.audioClear
 import com.ismartcoding.plain.platform.audioJustPlay
 import com.ismartcoding.plain.preferences.*
 
@@ -18,24 +16,23 @@ class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
     val queueCount = mutableStateOf(0)
     val noMore = mutableStateOf(false)
 
-    /** Drag & drop reorder only applies to the manual queue (no playback source). */
     val canReorder = mutableStateOf(false)
 
-    /** Paths currently in the manual queue — "remove" applies to these only. */
-    val queuedPaths = mutableStateOf<Set<String>>(emptySet())
+    val queuedMediaIds = mutableStateOf<Set<String>>(emptySet())
 
-    /** Playlist id of the active playback source, null when none. */
-    val activePlaylistId = mutableStateOf<String?>(null)
+    val selectedMediaId = mutableStateOf<String?>(null)
     override val selectedPath = mutableStateOf("")
 
     private val pageLimit = 200
 
     suspend fun loadAsync() {
-        selectedPath.value = AudioQueueManager.source().currentPath
+        val playback = AudioQueueManager.playback()
+        selectedPath.value = playback.path.orEmpty()
+        selectedMediaId.value = playback.mediaId
         refreshWindow()
     }
 
-    fun isInQueue(path: String): Boolean = path in queuedPaths.value
+    fun isInQueue(mediaId: String): Boolean = mediaId in queuedMediaIds.value
 
     suspend fun moreAsync() {
         if (noMore.value) return
@@ -49,81 +46,68 @@ class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
         val audio = items.map { it.toPlaylistAudio() }
         AudioQueueManager.enqueue(audio)
         if (selectedPath.value.isEmpty()) {
-            setCurrentPlaying(audio.first().path)
+            setCurrentPlaying(audio.firstOrNull())
         }
         refreshWindow()
     }
 
-    /** Replace the whole queue with a single track ("open with player" flows). */
     suspend fun playSingleAsync(audio: AudioItem) {
         AudioQueueManager.clearQueue()
         AudioQueueManager.enqueue(listOf(audio))
-        setCurrentPlaying(audio.path)
+        audioJustPlay(audio)
+        selectedPath.value = audio.path
+        selectedMediaId.value = audio.mediaId
         refreshWindow()
     }
 
     suspend fun clearAsync() {
         AudioQueueManager.clearQueue()
-        audioClear()
-        setCurrentPlaying("")
+        selectedPath.value = ""
+        selectedMediaId.value = null
         refreshWindow()
         sendEvent(ClearAudioQueueEvent())
     }
 
-    /** Sync UI state after playback was started from a queue source (engine is already playing). */
     suspend fun onStarted(audio: AudioItem) {
-        setCurrentPlaying(audio.path)
+        setCurrentPlaying(audio)
         refreshWindow()
     }
 
-    private suspend fun setCurrentPlaying(path: String) {
-        AudioQueueManager.setCurrent(path)
-        selectedPath.value = path
+    private suspend fun setCurrentPlaying(audio: AudioItem?) {
+        if (audio == null || !audio.mediaId.isNullOrEmpty()) AudioQueueManager.setCurrent(audio?.mediaId)
+        selectedPath.value = audio?.path.orEmpty()
+        selectedMediaId.value = audio?.mediaId
     }
 
-    /** Queue tap: the item is already in the queue, so play it in place without mutating the queue. */
     suspend fun playAsync(item: DAudio) {
         val audio = item.toPlaylistAudio()
         audioJustPlay(audio)
-        setCurrentPlaying(audio.path)
+        setCurrentPlaying(audio)
         refreshWindow()
     }
 
-    /** Play an audio from outside the queue (e.g. a global search result): append it, then play. */
     suspend fun enqueueAndPlayAsync(item: DAudio) {
         val audio = item.toPlaylistAudio()
         AudioQueueManager.enqueue(listOf(audio))
         audioJustPlay(audio)
-        setCurrentPlaying(audio.path)
+        setCurrentPlaying(audio)
         refreshWindow()
     }
 
-    suspend fun removeAsync(path: String) {
-        AudioQueueManager.removeQueued(path)
-        if (path == selectedPath.value) {
-            val nextItem = AudioQueueManager.resolveNext(isNext = true, shuffle = false)
-            if (nextItem != null) {
-                AudioQueueManager.setCurrent(nextItem.path)
-                audioJustPlay(nextItem)
-                selectedPath.value = nextItem.path
-            }
-        }
-        if (AudioQueueManager.queueTotal() == 0) {
-            setCurrentPlaying("")
-            audioClear()
-            sendEvent(ClearAudioQueueEvent())
-        }
+    suspend fun removeAsync(mediaId: String) {
+        AudioQueueManager.removeQueued(mediaId)
+        val playback = AudioQueueManager.playback()
+        selectedPath.value = playback.path.orEmpty()
+        selectedMediaId.value = playback.mediaId
         refreshWindow()
     }
 
     suspend fun reorder(from: Int, to: Int) {
-        if (!canReorder.value) return
-        AudioQueueManager.moveQueued(from, to)
         val list = queueItems.value.toMutableList()
-        if (from in list.indices && to in list.indices) {
-            list.add(to, list.removeAt(from))
-            queueItems.value = list
-        }
+        if (from !in list.indices || to !in list.indices) return
+        list.add(to,list.removeAt(from))
+        AudioQueueManager.reorderQueued(list.map { requireNotNull(it.mediaId) })
+        queueItems.value = list
     }
 
     private suspend fun refreshWindow(target: Int = pageLimit) {
@@ -132,8 +116,7 @@ class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
         queueItems.value = window
         queueCount.value = total
         noMore.value = window.size >= total
-        canReorder.value = AudioQueueManager.source().source == AudioPlaySource.NONE.name
-        activePlaylistId.value = AudioQueueManager.activePlaylistId()
-        queuedPaths.value = AudioQueueManager.queuedPaths()
+        canReorder.value = true
+        queuedMediaIds.value = AudioQueueManager.queuedMediaIds()
     }
 }

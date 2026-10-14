@@ -226,7 +226,9 @@ fun AudioHomePage(
                             onShuffleAll = {
                                 scope.launch {
                                     coIO {
-                                        val start = AudioQueueManager.setLibrarySource(startPath = null, shuffle = true)
+                                        AudioQueueManager.clearQueue()
+                                        AudioQueueManager.add("trash:false")
+                                        val start = AudioQueueManager.resolveNext(isNext = true, shuffle = true)
                                         if (start != null) {
                                             audioJustPlayWithNotificationCheck(start)
                                             audioQueueVM.onStarted(start)
@@ -327,8 +329,8 @@ private fun HomeSections(
                 castVM = castVM,
                 tags = audioTagsMap[item.id] ?: emptyList(),
                 dragSelectState = dragSelectState,
-                isCurrentlyPlaying = isAudioPlaying && audioQueueVM.selectedPath.value == item.path,
-                isInQueue = audioQueueVM.isInQueue(item.path),
+                isCurrentlyPlaying = isAudioPlaying && audioQueueVM.selectedMediaId.value == item.id,
+                isInQueue = audioQueueVM.isInQueue(item.id),
             )
             VerticalSpace(dp = 8.dp)
         }

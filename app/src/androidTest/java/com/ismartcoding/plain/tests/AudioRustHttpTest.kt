@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.db.AudioPlaySource
 import com.ismartcoding.plain.features.audio.*
 import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.graphql.models.AudioItem
@@ -15,49 +14,45 @@ import org.junit.runner.RunWith
 class AudioRustHttpTest {
     @Test
     fun playlistsQueueHistoryAndLargeLibraryUseRustWithNativeHostCallbacks() = runBlocking {
-        assertEquals(AudioPlaySource.NONE, AudioQueueManager.source().source)
-        assertTrue(AudioQueueManager.queuedPaths().isEmpty())
-        assertTrue(AudioQueueManager.source().currentPath.isEmpty())
+        assertTrue(AudioQueueManager.queuedMediaIds().isEmpty())
+        assertTrue(AudioQueueManager.playback().path.isNullOrEmpty())
         val prefix = "audio-rust-${UUID.randomUUID()}"
-        fun track(index: Int): AudioItem = AudioItem(title = "Track $index", path = "$prefix/$index", artist = "Synthetic $prefix", durationMs = 117123, albumId = "42")
+        fun track(index: Int): AudioItem = AudioItem(title = "Track $index", path = "$prefix/$index", artist = "Synthetic $prefix", durationMs = 117123, mediaId = "$prefix-$index")
         val previousProvider = AudioLibraryHost.install(object : AudioLibraryProvider {
+            override suspend fun resolve(ids: List<String>, paths: List<String>): List<AudioMedia> = (0 until 10_000).map(::track).filter { it.mediaId in ids || it.path in paths }.map { AudioMedia(it, it.mediaId) }
             override suspend fun count(): Int = 10_000
             override suspend fun page(offset: Int, limit: Int, sort: FileSortBy): List<AudioItem> =
                 (offset until minOf(10_000, offset + limit)).map(::track)
             override suspend fun contains(path: String): Boolean = path.startsWith("$prefix/") && path.substringAfterLast('/').toIntOrNull()?.let { it in 0 until 10_000 } == true
         })
         var playlistId = ""
-        val touched = mutableSetOf<String>()
         try {
             val list = AudioPlaylistManager.createPlaylist(prefix)
             playlistId = list.id
             assertEquals(2, AudioPlaylistManager.addPlaylistItems(list.id,listOf(track(1),track(2),track(1))))
             val items = AudioPlaylistManager.playlistItemsPage(list.id,0,20)
-            assertEquals(listOf("42","42"), items.map { it.albumId })
+            assertEquals(listOf(track(1).mediaId, track(2).mediaId), items.map { it.mediaId })
             assertEquals(listOf(117123L,117123L), items.map { it.durationMs })
-            assertEquals(track(1).path, checkNotNull(AudioQueueManager.setPlaylistSource(list.id,null)).path)
+            AudioQueueManager.add("playlist_id:${list.id}")
+            assertEquals(listOf(track(1).mediaId,track(2).mediaId), AudioQueueManager.queuePage(0,20).map { it.mediaId })
+            AudioQueueManager.setCurrent(track(1).mediaId)
+            assertEquals(track(2).mediaId, checkNotNull(AudioQueueManager.resolveNext(true,false)).mediaId)
             assertTrue(AudioPlayHistoryManager.recentPageFiltered(prefix,20,0).isEmpty())
-            AudioQueueManager.onPlaying(track(1).path,"Track 1", "Synthetic $prefix",117123)
-            touched += track(1).path
-            assertEquals(1, AudioPlayHistoryManager.recentPageFiltered(prefix,20,0).single().playCount)
-            AudioQueueManager.enqueue(listOf(track(2)),true)
-            assertEquals(track(2).path, checkNotNull(AudioQueueManager.resolveNext(true,false)).path)
-            assertEquals(2,AudioQueueManager.queueTotal())
-            AudioQueueManager.setLibrarySource(track(9000).path,false)
-            touched += track(9000).path
-            assertEquals(10000,AudioQueueManager.queueTotal())
-            assertEquals(track(9009).path,AudioQueueManager.queuePage(8990,20).last().path)
-            assertEquals(track(9001).path,checkNotNull(AudioQueueManager.resolveNext(true,false)).path)
-            touched += track(9001).path
-            AudioQueueManager.enqueue(listOf(track(9002)),true)
-            assertEquals(track(9002).path,checkNotNull(AudioQueueManager.resolveNext(true,false)).path)
-            touched += track(9002).path
-            AudioQueueManager.removePaths(listOf(track(1).path))
+            AudioQueueManager.clearQueue()
+            AudioQueueManager.enqueue((0 until 10_000).map(::track))
+            assertEquals(10000, AudioQueueManager.queueTotal())
+            assertEquals(track(9009).mediaId, AudioQueueManager.queuePage(8990,20).last().mediaId)
+            AudioQueueManager.setCurrent(track(9000).mediaId)
+            assertEquals(track(9001).mediaId, checkNotNull(AudioQueueManager.resolveNext(true,false)).mediaId)
+            AudioQueueManager.reorderQueued(listOf(track(2).mediaId!!,track(1).mediaId!!,track(0).mediaId!!))
+            assertEquals(listOf(2,1,0,3,4).map { track(it).mediaId }, AudioQueueManager.queuePage(0,5).map { it.mediaId })
+            AudioQueueManager.removeQueued(track(1).mediaId!!)
+            assertEquals(2,AudioPlaylistManager.playlistItemCount(list.id))
+            AudioPlaylistManager.removePlaylistItem(list.id, track(1).mediaId!!)
             assertEquals(1,AudioPlaylistManager.playlistItemCount(list.id))
         } finally {
             try {
                 AudioQueueManager.clearQueue()
-                AudioQueueManager.removePaths(touched.toList())
                 if (playlistId.isNotEmpty()) AudioPlaylistManager.deletePlaylist(playlistId)
             } finally { AudioLibraryHost.install(previousProvider) }
         }

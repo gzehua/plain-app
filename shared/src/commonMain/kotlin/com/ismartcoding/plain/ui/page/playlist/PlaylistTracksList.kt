@@ -50,8 +50,8 @@ internal fun PlaylistTracksList(
                 item = item, audioVM = audioVM, audioQueueVM = audioQueueVM,
                 tagsVM = tagsVM, castVM = castVM, tags = emptyList(),
                 dragSelectState = dragSelectState,
-                isCurrentlyPlaying = isPlaying && audioQueueVM.selectedPath.value == item.path,
-                isInQueue = audioQueueVM.isInQueue(item.path),
+                isCurrentlyPlaying = isPlaying && audioQueueVM.selectedMediaId.value == item.id,
+                isInQueue = audioQueueVM.isInQueue(item.id),
             )
             VerticalSpace(8.dp)
         }

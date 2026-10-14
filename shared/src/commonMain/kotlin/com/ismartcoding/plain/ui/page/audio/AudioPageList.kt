@@ -67,8 +67,8 @@ internal fun ColumnScope.AudioPageList(
                             val tags = audioTagsMap[item.id] ?: emptyList()
                             AudioListItem(item = item, audioVM = audioVM, audioQueueVM, tagsVM = tagsVM,
                                 castVM = castVM, tags = tags, dragSelectState = dragSelectState,
-                                isCurrentlyPlaying = isAudioPlaying && audioQueueVM.selectedPath.value == item.path,
-                                isInQueue = audioQueueVM.isInQueue(item.path))
+                                isCurrentlyPlaying = isAudioPlaying && audioQueueVM.selectedMediaId.value == item.id,
+                                isInQueue = audioQueueVM.isInQueue(item.id))
                             VerticalSpace(dp = 8.dp)
                         }
                         item(key = "loadMore") {

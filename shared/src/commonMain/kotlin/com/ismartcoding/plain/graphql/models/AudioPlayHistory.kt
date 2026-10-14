@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AudioPlayHistory(
+    var mediaId: String,
     var path: String,
     var title: String,
     var artist: String,

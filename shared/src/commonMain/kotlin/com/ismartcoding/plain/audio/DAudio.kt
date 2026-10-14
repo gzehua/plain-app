@@ -25,6 +25,6 @@ data class DAudio(
     }
 
     fun toPlaylistAudio(): AudioItem {
-        return AudioItem(title = title, artist = artist, albumId = albumId, path = path, durationMs = durationMs)
+        return AudioItem(mediaId = id, title = title, artist = artist, path = path, durationMs = durationMs)
     }
 }

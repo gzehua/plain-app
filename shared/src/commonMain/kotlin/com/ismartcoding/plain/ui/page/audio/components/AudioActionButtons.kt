@@ -128,7 +128,7 @@ internal fun AudioActionButtons(
                 if (playlistId != null) {
                     PSheetActionRow(UiRes.drawable.ui_drawable_playlist_remove, stringResource(Res.string.remove_from_playlist)) {
                         scope.launch {
-                            withIO { AudioPlaylistManager.removePlaylistItem(playlistId, m.path) }
+                            withIO { AudioPlaylistManager.removePlaylistItem(playlistId, m.id) }
                             DialogHelper.showMessage(Res.string.removed_from_playlist)
                             onPlaylistChanged()
                             onDismiss()

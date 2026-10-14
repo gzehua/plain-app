@@ -66,7 +66,7 @@ fun ReorderableCollectionItemScope.AudioQueueItemRow(
             if (canRemove) {
                 PIconButton(icon = UiRes.drawable.ui_drawable_playlist_remove, tint = MaterialTheme.colorScheme.error,
                     contentDescription = stringResource(Res.string.remove_from_queue),
-                    click = { scope.launch(Dispatchers.Default) { audioQueueVM.removeAsync(audio.path) } })
+                    click = { scope.launch(Dispatchers.Default) { audioQueueVM.removeAsync(requireNotNull(audio.mediaId)) } })
             }
         }
     }

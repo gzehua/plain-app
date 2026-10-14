@@ -135,13 +135,13 @@ fun PlaylistDetailPage(
     val sortBy = audioVM.sortBy.value
     val libraryByPath = remember(library) { library.associateBy { it.path } }
     val rowAudios = remember(items, library, sortBy) {
-        items.map { libraryByPath[it.path] ?: it.toDAudio() }.sortedByAudio(sortBy)
+        items.map { libraryByPath[it.path] ?: it.toDAudio() }
     }
     val selectItems = remember(rowAudios) { rowAudios.map { IDData(it.id) } }
     val pathById = remember(library) { library.associateBy { it.id } }
     val density = LocalDensity.current
     var playerBarClearance by remember { mutableStateOf(0.dp) }
-    val contextActive = audioQueueVM.activePlaylistId.value == playlistId
+    val contextActive = items.isNotEmpty() && audioQueueVM.queuedMediaIds.value == items.mapNotNull { it.mediaId }.toSet()
     val isPlayingContext = contextActive && isPlaying
 
     PBackHandler(enabled = dragSelectState.selectMode || castVM.castMode.value) {
@@ -245,7 +245,7 @@ fun PlaylistDetailPage(
                     dragSelectState = dragSelectState,
                     removeFromPlaylist = {
                         scope.launch {
-                            val paths = dragSelectState.selectedIds.map { pathById[it]?.path ?: it }
+                            val paths = dragSelectState.selectedIds.toList()
                             if (paths.isNotEmpty()) {
                                 withIO { AudioPlaylistManager.removePlaylistItems(playlistId, paths) }
                                 dragSelectState.exitSelectMode()

@@ -21,7 +21,7 @@ class QueueStateSyncGuardTest {
 
     /** Fields derived from AudioQueueManager state; refreshWindow owns them. */
     private val derivedFields = listOf(
-        "queueItems", "queueCount", "noMore", "canReorder", "activePlaylistId", "queuedPaths",
+        "queueItems", "queueCount", "noMore", "canReorder", "queuedMediaIds",
     )
 
     /**

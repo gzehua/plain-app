@@ -30,8 +30,8 @@ import org.junit.runner.RunWith
 class MediaActionsRustHttpTest {
     @Test
     fun physicalActionsCleanOnlyConfirmedAssetsAndPreserveFailedReferences() = runBlocking {
-        assertTrue(AudioQueueManager.queuedPaths().isEmpty())
-        assertTrue(AudioQueueManager.source().currentPath.isEmpty())
+        assertTrue(AudioQueueManager.queuedMediaIds().isEmpty())
+        assertTrue(AudioQueueManager.playback().path.isNullOrEmpty())
         val prefix = "media-actions-${UUID.randomUUID()}"
         val missingId = "9223372036854775806"
         val uris = mutableListOf<Uri>()
@@ -85,12 +85,11 @@ class MediaActionsRustHttpTest {
             TagHelper.editTagRelations(DataType.AUDIO,TagRelationStub(missingId,"Synthetic missing",1),listOf(audioTag),emptyList())
             TagHelper.editTagRelations(DataType.VIDEO,TagRelationStub(id,"Other domain",1),listOf(videoTag),emptyList())
             MediaDurationHelper.save("audio",id,1000)
-            val track = AudioItem(title = "Synthetic", artist = prefix, path = path, durationMs = 1000)
+            val track = AudioItem(title = "Synthetic", artist = prefix, path = path, durationMs = 1000, mediaId = id)
             playlistId = AudioPlaylistManager.createPlaylist(prefix).id
             AudioPlaylistManager.addPlaylistItems(playlistId,listOf(track))
             AudioQueueManager.enqueue(listOf(track))
-            AudioQueueManager.setCurrent(path)
-            AudioQueueManager.onPlaying(path,track.title,prefix,1000)
+            AudioQueueManager.setCurrent(id)
             var failed = false
             try { MediaActionHelper.run(DataType.AUDIO,MediaAction.TRASH,listOf(id,missingId)) }
             catch (error: Exception) { failed = error.message?.contains("1 media actions failed (1 completed)") == true }
@@ -98,8 +97,8 @@ class MediaActionsRustHttpTest {
             assertTrue(TagHelper.getTagRelationsByKey(id,DataType.AUDIO).isEmpty())
             assertEquals(1,TagHelper.getTagRelationsByKey(missingId,DataType.AUDIO).size)
             assertEquals(1,TagHelper.getTagRelationsByKey(id,DataType.VIDEO).size)
-            assertFalse(AudioQueueManager.queuedPaths().contains(path))
-            assertEquals("",AudioQueueManager.source().currentPath)
+            assertFalse(AudioQueueManager.queuedMediaIds().contains(id))
+            assertTrue(AudioQueueManager.playback().path.isNullOrEmpty())
             assertEquals(0,AudioPlaylistManager.playlistItemCount(playlistId))
             assertTrue(AudioPlayHistoryManager.recentPageFiltered(prefix,20,0).isEmpty())
             restoreMedia(DataType.AUDIO,setOf(id))
@@ -137,7 +136,6 @@ class MediaActionsRustHttpTest {
         } finally {
             try {
                 AudioQueueManager.clearQueue()
-                AudioQueueManager.removePaths(paths)
                 if (playlistId.isNotEmpty()) AudioPlaylistManager.deletePlaylist(playlistId)
                 tagIds.forEach { TagHelper.delete(it) }
                 MediaDurationHelper.delete(DataType.AUDIO,touchedIds)

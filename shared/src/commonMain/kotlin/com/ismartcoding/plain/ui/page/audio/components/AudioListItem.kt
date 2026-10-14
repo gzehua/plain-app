@@ -63,7 +63,7 @@ fun AudioListItem(
                     else if (isCurrentlyPlaying) { TempData.audioPlayerVisible.value = true }
                     else {
                         checkNotificationPermission(Res.string.audio_notification_prompt) {
-                            scope.launch(Dispatchers.Default) { audioQueueVM.playAsync(item) }
+                            scope.launch(Dispatchers.Default) { audioQueueVM.enqueueAndPlayAsync(item) }
                         }
                     }
                 },
@@ -118,7 +118,7 @@ fun AudioListItem(
                         if (isInCastQueue) RustDlnaSender.removeItem(audio) else RustDlnaSender.addItem(audio)
                     },
                     onQueueToggle = { audio, inQueue ->
-                        if (inQueue) audioQueueVM.removeAsync(audio.path) else audioQueueVM.addAsync(listOf(audio))
+                        if (inQueue) audioQueueVM.removeAsync(audio.id) else audioQueueVM.addAsync(listOf(audio))
                     },
                 )
             }

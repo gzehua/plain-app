@@ -13,5 +13,5 @@ data class AudioMedia(
     val durationMs: Long,
     val aliases: List<String> = emptyList(),
 ) {
-    constructor(item: AudioItem, mediaId: String?) : this(mediaId, item.path, item.title, item.artist, item.albumId.orEmpty(), item.durationMs)
+    constructor(item: AudioItem, mediaId: String?) : this(mediaId, item.path, item.title, item.artist, "", item.durationMs)
 }

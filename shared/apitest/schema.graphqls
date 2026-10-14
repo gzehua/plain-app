@@ -50,12 +50,12 @@ type Query {
   audioQueueItemCount: Int!
   audioPlayback: AudioPlayback!
   audios(offset: Int!, limit: Int!, query: String!, sortBy: FileSortBy!): [Audio!]!
-  audioLyrics(path: String!): String
+  audioLyrics(mediaId: ID!): String
   audioPlaylists: [AudioPlaylist!]!
-  audioPlaylist(id: ID!): AudioPlaylist
   audioPlaylistItems(id: ID!, offset: Int!, limit: Int!, query: String!): [AudioItem!]!
-  audioPlaylistItemCount(id: ID!): Int!
+  audioPlaylistItemCount(id: ID!, query: String!): Int!
   audioPlayHistory(offset: Int!, limit: Int!, query: String!): [AudioPlayHistory!]!
+  audioPlayHistoryCount: Int!
   imageCount(query: String!): Int!
   imageSearchStatus: ImageSearchStatus!
   images(offset: Int!, limit: Int!, query: String!, sortBy: FileSortBy!): [Image!]!
@@ -194,21 +194,18 @@ type Mutation {
   deleteChatItem(id: ID!): Boolean!
   deleteChatItems(query: String!): ActionResult!
   retryChatItem(id: ID!): ChatItem!
-  playAudio(path: String!): AudioItem!
+  playAudio(mediaId: ID!): AudioItem!
+  playAudioByPath(path: String!): AudioItem!
   updateAudioPlayMode(mode: MediaPlayMode!): Boolean!
   clearAudioQueue: Boolean!
-  removeAudioFromQueue(path: String!): Boolean!
-  addAudiosToQueue(query: String!): Boolean!
-  reorderAudioQueue(paths: [String!]!): Boolean!
+  removeAudioFromQueue(mediaId: ID!): Boolean!
+  addAudioToQueue(query: String!): Boolean!
+  reorderAudioQueue(mediaIds: [ID!]!): Boolean!
   createAudioPlaylist(name: String!): AudioPlaylist!
   updateAudioPlaylist(id: ID!, name: String!): AudioPlaylist!
   deleteAudioPlaylist(id: ID!): Boolean!
-  addAudioPlaylistItems(id: ID!, paths: [String!]!): Boolean!
-  removeAudioPlaylistItem(id: ID!, path: String!): Boolean!
-  """Start playback of a playlist. `path` optionally names the audio to start from (defaults to the first item); `shuffle` reorders before playing. Returns the item that starts playing, null when the playlist is empty."""
-  playAudioPlaylist(id: ID!, path: String, shuffle: Boolean!): AudioItem
-  """Queue the whole audio library and start playback (first track, or shuffled order when `shuffle` is set). Returns the item that starts playing, null when the library is empty."""
-  playAllAudios(shuffle: Boolean!): AudioItem
+  addAudioPlaylistItems(id: ID!, query: String!): Boolean!
+  removeAudioPlaylistItem(id: ID!, query: String!): ActionResult!
   enableImageSearch: Boolean!
   importImageSearchModel: Boolean!
   disableImageSearch: Boolean!
@@ -341,18 +338,15 @@ type AudioFileInfo {
 }
 
 type AudioItem {
+  mediaId: ID
   title: String!
   artist: String!
-  """
-  Album id from the platform catalog, null when the track carries no
-  album metadata.
-  """
-  albumId: ID
   path: String!
   durationMs: Long!
 }
 
 type AudioPlayHistory {
+  mediaId: ID!
   path: String!
   title: String!
   artist: String!
@@ -362,7 +356,8 @@ type AudioPlayHistory {
 }
 
 type AudioPlayback {
-  currentPath: String
+  mediaId: ID
+  path: String
   mode: MediaPlayMode!
   isPlaying: Boolean!
   positionMs: Long!

@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class PlaylistTrackFacts(
+    val mediaId: String?,
     val title: String,
     val artist: String,
     val path: String,

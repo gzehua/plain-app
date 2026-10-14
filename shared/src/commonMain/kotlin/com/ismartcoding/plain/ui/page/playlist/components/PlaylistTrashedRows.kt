@@ -27,7 +27,7 @@ internal suspend fun List<AudioItem>.pruneTrashedRows(playlistId: String): List<
     if (isEmpty()) return this
     val trashed = trashedAudioPaths()
     if (trashed.isEmpty()) return this
-    val orphanPaths = filter { it.path in trashed }.map { it.path }
+    val orphanPaths = filter { it.path in trashed }.mapNotNull { it.mediaId }
     if (orphanPaths.isEmpty()) return this
     withIO { AudioPlaylistManager.removePlaylistItems(playlistId, orphanPaths) }
     return filterNot { it.path in trashed }

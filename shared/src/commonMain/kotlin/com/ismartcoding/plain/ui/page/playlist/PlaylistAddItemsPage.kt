@@ -170,7 +170,7 @@ fun PlaylistAddItemsPage(
                             val audioByPath = vm.items.value.associateBy { it.path }
                             val items = toAdd.mapNotNull { path -> audioByPath[path]?.toPlaylistAudio() }
                             AudioPlaylistManager.addPlaylistItems(playlistId, items)
-                            toRemove.forEach { AudioPlaylistManager.removePlaylistItem(playlistId, it) }
+                            AudioPlaylistManager.removePlaylistItems(playlistId, toRemove.mapNotNull { audioByPath[it]?.id })
                         }
                         DialogHelper.showMessage(addedMsg)
                         navController.popBackStack()

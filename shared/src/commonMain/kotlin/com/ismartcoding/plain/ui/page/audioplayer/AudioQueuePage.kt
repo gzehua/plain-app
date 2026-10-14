@@ -104,13 +104,13 @@ fun AudioQueuePage(audioQueueVM: AudioQueueViewModel, onDismissRequest: () -> Un
                         .fillMaxWidth()
                         .weight(1f), contentPadding = PaddingValues(bottom = 96.dp)
                 ) {
-                    itemsIndexed(audioQueueVM.queueItems.value, { _, item -> item.path }) { index, audio ->
-                        val isPlaying = isAudioPlaying && audioQueueVM.selectedPath.value == audio.path
-                        ReorderableItem(reorderableLazyListState, key = audio.path) { isDragging ->
+                    itemsIndexed(audioQueueVM.queueItems.value, { _, item -> requireNotNull(item.mediaId) }) { index, audio ->
+                        val isPlaying = isAudioPlaying && audioQueueVM.selectedMediaId.value == audio.mediaId
+                        ReorderableItem(reorderableLazyListState, key = requireNotNull(audio.mediaId)) { isDragging ->
                             AudioQueueItemRow(
                                 audio = audio, index = index, isPlaying = isPlaying,
                                 canReorder = audioQueueVM.canReorder.value,
-                                canRemove = audioQueueVM.isInQueue(audio.path),
+                                canRemove = audioQueueVM.isInQueue(requireNotNull(audio.mediaId)),
                                 audioQueueVM = audioQueueVM, scope = scope
                             )
                         }

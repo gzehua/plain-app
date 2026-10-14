@@ -43,7 +43,7 @@ actual suspend fun audioLibraryPage(offset: Int, limit: Int, sort: FileSortBy): 
         appContext.contentResolver.query(audioUri, columns, null, null, "${sortBy.field} ${sortBy.direction} LIMIT $limit OFFSET $offset")
     }
     checkNotNull(cursor) { "Audio catalog query failed" }.map { row, cache ->
-        AudioItem(title = row.getStringValue(MediaStore.Audio.Media.TITLE, cache), path = row.getStringValue(MediaStore.Audio.Media.DATA, cache), artist = row.getStringValue(MediaStore.Audio.Media.ARTIST, cache).replace(MediaStore.UNKNOWN_STRING, ""), albumId = row.getStringValue(MediaStore.Audio.Media.ALBUM_ID, cache), durationMs = row.getLongValue(MediaStore.Audio.Media.DURATION, cache))
+        AudioItem(title = row.getStringValue(MediaStore.Audio.Media.TITLE, cache), path = row.getStringValue(MediaStore.Audio.Media.DATA, cache), artist = row.getStringValue(MediaStore.Audio.Media.ARTIST, cache).replace(MediaStore.UNKNOWN_STRING, ""), durationMs = row.getLongValue(MediaStore.Audio.Media.DURATION, cache))
     }
 }
 

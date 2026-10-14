@@ -20,11 +20,12 @@ import org.junit.runner.RunWith
 class AudioEngineRustHttpTest {
     @Test
     fun commandsOwnResumeCompletionAndRejectStalePhysicalReports() = runBlocking {
-        assertTrue(AudioQueueManager.queuedPaths().isEmpty())
-        assertTrue(AudioQueueManager.source().currentPath.isEmpty())
+        assertTrue(AudioQueueManager.queuedMediaIds().isEmpty())
+        assertTrue(AudioQueueManager.playback().path.isNullOrEmpty())
         val prefix = "audio-engine-${UUID.randomUUID()}"
-        fun track(index: Int) = AudioItem(title = "Track $index", path = "$prefix/$index", artist = "Synthetic", durationMs = 117123, albumId = "42")
+        fun track(index: Int) = AudioItem(title = "Track $index", path = "$prefix/$index", artist = "Synthetic", durationMs = 117123, mediaId = "$prefix-$index")
         val oldProvider = AudioLibraryHost.install(object : AudioLibraryProvider {
+            override suspend fun resolve(ids: List<String>, paths: List<String>): List<AudioMedia> = (0 until 2).map(::track).filter { it.mediaId in ids || it.path in paths }.map { AudioMedia(it, it.mediaId) }
             override suspend fun count() = 2
             override suspend fun page(offset: Int, limit: Int, sort: FileSortBy) = (offset until minOf(2, offset + limit)).map(::track)
             override suspend fun contains(path: String) = path == track(0).path || path == track(1).path
@@ -35,14 +36,14 @@ class AudioEngineRustHttpTest {
         val oldMode = UserPrefs.audioPlayMode.value
         try {
             AudioQueueManager.enqueue(listOf(track(0),track(1)))
-            val played = RustContentApi.mutate("audioPlayTrack(track: {path:${JsonPrimitive(track(0).path)},title:\"Track 0\",artist:\"Synthetic\",albumId:\"42\",durationMs:117123},enqueue:false) {path revision positionMs}").getValue("audioPlayTrack").jsonObject
+            val played = com.ismartcoding.plain.rust.PlainRust.privateMutate("audioPlayTrack(mediaId: ${JsonPrimitive(track(0).mediaId)}) {path revision positionMs}").getValue("audioPlayTrack").jsonObject
             assertEquals(track(0).path, played.getValue("path").jsonPrimitive.content)
             val initialRevision = played.getValue("revision").jsonPrimitive.long
             AudioQueueManager.onStarted(track(0), initialRevision)
             AudioQueueManager.onStarted(track(0), initialRevision)
             assertEquals(1, AudioPlayHistoryManager.recentPageFiltered(prefix,20,0).single().playCount)
             AudioCommands.command("SEEK", 3_000_000_123)
-            val stale = RustContentApi.mutate("audioReportProgress(path:${JsonPrimitive(track(0).path)},revision:$initialRevision,positionMs:0)")
+            val stale = com.ismartcoding.plain.rust.PlainRust.privateMutate("audioReportProgress(path:${JsonPrimitive(track(0).path)},revision:$initialRevision,positionMs:0)")
             assertFalse(stale.getValue("audioReportProgress").jsonPrimitive.boolean)
             AudioCommands.command("PAUSE")
             AudioCommands.command("PLAY")
@@ -65,7 +66,6 @@ class AudioEngineRustHttpTest {
                 engine.fail = false
                 AudioCommands.command("CLEAR")
                 AudioQueueManager.clearQueue()
-                AudioQueueManager.removePaths(listOf(track(0).path,track(1).path))
                 UserPrefs.audioPlayMode.value = oldMode
             } finally {
                 AudioEngineHost.install(oldEngine)

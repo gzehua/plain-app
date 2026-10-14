@@ -53,6 +53,7 @@ import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.chevron_left as ui_drawable_chevron_left
 import com.ismartcoding.plain.ui.resources.expand_more as ui_drawable_expand_more
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
@@ -75,36 +76,31 @@ fun AudioPlayerPage(audioQueueVM: AudioQueueViewModel, onDismissRequest: () -> U
     var viewMode by remember { mutableStateOf(PlayerView.COVER) }
     val currentPlayingPath = audioQueueVM.selectedPath
 
-    // Pager pages mirror the play queue; fall back to the single playing
-    // track when the queue is empty (e.g. player opened from chat).
     var fallbackItem by remember { mutableStateOf<AudioItem?>(null) }
-    LaunchedEffect(currentPlayingPath.value) {
+    LaunchedEffect(currentPlayingPath.value, audioQueueVM.queueItems.value) {
         fallbackItem = null
         if (!isDragging) progress = audioPlayerProgress().toFloat()
-        if (audioQueueVM.queueItems.value.isEmpty() && currentPlayingPath.value.isNotEmpty()) {
-            fallbackItem = withIO { playlistAudioFromPath(currentPlayingPath.value) }
+        if (currentPlayingPath.value.isNotEmpty() && audioQueueVM.queueItems.value.none { if (it.mediaId != null) it.mediaId == audioQueueVM.selectedMediaId.value else it.path == currentPlayingPath.value }) {
+            fallbackItem = withIO { playlistAudioFromPath(currentPlayingPath.value) }.copy(mediaId = audioQueueVM.selectedMediaId.value)
         }
     }
-    val pages = audioQueueVM.queueItems.value.ifEmpty { listOfNotNull(fallbackItem) }
+    val pages = if (fallbackItem != null) listOfNotNull(fallbackItem) else audioQueueVM.queueItems.value
 
-    val playingIndex = pages.indexOfFirst { it.path == currentPlayingPath.value }
+    val playingIndex = pages.indexOfFirst { if (it.mediaId != null) it.mediaId == audioQueueVM.selectedMediaId.value else it.path == currentPlayingPath.value }
     val initialIndex = playingIndex.coerceAtLeast(0)
     val pagerState = rememberPagerState(initialPage = initialIndex, pageCount = { pages.size.coerceAtLeast(1) })
 
-    // Swiping to a page plays that track.
     LaunchedEffect(pagerState, pages) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
+        snapshotFlow { pagerState.settledPage }.drop(1).collect { page ->
             val item = pages.getOrNull(page) ?: return@collect
-            if (item.path != currentPlayingPath.value) {
+            if (currentPlayingPath.value.isNotEmpty() && (if (item.mediaId != null) item.mediaId != audioQueueVM.selectedMediaId.value else item.path != currentPlayingPath.value)) {
                 audioJustPlayWithNotificationCheck(item)
             }
         }
     }
 
-    // Track changes from outside the pager (skip buttons, auto advance,
-    // shuffle) move the pager to the playing page.
     LaunchedEffect(currentPlayingPath.value, pages) {
-        val index = pages.indexOfFirst { it.path == currentPlayingPath.value }
+        val index = pages.indexOfFirst { if (it.mediaId != null) it.mediaId == audioQueueVM.selectedMediaId.value else it.path == currentPlayingPath.value }
         if (index >= 0 && pagerState.currentPage != index && !pagerState.isScrollInProgress) {
             pagerState.animateScrollToPage(index)
         }

@@ -22,7 +22,7 @@ internal object SystemAudioHost {
                     params.getValue("sortBy").jsonPrimitive.content),
             ).filterIsInstance<com.ismartcoding.plain.audio.DAudio>()
             .map { playlistTrackFacts(com.ismartcoding.plain.graphql.models.AudioItem(
-                title = it.title, path = it.path, artist = it.artist,
+                mediaId = it.id, title = it.title, path = it.path, artist = it.artist,
                 durationMs = it.durationMs)) })
         "systemAudioLyrics" -> JsonHelper.jsonEncodeToElement(
             com.ismartcoding.plain.platform.getAudioLyrics(
@@ -38,6 +38,7 @@ internal object SystemAudioHost {
 
     private fun playlistTrackFacts(track: com.ismartcoding.plain.graphql.models.AudioItem): PlaylistTrackFacts =
         PlaylistTrackFacts(
+            mediaId = track.mediaId,
             title = track.title,
             artist = track.artist,
             path = track.path,

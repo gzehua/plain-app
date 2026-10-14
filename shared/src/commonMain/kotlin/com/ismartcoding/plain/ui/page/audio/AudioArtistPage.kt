@@ -119,7 +119,7 @@ fun AudioArtistPage(
     // Play-all fills the manual queue with exactly this artist's tracks;
     // while that set matches, the play button toggles pause/resume.
     val artistPaths = remember(items) { items.map { it.path }.toSet() }
-    val contextActive = items.isNotEmpty() && audioQueueVM.queuedPaths.value == artistPaths
+    val contextActive = items.isNotEmpty() && audioQueueVM.queuedMediaIds.value == items.map { it.id }.toSet()
 
     val playAll: (Boolean) -> Unit = { shuffle ->
         scope.launch {
@@ -258,8 +258,8 @@ fun AudioArtistPage(
                         castVM = castVM,
                         tags = emptyList(),
                         dragSelectState = dragSelectState,
-                        isCurrentlyPlaying = audioQueueVM.selectedPath.value == item.path,
-                        isInQueue = audioQueueVM.isInQueue(item.path),
+                        isCurrentlyPlaying = audioQueueVM.selectedMediaId.value == item.id,
+                        isInQueue = audioQueueVM.isInQueue(item.id),
                     )
                     VerticalSpace(8.dp)
                 }
