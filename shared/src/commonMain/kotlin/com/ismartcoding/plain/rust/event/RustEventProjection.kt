@@ -6,7 +6,6 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.rust.host.*
 import com.ismartcoding.plain.rust.request.ContentApiSession
-import com.ismartcoding.plain.rust.request.RecoverDeletionsRequest
 import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.ui.models.NotesViewModel
 import kotlinx.coroutines.CancellationException
@@ -18,7 +17,6 @@ internal object RustEventProjection {
         com.ismartcoding.plain.features.VideoProgressHost.restore()
         com.ismartcoding.plain.preferences.Prefs.refresh()
         com.ismartcoding.plain.features.session.refreshOnlineClientIds()
-        runCatching { RustContentApi.postJson("files/mutate", JsonHelper.jsonEncodeToElement(RecoverDeletionsRequest()).jsonObject) }
         com.ismartcoding.plain.chat.download.DownloadQueue.refresh()
         com.ismartcoding.plain.features.share.SharedFolderDownloadEngine.refresh()
         com.ismartcoding.plain.discover.PairingProjection.reconcile()

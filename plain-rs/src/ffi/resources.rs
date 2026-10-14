@@ -160,7 +160,7 @@ mod android {
         id: JString<'_>,
     ) -> jstring {
         env.with_env(|env| -> jni::errors::Result<_> {
-            env.new_string(envelope(input(&id.to_string()).and_then(|id| open(&id))))
+            env.new_string(envelope(open(&id.to_string())))
         })
         .resolve::<ThrowRuntimeExAndDefault>()
         .into_raw()
@@ -174,7 +174,7 @@ mod android {
     ) -> jstring {
         env.with_env(|env| -> jni::errors::Result<_> {
             let bytes = env.convert_byte_array(&bytes)?;
-            let result = input(&id.to_string()).and_then(|id| write(&id, bytes));
+            let result = write(&id.to_string(), bytes);
             env.new_string(result.err().unwrap_or_default())
         })
         .resolve::<ThrowRuntimeExAndDefault>()
@@ -188,7 +188,7 @@ mod android {
         failed: jboolean,
     ) -> jstring {
         env.with_env(|env| -> jni::errors::Result<_> {
-            let result = input(&id.to_string()).and_then(|id| close(&id, failed != 0));
+            let result = close(&id.to_string(), failed);
             env.new_string(result.err().unwrap_or_default())
         })
         .resolve::<ThrowRuntimeExAndDefault>()

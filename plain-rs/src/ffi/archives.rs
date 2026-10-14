@@ -97,8 +97,8 @@ mod android {
     use jni::{
         EnvUnowned,
         errors::ThrowRuntimeExAndDefault,
-        objects::{JObject, JString},
-        sys::{jbyteArray, jlong, jstring},
+        objects::{JByteArray, JObject, JString},
+        sys::{jlong, jstring},
     };
     #[unsafe(no_mangle)]
     pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_archiveOpenNative(
@@ -117,17 +117,22 @@ mod android {
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         handle: jlong,
-        buffer: jbyteArray,
+        buffer: JByteArray<'_>,
     ) -> jstring {
         env.with_env(|env| -> jni::errors::Result<_> {
             let result = if buffer.is_null() {
                 Err("Null archive buffer".to_string())
+            } else if buffer.len(env)? < MAX_CHUNK {
+                Err("Archive buffer must hold 64KiB".to_string())
             } else {
                 let mut bytes = vec![0; MAX_CHUNK];
                 match read(handle as u64, &mut bytes) {
                     Ok(length) => {
-                        env.byte_array_from_slice(&bytes[..length])
-                            .map_err(|error| error.to_string())?;
+                        let bytes = bytes[..length]
+                            .iter()
+                            .map(|byte| *byte as i8)
+                            .collect::<Vec<_>>();
+                        buffer.set_region(env, 0, &bytes)?;
                         Ok(serde_json::json!({"bytes":length,"eof":length == 0}))
                     }
                     Err(error) => Err(error),

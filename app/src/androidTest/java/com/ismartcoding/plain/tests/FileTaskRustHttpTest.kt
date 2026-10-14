@@ -19,7 +19,7 @@ import java.util.UUID
 @RunWith(AndroidJUnit4::class)
 class FileTaskRustHttpTest {
     @Test
-    fun fileTasksCopyMovePersistActualTargetsAndReportRealFailures() = runBlocking {
+    fun fileTasksCopyMoveTrackActualTargetsAndReportRealFailures() = runBlocking {
         val root = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir,"file-task-${UUID.randomUUID()}").apply { mkdirs() }
         val external = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"file-task-${UUID.randomUUID()}")
         val ids = mutableListOf<String>()
@@ -37,7 +37,6 @@ class FileTaskRustHttpTest {
             assertEquals("synthetic",File(root,"target_1.txt").readText())
             assertEquals(File(root,"target_1.txt").path,done.completedOps[0].dst)
             assertEquals(done.completedOps,FileTaskHelper.get(done.id)!!.completedOps)
-            assertEquals(FileTaskStatus.DONE,FileTaskHelper.recover(done.id).status)
             assertFalse(File(root,"target_2.txt").exists())
             assertTrue(FileTaskHelper.list(0,0,"").isEmpty())
             val movedRoot = File(root,"moved")
@@ -50,7 +49,6 @@ class FileTaskRustHttpTest {
             assertEquals(FileTaskStatus.ERROR,error.status)
             assertTrue(error.error.isNotEmpty())
             assertTrue(error.completedOps.isEmpty())
-            assertEquals(FileTaskStatus.ERROR,FileTaskHelper.recover(error.id).status)
             assertFalse(File(root,"never").exists())
             check(external.mkdirs())
             val externalCopy = FileTaskHelper.create(FileTaskType.COPY,listOf(FileTaskOp(source.path,external.path))).also { ids.add(it.id) }
