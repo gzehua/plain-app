@@ -3,7 +3,6 @@ package com.ismartcoding.plain.tests
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.enums.MediaPlayMode
 import com.ismartcoding.plain.features.audio.*
-import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.preferences.UserPrefs
 import com.ismartcoding.plain.rust.content.*
@@ -26,9 +25,6 @@ class AudioEngineRustHttpTest {
         fun track(index: Int) = AudioItem(title = "Track $index", path = "$prefix/$index", artist = "Synthetic", durationMs = 117123, mediaId = "$prefix-$index")
         val oldProvider = AudioLibraryHost.install(object : AudioLibraryProvider {
             override suspend fun resolve(ids: List<String>, paths: List<String>): List<AudioMedia> = (0 until 2).map(::track).filter { it.mediaId in ids || it.path in paths }.map { AudioMedia(it, it.mediaId) }
-            override suspend fun count() = 2
-            override suspend fun page(offset: Int, limit: Int, sort: FileSortBy) = (offset until minOf(2, offset + limit)).map(::track)
-            override suspend fun contains(path: String) = path == track(0).path || path == track(1).path
             override suspend fun metadata(path: String) = track(path.substringAfterLast('/').toInt())
         })
         val engine = AudioTestPlayer()

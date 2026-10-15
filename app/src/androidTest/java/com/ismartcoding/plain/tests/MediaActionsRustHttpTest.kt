@@ -84,7 +84,7 @@ class MediaActionsRustHttpTest {
             TagHelper.editTagRelations(DataType.AUDIO,TagRelationStub(id,"Synthetic",1),listOf(audioTag),emptyList())
             TagHelper.editTagRelations(DataType.AUDIO,TagRelationStub(missingId,"Synthetic missing",1),listOf(audioTag),emptyList())
             TagHelper.editTagRelations(DataType.VIDEO,TagRelationStub(id,"Other domain",1),listOf(videoTag),emptyList())
-            MediaDurationHelper.save("audio",id,1000)
+            MediaDurationHelper.save("audio", id, 1000, path, File(path).length(), kotlin.time.Instant.fromEpochMilliseconds(File(path).lastModified()))
             val track = AudioItem(title = "Synthetic", artist = prefix, path = path, durationMs = 1000, mediaId = id)
             playlistId = AudioPlaylistManager.createPlaylist(prefix).id
             AudioPlaylistManager.addPlaylistItems(playlistId,listOf(track))
@@ -108,7 +108,7 @@ class MediaActionsRustHttpTest {
             val (videoId,videoPath) = create(DataType.VIDEO)
             videoIds.add(videoId)
             VideoProgressHelper.saveAsync(videoId,5_000_000_001L)
-            MediaDurationHelper.save("video",videoId,6_000_000_001L)
+            MediaDurationHelper.save("video", videoId, 6_000_000_001L, videoPath, File(videoPath).length(), kotlin.time.Instant.fromEpochMilliseconds(File(videoPath).lastModified()))
             TagHelper.editTagRelations(DataType.VIDEO,TagRelationStub(videoId,"Synthetic video",1),listOf(videoTag),emptyList())
             trashMedia(DataType.VIDEO,setOf(videoId))
             assertNull(VideoProgressHelper.getAsync(videoId))

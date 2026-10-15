@@ -2,7 +2,6 @@ package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.audio.*
-import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.graphql.models.AudioItem
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
@@ -20,10 +19,6 @@ class AudioRustHttpTest {
         fun track(index: Int): AudioItem = AudioItem(title = "Track $index", path = "$prefix/$index", artist = "Synthetic $prefix", durationMs = 117123, mediaId = "$prefix-$index")
         val previousProvider = AudioLibraryHost.install(object : AudioLibraryProvider {
             override suspend fun resolve(ids: List<String>, paths: List<String>): List<AudioMedia> = (0 until 10_000).map(::track).filter { it.mediaId in ids || it.path in paths }.map { AudioMedia(it, it.mediaId) }
-            override suspend fun count(): Int = 10_000
-            override suspend fun page(offset: Int, limit: Int, sort: FileSortBy): List<AudioItem> =
-                (offset until minOf(10_000, offset + limit)).map(::track)
-            override suspend fun contains(path: String): Boolean = path.startsWith("$prefix/") && path.substringAfterLast('/').toIntOrNull()?.let { it in 0 until 10_000 } == true
         })
         var playlistId = ""
         try {

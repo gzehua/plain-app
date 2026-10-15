@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.features.media
 
+import com.ismartcoding.plain.helpers.ContentWhere
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
@@ -60,11 +61,19 @@ object VideoMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
+    ): List<DVideo> = searchAsync(context, com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.VIDEO, query), limit, offset, sortBy)
+
+    suspend fun searchAsync(
+        context: Context,
+        where: ContentWhere,
+        limit: Int,
+        offset: Int,
+        sortBy: FileSortBy,
     ): List<DVideo> = withIO {
         val videos = mutableListOf<DVideo>()
         val zeroDurationItems = mutableListOf<MediaDurationZeroItem>()
         
-        getPagingCursorAsync(context, query, limit, offset, sortBy.toSortBy())?.map { cursor, cache ->
+        getPagingCursorAsync(context, where, limit, offset, sortBy.toSortBy())?.map { cursor, cache ->
             val id = cursor.getStringValue(MediaStore.Video.Media._ID, cache)
             val title = cursor.getStringValue(MediaStore.Video.Media.TITLE, cache)
             val size = cursor.getLongValue(MediaStore.Video.Media.SIZE, cache)

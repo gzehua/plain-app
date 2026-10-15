@@ -10,12 +10,12 @@ internal object SystemCallsHost {
         "systemPhoneMetadata" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.phoneMetadata(
             JsonHelper.jsonDecodeFromElement<com.ismartcoding.plain.features.call.PhoneMetadataRequest>(params)))
         "systemCallFacts" -> {
-            val query = params.getValue("query").jsonPrimitive.content
+            val plan = params.providerPlan()
             val offset = params.getValue("offset").jsonPrimitive.int
             val limit = params.getValue("limit").jsonPrimitive.int
             JsonHelper.jsonEncodeToElement(
                 com.ismartcoding.plain.platform.searchMedia(
-                    com.ismartcoding.plain.enums.DataType.CALL, query, limit, offset,
+                    com.ismartcoding.plain.enums.DataType.CALL, plan, limit, offset,
                     com.ismartcoding.plain.features.file.FileSortBy.DATE_DESC,
                 ).filterIsInstance<DCall>().map(::callFacts)
             )
@@ -23,13 +23,13 @@ internal object SystemCallsHost {
         "systemCallCount" -> JsonHelper.jsonEncodeToElement(
             com.ismartcoding.plain.platform.countMedia(
                 com.ismartcoding.plain.enums.DataType.CALL,
-                params.getValue("query").jsonPrimitive.content,
+                params.providerPlan(),
             )
         )
         "systemCallIds" -> JsonHelper.jsonEncodeToElement(
             com.ismartcoding.plain.platform.getMediaIds(
                 com.ismartcoding.plain.enums.DataType.CALL,
-                params.getValue("query").jsonPrimitive.content,
+                params.providerPlan(),
             )
         )
         "systemMakeCall" -> {

@@ -62,19 +62,13 @@ object SystemProviderHost {
         "systemAudioFileInfo" -> SystemFilesHost.handle(method, params)
         "systemMediaBucketItemFacts",
         "systemMediaRows",
-        "systemImageIdsFacts",
         "systemMediaCount",
-        "systemDocExtGroups",
         "systemMediaIdsFacts" -> SystemMediaHost.handle(method, params)
         "systemTagQueryStubs",
         "systemTagQueryKeys" -> SystemTagsHost.handle(method, params)
-        "systemAudioPlaylistTracks",
-        "systemAudioSearchTracks",
         "systemAudioLyrics",
-        "systemAudioPlaybackPermission",
         "systemAudioPlaybackState" -> SystemAudioHost.handle(method, params)
         "systemDbPath" -> SystemDatabaseHost.handle(method, params)
-        "uploadTmpDirFacts" -> SystemUploadsHost.handle(method, params)
         "systemDeleteRecords" -> SystemRecordsHost.handle(method, params)
         "systemSetClipboard",
         "systemEpochMillis",

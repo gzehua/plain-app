@@ -27,12 +27,12 @@ class MediaAuxRustHttpTest {
             repeat(511) { putFloat(0f) }
         }.array()
         try {
-            MediaDurationHelper.save("audio",audioId,5_000_000_001L)
-            MediaDurationHelper.save("video",videoId,6_000_000_001L)
+            MediaDurationHelper.save("audio", audioId, 5_000_000_001L, "/synthetic/$audioId", 42, kotlin.time.Instant.fromEpochMilliseconds(1_000))
+            MediaDurationHelper.save("video", videoId, 6_000_000_001L, "/synthetic/$videoId", 84, kotlin.time.Instant.fromEpochMilliseconds(2_000))
             TempData.mediaDurationMap.remove("audio:$audioId")
             MediaDurationHelper.restore()
-            assertEquals(5_000_000_001L,TempData.mediaDurationMap["audio:$audioId"])
-            assertEquals(6_000_000_001L,TempData.mediaDurationMap["video:$videoId"])
+            assertEquals(5_000_000_001L,TempData.mediaDurationMap["audio:$audioId"]?.durationMs)
+            assertEquals(6_000_000_001L,TempData.mediaDurationMap["video:$videoId"]?.durationMs)
             ImageEmbeddingHelper.insertAll(listOf(
                 DImageEmbedding(bestId,"/synthetic/$bestId",vector(10f)),
                 DImageEmbedding(nextId,"/synthetic/$nextId",vector(9f)),

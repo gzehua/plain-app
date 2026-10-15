@@ -17,11 +17,16 @@ abstract class BaseContentHelper {
     protected abstract fun getProjection(): Array<String>
 
     suspend fun countAsync(context: Context, query: String): Int = withIO {
-        context.contentResolver.count(uriExternal, buildWhereAsync(query))
+        countAsync(context, buildWhereAsync(query))
     }
 
-    suspend fun getIdsAsync(context: Context, query: String): Set<String> = withIO {
-        val where = buildWhereAsync(query)
+    suspend fun countAsync(context: Context, where: ContentWhere): Int = withIO {
+        context.contentResolver.count(uriExternal, where)
+    }
+
+    suspend fun getIdsAsync(context: Context, query: String): Set<String> = getIdsAsync(context, buildWhereAsync(query))
+
+    suspend fun getIdsAsync(context: Context, where: ContentWhere): Set<String> = withIO {
         context.contentResolver.getSearchCursor(uriExternal, getProjection(), where)?.map { cursor, cache ->
             cursor.getStringValue(BaseColumns._ID, cache)
         }?.toSet() ?: emptySet()

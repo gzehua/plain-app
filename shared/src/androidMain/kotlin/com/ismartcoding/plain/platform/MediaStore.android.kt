@@ -9,6 +9,7 @@ import com.ismartcoding.plain.data.DMediaBucket
 import com.ismartcoding.plain.db.IData
 import com.ismartcoding.plain.data.TagRelationStub
 import com.ismartcoding.plain.docs.DocMediaStoreHelper
+import com.ismartcoding.plain.features.system.ProviderPlan
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.events.HostEvent
@@ -363,4 +364,49 @@ actual suspend fun disableImageSearchAsync() {
 
 actual fun cancelImageModelDownload() {
     com.ismartcoding.plain.ai.ImageSearchManager.cancelDownload()
+}
+
+actual suspend fun searchMedia(dataType: DataType, plan: ProviderPlan, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> {
+    if (dataType == DataType.CALL && !Permission.READ_CALL_LOG.isGranted()) return emptyList()
+    if (dataType == DataType.CONTACT && !Permission.READ_CONTACTS.isGranted()) return emptyList()
+    val where = plan.where()
+    return when (dataType) {
+        DataType.AUDIO -> AudioMediaStoreHelper.searchAsync(appContext, where, limit, offset, sortBy)
+        DataType.DOC -> DocMediaStoreHelper.searchAsync(appContext, where, limit, offset, sortBy)
+        DataType.IMAGE -> ImageMediaStoreHelper.searchAsync(appContext, where, limit, offset, sortBy)
+        DataType.VIDEO -> VideoMediaStoreHelper.searchAsync(appContext, where, limit, offset, sortBy)
+        DataType.CALL -> CallMediaStoreHelper.searchAsync(appContext, where, limit, offset)
+        DataType.CONTACT -> ContactMediaStoreHelper.searchAsync(appContext, where, limit, offset)
+        else -> error("Unsupported provider: $dataType")
+    }
+}
+
+actual suspend fun countMedia(dataType: DataType, plan: ProviderPlan): Int {
+    if (dataType == DataType.CALL && !Permission.READ_CALL_LOG.isGranted()) return 0
+    if (dataType == DataType.CONTACT && !Permission.READ_CONTACTS.isGranted()) return 0
+    return plan.wheres().sumOf { where ->
+        when (dataType) {
+            DataType.AUDIO -> AudioMediaStoreHelper.countAsync(appContext, where)
+            DataType.DOC -> DocMediaStoreHelper.countAsync(appContext, where)
+            DataType.IMAGE -> ImageMediaStoreHelper.countAsync(appContext, where)
+            DataType.VIDEO -> VideoMediaStoreHelper.countAsync(appContext, where)
+            DataType.CALL -> CallMediaStoreHelper.countAsync(appContext, where)
+            DataType.CONTACT -> ContactMediaStoreHelper.countAsync(appContext, where)
+            else -> error("Unsupported provider: $dataType")
+        }
+    }
+}
+
+actual suspend fun getMediaIds(dataType: DataType, plan: ProviderPlan): Set<String> {
+    if (dataType == DataType.CALL && !Permission.READ_CALL_LOG.isGranted()) return emptySet()
+    if (dataType == DataType.CONTACT && !Permission.READ_CONTACTS.isGranted()) return emptySet()
+    return when (dataType) {
+        DataType.AUDIO -> AudioMediaStoreHelper.getIdsAsync(appContext, plan.where())
+        DataType.DOC -> DocMediaStoreHelper.getIdsAsync(appContext, plan.where())
+        DataType.IMAGE -> ImageMediaStoreHelper.getIdsAsync(appContext, plan.where())
+        DataType.VIDEO -> VideoMediaStoreHelper.getIdsAsync(appContext, plan.where())
+        DataType.CALL -> CallMediaStoreHelper.getIdsAsync(appContext, plan.where())
+        DataType.CONTACT -> ContactMediaStoreHelper.getIdsAsync(appContext, plan.where())
+        else -> error("Unsupported provider: $dataType")
+    }
 }

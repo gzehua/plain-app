@@ -38,12 +38,18 @@ object CallMediaStoreHelper : BaseContentHelper() {
         query: String,
         limit: Int,
         offset: Int,
+    ): List<DCall> = searchAsync(context, com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.CALL, query), limit, offset)
+
+    suspend fun searchAsync(
+        context: Context,
+        where: ContentWhere,
+        limit: Int,
+        offset: Int,
     ): List<DCall> = withIO {
         if (limit <= 0) {
             return@withIO emptyList()
         }
 
-        val where = buildWhereAsync(query)
         context.contentResolver.query(
             uriExternal.withCallLogPaging(limit, offset),
             getProjection(),

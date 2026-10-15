@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.audio
 
+import com.ismartcoding.plain.helpers.ContentWhere
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
@@ -57,11 +58,19 @@ object AudioMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
+    ): List<DAudio> = searchAsync(context, com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.AUDIO, query), limit, offset, sortBy)
+
+    suspend fun searchAsync(
+        context: Context,
+        where: ContentWhere,
+        limit: Int,
+        offset: Int,
+        sortBy: FileSortBy,
     ): List<DAudio> = withIO {
         val audios = mutableListOf<DAudio>()
         val zeroDurationItems = mutableListOf<MediaDurationZeroItem>()
         
-        getPagingCursorAsync(context, query, limit, offset, sortBy.toSortBy())?.map { cursor, cache ->
+        getPagingCursorAsync(context, where, limit, offset, sortBy.toSortBy())?.map { cursor, cache ->
             val id = cursor.getStringValue(MediaStore.Audio.Media._ID, cache)
             val title = cursor.getStringValue(MediaStore.Audio.Media.TITLE, cache)
             val artist = cursor.getStringValue(MediaStore.Audio.Media.ARTIST, cache).replace(MediaStore.UNKNOWN_STRING, "")

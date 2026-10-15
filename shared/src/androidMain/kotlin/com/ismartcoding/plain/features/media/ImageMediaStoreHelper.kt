@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.features.media
 
+import com.ismartcoding.plain.helpers.ContentWhere
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
@@ -51,8 +52,16 @@ object ImageMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
+    ): List<DImage> = searchAsync(context, com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.IMAGE, query), limit, offset, sortBy)
+
+    suspend fun searchAsync(
+        context: Context,
+        where: ContentWhere,
+        limit: Int,
+        offset: Int,
+        sortBy: FileSortBy,
     ): List<DImage> = withIO {
-        getPagingCursorAsync(context, query, limit, offset, sortBy.toSortBy())?.map { cursor, cache ->
+        getPagingCursorAsync(context, where, limit, offset, sortBy.toSortBy())?.map { cursor, cache ->
             val id = cursor.getStringValue(MediaStore.Images.Media._ID, cache)
             val title = cursor.getStringValue(MediaStore.Images.Media.TITLE, cache)
             val size = cursor.getLongValue(MediaStore.Images.Media.SIZE, cache)

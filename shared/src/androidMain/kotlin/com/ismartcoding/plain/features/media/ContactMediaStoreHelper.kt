@@ -52,7 +52,11 @@ object ContactMediaStoreHelper {
         com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.CONTACT, query)
 
     suspend fun countAsync(context: Context, query: String): Int = withIO {
-        context.contentResolver.count(uriExternal, buildWhereAsync(query))
+        countAsync(context, buildWhereAsync(query))
+    }
+
+    suspend fun countAsync(context: Context, where: ContentWhere): Int = withIO {
+        context.contentResolver.count(uriExternal, where)
     }
 
     fun deleteByIdsAsync(
@@ -70,11 +74,12 @@ object ContactMediaStoreHelper {
         context: Context,
         id: String,
     ): DContact? {
-        return searchAsync(context, "id=$id", 1, 0).firstOrNull()
+        return searchAsync(context, "id:$id", 1, 0).firstOrNull()
     }
 
-    suspend fun getIdsAsync(context: Context, query: String): Set<String> = withIO {
-        val where = buildWhereAsync(query)
+    suspend fun getIdsAsync(context: Context, query: String): Set<String> = getIdsAsync(context, buildWhereAsync(query))
+
+    suspend fun getIdsAsync(context: Context, where: ContentWhere): Set<String> = withIO {
         context.contentResolver.getSearchCursor(uriExternal, arrayOf(ContactsContract.Data.RAW_CONTACT_ID), where)?.map { cursor, cache ->
             cursor.getStringValue(ContactsContract.Data.RAW_CONTACT_ID, cache)
         }?.toSet() ?: emptySet()
@@ -236,10 +241,17 @@ object ContactMediaStoreHelper {
         query: String,
         limit: Int,
         offset: Int,
+    ): List<DContact> = searchAsync(context, com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.CONTACT, query), limit, offset)
+
+    suspend fun searchAsync(
+        context: Context,
+        where: ContentWhere,
+        limit: Int,
+        offset: Int,
     ): List<DContact> = withIO {
         val contentMap = ContentHelper.getMap(context)
         context.contentResolver.getPagingCursor(
-            uriExternal, getProjection(), buildWhereAsync(query), limit, offset,
+            uriExternal, getProjection(), where, limit, offset,
             SortBy(ContactsContract.Data.DISPLAY_NAME_PRIMARY, SortDirection.ASC)
         )?.map { cursor, cache ->
             val accountName = cursor.getStringValue(ContactsContract.RawContacts.ACCOUNT_NAME, cache)

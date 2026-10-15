@@ -45,6 +45,10 @@ abstract class BaseMediaContentHelper {
         }
     }
 
+    suspend fun countAsync(context: Context, where: ContentWhere): Int = withIO {
+        context.contentResolver.count(uriExternal, where)
+    }
+
     private suspend fun buildWhere(query: String): ContentWhere {
         return RustSystemProviders.providerWhere(providerType, query)
     }
@@ -52,29 +56,25 @@ abstract class BaseMediaContentHelper {
     private suspend fun buildWheres(query: String): List<ContentWhere> =
         RustSystemProviders.providerWheres(providerType, query)
 
-    suspend fun getPagingCursorAsync(
-        context: Context,
-        query: String,
-        limit: Int,
-        offset: Int,
-        sortBy: SortBy,
-    ): Cursor? = withIO {
+    suspend fun getPagingCursorAsync(context: Context, query: String, limit: Int, offset: Int, sortBy: SortBy): Cursor? =
+        getPagingCursorAsync(context, buildWhere(query), limit, offset, sortBy)
+
+    suspend fun getPagingCursorAsync(context: Context, where: ContentWhere, limit: Int, offset: Int, sortBy: SortBy): Cursor? = withIO {
         context.contentResolver.getPagingCursor(
             uriExternal,
             getProjection(),
-            buildWhere(query),
+            where,
             limit,
             offset,
             sortBy,
         )
     }
 
-    suspend fun getIdsAsync(
-        context: Context,
-        query: String,
-    ): Set<String> = withIO {
+    suspend fun getIdsAsync(context: Context, query: String): Set<String> = getIdsAsync(context, buildWhere(query))
+
+    suspend fun getIdsAsync(context: Context, where: ContentWhere): Set<String> = withIO {
         context.contentResolver.getSearchCursor(
-            uriExternal, arrayOf(BaseColumns._ID), buildWhere(query)
+            uriExternal, arrayOf(BaseColumns._ID), where
         )?.map { cursor, cache ->
             cursor.getStringValue(BaseColumns._ID, cache)
         }?.toSet() ?: emptySet()

@@ -16,33 +16,14 @@ object RustSystemProviders {
             put("action", action); put("query", query); put("offset", offset); put("limit", limit); put("sortBy", sortBy.name)
         })
     suspend fun providerWhere(provider: com.ismartcoding.plain.enums.DataType, query: String, resolvedParentId: String? = null): com.ismartcoding.plain.helpers.ContentWhere {
-        val result = RustContentApi.postJsonOrThrow("system/provider-plan", buildJsonObject {
-            put("provider", provider.name); put("query", query)
-            resolvedParentId?.let { put("resolvedParentId", it) }
-        })
-        return com.ismartcoding.plain.helpers.ContentWhere().apply {
-            result.getValue("clauses").jsonArray.forEach { add(it.jsonPrimitive.content) }
-            args.addAll(result.getValue("args").jsonArray.map { it.jsonPrimitive.content })
-            result["idsColumn"]?.jsonPrimitive?.content?.let { column ->
-                result["ids"]?.jsonArray?.map { it.jsonPrimitive.content }?.let { addIn(column, it) }
-            }
-            trash = result["trash"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.boolean
-        }
+        val result = RustContentApi.postJsonOrThrow("system/provider-plan", JsonHelper.jsonEncodeToElement(ProviderPlanRequest(provider.name, query, resolvedParentId)).jsonObject)
+        return JsonHelper.jsonDecodeFromElement<ProviderPlan>(result).where()
     }
     suspend fun providerWheres(provider: com.ismartcoding.plain.enums.DataType, query: String): List<com.ismartcoding.plain.helpers.ContentWhere> {
-        val result = RustContentApi.postJsonOrThrow("system/provider-plan", buildJsonObject { put("provider", provider.name); put("query", query) })
-        val clauses = result.getValue("clauses").jsonArray.map { it.jsonPrimitive.content }
-        val args = result.getValue("args").jsonArray.map { it.jsonPrimitive.content }
-        val column = result["idsColumn"]?.jsonPrimitive?.content
-        val ids = result["ids"]?.jsonArray?.map { it.jsonPrimitive.content }.orEmpty()
-        val chunks = if (column != null && ids.isNotEmpty()) ids.chunked(2000) else listOf(emptyList())
-        val trash = result["trash"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.boolean
-        return chunks.map { chunk -> com.ismartcoding.plain.helpers.ContentWhere().apply {
-            clauses.forEach { add(it) }; this.args.addAll(args)
-            if (column != null && chunk.isNotEmpty()) addIn(column, chunk)
-            this.trash = trash
-        } }
+        val result = RustContentApi.postJsonOrThrow("system/provider-plan", JsonHelper.jsonEncodeToElement(ProviderPlanRequest(provider.name, query)).jsonObject)
+        return JsonHelper.jsonDecodeFromElement<ProviderPlan>(result).wheres()
     }
+
     suspend fun packages(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<DPackageInfo> =
         JsonHelper.jsonDecode(call("packages", query, offset, limit, sortBy).getValue("items").toString())
     suspend fun packageCount(query: String): Int = call("packageCount", query).getValue("count").jsonPrimitive.int
@@ -68,3 +49,6 @@ suspend fun notificationCount(query: String): Int = call("notificationCount", qu
         }
     }
 }
+
+@kotlinx.serialization.Serializable
+private data class ProviderPlanRequest(val provider: String, val query: String, val resolvedParentId: String? = null)

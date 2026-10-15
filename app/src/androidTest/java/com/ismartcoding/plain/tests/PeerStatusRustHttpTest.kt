@@ -68,16 +68,16 @@ class PeerStatusRustHttpTest {
             connect(first)
             connect(second)
             waitState(true)
-            PeerStatusProjection.refresh()
+            PeerStatusManager.refresh()
             assertTrue(PeerStatusManager.isOnline(id))
             val revision = snapshot().getValue("revision").jsonPrimitive.long
             first.complete(Unit)
             waitState(true, revision)
-            PeerStatusProjection.refresh()
+            PeerStatusManager.refresh()
             assertTrue(PeerStatusManager.isOnline(id))
             second.complete(Unit)
             waitState(false)
-            PeerStatusProjection.refresh()
+            PeerStatusManager.refresh()
             assertFalse(PeerStatusManager.isOnline(id))
             RustContentApi.postJsonOrThrow("chat/peer-status", buildJsonObject { put("action", "stop") })
             assertFalse(snapshot().getValue("outgoing").jsonObject.getValue("started").jsonPrimitive.boolean)
@@ -92,7 +92,7 @@ class PeerStatusRustHttpTest {
             UserPrefs.httpsPort.value = https
             UserPrefs.service.value = service
             RustPeerStore.remove(id)
-            PeerStatusProjection.refresh()
+            PeerStatusManager.refresh()
             client.close()
         }
     }

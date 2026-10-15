@@ -4,6 +4,7 @@ import com.ismartcoding.plain.graphql.models.FavoriteFolder
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.content.gql
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -13,7 +14,7 @@ import kotlin.test.assertTrue
 class FavoriteFolderHelperTest {
 
     private fun decode(value: String): List<FavoriteFolder> =
-        JsonHelper.jsonDecodeFromElement(Json.parseToJsonElement(value))
+        JsonHelper.jsonDecodeFromElement(Json.parseToJsonElement(value).jsonObject.values.single())
 
     private val wholeList =
         """
@@ -52,7 +53,7 @@ class FavoriteFolderHelperTest {
     @Test
     fun escapes_quotes_and_backslashes_in_paths() {
         assertEquals("\"内部存储/Documents\"", gql("内部存储/Documents"))
-        assertEquals(""""/sdcard/"My" Folder"""", gql("/sdcard/\"My\" Folder"))
+        assertEquals(""""/sdcard/\"My\" Folder"""", gql("/sdcard/\"My\" Folder"))
         assertEquals(""""/sdcard/a\\b"""", gql("/sdcard/a\\b"))
     }
 

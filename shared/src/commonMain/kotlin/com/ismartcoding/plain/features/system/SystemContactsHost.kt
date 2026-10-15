@@ -8,12 +8,12 @@ import kotlinx.serialization.json.*
 internal object SystemContactsHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
         "systemContactFacts" -> {
-            val query = params.getValue("query").jsonPrimitive.content
+            val plan = params.providerPlan()
             val offset = params.getValue("offset").jsonPrimitive.int
             val limit = params.getValue("limit").jsonPrimitive.int
             JsonHelper.jsonEncodeToElement(
                 com.ismartcoding.plain.platform.searchMedia(
-                    com.ismartcoding.plain.enums.DataType.CONTACT, query, limit, offset,
+                    com.ismartcoding.plain.enums.DataType.CONTACT, plan, limit, offset,
                     com.ismartcoding.plain.features.file.FileSortBy.DATE_DESC,
                 ).filterIsInstance<DContact>().map(::contactFacts)
             )
@@ -21,13 +21,13 @@ internal object SystemContactsHost {
         "systemContactCount" -> JsonHelper.jsonEncodeToElement(
             com.ismartcoding.plain.platform.countMedia(
                 com.ismartcoding.plain.enums.DataType.CONTACT,
-                params.getValue("query").jsonPrimitive.content,
+                params.providerPlan(),
             )
         )
         "systemContactIds" -> JsonHelper.jsonEncodeToElement(
             com.ismartcoding.plain.platform.getMediaIds(
                 com.ismartcoding.plain.enums.DataType.CONTACT,
-                params.getValue("query").jsonPrimitive.content,
+                params.providerPlan(),
             )
         )
         "systemContactGroupFacts" -> JsonHelper.jsonEncodeToElement(

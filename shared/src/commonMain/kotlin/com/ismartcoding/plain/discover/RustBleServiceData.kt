@@ -17,6 +17,6 @@ object RustBleServiceData {
 
     fun shortIdOf(clientId: String): String {
         require(clientId.isNotEmpty() && clientId.length <= 1024) { "Invalid peer identity" }
-        return sha256(clientId.toByteArray(Charsets.UTF_8)).copyOfRange(0, 8).toHexString()
+        return sha256(clientId.encodeToByteArray()).copyOfRange(0, 8).toHexString()
     }
 }

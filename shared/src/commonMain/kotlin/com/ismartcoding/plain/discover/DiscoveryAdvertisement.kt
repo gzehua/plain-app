@@ -71,10 +71,10 @@ object DiscoveryAdvertisement {
         val supported = facts["awareSupported"]?.jsonPrimitive?.boolean ?: false
         val running = facts["awareRunning"]?.jsonPrimitive?.boolean ?: false
         val flags = (if (supported) 1 else 0) or (if (running) 2 else 0)
-        val digest = sha256(id.toByteArray(Charsets.UTF_8))
+        val digest = sha256(id.encodeToByteArray())
         val out = ByteArray(9)
         out[0] = flags.toByte()
-        System.arraycopy(digest, 0, out, 1, 8)
+        digest.copyInto(out, destinationOffset = 1, startIndex = 0, endIndex = 8)
         return out
     }
 

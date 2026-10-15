@@ -5,6 +5,7 @@ import com.ismartcoding.plain.data.DImage
 import com.ismartcoding.plain.data.DMediaBucket
 import com.ismartcoding.plain.db.IData
 import com.ismartcoding.plain.data.TagRelationStub
+import com.ismartcoding.plain.features.system.ProviderPlan
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.file.FileSortBy
 import kotlinx.cinterop.useContents
@@ -133,3 +134,7 @@ actual suspend fun enableImageSearchAsync() {}
 actual suspend fun disableImageSearchAsync() {}
 
 actual fun cancelImageModelDownload() {}
+
+actual suspend fun searchMedia(dataType: DataType, plan: ProviderPlan, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> = emptyList()
+actual suspend fun countMedia(dataType: DataType, plan: ProviderPlan): Int = 0
+actual suspend fun getMediaIds(dataType: DataType, plan: ProviderPlan): Set<String> = emptySet()

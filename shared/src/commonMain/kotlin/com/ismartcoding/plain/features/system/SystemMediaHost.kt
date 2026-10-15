@@ -18,31 +18,19 @@ internal object SystemMediaHost {
         "systemMediaRows" -> {
             val items = com.ismartcoding.plain.platform.searchMedia(
                 mediaDataType(params),
-                params.getValue("query").jsonPrimitive.content,
+                params.providerPlan(),
                 params.getValue("limit").jsonPrimitive.int,
                 params.getValue("offset").jsonPrimitive.int,
                 fileSortBy(params),
             )
             JsonHelper.jsonEncodeToElement(items.map { mediaFacts(it) })
         }
-        "systemImageIdsFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.getMediaIds(
-            com.ismartcoding.plain.enums.DataType.IMAGE, params.getValue("query").jsonPrimitive.content))
         "systemMediaCount" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.countMedia(
-            mediaDataType(params), params.getValue("query").jsonPrimitive.content))
-        "systemDocExtGroups" -> JsonHelper.jsonEncodeToElement(
-            com.ismartcoding.plain.platform.getDocExtGroups("").map { (ext, count) ->
-                DocExtensionFacts(
-                    ext = ext,
-                    count = count,
-                ) })
+            mediaDataType(params), params.providerPlan()))
         "systemMediaIdsFacts" -> {
             val type = mediaDataType(params)
-            val query = params.getValue("query").jsonPrimitive.content
-            JsonHelper.jsonEncodeToElement(if (params.getValue("fromTrash").jsonPrimitive.boolean) {
-                com.ismartcoding.plain.platform.getTrashedMediaIds(type, query)
-            } else {
-                com.ismartcoding.plain.platform.getMediaIds(type, query)
-            })
+            val plan = params.providerPlan()
+            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.getMediaIds(type, plan))
         }
         else -> error("Unsupported provider operation")
     }
