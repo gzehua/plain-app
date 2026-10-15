@@ -51,7 +51,7 @@ class FileBrowseRustHttpTest {
             assertEquals("folder", searchFilesInDir("", "${archive.path}!zip!/", FileSortBy.NAME_ASC).first().name)
             RustSystemState.setApiPermissions(permissions + "WRITE_EXTERNAL_STORAGE")
             suspend fun field(selection: String): JsonElement =
-                RustContentApi.query(selection)["data"]!!.jsonObject.values.first()
+                RustContentApi.query(selection).values.first()
             assertEquals(true, field("""pathExists(path: "${root.path}")""").jsonPrimitive.boolean)
             assertEquals(PathKind.DIR, field("""pathKind(path: "${root.path}")""").jsonPrimitive.content)
             assertEquals(PathKind.FILE, field("""pathKind(path: "${File(root, "a.txt").path}")""").jsonPrimitive.content)

@@ -44,6 +44,7 @@ internal object SystemMediaHost {
             size = item.size,
             bucketId = item.bucketId,
             durationMs = item.durationMs,
+            albumId = item.albumId,
             albumFileId = com.ismartcoding.plain.platform.getAudioAlbumArtFileId(item),
             createdAt = item.createdAt.toString(),
             updatedAt = item.updatedAt.toString(),
@@ -54,7 +55,7 @@ internal object SystemMediaHost {
             durationMs = 0L, takenAt = item.takenAt, isFavorite = item.isFavorite, width = item.width, height = item.height, rotation = item.rotation)
         is com.ismartcoding.plain.data.DVideo -> mediaFacts(
             item.id, item.title, item.path, item.size, item.bucketId, item.createdAt, item.updatedAt,
-            durationMs = item.durationMs, takenAt = item.takenAt, isFavorite = item.isFavorite)
+            durationMs = item.durationMs, takenAt = item.takenAt, isFavorite = item.isFavorite, width = item.width, height = item.height, rotation = item.rotation)
         is com.ismartcoding.plain.data.DDoc -> mediaFacts(
             item.id, item.title, item.path, item.size, item.bucketId, item.createdAt, item.updatedAt,
             durationMs = item.durationMs, takenAt = null, isFavorite = false)

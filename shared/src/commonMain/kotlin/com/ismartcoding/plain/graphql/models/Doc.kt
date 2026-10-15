@@ -13,4 +13,5 @@ data class Doc(
     override var bucketId: String,
     override var createdAt: Instant,
     override var updatedAt: Instant,
+    var durationMs: Long = 0,
 ) : MediaItem

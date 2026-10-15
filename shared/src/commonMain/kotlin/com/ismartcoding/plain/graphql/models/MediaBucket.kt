@@ -8,4 +8,5 @@ data class MediaBucket(
     var name: String,
     var itemCount: Int,
     var topItemPaths: List<String>,
+    var size: Long = 0,
 )

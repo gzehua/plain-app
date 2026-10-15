@@ -6,12 +6,14 @@ import com.ismartcoding.plain.chat.peer.RustPeerStore
 import com.ismartcoding.plain.events.HDownloadTaskDoneEvent
 import com.ismartcoding.plain.features.download.DOWNLOAD_KIND_CHAT
 import com.ismartcoding.plain.features.download.DownloadCenter
+import com.ismartcoding.plain.features.download.DownloadQueueVersion
 import com.ismartcoding.plain.features.download.DownloadStatus
 import com.ismartcoding.plain.graphql.models.Peer
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.content.gql
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +25,7 @@ object DownloadQueue {
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val intents = Channel<JsonObject>(128)
     private val stateLock = Mutex()
-    private var revision = -1L
+    private val version = DownloadQueueVersion()
     private val delivered = mutableSetOf<String>()
     val downloadProgress = MutableStateFlow<Map<String, DownloadTask>>(emptyMap())
 
@@ -58,8 +60,10 @@ object DownloadQueue {
     suspend fun refresh() = stateLock.withLock {
         val snapshot = call(buildJsonObject { put("action", "snapshot") }).jsonObject
         val current = snapshot.getValue("revision").jsonPrimitive.long
-        if (current <= revision) return@withLock
-        revision = current
+        val runtime = snapshot.getValue("runtimeId").jsonPrimitive.content
+        val reset = runtime != version.runtimeId
+        if (!version.accept(runtime, current)) return@withLock
+        if (reset) delivered.clear()
         val generations = mutableSetOf<String>()
         val tasks = snapshot.getValue("tasks").jsonArray.map { value ->
             val row = value.jsonObject
@@ -84,6 +88,24 @@ object DownloadQueue {
         downloadProgress.value = tasks
         DownloadCenter.replaceExternal(DOWNLOAD_KIND_CHAT, tasks.values.toList())
     }
-    private suspend fun call(body: JsonObject): JsonElement =
-        RustContentApi.postJsonOrThrow("chat/download", body, longRunning = true).getValue("result")
+    private const val QUEUE_FIELDS = "runtimeId revision tasks { id messageId generation status error downloaded total speed file { id: fileId uri size durationMs width height summary fileName } peer { id name ip key public_key: publicKey status port device_type: deviceType token created_at: createdAt updated_at: updatedAt } }"
+    private suspend fun call(body: JsonObject): JsonElement {
+        val action = body.getValue("action").jsonPrimitive.content
+        if (action == "snapshot") return PlainRust.mainQuery("chatDownloadQueue { $QUEUE_FIELDS }").getValue("chatDownloadQueue")
+        val operation = when (action) {
+            "enqueue" -> "enqueueChatDownload(messageId: ${gql(body.getValue("message_id").jsonPrimitive.content)}, fileId: ${gql(body.getValue("id").jsonPrimitive.content)}, peerId: ${gql(body.getValue("peer_id").jsonPrimitive.content)})"
+            "control" -> {
+                val field = when (body.getValue("command").jsonPrimitive.content) {
+                    "pause" -> "pauseChatDownload"
+                    "resume" -> "resumeChatDownload"
+                    "retry" -> "retryChatDownload"
+                    "remove" -> "removeChatDownload"
+                    else -> error("Unknown chat download control")
+                }
+                "$field(id: ${gql(body.getValue("id").jsonPrimitive.content)})"
+            }
+            else -> error("Unknown chat download operation: $action")
+        }
+        return PlainRust.mainMutate(operation, longRunning = true).getValue(operation.substringBefore('('))
+    }
 }

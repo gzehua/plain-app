@@ -10,8 +10,8 @@ import kotlinx.serialization.json.*
 
 object ImageIndexHelper {
     private const val fields = "version isRunning totalImages indexedImages skippedImages errorMessage"
-    suspend fun status(): JsonObject = PlainRust.privateQuery("imageHostIndexStatus { $fields }").getValue("imageHostIndexStatus").jsonObject
-    suspend fun start(force: Boolean): JsonObject = PlainRust.privateMutate("imageHostStartIndex(force: $force) { $fields }").getValue("imageHostStartIndex").jsonObject
-    suspend fun selected(ids: Collection<String>): JsonObject = PlainRust.privateMutate("imageHostIndexSelected(ids: ${gqlIds(ids)}) { $fields }").getValue("imageHostIndexSelected").jsonObject
-    suspend fun cancel(): JsonObject = PlainRust.privateMutate("imageHostCancelIndex { $fields }").getValue("imageHostCancelIndex").jsonObject
+    suspend fun status(): JsonObject = PlainRust.mainQuery("imageIndexStatus { $fields }").getValue("imageIndexStatus").jsonObject
+    suspend fun start(force: Boolean): JsonObject = PlainRust.mainMutate("startImageIndexTask(force: $force) { $fields }").getValue("startImageIndexTask").jsonObject
+    suspend fun selected(ids: Collection<String>): JsonObject = PlainRust.mainMutate("indexSelectedImages(ids: ${gqlIds(ids)}) { $fields }").getValue("indexSelectedImages").jsonObject
+    suspend fun cancel(): JsonObject = PlainRust.mainMutate("cancelImageIndexTask { $fields }").getValue("cancelImageIndexTask").jsonObject
 }

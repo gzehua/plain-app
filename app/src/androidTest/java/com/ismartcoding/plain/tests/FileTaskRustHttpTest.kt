@@ -34,15 +34,15 @@ class FileTaskRustHttpTest {
             assertEquals(12L,done.doneBytes)
             assertEquals(2L,done.doneItems)
             assertEquals("existing",target.readText())
-            assertEquals("synthetic",File(root,"target_1.txt").readText())
-            assertEquals(File(root,"target_1.txt").path,done.completedOps[0].dst)
+            assertEquals("synthetic",File(root,"target (1).txt").readText())
+            assertEquals(File(root,"target (1).txt").path,done.completedOps[0].dst)
             assertEquals(done.completedOps,FileTaskHelper.get(done.id)!!.completedOps)
-            assertFalse(File(root,"target_2.txt").exists())
+            assertFalse(File(root,"target (2).txt").exists())
             assertTrue(FileTaskHelper.list(0,0,"").isEmpty())
             val movedRoot = File(root,"moved")
-            val moved = FileTaskHelper.create(FileTaskType.MOVE,listOf(FileTaskOp(File(root,"target_1.txt").path,movedRoot.path))).also { ids.add(it.id) }
+            val moved = FileTaskHelper.create(FileTaskType.MOVE,listOf(FileTaskOp(File(root,"target (1).txt").path,movedRoot.path))).also { ids.add(it.id) }
             assertEquals(FileTaskStatus.DONE,withTimeout(20_000) { FileTaskHelper.wait(moved.id) }.status)
-            assertFalse(File(root,"target_1.txt").exists())
+            assertFalse(File(root,"target (1).txt").exists())
             assertEquals("synthetic",movedRoot.readText())
             val failed = FileTaskHelper.create(FileTaskType.COPY,listOf(FileTaskOp(File(root,"missing").path,File(root,"never").path))).also { ids.add(it.id) }
             val error = withTimeout(20_000) { FileTaskHelper.wait(failed.id) }
@@ -64,10 +64,10 @@ class FileTaskRustHttpTest {
             try { FileTaskHelper.create(FileTaskType.COPY,listOf(FileTaskOp("/system/test",File(root,"forbidden").path))) }
             catch (_: Exception) { rejected = true }
             assertTrue(rejected)
-            val foreign = RustContentApi.query("fileHostTaskRecord(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, id: ${JsonPrimitive(done.id)}) { id }")
-            assertEquals(JsonNull,foreign.getValue("fileHostTaskRecord"))
+            val spoofedCaller = runCatching { RustContentApi.query("fileTask(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, id: ${JsonPrimitive(done.id)}) { id }") }
+            assertTrue(spoofedCaller.isFailure)
             RustSystemState.setApiPermissions(originalPermissions + "WRITE_EXTERNAL_STORAGE")
-            assertEquals(true, RustContentApi.mutate("""copyFile(src: "${source.path}", dst: "${File(root,"public-copy.txt").path}", overwrite: false)""")["data"]!!.jsonObject["copyFile"]!!.jsonPrimitive.boolean)
+            assertEquals(true, RustContentApi.mutate("""copyFile(src: "${source.path}", dst: "${File(root,"public-copy.txt").path}", overwrite: false)""").getValue("copyFile").jsonPrimitive.boolean)
             assertEquals("synthetic",File(root,"public-copy.txt").readText())
             var publicFailed = false
             try { RustContentApi.mutate("""copyFile(src: "/system/test", dst: "${File(root,"public-never").path}", overwrite: false)""") }

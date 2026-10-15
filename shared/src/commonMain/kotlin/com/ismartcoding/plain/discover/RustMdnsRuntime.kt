@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.discover
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.chat.peer.PeerCacher
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -68,7 +69,26 @@ object RustMdnsRuntime {
     suspend fun debugStart(token: String) = enqueue("debugStart", token = token).await()
     fun debugStop(token: String) { enqueue("debugStop", token = token) }
     suspend fun snapshot(): JsonObject = call(buildJsonObject { put("action", "snapshot") }).also { apply(it) }
-    private suspend fun call(body: JsonObject) = RustContentApi.postJsonOrThrow("chat/mdns", body).getValue("result").jsonObject
+    private const val STATE_FIELDS = "runtimeId revision receiver running scanning published manualScanning debugSessionCount capturing services { serviceType instanceName instanceFqdn hostname port txtRecords ips ipv6 complete } packetsIn { time direction srcIp srcPort dstIp dstPort size summary detail } packetsOut { time direction srcIp srcPort dstIp dstPort size summary detail }"
+    private suspend fun call(body: JsonObject): JsonObject {
+        val action = body.getValue("action").jsonPrimitive.content
+        if (action == "snapshot") return PlainRust.mainQuery("mdnsState { $STATE_FIELDS }").getValue("mdnsState").jsonObject
+        val operation = when (action) {
+            "receiver" -> "startMdnsReceiver"
+            "start" -> "startMdnsDiscovery"
+            "stop" -> "stopMdnsDiscovery"
+            "browse" -> "browseMdns"
+            "restart" -> "restartMdnsDiscovery"
+            "publish" -> "publishMdns"
+            "update" -> "updateMdnsPublication"
+            "unpublish" -> "unpublishMdns"
+            "capture" -> "setMdnsCapture(enabled: ${body.getValue("enabled").jsonPrimitive.boolean})"
+            "debugStart" -> "acquireMdnsDebugSession(token: ${gql(body.getValue("token").jsonPrimitive.content)})"
+            "debugStop" -> "releaseMdnsDebugSession(token: ${gql(body.getValue("token").jsonPrimitive.content)})"
+            else -> error("Unknown mDNS operation: $action")
+        }
+        return PlainRust.mainMutate("$operation { $STATE_FIELDS }").getValue(operation.substringBefore('(')).jsonObject
+    }
 
     private suspend fun apply(row: JsonObject) = projection.withLock {
         val revision = row.getValue("revision").jsonPrimitive.long

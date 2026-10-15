@@ -48,12 +48,7 @@ object ContactMediaStoreHelper {
         )
     }
 
-    private suspend fun buildWhereAsync(query: String): ContentWhere =
-        com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.CONTACT, query)
-
-    suspend fun countAsync(context: Context, query: String): Int = withIO {
-        countAsync(context, buildWhereAsync(query))
-    }
+    suspend fun countAsync(context: Context, query: String): Int = com.ismartcoding.plain.features.system.RustPhoneQuery.countContacts(query)
 
     suspend fun countAsync(context: Context, where: ContentWhere): Int = withIO {
         context.contentResolver.count(uriExternal, where)
@@ -77,7 +72,7 @@ object ContactMediaStoreHelper {
         return searchAsync(context, "id:$id", 1, 0).firstOrNull()
     }
 
-    suspend fun getIdsAsync(context: Context, query: String): Set<String> = getIdsAsync(context, buildWhereAsync(query))
+    suspend fun getIdsAsync(context: Context, query: String): Set<String> = com.ismartcoding.plain.features.system.RustPhoneQuery.contactIds(query)
 
     suspend fun getIdsAsync(context: Context, where: ContentWhere): Set<String> = withIO {
         context.contentResolver.getSearchCursor(uriExternal, arrayOf(ContactsContract.Data.RAW_CONTACT_ID), where)?.map { cursor, cache ->
@@ -241,7 +236,7 @@ object ContactMediaStoreHelper {
         query: String,
         limit: Int,
         offset: Int,
-    ): List<DContact> = searchAsync(context, com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.CONTACT, query), limit, offset)
+    ): List<DContact> = com.ismartcoding.plain.features.system.RustPhoneQuery.contacts(query, limit, offset)
 
     suspend fun searchAsync(
         context: Context,

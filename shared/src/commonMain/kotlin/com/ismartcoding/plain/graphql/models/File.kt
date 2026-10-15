@@ -13,4 +13,5 @@ data class File(
     var size: Long,
     var isDir: Boolean,
     var childCount: Int,
+    var permission: String = "",
 )

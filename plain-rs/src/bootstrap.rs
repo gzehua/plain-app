@@ -7,7 +7,7 @@ pub(crate) fn start(path: &str, token: &str, config: &str) -> Result<String, Str
     let prefs = crate::prefs()?;
     let directory = prefs.path().parent().ok_or("Missing TLS directory")?;
     let (cert, key) =
-        plain_server::http::tls_identity::identity(&directory.join("tls-identity.json"))?;
+        plain_server::services::tls_identity::identity(&directory.join("tls-identity.json"))?;
     if let Some(core) = guard.as_mut() {
         if core.path != PathBuf::from(path) || core.token != token {
             return Err("Rust core already initialized with another session".into());

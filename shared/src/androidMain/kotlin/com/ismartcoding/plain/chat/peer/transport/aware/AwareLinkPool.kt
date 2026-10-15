@@ -123,10 +123,7 @@ internal class AwareLinkPool(
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.CHANGE_NETWORK_STATE])
     suspend fun linkFor(peer: PeerRecord): AwarePeerLink {
         session.start()
-        val config = com.ismartcoding.plain.rust.request.RustContentApi.postJsonOrThrow("chat/transport", kotlinx.serialization.json.buildJsonObject {
-            put("action", kotlinx.serialization.json.JsonPrimitive("awareConfig"))
-            put("id", kotlinx.serialization.json.JsonPrimitive(peer.id))
-        }).getValue("result").jsonObject
+        val config = com.ismartcoding.plain.rust.PlainRust.mainQuery("peerAwareConfig(id: ${com.ismartcoding.plain.rust.content.gql(peer.id)}) { pmk isClient localPort }").getValue("peerAwareConfig").jsonObject
         links[peer.id]?.takeUnless { it.matches(config) }?.let { old ->
             if (links.remove(peer.id, old)) old.close(reason = "configuration changed")
         }

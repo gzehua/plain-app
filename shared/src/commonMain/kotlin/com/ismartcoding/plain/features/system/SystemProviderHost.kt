@@ -35,13 +35,9 @@ object SystemProviderHost {
         "systemSmsConversationFacts",
         "systemSmsThreadFacts",
         "systemSendSms",
-        "systemTrashSms",
-        "systemRestoreSms",
-        "systemDeleteSms",
+        "systemDeleteSmsRows",
         "systemMmsLatest", "systemMmsLaunch", "systemMmsCandidates",
         "systemSimFacts" -> SystemSmsHost.handle(method, params)
-        "systemWebLoginCompleted",
-        "systemWebSocketRegistered",
         "systemScreenMirrorControls",
         "systemScreenMirrorResetTouch" -> com.ismartcoding.plain.platform.WebSocketHost.handle(method, params)
         "systemScreenMirrorState",
@@ -51,9 +47,10 @@ object SystemProviderHost {
         "systemRequestScreenMirrorKeyFrame",
         "systemUpdateScreenMirrorQuality" -> SystemScreenMirrorHost.handle(method, params)
         "systemImageModelsObserve" -> SystemImageSearchHost.handle(method, params)
-        "systemCastAddressFacts" -> com.ismartcoding.plain.platform.CastHost.handle(method, params)
         "systemFileResource" -> com.ismartcoding.plain.platform.FileResourceHost.handle(params)
-        "scanFilesFacts",
+        "systemFileIndexId",
+        "systemFileIndexRows",
+        "systemFileIndexCount",
         "fileMetadataFacts",
         "systemMountFacts",
         "systemRecentFileFacts",
@@ -64,8 +61,6 @@ object SystemProviderHost {
         "systemMediaRows",
         "systemMediaCount",
         "systemMediaIdsFacts" -> SystemMediaHost.handle(method, params)
-        "systemTagQueryStubs",
-        "systemTagQueryKeys" -> SystemTagsHost.handle(method, params)
         "systemAudioLyrics",
         "systemAudioPlaybackState" -> SystemAudioHost.handle(method, params)
         "systemDbPath" -> SystemDatabaseHost.handle(method, params)
@@ -75,11 +70,13 @@ object SystemProviderHost {
         "systemPermissionFacts",
         "systemOpenAccessibilitySettings",
         "systemOpenWebSettings",
-        "systemDeviceInfoFacts",
-        "systemDeviceStatusFacts",
+        "systemIpv4Address",
+        "systemProperties",
+        "systemBatterySample",
+        "systemMemoryAvailable",
+        "systemCapabilities",
         "systemAppFacts",
-        "systemAppLogFacts",
-        "systemClearAppLogs",
+        "systemLogPath",
         "systemRelaunchApp" -> SystemAppHost.handle(method, params)
         else -> error("Unsupported provider operation")
     }

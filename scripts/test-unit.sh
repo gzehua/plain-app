@@ -74,7 +74,7 @@ run_rust() {
     fi
     trap 'git -C "$CORE_ROOT" worktree remove --force "$wt" 2>/dev/null' RETURN
   fi
-  if ! (cd "$wt" && cargo test --locked --quiet -p plain-server --lib --features host-api,http_transport) \
+  if ! (cd "$wt" && cargo test --locked --quiet -p plain-server --lib --features core,http_transport) \
         > /tmp/plain-unit-rust.log 2>&1; then
     tail -40 /tmp/plain-unit-rust.log
     case_fail "rust_plain_rs" "cargo test failed, see /tmp/plain-unit-rust.log"

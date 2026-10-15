@@ -26,6 +26,7 @@ internal object RustEventProjection {
         com.ismartcoding.plain.features.dlna.DlnaRendererState.refresh()
         com.ismartcoding.plain.features.dlna.sender.RustDlnaSender.refresh()
         com.ismartcoding.plain.ai.RustImageModels.refresh()
+        com.ismartcoding.plain.platform.applyImageIndexStatus(com.ismartcoding.plain.features.imageindex.ImageIndexHelper.status())
         com.ismartcoding.plain.chat.peer.PeerTransportProjection.refresh()
         com.ismartcoding.plain.chat.peer.PeerStatusManager.refresh()
         com.ismartcoding.plain.chat.peer.PeerCacher.load()
@@ -37,6 +38,15 @@ internal object RustEventProjection {
         val type = message.type
         val payload = message.payload
         when (type) {
+            EventType.IMAGE_INDEX_UPDATED.name -> com.ismartcoding.plain.platform.applyImageIndexStatus(JsonHelper.jsonDecode<JsonObject>(payload))
+            EventType.WEB_LOGIN_COMPLETED.name -> {
+                val facts = JsonHelper.jsonDecode<com.ismartcoding.plain.platform.WebLoginCompletedFacts>(payload)
+                if (facts.chatPaired) com.ismartcoding.plain.chat.peer.PeerManager.load()
+                val request = facts.request
+                com.ismartcoding.plain.platform.sendWebLoginNotification(request.browserName, request.browserVersion, request.osName, request.osVersion, facts.clientIp)
+            }
+            EventType.WEB_SOCKET_REGISTERED.name -> com.ismartcoding.plain.platform.onWebSocketSessionStarted()
+
             EventType.MEDIA_ACTION_FINISHED.name -> com.ismartcoding.plain.features.mediaactions.MediaActionProjection.apply(payload)
             EventType.HTTP_SERVER_FAILED.name -> {
                 val failure = JsonHelper.jsonDecode<com.ismartcoding.plain.platform.HttpServerFailure>(payload)

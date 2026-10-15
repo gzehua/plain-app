@@ -18,15 +18,10 @@ internal object SystemSmsHost {
             )
             JsonHelper.jsonEncodeToElement(true)
         }
-        "systemTrashSms" -> JsonHelper.jsonEncodeToElement(
-            com.ismartcoding.plain.platform.trashSms(params.getValue("query").jsonPrimitive.content)
-        )
-        "systemRestoreSms" -> JsonHelper.jsonEncodeToElement(
-            com.ismartcoding.plain.platform.restoreSms(params.getValue("query").jsonPrimitive.content)
-        )
-        "systemDeleteSms" -> JsonHelper.jsonEncodeToElement(
-            com.ismartcoding.plain.platform.deleteSms(params.getValue("query").jsonPrimitive.content)
-        )
+        "systemDeleteSmsRows" -> {
+            val request = JsonHelper.jsonDecodeFromElement<com.ismartcoding.plain.features.sms.SmsDeleteRowsRequest>(params)
+            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.deleteSmsRows(request.ids))
+        }
         "systemMmsLatest" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.getLatestSentMmsId())
         "systemMmsLaunch" -> {
             val request = JsonHelper.jsonDecodeFromElement<MmsLaunchRequest>(params)

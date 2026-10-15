@@ -9,6 +9,7 @@ import com.ismartcoding.plain.rust.http.*
 import com.ismartcoding.plain.rust.content.*
 import com.ismartcoding.plain.platform.AudioPlayer
 import com.ismartcoding.plain.platform.audioPlayer
+import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -33,7 +34,7 @@ object AudioEngineHost {
 
     suspend fun start() {
         check(reporter == null) { "Audio progress reporter already started" }
-        val restored = PlainRust.privateMutate("audioInvalidateEngine { path positionMs revision }").getValue("audioInvalidateEngine").jsonObject
+        val restored = PlainRust.mainMutate("invalidateAudioEngine { path positionMs revision }").getValue("invalidateAudioEngine").jsonObject
         withContext(Dispatchers.Main) {
                 mutex.withLock {
                     revision = restored.getValue("revision").jsonPrimitive.long
@@ -47,7 +48,7 @@ object AudioEngineHost {
                     val report = withContext(Dispatchers.Main) { mutex.withLock { report(engine()) } }
                     val path = report.string("path")
                     if (path.isNotEmpty() && report.getValue("revision").jsonPrimitive.long >= 0) {
-                        PlainRust.privateMutate("audioReportProgress(path: ${gql(path)}, revision: ${report.getValue("revision")}, positionMs: ${report.getValue("positionMs")})")
+                        PlainRust.publish(com.ismartcoding.plain.events.HostEvent(com.ismartcoding.plain.events.EventType.AUDIO_PROGRESS_REPORTED, JsonHelper.jsonEncode(report)))
                     }
                 } catch (cancelled: CancellationException) { throw cancelled }
                 catch (e: Exception) { LogCat.e("Audio progress: ${e.message}") }

@@ -8,4 +8,5 @@ data class ContactEvent(
     var value: String,
     var type: EventType,
     var label: String,
+    var typeCode: Int = 0,
 )

@@ -1,8 +1,6 @@
 package com.ismartcoding.plain.ui.page.files
 
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.platform.fileExists
-import com.ismartcoding.plain.platform.getNewPath
 import com.ismartcoding.plain.platform.zipFiles
 import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.ui.helpers.DialogHelper
@@ -46,8 +44,7 @@ internal fun performZipFiles(
     scope.launch {
         DialogHelper.showLoading()
         val firstFile = files[0]
-        var destPath = firstFile.path + ".zip"
-        if (fileExists(destPath)) destPath = getNewPath(destPath)
+        val destPath = firstFile.path + ".zip"
         val success = withIO {
             try {
                 zipFiles(files.map { it.path }, destPath)

@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.features.file
 
 import com.ismartcoding.plain.graphql.models.FileHostTask
-import com.ismartcoding.plain.preferences.RustSystemState
 import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.rust.request.RustContentApi
 import kotlinx.coroutines.*
@@ -9,12 +8,11 @@ import kotlinx.serialization.json.*
 
 object FileTaskHelper {
     private const val fields = "id clientId type status title error totalBytes doneBytes totalItems doneItems createdAt updatedAt completedOps { src dst }"
-    private val clientId: String get() = RustSystemState.state.value.clientId.also { check(it.isNotEmpty()) { "File task identity unavailable" } }
     suspend fun create(type: FileTaskType, ops: List<FileTaskOp>, title: String = type.name): FileHostTask {
         val inputs = ops.joinToString(",") { "{ src: ${gql(it.src)}, dst: ${gql(it.dst)}, overwrite: ${it.overwrite} }" }
-        return parse(RustContentApi.mutate("createFileHostTask(clientId: ${gql(clientId)}, type: ${type.name}, title: ${gql(title)}, ops: [$inputs]) { $fields }").getValue("createFileHostTask"))
+        return parse(RustContentApi.mutate("createFileTask(type: ${type.name}, title: ${gql(title)}, ops: [$inputs]) { $fields }").getValue("createFileTask"))
     }
-    suspend fun get(id: String): FileHostTask? = RustContentApi.query("fileHostTaskRecord(clientId: ${gql(clientId)}, id: ${gql(id)}) { $fields }").getValue("fileHostTaskRecord").takeUnless { it is JsonNull }?.let(::parse)
+    suspend fun get(id: String): FileHostTask? = RustContentApi.query("fileTask(id: ${gql(id)}) { $fields }").getValue("fileTask").takeUnless { it is JsonNull }?.let(::parse)
     suspend fun wait(id: String): FileHostTask {
         while (true) {
             currentCoroutineContext().ensureActive()
@@ -24,7 +22,7 @@ object FileTaskHelper {
         }
     }
     suspend fun execute(type: FileTaskType, ops: List<FileTaskOp>): FileHostTask = wait(create(type, ops).id)
-    suspend fun remove(id: String): Boolean = RustContentApi.mutate("removeFileHostTask(clientId: ${gql(clientId)}, id: ${gql(id)})").getValue("removeFileHostTask").jsonPrimitive.boolean
-    suspend fun list(offset: Int, limit: Int, query: String): List<FileHostTask> = RustContentApi.query("fileHostTasks(clientId: ${gql(clientId)}, offset: $offset, limit: $limit, query: ${gql(query)}) { $fields }").getValue("fileHostTasks").jsonArray.map(::parse)
+    suspend fun remove(id: String): Boolean = RustContentApi.mutate("removeFileTask(id: ${gql(id)})").getValue("removeFileTask").jsonPrimitive.boolean
+    suspend fun list(offset: Int, limit: Int, query: String): List<FileHostTask> = RustContentApi.query("fileTasks(offset: $offset, limit: $limit, query: ${gql(query)}) { $fields }").getValue("fileTasks").jsonArray.map(::parse)
     private fun parse(value: JsonElement): FileHostTask = com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(value)
 }

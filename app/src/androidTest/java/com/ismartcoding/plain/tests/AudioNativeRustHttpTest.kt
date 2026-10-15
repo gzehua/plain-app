@@ -28,9 +28,9 @@ class AudioNativeRustHttpTest {
             .put("data".toByteArray()).putInt(samples).array()
         file.outputStream().use { it.write(header); it.write(ByteArray(samples)) }
         val oldEngine = AudioEngineHost.install(null)
-        suspend fun playback() = com.ismartcoding.plain.rust.PlainRust.privateQuery("audioPlayback { path positionMs revision }").getValue("audioPlayback").jsonObject
+        suspend fun playback() = com.ismartcoding.plain.rust.PlainRust.mainQuery("audioPlayback { path positionMs revision }").getValue("audioPlayback").jsonObject
         try {
-            com.ismartcoding.plain.rust.PlainRust.privateMutate("audioPlayPath(path: ${JsonPrimitive(file.absolutePath)}) {path positionMs revision}")
+            com.ismartcoding.plain.rust.PlainRust.mainMutate("audioPlayPath(path: ${JsonPrimitive(file.absolutePath)}) {path positionMs revision}")
             assertTrue(AudioPlayHistoryManager.recentPageFiltered(file.name,20,0).isEmpty())
             assertTrue(AudioQueueManager.queuedMediaIds().isEmpty())
             assertNull(AudioQueueManager.playback().mediaId)

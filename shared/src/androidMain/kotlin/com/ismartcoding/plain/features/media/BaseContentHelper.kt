@@ -13,18 +13,11 @@ import com.ismartcoding.plain.helpers.StringHelper
 
 abstract class BaseContentHelper {
     protected abstract val uriExternal: Uri
-    protected abstract suspend fun buildWhereAsync(query: String): ContentWhere
     protected abstract fun getProjection(): Array<String>
-
-    suspend fun countAsync(context: Context, query: String): Int = withIO {
-        countAsync(context, buildWhereAsync(query))
-    }
 
     suspend fun countAsync(context: Context, where: ContentWhere): Int = withIO {
         context.contentResolver.count(uriExternal, where)
     }
-
-    suspend fun getIdsAsync(context: Context, query: String): Set<String> = getIdsAsync(context, buildWhereAsync(query))
 
     suspend fun getIdsAsync(context: Context, where: ContentWhere): Set<String> = withIO {
         context.contentResolver.getSearchCursor(uriExternal, getProjection(), where)?.map { cursor, cache ->

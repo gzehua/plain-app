@@ -60,7 +60,7 @@ object DocMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
-    ): List<DDoc> = searchAsync(context, com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.DOC, query), limit, offset, sortBy)
+    ): List<DDoc> = com.ismartcoding.plain.features.system.RustMediaQuery.rows(com.ismartcoding.plain.enums.DataType.DOC, query, limit, offset, sortBy).map { it as DDoc }
 
     suspend fun searchAsync(
         context: Context,
@@ -83,35 +83,12 @@ object DocMediaStoreHelper : BaseMediaContentHelper() {
         } ?: emptyList()
     }
 
-    suspend fun getTagRelationStubsAsync(
-        context: Context,
-        query: String,
-    ): List<TagRelationStub> {
-        return getSearchCursorAsync(context, query)?.map { cursor, cache ->
-            val id = cursor.getStringValue(MediaStore.Files.FileColumns._ID, cache)
-            val title = cursor.getStringValue(MediaStore.Files.FileColumns.DISPLAY_NAME, cache)
-            val size = cursor.getLongValue(MediaStore.Files.FileColumns.SIZE, cache)
-            TagRelationStub(id, title, size)
-        } ?: emptyList()
-    }
+    suspend fun getTagRelationStubsAsync(context: Context, query: String): List<TagRelationStub> =
+        com.ismartcoding.plain.features.system.RustMediaQuery.tagStubs(com.ismartcoding.plain.enums.DataType.DOC, query)
 
-    suspend fun getDocExtGroupsAsync(context: Context, query: String = ""): List<Pair<String, Int>> {
-        val where = com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(providerType, query)
-        val extCounts = mutableMapOf<String, Int>()
-        context.contentResolver.queryCursor(
-            uriExternal,
-            arrayOf(MediaStore.Files.FileColumns.DISPLAY_NAME),
-            where.toSelection(),
-            where.args.toTypedArray()
-        )?.forEach { cursor, cache ->
-            val name = cursor.getStringValue(MediaStore.Files.FileColumns.DISPLAY_NAME, cache)
-            val ext = name.substringAfterLast('.', "").lowercase()
-            if (ext.isNotEmpty()) {
-                extCounts[ext] = extCounts.getOrDefault(ext, 0) + 1
-            }
-        }
-        return extCounts.map { Pair(it.key.uppercase(), it.value) }.sortedBy { it.first }
-    }
+
+    suspend fun getDocExtGroupsAsync(context: Context, query: String = ""): List<Pair<String, Int>> =
+        com.ismartcoding.plain.features.system.RustMediaQuery.docExtGroups(query)
 
     fun getDocBucketItemFactsAsync(context: Context): List<DMediaBucketItemFact> {
         if (!isQPlus()) return emptyList()

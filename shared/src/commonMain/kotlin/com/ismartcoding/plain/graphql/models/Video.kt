@@ -15,4 +15,7 @@ data class Video(
     override var updatedAt: Instant,
     var takenAt: Instant?,
     var isFavorite: Boolean,
+    var width: Int = 0,
+    var height: Int = 0,
+    var rotation: Int = 0,
 ) : MediaItem

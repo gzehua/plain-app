@@ -5,7 +5,6 @@ import com.ismartcoding.plain.rustprefs.plain_events_next
 import com.ismartcoding.plain.rustprefs.plain_events_send
 import kotlinx.serialization.json.*
 import com.ismartcoding.plain.rustprefs.plain_graphql
-import com.ismartcoding.plain.rustprefs.plain_graphql_private
 import com.ismartcoding.plain.rustprefs.plain_http_stop
 import com.ismartcoding.plain.rustprefs.plain_core_start
 import com.ismartcoding.plain.rustprefs.plain_prefs_string_free
@@ -25,10 +24,6 @@ internal actual object RustCoreBridge {
     }
     actual fun graphql(request: String): String = memScoped {
         val result = checkNotNull(plain_graphql(request.cstr.ptr))
-        try { result.toKString() } finally { plain_prefs_string_free(result) }
-    }
-    actual fun hostGraphql(request: String): String = memScoped {
-        val result = checkNotNull(plain_graphql_private(request.cstr.ptr))
         try { result.toKString() } finally { plain_prefs_string_free(result) }
     }
     actual fun next(stream: String): String = memScoped {

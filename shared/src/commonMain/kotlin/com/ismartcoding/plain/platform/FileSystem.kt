@@ -43,18 +43,9 @@ suspend fun searchFilesInDir(query: String, root: String, sortBy: FileSortBy): L
  */
 suspend fun searchFilesByName(query: String, dir: String, showHidden: Boolean, sortBy: FileSortBy): List<DFile> = RustFileHelper.searchName(query, dir, showHidden, sortBy)
 
-/**
- * Search files by name across the primary external volume via MediaStore
- * (no recursive filesystem walk). The [query] supports the shared query
- * language (bare words filter DISPLAY_NAME). Returns empty list on iOS.
- */
-expect suspend fun searchFiles(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<DFile>
+suspend fun searchFiles(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<DFile> = RustFileHelper.indexed(query, limit, offset, sortBy)
 
-/**
- * Total file count on the primary external volume matching [query].
- * Returns 0 on iOS.
- */
-expect suspend fun countFiles(query: String): Int
+suspend fun countFiles(query: String): Int = RustFileHelper.indexedCount(query)
 
 /**
  * Returns the most recently modified files (up to 100) from MediaStore.
@@ -102,13 +93,19 @@ expect fun getUSBStorageStats(): List<DStorageStatsItem>
  * List entries inside a zip file at [zipVirtualPath], sorted by [sortBy].
  * Returns empty list if the path is not a zip or cannot be read.
  */
-expect fun listZipEntries(zipVirtualPath: String, sortBy: FileSortBy): List<DFile>
+expect suspend fun listZipEntries(zipVirtualPath: String, sortBy: FileSortBy): List<DFile>
 
 /**
  * Extract a single zip entry to a temporary cache file and return its path.
  * Returns null if extraction fails.
  */
-expect fun extractZipEntryToCache(zipVirtualPath: String): String?
+suspend fun extractZipEntryToCache(zipVirtualPath: String): String? = try {
+    com.ismartcoding.plain.features.file.RustFileHelper.cacheZipEntry(zipVirtualPath)
+} catch (cancelled: kotlinx.coroutines.CancellationException) {
+    throw cancelled
+} catch (_: Exception) {
+    null
+}
 
 /**
  * Delete a file or directory (recursively) at [path]. Returns true on success.
@@ -144,13 +141,26 @@ expect fun moveFileOrDir(srcPath: String, destPath: String): Boolean
  * Zip the given [sourcePaths] (files and/or directories) into a new archive at
  * [targetPath]. Returns true on success.
  */
-expect fun zipFiles(sourcePaths: List<String>, targetPath: String): Boolean
+suspend fun zipFiles(sourcePaths: List<String>, targetPath: String): Boolean = archiveOperation {
+    com.ismartcoding.plain.features.file.RustFileHelper.createZipArchive(sourcePaths, targetPath)
+}
 
 /**
  * Unzip the archive at [zipPath] into the directory [destPath] (created if needed).
  * Returns true on success.
  */
-expect fun unzipFile(zipPath: String, destPath: String): Boolean
+suspend fun unzipFile(zipPath: String, destPath: String): Boolean = archiveOperation {
+    com.ismartcoding.plain.features.file.RustFileHelper.extractZipArchive(zipPath, destPath)
+}
+
+private suspend fun archiveOperation(operation: suspend () -> String): Boolean = try {
+    operation()
+    true
+} catch (cancelled: kotlinx.coroutines.CancellationException) {
+    throw cancelled
+} catch (_: Exception) {
+    false
+}
 
 /**
  * Returns file metadata (size, last-modified, is-directory) for [path], or null

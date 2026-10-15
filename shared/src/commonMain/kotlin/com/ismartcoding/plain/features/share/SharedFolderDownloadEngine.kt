@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.features.share
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.features.download.*
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.getDownloadsDirPath
@@ -15,7 +16,7 @@ object SharedFolderDownloadEngine {
     private val intents = Channel<JsonObject>(128)
     private val stateLock = Mutex()
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
-    private var revision = -1L
+    private val version = DownloadQueueVersion()
 
     init {
         scope.launch {
@@ -38,9 +39,9 @@ object SharedFolderDownloadEngine {
         submit(buildJsonObject {
             put("action", "enqueue")
             put("intent", buildJsonObject {
-                put("message_id", messageId); put("kind", type.name); put("link", json.encodeToJsonElement(link))
-                put("url_token", urlToken); put("entries", json.encodeToJsonElement(entries)); put("target_dir", targetDir)
-                put("downloads_base", "${getDownloadsDirPath().trimEnd('/')}/PlainApp"); put("zip_name", zipName)
+                put("messageId", messageId); put("kind", type.name); put("link", json.encodeToJsonElement(link))
+                put("urlToken", urlToken); put("entries", json.encodeToJsonElement(entries)); put("targetDir", targetDir)
+                put("downloadsBase", "${getDownloadsDirPath().trimEnd('/')}/PlainApp"); put("zipName", zipName)
             })
         })
     fun retryFailed(taskId: String) { control(taskId, "retry") }
@@ -53,8 +54,7 @@ object SharedFolderDownloadEngine {
     suspend fun refresh() = stateLock.withLock {
         val snapshot = call(buildJsonObject { put("action", "snapshot") }).jsonObject
         val current = snapshot.getValue("revision").jsonPrimitive.long
-        if (current <= revision) return@withLock
-        revision = current
+        if (!version.accept(snapshot.getValue("runtimeId").jsonPrimitive.content, current)) return@withLock
         val tasks = snapshot.getValue("tasks").jsonArray.map { value ->
             val row = value.jsonObject
             fun str(key: String) = row.getValue(key).jsonPrimitive.content
@@ -74,5 +74,23 @@ object SharedFolderDownloadEngine {
         }
         DownloadCenter.replaceExternal(DOWNLOAD_KIND_SHARE, tasks)
     }
-    private suspend fun call(body: JsonObject): JsonElement = RustContentApi.postJsonOrThrow("shares/batch", body, longRunning = true).getValue("result")
+    private const val QUEUE_FIELDS = "runtimeId revision tasks { id messageId type title targetDir link { host port sharedId token pageUrl } urlToken entries { name virtualPath isDir size mimeType hasThumb } zipName generation status error downloadedSize totalSize downloadSpeed totalFiles doneFiles failedFiles currentFile packing failures { path error } }"
+    private suspend fun call(body: JsonObject): JsonElement {
+        return when (val action = body.getValue("action").jsonPrimitive.content) {
+            "snapshot" -> PlainRust.mainQuery("sharedDownloadQueue { $QUEUE_FIELDS }").getValue("sharedDownloadQueue")
+            "enqueue" -> PlainRust.mainGraphql("mutation(\$input: SharedDownloadInput!) { enqueueSharedDownload(input: \$input) }", mapOf("input" to body.getValue("intent")), longRunning = true).getValue("enqueueSharedDownload")
+            "control" -> {
+                val operation = when (body.getValue("command").jsonPrimitive.content) {
+                    "pause" -> "pauseSharedDownload"
+                    "resume" -> "resumeSharedDownload"
+                    "retry" -> "retrySharedDownload"
+                    "cancel" -> "cancelSharedDownload"
+                    "remove" -> "removeSharedDownload"
+                    else -> error("Unknown shared download control")
+                }
+                PlainRust.mainMutate("$operation(id: ${gql(body.getValue("id").jsonPrimitive.content)})", longRunning = true).getValue(operation)
+            }
+            else -> error("Unknown shared download operation: $action")
+        }
+    }
 }

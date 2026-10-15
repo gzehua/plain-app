@@ -15,4 +15,6 @@ data class Call(
     var type: CallType,
     var accountId: String,
     var geo: PhoneGeo?,
+    var typeCode: Int = 0,
+    var photoUri: String = "",
 )

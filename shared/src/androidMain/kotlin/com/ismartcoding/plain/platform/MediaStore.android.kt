@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.platform
 
 import android.provider.Telephony
-import com.ismartcoding.plain.TempData
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.audio.AudioMediaStoreHelper
 import com.ismartcoding.plain.data.DImage
@@ -11,67 +10,21 @@ import com.ismartcoding.plain.data.TagRelationStub
 import com.ismartcoding.plain.docs.DocMediaStoreHelper
 import com.ismartcoding.plain.features.system.ProviderPlan
 import com.ismartcoding.plain.enums.DataType
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.features.media.CallMediaStoreHelper
 import com.ismartcoding.plain.features.media.ContactMediaStoreHelper
 import com.ismartcoding.plain.features.media.ImageMediaStoreHelper
 import com.ismartcoding.plain.features.media.VideoMediaStoreHelper
 import com.ismartcoding.plain.features.sms.SmsHelper
-import com.ismartcoding.plain.features.sms.DMessage
 import com.ismartcoding.plain.features.sms.SmsProviderContract
 import com.ismartcoding.plain.features.file.FileSortBy
-import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.lib.TimeHelper
-import com.ismartcoding.plain.lib.coIO
-import com.ismartcoding.plain.lib.sendEvent
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.delay
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.days
-import java.io.File
-import java.util.concurrent.ConcurrentHashMap
 
 actual suspend fun getMediaBuckets(dataType: DataType): List<DMediaBucket> {
     return com.ismartcoding.plain.features.system.RustSystemProviders.mediaBuckets(dataType)
 }
 
-actual suspend fun searchMedia(
-    dataType: DataType,
-    query: String,
-    limit: Int,
-    offset: Int,
-    sortBy: FileSortBy,
-): List<IData> {
-    if (dataType == DataType.CALL && !Permission.READ_CALL_LOG.isGranted()) return emptyList()
-    if (dataType == DataType.CONTACT && !Permission.READ_CONTACTS.isGranted()) return emptyList()
-    return when (dataType) {
-        DataType.AUDIO -> AudioMediaStoreHelper.searchAsync(appContext, query, limit, offset, sortBy)
-        DataType.DOC -> DocMediaStoreHelper.searchAsync(appContext, query, limit, offset, sortBy)
-        DataType.IMAGE -> ImageMediaStoreHelper.searchAsync(appContext, query, limit, offset, sortBy)
-        DataType.VIDEO -> VideoMediaStoreHelper.searchAsync(appContext, query, limit, offset, sortBy)
-        DataType.CALL -> CallMediaStoreHelper.searchAsync(appContext, query, limit, offset)
-        DataType.CONTACT -> ContactMediaStoreHelper.searchAsync(appContext, query, limit, offset)
-        DataType.SMS -> SmsHelper.searchAsync(appContext, query, limit, offset)
-        else -> emptyList()
-    }
-}
 
-actual suspend fun countMedia(dataType: DataType, query: String): Int {
-    if (dataType == DataType.CALL && !Permission.READ_CALL_LOG.isGranted()) return 0
-    if (dataType == DataType.CONTACT && !Permission.READ_CONTACTS.isGranted()) return 0
-    return when (dataType) {
-        DataType.AUDIO -> AudioMediaStoreHelper.countAsync(appContext, query)
-        DataType.DOC -> DocMediaStoreHelper.countAsync(appContext, query)
-        DataType.IMAGE -> ImageMediaStoreHelper.countAsync(appContext, query)
-        DataType.VIDEO -> VideoMediaStoreHelper.countAsync(appContext, query)
-        DataType.CALL -> CallMediaStoreHelper.countAsync(appContext, query)
-        DataType.CONTACT -> ContactMediaStoreHelper.countAsync(appContext, query)
-        DataType.SMS -> SmsHelper.countAsync(appContext, query)
-        else -> 0
-    }
-}
 
 actual suspend fun trashMedia(dataType: DataType, ids: Set<String>) {
     com.ismartcoding.plain.features.mediaactions.MediaActionHelper.run(dataType,com.ismartcoding.plain.features.mediaactions.MediaAction.TRASH,ids)
@@ -89,90 +42,34 @@ actual suspend fun moveMedia(dataType: DataType, ids: Set<String>, destDir: Stri
     return com.ismartcoding.plain.features.mediaactions.MediaActionHelper.run(dataType,com.ismartcoding.plain.features.mediaactions.MediaAction.MOVE,ids,destDir=destDir) == ids.size
 }
 
-private suspend fun getTrashedMessageIds(): Set<String> = com.ismartcoding.plain.features.sms.RustSmsState.trashed()
-
-actual suspend fun trashSms(query: String): Int =
-    com.ismartcoding.plain.features.sms.RustSmsState.trash(SmsHelper.getIdsAsync(appContext, query))
-
-actual suspend fun restoreSms(query: String): Int =
-    com.ismartcoding.plain.features.sms.RustSmsState.restore(SmsHelper.getIdsAsync(appContext, query))
-
-private const val SMS_TRASH_DIR = "sms-trash"
-private const val SMS_TRASH_RETENTION_DAYS = 30L
-
-/**
- * Archive full message content to app-private storage before a real delete.
- * Files are the last-resort recovery net (JSON for tools, CSV for spreadsheets)
- * and are cleaned up after 30 days.
- */
-private fun archiveDeletedMessages(messages: List<DMessage>) {
-    if (messages.isEmpty()) return
-    val dir = File(appContext.filesDir, SMS_TRASH_DIR).apply { mkdirs() }
-    val stamp = System.currentTimeMillis()
-    runCatching {
-        File(dir, "deleted_$stamp.json").writeText(JsonHelper.jsonEncode(messages, pretty = true))
-    }
-    runCatching {
-        val header = "id,body,address,date,thread_id,is_mms"
-        val rows = messages.joinToString("\n") { m ->
-            listOf(
-                m.id,
-                m.body.replace("\"", "\"\"").replace("\n", "\\n"),
-                m.address,
-                m.date.toEpochMilliseconds().toString(),
-                m.threadId,
-                m.isMms.toString(),
-            ).joinToString(",") { "\"$it\"" }
+actual suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.features.sms.SmsDeletionReceipt = com.ismartcoding.plain.lib.withIO {
+    check(ShizukuHelper.isGranted()) { "Shizuku is not available or not granted" }
+    val deleted = mutableListOf<String>()
+    val failed = mutableListOf<String>()
+    for (id in ids) {
+        kotlinx.coroutines.currentCoroutineContext().ensureActive()
+        val raw = id.removePrefix("mms_")
+        val number = raw.toLongOrNull()
+        if (number == null || number < 0) {
+            failed.add(id)
+            continue
         }
-        File(dir, "deleted_$stamp.csv").writeText(header + "\n" + rows)
+        val provider = if (id.startsWith("mms_")) Telephony.Mms.CONTENT_URI else Telephony.Sms.CONTENT_URI
+        val uri = android.content.ContentUris.withAppendedId(provider, number)
+        val removed = try {
+            ShizukuHelper.exec("content delete --uri $uri")
+            appContext.contentResolver.query(uri, arrayOf("_id"), null, null, null)?.use { !it.moveToFirst() } == true
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            com.ismartcoding.plain.lib.logcat.LogCat.e("SMS provider deletion failed", error)
+            false
+        }
+        if (removed) deleted.add(id) else failed.add(id)
     }
-    // Retention: drop archives older than 30 days.
-    val cutoff = stamp - SMS_TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000
-    dir.listFiles()?.forEach { if (it.lastModified() < cutoff) it.delete() }
+    com.ismartcoding.plain.features.sms.SmsDeletionReceipt(deleted, failed)
 }
 
-private fun shizukuDeleteUri(uri: String) {
-    // `content delete` runs as shell uid, which carries the WRITE_SMS appop.
-    ShizukuHelper.exec("content delete --uri $uri")
-}
-
-actual suspend fun deleteSms(query: String): Int {
-    if (!ShizukuHelper.isGranted()) {
-        throw IllegalStateException("Shizuku is not available or not granted")
-    }
-    // includeTrashed: permanently deleting from the trash bin must reach
-    // app-side trashed messages, which normal queries exclude.
-    val ids = SmsHelper.getIdsAsync(appContext, query, includeTrashed = true)
-    if (ids.isEmpty()) return 0
-    val messages = SmsHelper.searchAsync(
-        appContext,
-        "ids:${ids.joinToString(",")}",
-        limit = ids.size,
-        offset = 0,
-        includeTrashed = true,
-    )
-    // Recovery net before touching the provider: full content archive +
-    // shadow-table record (feeds the 30-day restore window).
-    archiveDeletedMessages(messages)
-    val known = getTrashedMessageIds()
-    com.ismartcoding.plain.features.sms.RustSmsState.trash(ids)
-
-    var deleted = 0
-    ids.forEach { id ->
-        val uri = if (id.startsWith("mms_")) "content://mms/${id.removePrefix("mms_")}" else "content://sms/$id"
-        runCatching { shizukuDeleteUri(uri) }
-            .onSuccess { deleted++ }
-            .onFailure {
-                // Provider refused (e.g. id vanished meanwhile); drop the
-                // shadow record so it doesn't linger as a phantom entry.
-                if (id !in known) com.ismartcoding.plain.features.sms.RustSmsState.restore(listOf(id))
-            }
-    }
-    return deleted
-}
-
-actual suspend fun getDocExtGroups(query: String): List<Pair<String, Int>> =
-    DocMediaStoreHelper.getDocExtGroupsAsync(appContext, query)
 
 actual suspend fun searchImagesCombined(
     queryText: String,
@@ -196,28 +93,7 @@ actual fun getMediaItemUriString(dataType: DataType, id: String): String = when 
     else -> ""
 }
 
-actual suspend fun getMediaIds(dataType: DataType, query: String): Set<String> {
-    if (dataType == DataType.CALL && !Permission.READ_CALL_LOG.isGranted()) return emptySet()
-    if (dataType == DataType.CONTACT && !Permission.READ_CONTACTS.isGranted()) return emptySet()
-    return when (dataType) {
-        DataType.AUDIO -> AudioMediaStoreHelper.getIdsAsync(appContext, query)
-        DataType.VIDEO -> VideoMediaStoreHelper.getIdsAsync(appContext, query)
-        DataType.IMAGE -> ImageMediaStoreHelper.getIdsAsync(appContext, query)
-        DataType.DOC -> DocMediaStoreHelper.getIdsAsync(appContext, query)
-        DataType.CALL -> CallMediaStoreHelper.getIdsAsync(appContext, query)
-        DataType.CONTACT -> ContactMediaStoreHelper.getIdsAsync(appContext, query)
-        DataType.SMS -> SmsHelper.getIdsAsync(appContext, query)
-        else -> emptySet()
-    }
-}
 
-actual suspend fun getTrashedMediaIds(dataType: DataType, query: String): Set<String> = when (dataType) {
-    DataType.AUDIO -> AudioMediaStoreHelper.getTrashedIdsAsync(appContext, query)
-    DataType.VIDEO -> VideoMediaStoreHelper.getTrashedIdsAsync(appContext, query)
-    DataType.IMAGE -> ImageMediaStoreHelper.getTrashedIdsAsync(appContext, query)
-    DataType.DOC -> DocMediaStoreHelper.getTrashedIdsAsync(appContext, query)
-    else -> emptySet()
-}
 
 actual suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set<String> = when (dataType) {
     DataType.AUDIO -> AudioMediaStoreHelper.getPathsByIdsAsync(appContext, ids)
@@ -227,16 +103,6 @@ actual suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set
     else -> emptySet()
 }
 
-actual suspend fun getMediaTagRelationStubs(dataType: DataType, query: String): List<TagRelationStub> = when (dataType) {
-    DataType.AUDIO -> AudioMediaStoreHelper.getTagRelationStubsAsync(appContext, query)
-    DataType.VIDEO -> VideoMediaStoreHelper.getTagRelationStubsAsync(appContext, query)
-    DataType.IMAGE -> ImageMediaStoreHelper.getTagRelationStubsAsync(appContext, query)
-    DataType.DOC -> DocMediaStoreHelper.getTagRelationStubsAsync(appContext, query)
-    DataType.CALL -> CallMediaStoreHelper.getIdsAsync(appContext, query).map { TagRelationStub(it) }
-    DataType.CONTACT -> ContactMediaStoreHelper.getIdsAsync(appContext, query).map { TagRelationStub(it) }
-    DataType.SMS -> SmsHelper.getIdsAsync(appContext, query).map { TagRelationStub(it) }
-    else -> emptyList()
-}
 
 actual suspend fun countImagesCombined(queryText: String, extraQuery: String): Int =
     com.ismartcoding.plain.ai.RustImageSearch.count(queryText,extraQuery)

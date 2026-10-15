@@ -18,18 +18,24 @@ expect suspend fun getMediaBuckets(dataType: DataType): List<DMediaBucket>
  * Search media items of [dataType] matching [query], paginated by [limit]/[offset]
  * and sorted by [sortBy]. Returns an empty list on unsupported platforms.
  */
-expect suspend fun searchMedia(
-    dataType: DataType,
-    query: String,
-    limit: Int,
-    offset: Int,
-    sortBy: FileSortBy,
-): List<IData>
+suspend fun searchMedia(dataType: DataType, query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> = when (dataType) {
+    DataType.AUDIO, DataType.VIDEO, DataType.IMAGE, DataType.DOC -> com.ismartcoding.plain.features.system.RustMediaQuery.rows(dataType, query, limit, offset, sortBy)
+    DataType.CALL -> com.ismartcoding.plain.features.system.RustPhoneQuery.calls(query, limit, offset)
+    DataType.CONTACT -> com.ismartcoding.plain.features.system.RustPhoneQuery.contacts(query, limit, offset)
+    DataType.SMS -> com.ismartcoding.plain.features.sms.RustSmsQuery.search(query, limit, offset)
+    else -> error("Unsupported provider: $dataType")
+}
 
 /**
  * Count media items of [dataType] matching [query]. Returns 0 on unsupported platforms.
  */
-expect suspend fun countMedia(dataType: DataType, query: String): Int
+suspend fun countMedia(dataType: DataType, query: String): Int = when (dataType) {
+    DataType.AUDIO, DataType.VIDEO, DataType.IMAGE, DataType.DOC -> com.ismartcoding.plain.features.system.RustMediaQuery.count(dataType, query)
+    DataType.CALL -> com.ismartcoding.plain.features.system.RustPhoneQuery.countCalls(query)
+    DataType.CONTACT -> com.ismartcoding.plain.features.system.RustPhoneQuery.countContacts(query)
+    DataType.SMS -> com.ismartcoding.plain.features.sms.RustSmsQuery.count(query)
+    else -> error("Unsupported provider: $dataType")
+}
 
 /**
  * Move media items of [dataType] identified by [ids] to the trash.
@@ -58,7 +64,7 @@ expect suspend fun moveMedia(dataType: DataType, ids: Set<String>, destDir: Stri
  * Returns file-extension groups for documents matching [query].
  * Each pair is (extension, count). Returns an empty list on unsupported platforms.
  */
-expect suspend fun getDocExtGroups(query: String): List<Pair<String, Int>>
+suspend fun getDocExtGroups(query: String): List<Pair<String, Int>> = com.ismartcoding.plain.features.system.RustMediaQuery.docExtGroups(query)
 
 /**
  * Combined image search: filename + optional AI semantic search.
@@ -92,13 +98,19 @@ expect fun getMediaItemUriString(dataType: DataType, id: String): String
  * Returns the IDs of media items of [dataType] matching [query].
  * Used by tag operations and trash/delete mutations.
  */
-expect suspend fun getMediaIds(dataType: DataType, query: String): Set<String>
+suspend fun getMediaIds(dataType: DataType, query: String): Set<String> = when (dataType) {
+    DataType.AUDIO, DataType.VIDEO, DataType.IMAGE, DataType.DOC -> com.ismartcoding.plain.features.system.RustMediaQuery.ids(dataType, query)
+    DataType.CALL -> com.ismartcoding.plain.features.system.RustPhoneQuery.callIds(query)
+    DataType.CONTACT -> com.ismartcoding.plain.features.system.RustPhoneQuery.contactIds(query)
+    DataType.SMS -> com.ismartcoding.plain.features.sms.RustSmsQuery.ids(query)
+    else -> error("Unsupported provider: $dataType")
+}
 
 /**
  * Returns the IDs of trashed media items of [dataType] matching [query].
  * On platforms without a trash concept, returns the same as [getMediaIds].
  */
-expect suspend fun getTrashedMediaIds(dataType: DataType, query: String): Set<String>
+suspend fun getTrashedMediaIds(dataType: DataType, query: String): Set<String> = com.ismartcoding.plain.features.system.RustMediaQuery.ids(dataType, query, fromTrash = true)
 
 /**
  * Returns the file paths for the media items of [dataType] identified by [ids].
@@ -110,7 +122,10 @@ expect suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set
  * Returns [TagRelationStub]s for media items of [dataType] matching [query].
  * Used by tag-batch-add operations.
  */
-expect suspend fun getMediaTagRelationStubs(dataType: DataType, query: String): List<TagRelationStub>
+suspend fun getMediaTagRelationStubs(dataType: DataType, query: String): List<TagRelationStub> = when (dataType) {
+    DataType.AUDIO, DataType.VIDEO, DataType.IMAGE, DataType.DOC -> com.ismartcoding.plain.features.system.RustMediaQuery.tagStubs(dataType, query)
+    else -> getMediaIds(dataType, query).map { TagRelationStub(it) }
+}
 
 /**
  * Count images matching a combined filename + AI semantic search [queryText]
@@ -169,32 +184,7 @@ expect suspend fun getSmsConversationDate(threadId: String): Long?
  */
 expect suspend fun getSmsAllCounts(): DSmsCounts
 
-/**
- * App-side trash for SMS/MMS: records message ids in a Room shadow table
- * without touching the system provider (no permissions required).
- * Returns the number of messages marked as trashed.
- */
-expect suspend fun trashSms(query: String): Int
-
-/**
- * Revert [trashSms] for the messages matching [query].
- * Returns the number of messages restored.
- */
-expect suspend fun restoreSms(query: String): Int
-
-/**
- * Permanently delete SMS/MMS messages matching [query] from the system
- * Telephony provider via Shizuku (shell uid). Requires the Shizuku app
- * to be installed, running and granted.
- *
- * Before touching the provider, the full message content is archived to
- * app-private storage (JSON + CSV, kept for 30 days) as a recovery net,
- * and the ids are recorded in the shadow table.
- *
- * Returns the number of messages deleted.
- * @throws IllegalStateException when Shizuku is unavailable or not granted.
- */
-expect suspend fun deleteSms(query: String): Int
+expect suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.features.sms.SmsDeletionReceipt
 
 /**
  * Send an SMS text message to [number] with body [body].

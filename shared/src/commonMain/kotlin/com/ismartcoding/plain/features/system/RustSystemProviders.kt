@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.features.system
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.data.DNotification
 import com.ismartcoding.plain.data.DMediaBucket
 import com.ismartcoding.plain.enums.DataType
@@ -11,44 +12,23 @@ import kotlinx.serialization.json.*
 
 object RustSystemProviders {
 
-    private suspend fun call(action: String, query: String, offset: Int = 0, limit: Int = 0, sortBy: FileSortBy = FileSortBy.NAME_ASC): JsonObject =
-        RustContentApi.postJsonOrThrow("system/providers", buildJsonObject {
-            put("action", action); put("query", query); put("offset", offset); put("limit", limit); put("sortBy", sortBy.name)
-        })
-    suspend fun providerWhere(provider: com.ismartcoding.plain.enums.DataType, query: String, resolvedParentId: String? = null): com.ismartcoding.plain.helpers.ContentWhere {
-        val result = RustContentApi.postJsonOrThrow("system/provider-plan", JsonHelper.jsonEncodeToElement(ProviderPlanRequest(provider.name, query, resolvedParentId)).jsonObject)
-        return JsonHelper.jsonDecodeFromElement<ProviderPlan>(result).where()
-    }
-    suspend fun providerWheres(provider: com.ismartcoding.plain.enums.DataType, query: String): List<com.ismartcoding.plain.helpers.ContentWhere> {
-        val result = RustContentApi.postJsonOrThrow("system/provider-plan", JsonHelper.jsonEncodeToElement(ProviderPlanRequest(provider.name, query)).jsonObject)
-        return JsonHelper.jsonDecodeFromElement<ProviderPlan>(result).wheres()
-    }
-
     suspend fun packages(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<DPackageInfo> =
-        JsonHelper.jsonDecode(call("packages", query, offset, limit, sortBy).getValue("items").toString())
-    suspend fun packageCount(query: String): Int = call("packageCount", query).getValue("count").jsonPrimitive.int
+        JsonHelper.jsonDecodeFromElement(PlainRust.mainQuery("packages(query: ${gql(query)}, offset: $offset, limit: $limit, sortBy: ${sortBy.name}) { id name type version path size installedAt updatedAt certs { issuer subject serialNumber validFrom validTo } }").getValue("packages"))
+    suspend fun packageCount(query: String): Int = PlainRust.mainQuery("packageCount(query: ${gql(query)})").getValue("packageCount").jsonPrimitive.int
     suspend fun notifications(query: String, offset: Int, limit: Int): List<DNotification> =
-        JsonHelper.jsonDecode(call("notifications", query, offset, limit).getValue("items").toString())
-suspend fun notificationCount(query: String): Int = call("notificationCount", query).getValue("count").jsonPrimitive.int
+        JsonHelper.jsonDecodeFromElement(PlainRust.mainQuery("notifications(query: ${gql(query)}, offset: $offset, limit: $limit) { id onlyOnce isClearable appId appName time: postedAt silent title body actions replyActions }").getValue("notifications"))
+    suspend fun notificationCount(query: String): Int = PlainRust.mainQuery("notificationCount(query: ${gql(query)})").getValue("notificationCount").jsonPrimitive.int
 
-    suspend fun mediaBuckets(dataType: DataType): List<DMediaBucket> {
-        val facts = com.ismartcoding.plain.platform.mediaBucketItemFacts(dataType)
-        val response = RustContentApi.postJsonOrThrow("system/media-buckets", buildJsonObject {
-            put("dataType", dataType.name)
-            put("items", Json.parseToJsonElement(JsonHelper.jsonEncode(facts)))
-        })
-        return response.getValue("items").jsonArray.map { value ->
+    suspend fun mediaBuckets(dataType: DataType): List<DMediaBucket> =
+        PlainRust.mainQuery("mediaBuckets(type: ${dataType.name}) { id name itemCount size topItemPaths }").getValue("mediaBuckets").jsonArray.map { value ->
             val item = value.jsonObject
             DMediaBucket(
                 id = item.getValue("id").jsonPrimitive.content,
                 name = item.getValue("name").jsonPrimitive.content,
                 itemCount = item.getValue("itemCount").jsonPrimitive.int,
                 size = item.getValue("size").jsonPrimitive.long,
-                topItems = item.getValue("topItems").jsonArray.map { it.jsonPrimitive.content }.toMutableList(),
+                topItems = item.getValue("topItemPaths").jsonArray.map { it.jsonPrimitive.content }.toMutableList(),
             )
         }
-    }
-}
 
-@kotlinx.serialization.Serializable
-private data class ProviderPlanRequest(val provider: String, val query: String, val resolvedParentId: String? = null)
+}

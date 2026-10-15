@@ -30,15 +30,15 @@ object CallMediaStoreHelper : BaseContentHelper() {
         )
     }
 
-    override suspend fun buildWhereAsync(query: String): ContentWhere =
-        com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.CALL, query)
+    suspend fun countAsync(context: Context, query: String): Int = com.ismartcoding.plain.features.system.RustPhoneQuery.countCalls(query)
+    suspend fun getIdsAsync(context: Context, query: String): Set<String> = com.ismartcoding.plain.features.system.RustPhoneQuery.callIds(query)
 
     suspend fun searchAsync(
         context: Context,
         query: String,
         limit: Int,
         offset: Int,
-    ): List<DCall> = searchAsync(context, com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.CALL, query), limit, offset)
+    ): List<DCall> = com.ismartcoding.plain.features.system.RustPhoneQuery.calls(query, limit, offset)
 
     suspend fun searchAsync(
         context: Context,

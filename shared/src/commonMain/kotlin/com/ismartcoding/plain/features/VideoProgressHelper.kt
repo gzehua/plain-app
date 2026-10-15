@@ -15,23 +15,23 @@ object VideoProgressHelper {
     private const val FIELDS = "mediaId positionMs updatedAt"
 
     suspend fun recentAsync(since: Instant): List<VideoPlayProgress> =
-        PlainRust.privateQuery("recentVideoPlayProgress(since: ${gql(since.toString())}) { $FIELDS }")
+        PlainRust.mainQuery("recentVideoPlayProgress(since: ${gql(since.toString())}) { $FIELDS }")
             .getValue("recentVideoPlayProgress").jsonArray.map { it.progress() }
 
     suspend fun getAsync(mediaId: String): VideoPlayProgress? =
-        PlainRust.privateQuery("videoPlayProgress(mediaId: ${gql(mediaId)}) { $FIELDS }")
+        PlainRust.mainQuery("videoPlayProgress(mediaId: ${gql(mediaId)}) { $FIELDS }")
             .getValue("videoPlayProgress").takeUnless { it is JsonNull }?.progress()
 
     suspend fun saveAsync(mediaId: String, positionMs: Long): VideoPlayProgress =
-        PlainRust.privateMutate("saveVideoPlayProgress(mediaId: ${gql(mediaId)}, positionMs: $positionMs) { $FIELDS }")
+        PlainRust.mainMutate("saveVideoPlayProgress(mediaId: ${gql(mediaId)}, positionMs: $positionMs) { $FIELDS }")
             .getValue("saveVideoPlayProgress").progress()
 
     suspend fun recordPlayAsync(mediaId: String, positionMs: Long) {
-        PlainRust.privateMutate("recordVideoPlay(mediaId: ${gql(mediaId)}, positionMs: $positionMs) { mediaId }")
+        PlainRust.mainMutate("recordVideoPlay(mediaId: ${gql(mediaId)}, positionMs: $positionMs) { mediaId }")
     }
 
     suspend fun deleteAsync(mediaId: String) {
-        PlainRust.privateMutate("deleteVideoPlayProgress(mediaId: ${gql(mediaId)})")
+        PlainRust.mainMutate("deleteVideoPlayProgress(mediaId: ${gql(mediaId)})")
     }
 
     private fun JsonElement.progress(): VideoPlayProgress = JsonHelper.jsonDecodeFromElement<VideoPlayProgress>(this)

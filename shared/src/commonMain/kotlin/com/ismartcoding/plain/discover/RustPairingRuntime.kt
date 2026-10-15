@@ -1,50 +1,43 @@
 package com.ismartcoding.plain.discover
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.data.*
 import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
 import kotlinx.serialization.json.*
 
 object RustPairingRuntime {
-    suspend fun states(): JsonArray = call(buildJsonObject { put("action", "states") }).jsonArray
+    suspend fun states(): JsonArray = PlainRust.mainQuery("pairingStates { deviceId generation phase }").getValue("pairingStates").jsonArray
 
     suspend fun start(device: DNearbyDevice): JsonElement {
-        val result = call(buildJsonObject {
-        put("action", "start"); put("device", RustPairingStore.deviceFacts()); put("target", target(device))
-        put("ips", JsonArray(device.ips.map(::JsonPrimitive)))
-        put("methods", JsonArray(device.discoveryMethods.map { JsonPrimitive(it.name) })); put("ble", device.bleClient != null)
-        })
+        val input = buildJsonObject {
+            put("id", device.id); put("name", device.name); put("port", device.port)
+            put("ips", JsonArray(device.ips.map(::JsonPrimitive)))
+            put("deviceType", device.deviceType.name); put("version", device.version); put("platform", device.platform)
+            put("lastSeen", device.lastSeen.toString())
+            put("discoveryMethods", JsonArray(device.discoveryMethods.map { JsonPrimitive(it.name) }))
+        }
+        val result = PlainRust.mainGraphql("mutation(\$input: PairingDeviceInput!) { pairDevice(input: \$input) }", mapOf("input" to input), longRunning = true).getValue("pairDevice")
         PairingProjection.reconcile()
         return result
     }
-    suspend fun startBle(device: DNearbyDevice) = call(buildJsonObject {
-        put("action", "startBle"); put("device", RustPairingStore.deviceFacts()); put("target", target(device))
-    })
-    private fun target(device: DNearbyDevice) = buildJsonObject {
-        put("deviceId", device.id); put("deviceName", device.name); put("deviceIp", ""); put("devicePort", device.port)
+    suspend fun cancel(id: String): JsonElement = PlainRust.mainMutate("cancelPairing(deviceId: ${gql(id)})", longRunning = true).getValue("cancelPairing")
+    suspend fun currentRequest(id: String, signature: String): Boolean =
+        PlainRust.mainQuery("isPairingRequestCurrent(id: ${gql(id)}, signature: ${gql(signature)})").getValue("isPairingRequestCurrent").jsonPrimitive.boolean
+
+    suspend fun receiveRequest(request: DPairingRequest, address: String) {
+        PlainRust.publish(HostEvent(EventType.PAIRING_REQUEST_REPORTED, buildJsonObject {
+            put("request", JsonHelper.jsonEncodeToElement(request)); put("address", address)
+        }.toString()))
     }
-    suspend fun startLan(device: DNearbyDevice) = call(buildJsonObject {
-        put("action", "startLan"); put("device", RustPairingStore.deviceFacts())
-        put("target", buildJsonObject {
-            put("deviceId", device.id); put("deviceName", device.name); put("deviceIp", ""); put("devicePort", device.port)
-        })
-        put("ips", JsonArray(device.ips.map(::JsonPrimitive)))
-    })
-    suspend fun cancel(id: String) = call(buildJsonObject { put("action", "cancel"); put("id", id); put("generation", JsonNull) })
-    suspend fun receiveRequest(request: DPairingRequest, address: String, ble: Boolean) = call(buildJsonObject {
-        put("action", "receiveRequest"); put("request", Json.parseToJsonElement(JsonHelper.jsonEncode(request))); put("address", address); put("ble", ble)
-    })
-    suspend fun currentRequest(id: String, signature: String): Boolean = call(buildJsonObject {
-        put("action", "pendingRequest"); put("id", id); put("signature", signature)
-    }).jsonPrimitive.boolean
-    suspend fun receiveCancel(cancel: DPairingCancel) = call(buildJsonObject {
-        put("action", "receiveCancel"); put("cancel", Json.parseToJsonElement(JsonHelper.jsonEncode(cancel)))
-    })
-    suspend fun complete(response: DPairingResponse, senderIp: String): JsonElement = call(buildJsonObject {
-        put("action", "complete"); put("response", Json.parseToJsonElement(JsonHelper.jsonEncode(response))); put("sender_ip", senderIp)
-    })
-    suspend fun respond(request: DPairingRequest, accepted: Boolean) = call(buildJsonObject {
-        put("action", "respond"); put("request", Json.parseToJsonElement(JsonHelper.jsonEncode(request))); put("accepted", accepted); put("device", RustPairingStore.deviceFacts())
-    })
-    private suspend fun call(body: JsonObject) = RustContentApi.postJsonOrThrow("chat/pairing", body, longRunning = true).getValue("result")
+    suspend fun receiveCancel(cancel: DPairingCancel) {
+        PlainRust.publish(HostEvent(EventType.PAIRING_CANCEL_REPORTED, JsonHelper.jsonEncode(cancel)))
+    }
+    suspend fun complete(response: DPairingResponse) {
+        PlainRust.publish(HostEvent(EventType.PAIRING_RESPONSE_REPORTED, JsonHelper.jsonEncode(response)))
+    }
+    suspend fun respond(request: DPairingRequest, accepted: Boolean): JsonElement =
+        PlainRust.mainGraphql("mutation(\$input: PairingRequestInput!, \$accepted: Boolean!) { respondToPairing(input: \$input, accepted: \$accepted) }", mapOf("input" to JsonHelper.jsonEncodeToElement(request), "accepted" to JsonPrimitive(accepted)), longRunning = true).getValue("respondToPairing")
 }

@@ -58,7 +58,7 @@ object AudioMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
-    ): List<DAudio> = searchAsync(context, com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.AUDIO, query), limit, offset, sortBy)
+    ): List<DAudio> = com.ismartcoding.plain.features.system.RustMediaQuery.rows(com.ismartcoding.plain.enums.DataType.AUDIO, query, limit, offset, sortBy).map { it as DAudio }
 
     suspend fun searchAsync(
         context: Context,
@@ -109,15 +109,7 @@ object AudioMediaStoreHelper : BaseMediaContentHelper() {
         audios
     }
 
-    suspend fun getTagRelationStubsAsync(
-        context: Context,
-        query: String,
-    ): List<TagRelationStub> {
-        return getSearchCursorAsync(context, query)?.map { cursor, cache ->
-            val id = cursor.getStringValue(MediaStore.Audio.Media._ID, cache)
-            val title = cursor.getStringValue(MediaStore.Audio.Media.TITLE, cache)
-            val size = cursor.getLongValue(MediaStore.Audio.Media.SIZE, cache)
-            TagRelationStub(id, title, size)
-        } ?: emptyList()
-    }
+    suspend fun getTagRelationStubsAsync(context: Context, query: String): List<TagRelationStub> =
+        com.ismartcoding.plain.features.system.RustMediaQuery.tagStubs(com.ismartcoding.plain.enums.DataType.AUDIO, query)
+
 }

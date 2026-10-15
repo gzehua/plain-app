@@ -12,9 +12,7 @@ internal object FileResourceHost {
         return when (operation) {
             "mime" -> JsonHelper.jsonEncodeToElement(getContentTypeForPath(path))
             "appDir" -> JsonPrimitive(appDir())
-            "zipExtract" -> extractZipEntryToCache(path)?.let(::JsonPrimitive) ?: JsonNull
             "probe" -> JsonPrimitive(probeVideoCodec(path))
-            "animated" -> JsonPrimitive(isAnimatedImageOrSvg(path, extra.fileName))
             "transcode" -> transcodeMp4ForBrowser(path)?.let(::JsonPrimitive) ?: JsonNull
             "remux" -> remuxMp4ForBrowser(path)?.let(::JsonPrimitive) ?: JsonNull
             "convert3gp", "packageIcon", "decodePng" -> {
@@ -34,11 +32,4 @@ internal object FileResourceHost {
         }
     }
 
-    suspend fun stream(socket: PlainWebSocketSession, path: String) {
-        val sink = ResourceStreamSink(socket)
-        try {
-            check(streamContentUri(path, sink) != null) { "Unable to open content URI" }
-            socket.sendText(JsonHelper.jsonEncode(ResourceStreamEnd()))
-        } finally { sink.close() }
-    }
 }

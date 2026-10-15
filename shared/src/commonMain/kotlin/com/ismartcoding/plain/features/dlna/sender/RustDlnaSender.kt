@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.features.dlna.sender
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.db.IMedia
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.coIO
@@ -10,11 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
-/**
- * The one Kotlin mirror of the Rust cast runtime: it owns the projected state
- * and is the only caller of `POST /system/dlna-sender`. State arrives on
- * websocket event DLNA_SENDER_UPDATED, commands go out over the same endpoint.
- */
 internal object RustDlnaSender {
     private val projectionLock = PlatformLock()
     private var version = -1L
@@ -31,10 +27,33 @@ internal object RustDlnaSender {
     val durationMs = MutableStateFlow(0f)
     val supportsCallback = MutableStateFlow(false)
 
+    private const val fields = "version devices { id hostAddress name } currentDevice { id hostAddress name } items { path title albumArt artist durationMs audio } currentUri playing progressMs durationMs supportsCallback"
     suspend fun call(command: CastCommand) {
-        val result = RustContentApi.postJsonOrThrow("system/dlna-sender", JsonHelper.jsonEncodeToElement<CastCommand>(command).jsonObject)
-        apply(result.getValue("result").jsonObject)
+        val operation = when (command) {
+            CastCommand.Snapshot -> null
+            CastCommand.StartScan -> "startDlnaScan"
+            CastCommand.StopScan -> "stopDlnaScan"
+            is CastCommand.Select -> "selectDlnaDevice(id: ${gql(command.id)})"
+            is CastCommand.Cast -> "castDlnaMedia(item: ${input(command.item)})"
+            CastCommand.Play -> "playDlna"
+            CastCommand.Pause -> "pauseDlna"
+            is CastCommand.Seek -> "seekDlna(positionMs: ${command.positionMs})"
+            CastCommand.Stop -> "stopDlna"
+            CastCommand.Exit -> "exitDlna"
+            is CastCommand.Add -> "addDlnaItem(item: ${input(command.item)})"
+            is CastCommand.Remove -> "removeDlnaItem(path: ${gql(command.path)})"
+            is CastCommand.RemoveAt -> "removeDlnaItemAt(index: ${command.index})"
+            is CastCommand.Reorder -> "reorderDlnaItems(from: ${command.from}, to: ${command.to})"
+            CastCommand.Clear -> "clearDlnaItems"
+        }
+        val row = if (operation == null) {
+            PlainRust.mainQuery("dlnaSenderState { $fields }").getValue("dlnaSenderState")
+        } else {
+            PlainRust.mainMutate("$operation { $fields }").getValue(operation.substringBefore('('))
+        }
+        apply(row.jsonObject)
     }
+    private fun input(item: CastItem): String = "{path: ${gql(item.path)}, title: ${gql(item.title)}, albumArt: ${gql(item.albumArt)}, artist: ${gql(item.artist)}, durationMs: ${item.durationMs}, audio: ${item.audio}}"
     suspend fun refresh() = call(CastCommand.Snapshot)
     fun addItem(item: IMedia) { coIO { call(CastCommand.Add(CastItem.from(item))) } }
     fun removeItem(item: IMedia) { coIO { call(CastCommand.Remove(item.path)) } }

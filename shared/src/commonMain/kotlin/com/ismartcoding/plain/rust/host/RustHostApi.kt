@@ -8,7 +8,7 @@ import com.ismartcoding.plain.features.audio.AudioLibraryHost
 import com.ismartcoding.plain.features.audio.AudioEngineHost
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.platform.handleMediaActionHost
+import com.ismartcoding.plain.platform.handleMediaProvider
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.serialization.json.*
@@ -35,7 +35,6 @@ internal object RustHostApi {
                                     val result = when {
                                         method == "fileResourceStream" -> { com.ismartcoding.plain.platform.FileResourceStreamHost.start(exchangeScope, session, params); JsonNull }
                                         method.startsWith("thumbnail") -> com.ismartcoding.plain.thumbnail.ThumbnailHost.handle(session, method, params)
-                                        method.startsWith("sharedTransfer") -> com.ismartcoding.plain.features.share.SharedTransferHost.handle(exchangeScope, method, params)
                                         method.startsWith("blePair") -> com.ismartcoding.plain.discover.BlePairingHost.handle(method, params)
                                         method == "bleScanRead" -> com.ismartcoding.plain.discover.BleScanDriver.read(params)
                                         method == "mdnsMulticast" -> com.ismartcoding.plain.discover.MdnsMulticastHost.handle(params)
@@ -44,10 +43,10 @@ internal object RustHostApi {
                                         method == "pairingNotification" -> com.ismartcoding.plain.discover.PairingNotificationHost.handle(params)
                                         method == "peerStartAware" -> com.ismartcoding.plain.chat.peer.PeerAwareHost.handle(method, params)
                                         method.startsWith("peerTransport") -> com.ismartcoding.plain.chat.peer.transport.PeerTransportHost.handle(method, params)
-                                        method.startsWith("system") || method in setOf("fileMetadataFacts", "scanFilesFacts") -> com.ismartcoding.plain.features.system.SystemProviderHost.handle(method, params)
+                                        method.startsWith("system") || method == "fileMetadataFacts" -> com.ismartcoding.plain.features.system.SystemProviderHost.handle(method, params)
                                         method == "audioEngineCommand" -> AudioEngineHost.handle(method, params)
                                         method.startsWith("fileTask") -> com.ismartcoding.plain.features.file.FileTaskHost.handle(method,params)
-                                        method == "mediaAction" -> handleMediaActionHost(params)
+                                        (method == "mediaProviderRows" || method == "mediaProviderWrite") -> handleMediaProvider(method, params)
                                         method.startsWith("imageIndex") -> ImageIndexHost.handle(method, params)
                                         method == "audioMetadata" || method == "audioLibraryResolve" -> AudioLibraryHost.handle(method, params)
                                         else -> error("Unknown Rust host operation: $method")
@@ -69,7 +68,6 @@ internal object RustHostApi {
 
     private suspend fun disconnect() {
         cleanup("Peer socket") { com.ismartcoding.plain.chat.peer.transport.PeerSocketHost.disconnect() }
-        cleanup("Shared OS adapter") { com.ismartcoding.plain.features.share.SharedTransferHost.disconnect() }
         cleanup("Multicast permission") { com.ismartcoding.plain.discover.MdnsMulticastHost.disconnect() }
         cleanup("BLE handle") { com.ismartcoding.plain.discover.BlePairingHost.disconnect() }
         cleanup("Image index") { ImageIndexHost.disconnect() }

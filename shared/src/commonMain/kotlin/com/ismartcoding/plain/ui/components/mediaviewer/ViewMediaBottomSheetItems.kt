@@ -8,6 +8,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.chat.models.MessageFile
+import com.ismartcoding.plain.enums.AppFeatureType
+import com.ismartcoding.plain.enums.has
 import com.ismartcoding.plain.data.DImage
 import com.ismartcoding.plain.data.DVideo
 import com.ismartcoding.plain.graphql.models.Image
@@ -63,12 +65,12 @@ internal fun ViewMediaActionButtons(
             PSheetPrimaryAction(UiRes.drawable.ui_drawable_cast, stringResource(Res.string.cast)) { onCast() }
         }
         if (isMediaFile) {
-            if (renameInPrimary) {
+            if (renameInPrimary && AppFeatureType.MEDIA_MOVE.has()) {
                 PSheetPrimaryAction(UiRes.drawable.ui_drawable_pen, stringResource(Res.string.rename)) {
                     onShowRenameDialog()
                 }
             }
-            PSheetPrimaryDeleteAction(stringResource(Res.string.delete)) {
+            if (AppFeatureType.MEDIA_DELETE.has()) PSheetPrimaryDeleteAction(stringResource(Res.string.delete)) {
                 scope.launch {
                     confirmActionAsync(
                         Res.string.delete,
@@ -83,8 +85,8 @@ internal fun ViewMediaActionButtons(
             }
         }
     }
-    if (!renameInPrimary) {
-        VerticalSpace(12.dp)
+    if (!renameInPrimary && AppFeatureType.MEDIA_MOVE.has()) {
+        VerticalSpace(16.dp)
         PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
             PSheetActionRow(UiRes.drawable.ui_drawable_pen, stringResource(Res.string.rename)) {
                 onShowRenameDialog()

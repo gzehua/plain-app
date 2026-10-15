@@ -63,24 +63,8 @@ object PlainRust {
     suspend fun mainMutate(selection: String, session: ContentApiSession? = null, longRunning: Boolean = false): JsonObject =
         data("mutation { $selection }", Endpoint.Main, session, longRunning = longRunning)
 
-    suspend fun mainGraphql(document: String, variables: Map<String, JsonElement> = emptyMap(), session: ContentApiSession? = null): JsonObject =
-        data(document, variables = variables, endpoint = Endpoint.Main, session = session)
-
-    // ── Private schema: this device's own roots, in process only ─────────
-
-    /**
-     * Roots the shared core serves privately for this device. They run over the
-     * native bridge, so they carry no session and reach no other device.
-     */
-    suspend fun privateQuery(selection: String): JsonObject =
-        unwrap(native("query { $selection }", emptyMap(), null))
-
-    /** `longRunning` mirrors the remote entries; an in-process call has no transfer to keep alive. */
-    suspend fun privateMutate(selection: String, longRunning: Boolean = false): JsonObject =
-        unwrap(native("mutation { $selection }", emptyMap(), null))
-
-    suspend fun privateGraphql(document: String, variables: Map<String, JsonElement> = emptyMap()): JsonObject =
-        unwrap(native(document, variables, null))
+    suspend fun mainGraphql(document: String, variables: Map<String, JsonElement> = emptyMap(), session: ContentApiSession? = null, longRunning: Boolean = false): JsonObject =
+        data(document, variables = variables, endpoint = Endpoint.Main, session = session, longRunning = longRunning)
 
     // ── Peer and guest schemas: another device only ────────────────────────
 
@@ -135,7 +119,7 @@ object PlainRust {
 
     private suspend fun native(document: String, variables: Map<String, JsonElement>, operationName: String?): JsonObject =
         withContext(RustDispatchers.requests) {
-            JsonHelper.jsonDecode(RustCoreBridge.hostGraphql(JsonHelper.jsonEncode(GraphqlRequest(document, variables, operationName))))
+            JsonHelper.jsonDecode(RustCoreBridge.graphql(JsonHelper.jsonEncode(GraphqlRequest(document, variables, operationName))))
         }
 
     /**
@@ -207,7 +191,7 @@ object PlainRust {
     }
 
     suspend fun publish(event: HostEvent): Int {
-        val capabilities = withTimeoutOrNull(5_000) { capabilities.filterNotNull().first() } ?: return 0
+        val capabilities = withTimeoutOrNull(5_000) { capabilities.filterNotNull().first() } ?: error("Rust host event channel unavailable")
         require(capabilities.accepts(event.type, event.data)) { "${event.type} is not a host-produced event" }
         val error = withContext(RustDispatchers.requests) {
             when (val data = event.data) {

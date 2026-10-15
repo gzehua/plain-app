@@ -31,10 +31,6 @@ actual fun getSDCardPath(): String = ""
 
 actual fun getUsbDiskPaths(): List<String> = emptyList()
 
-actual suspend fun searchFiles(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<DFile> = emptyList()
-
-actual suspend fun countFiles(query: String): Int = 0
-
 actual suspend fun getRecentFiles(): List<DFile> = emptyList()
 
 actual fun scanFiles(paths: Array<String>) {}
@@ -56,9 +52,7 @@ actual fun getSDCardStorageStats(): DStorageStatsItem = DStorageStatsItem(0, 0)
 
 actual fun getUSBStorageStats(): List<DStorageStatsItem> = emptyList()
 
-actual fun listZipEntries(zipVirtualPath: String, sortBy: FileSortBy): List<DFile> = emptyList()
-
-actual fun extractZipEntryToCache(zipVirtualPath: String): String? = null
+actual suspend fun listZipEntries(zipVirtualPath: String, sortBy: FileSortBy): List<DFile> = com.ismartcoding.plain.features.file.RustFileHelper.list(zipVirtualPath, true, sortBy)
 
 actual fun getNewPath(path: String): String {
     val dotIndex = path.lastIndexOf('.')
@@ -85,10 +79,6 @@ actual fun moveFileOrDir(srcPath: String, destPath: String): Boolean {
         false
     }
 }
-
-actual fun zipFiles(sourcePaths: List<String>, targetPath: String): Boolean = false
-
-actual fun unzipFile(zipPath: String, destPath: String): Boolean = false
 
 actual fun statFile(path: String): DFile? {
     if (!NSFileManager.defaultManager.fileExistsAtPath(path)) return null

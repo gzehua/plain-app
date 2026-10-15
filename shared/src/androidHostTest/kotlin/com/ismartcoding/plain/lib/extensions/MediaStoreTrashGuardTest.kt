@@ -77,7 +77,7 @@ class MediaStoreTrashGuardTest {
     fun `the NAS trash tree never comes back to the phone`() {
         for (path in listOf(
             "lib/extensions/ContentResolver.kt",
-            "features/mediaactions/NativeMediaActions.kt",
+            "features/mediaactions/MediaProvider.kt",
             "platform/MediaStore.android.kt",
         )) {
             assertFalse(

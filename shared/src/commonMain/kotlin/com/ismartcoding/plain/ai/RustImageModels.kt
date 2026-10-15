@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.ai
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,14 +15,22 @@ internal object RustImageModels {
     private val state = MutableStateFlow(ImageModelsSnapshot())
     val snapshot = state.asStateFlow()
     suspend fun call(command: ImageModelsCommand) {
-        val response = RustContentApi.postJsonOrThrow("system/image-models", JsonHelper.jsonEncodeToElement<ImageModelsCommand>(command).jsonObject)
-        apply(response.getValue("result").jsonObject)
+        val mutation = when (command) {
+            ImageModelsCommand.Snapshot -> null
+            ImageModelsCommand.Restore -> "restoreImageSearch"
+            ImageModelsCommand.Enable -> "enableImageSearch"
+            ImageModelsCommand.Disable -> "disableImageSearch"
+            ImageModelsCommand.Cancel -> "cancelImageModelDownload"
+            ImageModelsCommand.Release -> "releaseImageModelMemory"
+        }
+        if (mutation != null) PlainRust.mainMutate(mutation)
+        refresh()
     }
-    suspend fun search(text: String, limit: Int): List<SemanticSearchResult> {
-        val response = RustContentApi.postJsonOrThrow("system/image-models", JsonHelper.jsonEncodeToElement<ImageModelsCommand>(ImageModelsCommand.Search(text, limit)).jsonObject)
-        return JsonHelper.jsonDecodeFromElement(response.getValue("items"))
+    suspend fun search(text: String, limit: Int): List<SemanticSearchResult> =
+        JsonHelper.jsonDecodeFromElement(PlainRust.mainQuery("semanticImageSearch(text: ${gql(text)}, maxResults: $limit) { imageId score }").getValue("semanticImageSearch"))
+    suspend fun refresh() {
+        apply(PlainRust.mainQuery("imageModelsState { version status downloadProgress errorMessage modelSize modelDir isIndexing totalImages indexedImages }").getValue("imageModelsState").jsonObject)
     }
-    suspend fun refresh() = call(ImageModelsCommand.Snapshot)
     fun apply(value: JsonObject) {
         val next = JsonHelper.jsonDecodeFromElement<ImageModelsSnapshot>(value)
         projectionLock.withLock {

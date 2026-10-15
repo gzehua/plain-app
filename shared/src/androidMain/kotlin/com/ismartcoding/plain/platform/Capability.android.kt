@@ -1,18 +1,17 @@
 package com.ismartcoding.plain.platform
 
 import android.os.Build
+import com.ismartcoding.plain.buildChannel
+import com.ismartcoding.plain.enums.AppChannelType
 
-actual fun getDeviceCapabilities(): List<Capability> =
-    Capability.entries
-        // MEDIA_SCAN is the NAS media-index scanner; phones don't have it.
-        .filter { it != Capability.MEDIA_SCAN }
-        .filter { feature ->
-            val minSdk = when (feature) {
-                // MediaStore trashed-state
-                Capability.MEDIA_TRASH -> Build.VERSION_CODES.R
-                // AudioPlaybackCapture
-                Capability.MIRROR_AUDIO -> Build.VERSION_CODES.Q
-                else -> 0
-            }
-            Build.VERSION.SDK_INT >= minSdk
-        }
+actual fun getDeviceCapabilities(): List<Capability> = Capability.entries.filter { capability ->
+    when (capability) {
+        Capability.MEDIA_SCAN, Capability.LAN_SHARE, Capability.DISK_MANAGER -> false
+        Capability.MEDIA_TRASH, Capability.MEDIA_FAVORITE -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+        Capability.MEDIA_MOVE, Capability.MIRROR_AUDIO -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+        Capability.PACKAGES, Capability.SMS, Capability.CALLS, Capability.NOTIFICATIONS, Capability.DONATION -> buildChannel != AppChannelType.GOOGLE.name
+        Capability.APP_UPDATES -> buildChannel == AppChannelType.GITHUB.name
+        Capability.IMAGE_EDITOR -> isDebugBuild()
+        else -> true
+    }
+}

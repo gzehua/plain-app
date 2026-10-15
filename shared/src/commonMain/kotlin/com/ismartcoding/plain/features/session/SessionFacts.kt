@@ -5,16 +5,16 @@ import kotlinx.serialization.SerialName
 
 @Serializable
 internal data class SessionFacts(
-    @SerialName("client_id") val clientId: String,
-    val name: String,
+    val clientId: String,
+    @SerialName("clientName") val name: String,
     val type: String,
     val token: String,
-    @SerialName("client_ip") val clientIp: String,
-    @SerialName("os_name") val osName: String,
-    @SerialName("os_version") val osVersion: String,
-    @SerialName("browser_name") val browserName: String,
-    @SerialName("browser_version") val browserVersion: String,
-    @SerialName("created_at") val createdAt: String,
-    @SerialName("updated_at") val updatedAt: String,
-    @SerialName("last_seen_at") val lastSeenAt: String?,
+    val clientIp: String,
+    val osName: String,
+    val osVersion: String,
+    val browserName: String,
+    val browserVersion: String,
+    val createdAt: String,
+    val updatedAt: String,
+    val lastSeenAt: String?,
 )

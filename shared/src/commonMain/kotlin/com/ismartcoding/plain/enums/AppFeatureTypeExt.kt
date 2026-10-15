@@ -1,48 +1,31 @@
 package com.ismartcoding.plain.enums
 
-import com.ismartcoding.plain.buildChannel
 import com.ismartcoding.plain.features.allGranted
-import com.ismartcoding.plain.platform.isAndroidOnly
-import com.ismartcoding.plain.platform.isDebugBuild
-import com.ismartcoding.plain.platform.isHuawei
-import com.ismartcoding.plain.platform.isQPlus
-import com.ismartcoding.plain.platform.isRPlus
+import com.ismartcoding.plain.platform.Capability
+import com.ismartcoding.plain.platform.getDeviceCapabilities
 
-fun AppFeatureType.has(): Boolean {
-    return when (this) {
-        AppFeatureType.APPS, AppFeatureType.SMS, AppFeatureType.CALLS, AppFeatureType.NOTIFICATIONS, AppFeatureType.DONATION -> {
-            isAndroidOnly() &&  buildChannel != AppChannelType.GOOGLE.name
-        }
-
-        AppFeatureType.MIRROR_AUDIO -> {
-            isQPlus()
-        }
-
-        AppFeatureType.MEDIA_TRASH -> {
-            isRPlus()
-        }
-
-        AppFeatureType.CHECK_UPDATES -> {
-            buildChannel == AppChannelType.GITHUB.name
-        }
-
-        AppFeatureType.IMAGE_EDITOR -> {
-            isDebugBuild()
-        }
-
-        AppFeatureType.MEDIA_FAVORITE -> {
-            isRPlus()// && !isHuawei()
-        }
-
-        else -> true
-    }
-}
-
-fun AppFeatureType.hasPermission(): Boolean {
-    val p = getPermission()
-    if (p != null) {
-        return allGranted(p.permissions)
+private fun AppFeatureType.requiredCapability(): Capability? = when (this) {
+        AppFeatureType.APPS -> Capability.PACKAGES
+        AppFeatureType.SMS -> Capability.SMS
+        AppFeatureType.CALLS -> Capability.CALLS
+        AppFeatureType.CONTACTS -> Capability.CONTACTS
+        AppFeatureType.NOTIFICATIONS -> Capability.NOTIFICATIONS
+        AppFeatureType.MIRROR_AUDIO -> Capability.MIRROR_AUDIO
+        AppFeatureType.MEDIA_TRASH -> Capability.MEDIA_TRASH
+        AppFeatureType.MEDIA_DELETE -> Capability.MEDIA_DELETE
+        AppFeatureType.MEDIA_MOVE -> Capability.MEDIA_MOVE
+        AppFeatureType.MEDIA_FAVORITE -> Capability.MEDIA_FAVORITE
+        AppFeatureType.IMAGE_EDITOR -> Capability.IMAGE_EDITOR
+        AppFeatureType.NOTES -> Capability.NOTES
+        AppFeatureType.FEEDS -> Capability.FEEDS
+        AppFeatureType.POMODORO_TIMER -> Capability.POMODORO
+        AppFeatureType.CHECK_UPDATES -> Capability.APP_UPDATES
+        AppFeatureType.DONATION -> Capability.DONATION
+        else -> null
     }
 
-    return true
-}
+fun AppFeatureType.has(): Boolean = requiredCapability()?.let { it in getDeviceCapabilities() } ?: true
+
+internal fun AppFeatureType.has(capabilities: Collection<Capability>): Boolean = requiredCapability()?.let { it in capabilities } ?: true
+
+fun AppFeatureType.hasPermission(): Boolean = getPermission()?.let { allGranted(it.permissions) } ?: true

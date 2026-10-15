@@ -16,7 +16,6 @@ import com.ismartcoding.plain.extensions.toFile
 import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.features.file.toFileSortBy
-import com.ismartcoding.plain.features.system.RustSystemProviders
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.helpers.QueryHelper
 
@@ -36,21 +35,15 @@ object FileMediaStoreHelper : BaseContentHelper() {
         )
     }
 
-    override suspend fun buildWhereAsync(query: String): ContentWhere {
-        val parentPath = QueryHelper.parseAsync(query).firstOrNull { it.name == "parent" }?.value
-        val parentId = parentPath?.let { getIdByPathAsync(appContext, it) ?: "-1" }
-        return RustSystemProviders.providerWhere(DataType.FILE, query, parentId)
-    }
-
     suspend fun searchAsync(
         context: Context,
-        query: String,
+        where: ContentWhere,
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
     ): List<DFile> = withIO {
         val items = context.contentResolver.getPagingCursor(
-            uriExternal, getProjection(), buildWhereAsync(query),
+            uriExternal, getProjection(), where,
             limit, offset, sortBy.toFileSortBy()
         )?.map { cursor, cache ->
             cursor.toFile(cache)
@@ -85,7 +78,7 @@ object FileMediaStoreHelper : BaseContentHelper() {
         return counts
     }
 
-    private fun getIdByPathAsync(context: Context, path: String): String? {
+    fun getIdByPathAsync(context: Context, path: String): String? {
         return context.contentResolver
             .queryCursor(uriExternal, arrayOf(MediaStore.Files.FileColumns._ID), "${MediaStore.Files.FileColumns.DATA} = ?", arrayOf(path))?.find { cursor, cache ->
                 cursor.getStringValue(MediaStore.Files.FileColumns._ID, cache)

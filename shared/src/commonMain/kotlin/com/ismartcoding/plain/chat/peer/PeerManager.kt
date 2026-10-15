@@ -1,8 +1,6 @@
 package com.ismartcoding.plain.chat.peer
 
 import com.ismartcoding.plain.chat.ChatCacher
-import com.ismartcoding.plain.chat.models.PeerRecord
-import com.ismartcoding.plain.enums.DeviceType
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.withIO
 
@@ -20,18 +18,6 @@ object PeerManager {
         PeerCacher.load()
         LogCat.d("Device unpaired: $peerId")
         true
-    }
-
-    suspend fun applyDeviceDiscovered(
-        deviceId: String,
-        ips: List<String>,
-        port: Int,
-        name: String,
-        deviceType: DeviceType,
-    ): PeerRecord? {
-        val peer = RustPeerStore.discovered(deviceId, ips, port, name, deviceType) ?: return null
-        PeerCacher.load()
-        return peer
     }
 
     fun setOnlineStatus(peerId: String, online: Boolean) {

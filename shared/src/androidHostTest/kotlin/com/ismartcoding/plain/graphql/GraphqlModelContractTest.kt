@@ -105,9 +105,11 @@ class GraphqlModelContractTest {
             "UserSettings" to com.ismartcoding.plain.graphql.models.UserSettings.serializer().descriptor,
             "UserSettingsInput" to com.ismartcoding.plain.graphql.models.UserSettingsInput.serializer().descriptor,
         )
-        val blocks = Regex("""(?:type|input) (\w+)(?:\s+implements\s+\w+)?\s*\{([^}]+)}""").findAll(sdl)
+        val schemaWithoutDescriptions = Regex("\"\"\"[\\s\\S]*?\"\"\"").replace(sdl, "")
+        val blocks = Regex("""(?:type|input) (\w+)(?:\s+implements\s+\w+)?\s*\{([^}]+)}""").findAll(schemaWithoutDescriptions)
             .associate { it.groupValues[1] to it.groupValues[2] }
         val lazyTags = setOf("Audio", "Call", "Contact", "Sms", "Doc", "Image", "Video", "Note", "FeedEntry")
+        val mismatches = mutableListOf<String>()
         models.forEach { (name, descriptor) ->
             val fields = Regex("""(\w+)\s*:\s*([\w!\[\]]+)""").findAll(blocks.getValue(name))
                 .associate { it.groupValues[1] to !it.groupValues[2].endsWith("!") }
@@ -118,7 +120,9 @@ class GraphqlModelContractTest {
                 assertEquals(false, fields.getValue("tags"), "$name.tags remains a non-null GraphQL field")
                 assertEquals(false, actual.containsKey("tags"), "$name.tags must be resolved separately")
             }
-            assertEquals(fields.filterKeys { it != "tags" || name !in lazyTags }, actual, name)
+            val expected = fields.filterKeys { it != "tags" || name !in lazyTags }
+            if (expected != actual) mismatches.add("$name expected=$expected actual=$actual")
         }
+        assertEquals(emptyList<String>(), mismatches)
     }
 }

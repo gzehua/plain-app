@@ -1,12 +1,5 @@
 package com.ismartcoding.plain.features.file
 
-/**
- * Pure-string helpers for navigating zip virtual paths of the form
- * `/path/to/archive.zip!zip!/internal/sub/path/`. The archive-scanning and
- * extraction operations are platform-specific and live in `platform/` as
- * [com.ismartcoding.plain.platform.listZipEntries] and
- * [com.ismartcoding.plain.platform.extractZipEntryToCache].
- */
 object ZipBrowserHelper {
     const val ZIP_SEPARATOR = "!zip!/"
 

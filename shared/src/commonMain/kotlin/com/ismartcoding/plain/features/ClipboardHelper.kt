@@ -20,14 +20,14 @@ object ClipboardHelper {
 
     suspend fun record(text: String, source: String = "", label: String = "", sensitive: Boolean = false): ClipboardItem? {
         val input = "{ text: ${gql(text)}, source: ${gql(source)}, label: ${gql(label)}, sensitive: $sensitive }"
-        val result = PlainRust.privateMutate("recordClipboard(input: $input) { inserted item { $FIELDS } }")
+        val result = PlainRust.mainMutate("recordClipboard(input: $input) { inserted item { $FIELDS } }")
             .getValue("recordClipboard").jsonObject
         return if (result.getValue("inserted").jsonPrimitive.boolean) result.getValue("item").clipboard() else null
     }
 
     suspend fun deleteByIds(ids: List<String>): Int {
         if (ids.isEmpty()) return 0
-        return PlainRust.privateMutate("deleteClipboardItemsByIds(ids: ${gqlIds(ids)}) { affectedCount }")
+        return PlainRust.mainMutate("deleteClipboardItemsByIds(ids: ${gqlIds(ids)}) { affectedCount }")
             .getValue("deleteClipboardItemsByIds").jsonObject.getValue("affectedCount").jsonPrimitive.int
     }
 

@@ -6,9 +6,7 @@ internal actual object RustCoreBridge {
     private external fun stopNative(): String
     actual fun start(databasePath: String, token: String, configJson: String): String = startNative(databasePath, token, configJson)
     private external fun graphqlNative(request: String): String
-    private external fun hostGraphqlNative(request: String): String
     actual fun graphql(request: String): String = graphqlNative(request)
-    actual fun hostGraphql(request: String): String = hostGraphqlNative(request)
     private external fun nextNative(stream: String): String
     private external fun sendNative(action: String, message: String, bytes: ByteArray): String
     actual fun next(stream: String): String = nextNative(stream)

@@ -11,7 +11,9 @@ actual suspend fun handleImageIndexHost(method: String, params: JsonObject): Jso
     "imageIndexDecode" -> JsonHelper.jsonEncodeToElement(IosImageIndexCatalog.decode(params.string("id")))
     "imageIndexRelease" -> JsonHelper.jsonEncodeToElement(IosImageIndexCatalog.release(params.string("path")))
     "imageIndexVerify" -> { IosImageIndexCatalog.verify(params.string("revision")); JsonPrimitive(true) }
-    "imageIndexEnd", "imageIndexProgress" -> JsonPrimitive(true)
+    "imageIndexEnd" -> JsonPrimitive(true)
     else -> error("Unknown image index host operation: $method")
 }
 actual suspend fun disconnectImageIndexHost() = IosImageIndexCatalog.observe(false)
+
+actual suspend fun applyImageIndexStatus(status: JsonObject) = Unit

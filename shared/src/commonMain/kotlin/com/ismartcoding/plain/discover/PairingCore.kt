@@ -11,7 +11,6 @@ import com.ismartcoding.plain.events.HPairingSuccessEvent
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.models.NearbyViewModel
-import kotlinx.serialization.json.jsonObject
 
 object PairingCore {
 
@@ -36,14 +35,12 @@ object PairingCore {
 
     // ---- Initiator (send request / receive response) -----------------------
 
-    suspend fun handlePairResponse(response: DPairingResponse, senderIp: String): Boolean? {
-        val result = RustPairingRuntime.complete(response, senderIp)
-        if (result is kotlinx.serialization.json.JsonNull) return null
-        return result.jsonObject.getValue("peer") !is kotlinx.serialization.json.JsonNull
+    suspend fun handlePairResponse(response: DPairingResponse) {
+        RustPairingRuntime.complete(response)
     }
 
-    suspend fun handlePairRequest(request: DPairingRequest, senderAddress: String, isBle: Boolean) {
-        RustPairingRuntime.receiveRequest(request, senderAddress, isBle)
+    suspend fun handlePairRequest(request: DPairingRequest, senderAddress: String) {
+        RustPairingRuntime.receiveRequest(request, senderAddress)
     }
 
     suspend fun handlePairCancel(cancel: DPairingCancel) { RustPairingRuntime.receiveCancel(cancel) }

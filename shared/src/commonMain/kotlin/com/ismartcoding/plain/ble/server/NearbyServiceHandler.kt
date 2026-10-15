@@ -30,12 +30,12 @@ class NearbyServiceHandler : BleServiceHandler {
             NearbyMessageType.DISCOVER_REPLY -> null
 
             NearbyMessageType.PAIR_REQUEST -> {
-                PairingCore.handlePairRequest(JsonHelper.jsonDecode(payload), clientMac, isBle = true)
+                PairingCore.handlePairRequest(JsonHelper.jsonDecode(payload), clientMac)
                 "1"
             }
 
             NearbyMessageType.PAIR_RESPONSE -> {
-                PairingCore.handlePairResponse(JsonHelper.jsonDecode(payload), senderIp = "")
+                PairingCore.handlePairResponse(JsonHelper.jsonDecode(payload))
                 "1"
             }
 

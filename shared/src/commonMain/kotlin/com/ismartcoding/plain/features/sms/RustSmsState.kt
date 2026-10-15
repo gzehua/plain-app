@@ -1,23 +1,22 @@
 package com.ismartcoding.plain.features.sms
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.db.DArchivedConversation
 import kotlin.time.Instant
 import kotlinx.serialization.json.*
 
 object RustSmsState {
-    private suspend fun call(action: String, build: JsonObjectBuilder.() -> Unit = {}): JsonObject =
-        RustContentApi.postJsonOrThrow("system/sms-state", buildJsonObject { put("action", action); build() })
+    suspend fun archives(): List<DArchivedConversation> =
+        PlainRust.mainQuery("smsArchiveRecords { conversationId archivedAt }").getValue("smsArchiveRecords").jsonArray.map {
+            val row = it.jsonObject
+            DArchivedConversation(row.getValue("conversationId").jsonPrimitive.content,
+                Instant.parse(row.getValue("archivedAt").jsonPrimitive.content))
+        }
 
-    suspend fun archives(): List<DArchivedConversation> = call("archives").getValue("items").jsonArray.map {
-        val row = it.jsonObject
-        DArchivedConversation(row.getValue("conversation_id").jsonPrimitive.content,
-            Instant.parse(row.getValue("archived_at").jsonPrimitive.content))
+    suspend fun archive(id: String, date: Instant) {
+        PlainRust.mainMutate("archiveSmsConversation(id: ${gql(id)}, date: ${gql(date.toString())})")
     }
-
-    suspend fun archive(id: String, date: Instant) { call("archive") { put("id", id); put("date", date.toString()) } }
-    suspend fun unarchive(id: String) { call("unarchive") { put("id", id) } }
-    suspend fun trashed(): Set<String> = call("trashed").getValue("ids").jsonArray.map { it.jsonPrimitive.content }.toSet()
-    suspend fun trash(ids: Collection<String>): Int = call("trash") { put("ids", JsonArray(ids.map(::JsonPrimitive))) }.getValue("count").jsonPrimitive.int
-    suspend fun restore(ids: Collection<String>): Int = call("restore") { put("ids", JsonArray(ids.map(::JsonPrimitive))) }.getValue("count").jsonPrimitive.int
+    suspend fun unarchive(id: String) { PlainRust.mainMutate("unarchiveSmsConversation(id: ${gql(id)})") }
+    suspend fun trashed(): Set<String> = PlainRust.mainQuery("trashedSmsIds").getValue("trashedSmsIds").jsonArray.map { it.jsonPrimitive.content }.toSet()
 }

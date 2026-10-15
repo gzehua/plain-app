@@ -50,7 +50,7 @@ class TrashCascadeGuardTest {
             assertTrue(functionBody(bridge,name).contains("MediaActionHelper.run"), "$name must route through Rust")
         }
         val helper = source("shared/src/commonMain/kotlin/com/ismartcoding/plain/features/mediaactions/MediaActionHelper.kt")
-        assertTrue(helper.contains("mediaHostAction"))
+        assertTrue(helper.contains("mediaAction"))
         assertTrue(helper.contains("failedIds"))
     }
 

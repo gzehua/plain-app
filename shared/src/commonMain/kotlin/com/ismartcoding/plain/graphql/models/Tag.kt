@@ -7,4 +7,5 @@ data class Tag(
     var id: String,
     var name: String,
     var count: Int,
+    var type: Int = 0,
 )

@@ -30,21 +30,19 @@ class MdnsRuntimeRustHttpTest {
     @OptIn(ExperimentalUuidApi::class)
     @Test
     fun rustControlsReceiverAndScannerWithActualAndroidMulticastPermission() = runBlocking {
-        suspend fun call(action: String) = RustContentApi.postJsonOrThrow("chat/mdns", buildJsonObject {
-            put("action", action)
-        }).getValue("result").jsonObject
+        suspend fun call(action: String) = if (action == "snapshot") RustMdnsRuntime.snapshot() else RustMdnsRuntime.control(action)
         val before = call("snapshot")
         val debugToken = Uuid.random().toString()
         try {
             suspend fun discovering(): Boolean =
-                RustContentApi.query("isDiscovering")["data"]!!.jsonObject["isDiscovering"]!!.jsonPrimitive.boolean
-            assertEquals(true, RustContentApi.mutate("startDiscovery")["data"]!!.jsonObject["startDiscovery"]!!.jsonPrimitive.boolean)
+                RustContentApi.query("isDiscovering").getValue("isDiscovering").jsonPrimitive.boolean
+            assertEquals(true, RustContentApi.mutate("startDiscovery").getValue("startDiscovery").jsonPrimitive.boolean)
             assertTrue(discovering())
             val started = call("snapshot")
             assertTrue(started.getValue("receiver").jsonPrimitive.boolean)
             assertTrue(started.getValue("scanning").jsonPrimitive.boolean)
             assertTrue(started.getValue("revision").jsonPrimitive.long > before.getValue("revision").jsonPrimitive.long)
-            assertEquals(true, RustContentApi.mutate("stopDiscovery")["data"]!!.jsonObject["stopDiscovery"]!!.jsonPrimitive.boolean)
+            assertEquals(true, RustContentApi.mutate("stopDiscovery").getValue("stopDiscovery").jsonPrimitive.boolean)
             assertFalse(discovering())
             val stopped = call("snapshot")
             assertFalse(stopped.getValue("scanning").jsonPrimitive.boolean)

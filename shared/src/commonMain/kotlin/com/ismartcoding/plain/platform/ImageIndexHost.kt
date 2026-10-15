@@ -5,3 +5,5 @@ import kotlinx.serialization.json.JsonObject
 
 expect suspend fun handleImageIndexHost(method: String, params: JsonObject): JsonElement
 expect suspend fun disconnectImageIndexHost()
+
+expect suspend fun applyImageIndexStatus(status: JsonObject)

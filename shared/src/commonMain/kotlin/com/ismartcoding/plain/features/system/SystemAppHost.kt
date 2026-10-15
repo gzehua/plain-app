@@ -41,46 +41,20 @@ internal object SystemAppHost {
             sendEvent(com.ismartcoding.plain.events.HOpenWebSettingsEvent(feature))
             JsonHelper.jsonEncodeToElement(true)
         }
-        "systemDeviceInfoFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.getDeviceInfo())
-        "systemDeviceStatusFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.getDeviceStatus())
+        "systemIpv4Address" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.getDeviceIP4())
+        "systemProperties" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.readSystemProperties(
+            params.getValue("names").jsonArray.map { it.jsonPrimitive.content },
+        ))
+        "systemMemoryAvailable" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.readMemoryAvailable())
+        "systemBatterySample" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.readBatterySample())
+        "systemCapabilities" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.getDeviceCapabilities().map { it.name })
         "systemAppFacts" -> appFacts()
-        "systemAppLogFacts" -> appLogFacts(params)
-        "systemClearAppLogs" -> {
-            com.ismartcoding.plain.platform.clearLatestLogFile()
-            JsonHelper.jsonEncodeToElement(true)
-        }
+        "systemLogPath" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.getLatestLogFilePath())
         "systemRelaunchApp" -> {
             com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.events.RestartAppEvent())
             JsonHelper.jsonEncodeToElement(true)
         }
         else -> error("Unsupported provider operation")
-    }
-
-    /** Log lines, newest first. A non-blank `text` filters the whole buffer
-     * before paging, so a search cannot be cut short by the page size; Rust
-     * passes `pathOnly` when it wants the log file path instead. */
-    private suspend fun appLogFacts(params: JsonObject): JsonElement {
-        if (params["pathOnly"]?.jsonPrimitive?.boolean == true) {
-            return JsonHelper.jsonEncodeToElement(AppLogFacts(
-                path = com.ismartcoding.plain.platform.getLatestLogFilePath(),
-                lines = emptyList(),
-            ))
-        }
-        val offset = params.getValue("offset").jsonPrimitive.int
-        val limit = params.getValue("limit").jsonPrimitive.int
-        val text = params.getValue("query").jsonPrimitive.content.trim()
-        val lines = if (text.isEmpty()) {
-            com.ismartcoding.plain.platform.readLogLinesNewestFirst(offset, limit)
-        } else {
-            com.ismartcoding.plain.platform.readLogLinesNewestFirst(0, Int.MAX_VALUE)
-                .filter { it.contains(text, ignoreCase = true) }
-                .drop(offset.coerceAtLeast(0))
-                .take(limit.coerceAtLeast(0))
-        }
-        return JsonHelper.jsonEncodeToElement(AppLogFacts(
-            path = com.ismartcoding.plain.platform.getLatestLogFilePath(),
-            lines = lines,
-        ))
     }
 
     /** The `App` contract row. Capabilities and permissions are named rather

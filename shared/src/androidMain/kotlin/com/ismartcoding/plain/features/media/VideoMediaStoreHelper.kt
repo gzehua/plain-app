@@ -61,7 +61,7 @@ object VideoMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
-    ): List<DVideo> = searchAsync(context, com.ismartcoding.plain.features.system.RustSystemProviders.providerWhere(com.ismartcoding.plain.enums.DataType.VIDEO, query), limit, offset, sortBy)
+    ): List<DVideo> = com.ismartcoding.plain.features.system.RustMediaQuery.rows(com.ismartcoding.plain.enums.DataType.VIDEO, query, limit, offset, sortBy).map { it as DVideo }
 
     suspend fun searchAsync(
         context: Context,
@@ -113,15 +113,7 @@ object VideoMediaStoreHelper : BaseMediaContentHelper() {
         videos
     }
 
-    suspend fun getTagRelationStubsAsync(
-        context: Context,
-        query: String,
-    ): List<TagRelationStub> = withIO {
-        return@withIO getSearchCursorAsync(context, query)?.map { cursor, cache ->
-            val id = cursor.getStringValue(MediaStore.Video.Media._ID, cache)
-            val title = cursor.getStringValue(MediaStore.Video.Media.TITLE, cache)
-            val size = cursor.getLongValue(MediaStore.Video.Media.SIZE, cache)
-            TagRelationStub(id, title, size)
-        } ?: emptyList()
-    }
+    suspend fun getTagRelationStubsAsync(context: Context, query: String): List<TagRelationStub> =
+        com.ismartcoding.plain.features.system.RustMediaQuery.tagStubs(com.ismartcoding.plain.enums.DataType.VIDEO, query)
+
 }

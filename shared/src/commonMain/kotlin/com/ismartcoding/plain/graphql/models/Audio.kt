@@ -16,4 +16,5 @@ data class Audio(
     override var createdAt: Instant,
     override var updatedAt: Instant,
     var isFavorite: Boolean,
+    var albumId: String = "",
 ) : MediaItem

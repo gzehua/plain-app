@@ -26,7 +26,7 @@ import com.ismartcoding.plain.platform.moveFileOrDir
 import com.ismartcoding.plain.data.DMediaBucketItemFact
 import com.ismartcoding.plain.enums.MediaType
 import com.ismartcoding.plain.enums.DataType
-import com.ismartcoding.plain.features.system.RustSystemProviders
+import com.ismartcoding.plain.features.system.RustMediaQuery
 import java.io.File
 
 abstract class BaseMediaContentHelper {
@@ -39,25 +39,11 @@ abstract class BaseMediaContentHelper {
         return Uri.withAppendedPath(uriExternal, id)
     }
 
-    suspend fun countAsync(context: Context, query: String): Int = withIO {
-        buildWheres(query).sumOf { where ->
-            context.contentResolver.count(uriExternal, where)
-        }
-    }
+    suspend fun countAsync(context: Context, query: String): Int = RustMediaQuery.count(providerType, query)
 
     suspend fun countAsync(context: Context, where: ContentWhere): Int = withIO {
         context.contentResolver.count(uriExternal, where)
     }
-
-    private suspend fun buildWhere(query: String): ContentWhere {
-        return RustSystemProviders.providerWhere(providerType, query)
-    }
-
-    private suspend fun buildWheres(query: String): List<ContentWhere> =
-        RustSystemProviders.providerWheres(providerType, query)
-
-    suspend fun getPagingCursorAsync(context: Context, query: String, limit: Int, offset: Int, sortBy: SortBy): Cursor? =
-        getPagingCursorAsync(context, buildWhere(query), limit, offset, sortBy)
 
     suspend fun getPagingCursorAsync(context: Context, where: ContentWhere, limit: Int, offset: Int, sortBy: SortBy): Cursor? = withIO {
         context.contentResolver.getPagingCursor(
@@ -70,7 +56,7 @@ abstract class BaseMediaContentHelper {
         )
     }
 
-    suspend fun getIdsAsync(context: Context, query: String): Set<String> = getIdsAsync(context, buildWhere(query))
+    suspend fun getIdsAsync(context: Context, query: String): Set<String> = RustMediaQuery.ids(providerType, query)
 
     suspend fun getIdsAsync(context: Context, where: ContentWhere): Set<String> = withIO {
         context.contentResolver.getSearchCursor(
@@ -94,25 +80,7 @@ abstract class BaseMediaContentHelper {
         }?.any { it } == true
     }
 
-    suspend fun getTrashedIdsAsync(
-        context: Context,
-        query: String,
-    ): Set<String> = withIO {
-        context.contentResolver.getSearchCursor(
-            uriExternal, arrayOf(BaseColumns._ID), buildWhere(query).apply { trash = true }
-        )?.map { cursor, cache ->
-            cursor.getStringValue(BaseColumns._ID, cache)
-        }?.toSet() ?: emptySet()
-    }
-
-    protected suspend fun getSearchCursorAsync(
-        context: Context,
-        query: String,
-    ): Cursor? = withIO {
-        context.contentResolver.getSearchCursor(
-            uriExternal, getProjection(), buildWhere(query)
-        )
-    }
+    suspend fun getTrashedIdsAsync(context: Context, query: String): Set<String> = RustMediaQuery.ids(providerType, query, fromTrash = true)
 
     fun deleteRecordsAndFilesByIdsAsync(
         context: Context,

@@ -12,15 +12,7 @@ import kotlinx.cinterop.useContents
 
 actual suspend fun getMediaBuckets(dataType: DataType): List<DMediaBucket> = emptyList()
 
-actual suspend fun searchMedia(
-    dataType: DataType,
-    query: String,
-    limit: Int,
-    offset: Int,
-    sortBy: FileSortBy,
-): List<IData> = emptyList()
 
-actual suspend fun countMedia(dataType: DataType, query: String): Int = 0
 
 actual suspend fun trashMedia(dataType: DataType, ids: Set<String>) {
     com.ismartcoding.plain.features.mediaactions.MediaActionHelper.run(dataType,com.ismartcoding.plain.features.mediaactions.MediaAction.TRASH,ids)
@@ -37,7 +29,6 @@ actual suspend fun deleteMedia(dataType: DataType, ids: Set<String>, fromTrash: 
 actual suspend fun moveMedia(dataType: DataType, ids: Set<String>, destDir: String): Boolean =
     com.ismartcoding.plain.features.mediaactions.MediaActionHelper.run(dataType,com.ismartcoding.plain.features.mediaactions.MediaAction.MOVE,ids,destDir=destDir) == ids.size
 
-actual suspend fun getDocExtGroups(query: String): List<Pair<String, Int>> = emptyList()
 
 actual suspend fun searchImagesCombined(
     queryText: String,
@@ -53,13 +44,10 @@ actual fun enqueueRemoveImageIndex(ids: Set<String>) {}
 
 actual fun getMediaItemUriString(dataType: DataType, id: String): String = ""
 
-actual suspend fun getMediaIds(dataType: DataType, query: String): Set<String> = emptySet()
 
-actual suspend fun getTrashedMediaIds(dataType: DataType, query: String): Set<String> = emptySet()
 
 actual suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set<String> = emptySet()
 
-actual suspend fun getMediaTagRelationStubs(dataType: DataType, query: String): List<TagRelationStub> = emptyList()
 
 actual suspend fun countImagesCombined(queryText: String, extraQuery: String): Int = 0
 
@@ -81,11 +69,8 @@ actual suspend fun getSmsConversationDate(threadId: String): Long? = null
 
 actual suspend fun getSmsAllCounts(): DSmsCounts = DSmsCounts(0, 0, 0, 0)
 
-actual suspend fun trashSms(query: String): Int = 0
-
-actual suspend fun restoreSms(query: String): Int = 0
-
-actual suspend fun deleteSms(query: String): Int = 0
+actual suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.features.sms.SmsDeletionReceipt =
+    throw UnsupportedOperationException("SMS provider is unavailable")
 
 actual fun sendSmsText(
     number: String,

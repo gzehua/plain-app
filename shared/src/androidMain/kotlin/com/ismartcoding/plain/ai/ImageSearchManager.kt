@@ -14,5 +14,5 @@ object ImageSearchManager {
     suspend fun disableAsync() { RustImageModels.call(ImageModelsCommand.Disable) }
     fun cancelDownload() { coIO { RustImageModels.call(ImageModelsCommand.Cancel) } }
     suspend fun search(query: String, limit: Int = 50): List<SemanticSearchResult> = RustImageModels.search(query,limit)
-    fun setIndexError(message: String) { coIO { RustImageModels.call(ImageModelsCommand.Error(message)) } }
+    fun setIndexError(message: String) { coIO { com.ismartcoding.plain.rust.PlainRust.publish(com.ismartcoding.plain.events.HostEvent(com.ismartcoding.plain.events.EventType.IMAGE_INDEX_ERROR_REPORTED, com.ismartcoding.plain.lib.JsonHelper.jsonEncode(message))) } }
 }

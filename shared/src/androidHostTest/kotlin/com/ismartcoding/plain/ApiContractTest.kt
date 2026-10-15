@@ -7,7 +7,7 @@ import kotlin.test.fail
 /**
  * Locks the wire contract of the public GraphQL schema.
  *
- * The schema itself is built by Rust (`plain-rs/src/content_api/public_schema.rs`),
+ * The schema itself is built by Rust (`plain-server/src/graphql/schemas/public.rs`),
  * which prints its own SDL snapshot and guards it there. This test enforces the
  * structural conventions on the committed
  * snapshot `shared/apitest/schema.graphqls`, so new fields/operations cannot
@@ -35,6 +35,9 @@ class ApiContractTest {
         "albumFileId", // Audio.albumFileId — album-art display fileId token
         "AppFile", // AppFile.id — content-addressable app file store fileId
         "fileId", // chunk-flow args (uploadedChunks/mergeStatus/deleteChunks/mergeChunks/mergeAppFileChunks)
+        "runtimeId",
+        "shortId",
+        "clientIds",
     )
 
     // Bulk destructive/modify mutations that must return ActionResult.
@@ -65,10 +68,10 @@ class ApiContractTest {
         // Counted over all operation fields, not just the ones taking arguments.
         val queries = operationFieldNamesIn("Query")
         val mutations = operationFieldNamesIn("Mutation")
-        if (queries.size != 97 || mutations.size != 137) {
+        if (queries.size != 174 || mutations.size != 261) {
             fail(
                 "shared/apitest/schema.graphqls declares ${queries.size} Query / ${mutations.size} " +
-                    "Mutation operations — the contract has 97 / 137. The snapshot looks truncated or " +
+                    "Mutation operations — the contract has 174 / 261. The snapshot looks truncated or " +
                     "drifted; every check in this class reads it, so they would pass on an empty file.",
             )
         }
@@ -139,6 +142,7 @@ class ApiContractTest {
     fun paginatedListsAlwaysPairOffsetLimitAndQuery() {
         forEachQuerySignature { signature ->
             if (signature.contains("offset")) {
+                if (Regex("""(?:offset|limit|query):[^,)]*=""").containsMatchIn(signature)) fail("Query $signature — pagination arguments must not have defaults.")
                 if (!signature.contains("offset: Int!")) fail("Query $signature — offset must be Int!.")
                 if (!signature.contains("limit: Int!")) fail("Query $signature — paginated query must declare limit: Int!.")
                 // dbTableRows is the debug DB browser — deliberately exempt (2026-09-20 user decision: debug APIs stay as-is).

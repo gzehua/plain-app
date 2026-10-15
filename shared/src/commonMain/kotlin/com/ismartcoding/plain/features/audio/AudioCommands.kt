@@ -27,17 +27,17 @@ object AudioCommands {
         check(requests.trySend(request).isSuccess) { "Audio command capacity exceeded" }
     }
     suspend fun command(action: String, positionMs: Long = 0, speed: Float = 1f) {
-        PlainRust.privateMutate("audioCommand(action: $action, positionMs: $positionMs, speed: $speed) { path positionMs revision }")
+        PlainRust.mainMutate("audioCommand(action: $action, positionMs: $positionMs, speed: $speed) { path positionMs revision }")
     }
     fun submit(action: String, positionMs: Long = 0, speed: Float = 1f) = submit { command(action, positionMs, speed) }
     fun playTrack(audio: AudioItem) = submit {
         if (!audio.mediaId.isNullOrEmpty()) {
-            PlainRust.privateMutate("audioPlayTrack(mediaId: ${gql(audio.mediaId!!)}) { path positionMs revision }")
+            PlainRust.mainMutate("audioPlayTrack(mediaId: ${gql(audio.mediaId!!)}) { path positionMs revision }")
         } else {
-            PlainRust.privateMutate("audioPlayPath(path: ${gql(audio.path)}) { path positionMs revision }")
+            PlainRust.mainMutate("audioPlayPath(path: ${gql(audio.path)}) { path positionMs revision }")
         }
     }
     fun playPath(path: String) = submit {
-        PlainRust.privateMutate("audioPlayPath(path: ${gql(path)}) { path positionMs revision }")
+        PlainRust.mainMutate("audioPlayPath(path: ${gql(path)}) { path positionMs revision }")
     }
 }

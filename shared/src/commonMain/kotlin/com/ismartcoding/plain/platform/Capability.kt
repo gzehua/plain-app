@@ -1,12 +1,13 @@
 package com.ismartcoding.plain.platform
 
-/**
- * Capabilities the device declares about itself; clients gate UI on these
- * without knowing anything about the device type or OS version. Media/file
- * domains are always present and therefore not listed.
- */
 enum class Capability {
     MEDIA_TRASH,
+    MEDIA_DELETE,
+    MEDIA_MOVE,
+    MEDIA_FAVORITE,
+    APP_UPDATES,
+    DONATION,
+
     MIRROR_AUDIO,
     DOC_PREVIEW,
     IMAGE_SEARCH,
@@ -23,6 +24,8 @@ enum class Capability {
     NOTIFICATIONS,
     CLIPBOARD,
     POMODORO,
+    LAN_SHARE,
+    DISK_MANAGER,
 }
 
 /**

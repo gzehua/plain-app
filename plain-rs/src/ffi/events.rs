@@ -47,18 +47,20 @@ fn next(stream: &str) -> Result<String, String> {
     })
 }
 fn send(action: &str, message: &str, bytes: Vec<u8>) -> Result<(), String> {
-    let (_, bridge) = bridge()?;
+    let (runtime, bridge) = bridge()?;
     match action {
         "reply" => bridge.reply(serde_json::from_str(message).map_err(|e| e.to_string())?),
         "text" => {
             let value: serde_json::Value =
                 serde_json::from_str(message).map_err(|e| e.to_string())?;
-            bridge.publish_text(
-                value["type"].as_str().ok_or("Missing event type")?,
-                value["payload"]
-                    .as_str()
-                    .ok_or("Missing event payload")?
-                    .into(),
+            runtime.block_on(
+                bridge.publish_text(
+                    value["type"].as_str().ok_or("Missing event type")?,
+                    value["payload"]
+                        .as_str()
+                        .ok_or("Missing event payload")?
+                        .into(),
+                ),
             )
         }
         "binary" => bridge.publish_binary(message, bytes),

@@ -78,7 +78,7 @@ fun <T : IData> MediaFilesSelectModeBottomActions(
                         vm.restore(tagsVM, dragSelectState.selectedIds.toSet())
                         dragSelectState.exitSelectMode()
                     }
-                    IconTextSmallButtonDelete {
+                    if (AppFeatureType.MEDIA_DELETE.has()) IconTextSmallButtonDelete {
                         scope.launch {
                             confirmActionAsync(
                                 Res.string.delete,
@@ -97,7 +97,7 @@ fun <T : IData> MediaFilesSelectModeBottomActions(
                         dragSelectState.exitSelectMode()
                     }
                 }
-            } else {
+            } else if (AppFeatureType.MEDIA_DELETE.has()) {
                 IconTextSmallButtonDelete {
                     scope.launch {
                         confirmActionAsync(

@@ -14,4 +14,8 @@ data class Image(
     override var updatedAt: Instant,
     var takenAt: Instant?,
     var isFavorite: Boolean,
+    var durationMs: Long = 0,
+    var width: Int = 0,
+    var height: Int = 0,
+    var rotation: Int = 0,
 ) : MediaItem

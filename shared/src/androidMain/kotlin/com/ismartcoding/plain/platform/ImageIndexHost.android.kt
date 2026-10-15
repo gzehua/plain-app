@@ -18,8 +18,9 @@ actual suspend fun handleImageIndexHost(method: String, params: JsonObject): Jso
         "imageIndexRelease" -> JsonHelper.jsonEncodeToElement(ImageIndexDecode.release(params.string("path")))
         "imageIndexVerify" -> { ImageIndexCatalog.verify(params.string("revision"));JsonPrimitive(true) }
         "imageIndexEnd" -> JsonPrimitive(true)
-        "imageIndexProgress" -> { withContext(Dispatchers.Main) { ImageSearchIndexer.applyStatus(params) };JsonPrimitive(true) }
         else -> error("Unknown image index host operation: $method")
     }
 }
 actual suspend fun disconnectImageIndexHost() = withContext(NonCancellable + Dispatchers.IO) { ImageIndexManager.shutdown() }
+
+actual suspend fun applyImageIndexStatus(status: JsonObject) = withContext(Dispatchers.Main) { ImageSearchIndexer.applyStatus(status) }

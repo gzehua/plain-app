@@ -10,10 +10,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.helpers.FilePathValidator
 import com.ismartcoding.plain.platform.deleteFileOrDir
-import com.ismartcoding.plain.platform.fileExists
-import com.ismartcoding.plain.platform.getNewPath
 import com.ismartcoding.plain.platform.renameAndScanFile
-import com.ismartcoding.plain.platform.scanFiles
 import com.ismartcoding.plain.platform.shareFiles
 import com.ismartcoding.plain.platform.unzipFile
 import com.ismartcoding.plain.ui.base.BottomActionButtons
@@ -115,16 +112,12 @@ fun FilesSelectModeBottomActions(
                     scope.launch {
                         DialogHelper.showLoading()
                         val file = selectedFiles[0]
-                        var destPath = file.path.removeSuffix(".zip")
-                        if (fileExists(destPath)) {
-                            destPath = getNewPath(destPath)
-                        }
+                        val destPath = file.path.removeSuffix(".zip")
                         val success = withIO {
                             unzipFile(file.path, destPath)
                         }
                         if (success) {
                             withIO {
-                                scanFiles(arrayOf(destPath))
                                 filesVM.loadAsync()
                             }
                         } else {

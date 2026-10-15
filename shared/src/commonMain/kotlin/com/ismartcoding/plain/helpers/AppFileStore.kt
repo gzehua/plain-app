@@ -87,7 +87,7 @@ object AppFileStore {
     suspend fun displayName(id: String): String = RustContentApi.query("appFiles(offset: 0, limit: 1, query: ${gql("text:$id")}) { fileName }")
         .getValue("appFiles").jsonArray.firstOrNull()?.jsonObject?.string("fileName").orEmpty()
     suspend fun release(id: String) {
-        RustContentApi.mutate("releaseAppFile(id: ${gql(id.substringBefore('.'))})")
+        RustContentApi.mutate("releaseAppFile(fileId: ${gql(id.substringBefore('.'))})")
     }
     private fun JsonElement.file(): AppFile = JsonHelper.jsonDecodeFromElement<AppFile>(this)
 }

@@ -8,4 +8,5 @@ data class ContactWebsite(
     var value: String,
     var type: WebsiteType,
     var label: String,
+    var typeCode: Int = 0,
 )

@@ -67,13 +67,13 @@ class SessionMigrationRustHttpTest {
                 val session = RustSessionStore.list().single { it.clientId == id }
                 assertEquals("Fixture", session.browserName)
                 assertFalse(session.isCustom)
-                assertArrayEquals(Base64Lenient.decode(requireNotNull(shared)), RustSessionStore.key(id))
+                assertArrayEquals(Base64Lenient.decode(requireNotNull(shared)), RustSessionStore.list().firstOrNull { it.clientId == id }?.token?.let(Base64Lenient::decode))
                 assertTrue(renameSessionListItemAsync(id, "Renamed fixture"))
                 assertEquals("Renamed fixture", fetchSessionsListItemsAsync().single { it.clientId == id }.name)
                 assertTrue(runCatching { RustWebLogin.complete(event) }.isFailure)
             }
             deleteSessionListItemAsync(id)
-            assertNull(RustSessionStore.key(id))
+            assertNull(RustSessionStore.list().firstOrNull { it.clientId == id }?.token?.let(Base64Lenient::decode))
         } finally {
             http.close()
             if (pendingId.isNotEmpty()) RustWebLogin.cancel(pendingId)

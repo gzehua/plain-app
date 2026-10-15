@@ -1,15 +1,14 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.rust.request.RustContentApi
-import kotlinx.serialization.json.jsonObject
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.helpers.Base64Lenient
-import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.json.*
 
 object RustTlsCertificate {
-    suspend fun signature(): ByteArray = action(TlsCommand.Get)
-    suspend fun regenerate(): ByteArray = action(TlsCommand.Generate)
-    suspend fun importPem(certificate: String, key: String): ByteArray = action(TlsCommand.Import(certificate, key))
-    suspend fun importPkcs12(bytes: ByteArray, password: String): ByteArray = action(TlsCommand.ImportPkcs12(Base64Lenient.encode(bytes), password))
-    private suspend fun action(command: TlsCommand): ByteArray = JsonHelper.jsonDecode<TlsSignatureFacts>(
-        RustContentApi.postJsonOrThrow("system/tls", JsonHelper.jsonEncodeToElement<TlsCommand>(command).jsonObject).toString()).signature.map(Int::toByte).toByteArray()
+    suspend fun signature(): ByteArray = signatureBytes(PlainRust.mainQuery("tlsCertificateSignature").getValue("tlsCertificateSignature"))
+    suspend fun regenerate(): ByteArray = signatureBytes(PlainRust.mainMutate("regenerateTlsCertificate").getValue("regenerateTlsCertificate"))
+    suspend fun importPem(certificate: String, key: String): ByteArray = signatureBytes(PlainRust.mainMutate("importTlsCertificatePem(certificatePem: ${gql(certificate)}, privateKeyPem: ${gql(key)})").getValue("importTlsCertificatePem"))
+    suspend fun importPkcs12(bytes: ByteArray, password: String): ByteArray = signatureBytes(PlainRust.mainMutate("importTlsCertificatePkcs12(data: ${gql(Base64Lenient.encode(bytes))}, password: ${gql(password)})").getValue("importTlsCertificatePkcs12"))
+    private fun signatureBytes(value: JsonElement): ByteArray = value.jsonArray.map { it.jsonPrimitive.int.toByte() }.toByteArray()
 }

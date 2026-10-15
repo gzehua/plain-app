@@ -32,15 +32,18 @@ class AudioEngineRustHttpTest {
         val oldMode = UserPrefs.audioPlayMode.value
         try {
             AudioQueueManager.enqueue(listOf(track(0),track(1)))
-            val played = com.ismartcoding.plain.rust.PlainRust.privateMutate("audioPlayTrack(mediaId: ${JsonPrimitive(track(0).mediaId)}) {path revision positionMs}").getValue("audioPlayTrack").jsonObject
+            val played = com.ismartcoding.plain.rust.PlainRust.mainMutate("audioPlayTrack(mediaId: ${JsonPrimitive(track(0).mediaId)}) {path revision positionMs}").getValue("audioPlayTrack").jsonObject
             assertEquals(track(0).path, played.getValue("path").jsonPrimitive.content)
             val initialRevision = played.getValue("revision").jsonPrimitive.long
             AudioQueueManager.onStarted(track(0), initialRevision)
             AudioQueueManager.onStarted(track(0), initialRevision)
             assertEquals(1, AudioPlayHistoryManager.recentPageFiltered(prefix,20,0).single().playCount)
             AudioCommands.command("SEEK", 3_000_000_123)
-            val stale = com.ismartcoding.plain.rust.PlainRust.privateMutate("audioReportProgress(path:${JsonPrimitive(track(0).path)},revision:$initialRevision,positionMs:0)")
-            assertFalse(stale.getValue("audioReportProgress").jsonPrimitive.boolean)
+            com.ismartcoding.plain.rust.PlainRust.publish(com.ismartcoding.plain.events.HostEvent(
+                com.ismartcoding.plain.events.EventType.AUDIO_PROGRESS_REPORTED,
+                """{"path":${JsonPrimitive(track(0).path)},"revision":$initialRevision,"positionMs":0}""",
+            ))
+            assertEquals(3_000_000_123, AudioQueueManager.playback().positionMs)
             AudioCommands.command("PAUSE")
             AudioCommands.command("PLAY")
             assertEquals(3_000_000_123, engine.progress)

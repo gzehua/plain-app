@@ -1,9 +1,9 @@
 package com.ismartcoding.plain.chat.peer
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.*
-import kotlinx.serialization.json.*
 
 object PeerTransportPrewarmer {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -11,7 +11,7 @@ object PeerTransportPrewarmer {
     fun prewarm(peerId: String) {
         scope.launch {
             try {
-                RustContentApi.postJsonOrThrow("chat/prewarm", buildJsonObject { put("id", peerId) }, longRunning = true)
+                PlainRust.mainMutate("prewarmPeerTransport(id: ${gql(peerId)}) { shortId awareSupported awareRunning }", longRunning = true)
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (error: Exception) { LogCat.e("Peer prewarm", error) }
         }

@@ -23,3 +23,7 @@ actual suspend fun systemSmsFacts(method: String, params: kotlinx.serialization.
     }
 
 actual suspend fun mediaBucketItemFacts(dataType: DataType): List<com.ismartcoding.plain.data.DMediaBucketItemFact> = emptyList()
+
+actual suspend fun fileIndexId(path: String): String? = null
+actual suspend fun fileIndexRows(plan: com.ismartcoding.plain.features.system.ProviderPlan, limit: Int, offset: Int, sortBy: com.ismartcoding.plain.features.file.FileSortBy): List<com.ismartcoding.plain.features.file.DFile> = emptyList()
+actual suspend fun fileIndexCount(plan: com.ismartcoding.plain.features.system.ProviderPlan): Int = 0

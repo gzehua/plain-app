@@ -22,26 +22,10 @@ fn public(request: &str) -> String {
     })();
     result.unwrap_or_else(errors)
 }
-fn host(request: &str) -> String {
-    let result = (|| {
-        let (runtime, executor) = parts()?;
-        let parsed = serde_json::from_str(request).map_err(|e| e.to_string())?;
-        serde_json::to_string(&runtime.block_on(executor.execute_private(parsed)))
-            .map_err(|e| e.to_string())
-    })();
-    result.unwrap_or_else(errors)
-}
 #[unsafe(no_mangle)]
 pub extern "C" fn plain_graphql(request: *const c_char) -> *mut c_char {
     c_string(match input(request) {
         Ok(request) => public(&request),
-        Err(error) => errors(error),
-    })
-}
-#[unsafe(no_mangle)]
-pub extern "C" fn plain_graphql_private(request: *const c_char) -> *mut c_char {
-    c_string(match input(request) {
-        Ok(request) => host(&request),
         Err(error) => errors(error),
     })
 }
@@ -65,15 +49,5 @@ mod android {
         })
         .resolve::<ThrowRuntimeExAndDefault>()
         .into_raw()
-    }
-    #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_hostGraphqlNative(
-        mut env: EnvUnowned<'_>,
-        _: JObject<'_>,
-        request: JString<'_>,
-    ) -> jstring {
-        env.with_env(|env| -> jni::errors::Result<_> { env.new_string(host(&request.to_string())) })
-            .resolve::<ThrowRuntimeExAndDefault>()
-            .into_raw()
     }
 }

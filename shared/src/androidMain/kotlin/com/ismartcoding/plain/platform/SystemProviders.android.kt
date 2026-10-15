@@ -33,3 +33,9 @@ actual suspend fun mediaBucketItemFacts(dataType: DataType): List<com.ismartcodi
     DataType.DOC -> com.ismartcoding.plain.docs.DocMediaStoreHelper.getDocBucketItemFactsAsync(appContext)
     else -> emptyList()
 }
+
+actual suspend fun fileIndexId(path: String): String? = com.ismartcoding.plain.lib.withIO { com.ismartcoding.plain.features.media.FileMediaStoreHelper.getIdByPathAsync(com.ismartcoding.plain.appContext, path) }
+actual suspend fun fileIndexRows(plan: com.ismartcoding.plain.features.system.ProviderPlan, limit: Int, offset: Int, sortBy: com.ismartcoding.plain.features.file.FileSortBy): List<com.ismartcoding.plain.features.file.DFile> = com.ismartcoding.plain.features.media.FileMediaStoreHelper.searchAsync(com.ismartcoding.plain.appContext, plan.where(), limit, offset, sortBy)
+actual suspend fun fileIndexCount(plan: com.ismartcoding.plain.features.system.ProviderPlan): Int = com.ismartcoding.plain.lib.withIO {
+    plan.wheres().sumOf { com.ismartcoding.plain.features.media.FileMediaStoreHelper.countAsync(com.ismartcoding.plain.appContext, it) }
+}

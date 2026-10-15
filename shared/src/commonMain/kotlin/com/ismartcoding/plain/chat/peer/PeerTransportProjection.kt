@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.chat.peer
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.chat.peer.transport.PeerTransportType
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -10,7 +10,10 @@ object PeerTransportProjection {
     private val lock = Mutex()
 
     suspend fun refresh() = lock.withLock {
-        val active = RustContentApi.postJsonOrThrow("chat/transport", buildJsonObject { put("action", "snapshotTransfers") }).getValue("result").jsonObject
-        PeerCacher.currentTransportMap.value = active.mapValues { (_, kind) -> PeerTransportType.valueOf(kind.jsonPrimitive.content) }
+        val active = PlainRust.mainQuery("activePeerTransfers { peerId transport }").getValue("activePeerTransfers").jsonArray
+        PeerCacher.currentTransportMap.value = active.associate { value ->
+            val row = value.jsonObject
+            row.getValue("peerId").jsonPrimitive.content to PeerTransportType.valueOf(row.getValue("transport").jsonPrimitive.content)
+        }
     }
 }

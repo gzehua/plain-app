@@ -80,7 +80,7 @@ private fun browseSubtitle(state: SharedFolderState): String {
     val fileCount = entries.count { !it.isDir }
     if (dirCount > 0) parts.add(pluralStringResource(Res.plurals.x_folders, dirCount, dirCount))
     if (fileCount > 0) parts.add(pluralStringResource(Res.plurals.x_files, fileCount, fileCount))
-    val expiresAt = state.rootInfo?.expiresAtInstant
+    val expiresAt = state.rootInfo?.expiresAt
     if (expiresAt != null) {
         val dateText = expiresAt.formatDateTime()
         parts.add(

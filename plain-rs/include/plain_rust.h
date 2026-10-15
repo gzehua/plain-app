@@ -25,7 +25,6 @@ char *plain_http_stop(void);
 char *plain_web_login_decide(const char *request_id, bool allowed);
 char *plain_dlna_receiver(const char *command);
 char *plain_graphql(const char *request);
-char *plain_graphql_private(const char *request);
 char *plain_resource_open(const char *id);
 char *plain_resource_write(const char *id, const uint8_t *bytes, size_t len);
 char *plain_resource_close(const char *id, bool failed);
