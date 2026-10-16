@@ -33,7 +33,6 @@ import com.ismartcoding.plain.i18n.collapse_backup_addresses
 import com.ismartcoding.plain.i18n.collapsed
 import com.ismartcoding.plain.i18n.expanded
 import com.ismartcoding.plain.i18n.try_more_addresses
-import com.ismartcoding.plain.platform.network.isLanAddress
 import com.ismartcoding.plain.app.restartServer
 import com.ismartcoding.plain.preferences.UserPrefs
 import com.ismartcoding.plain.ui.base.PTextButton
@@ -59,7 +58,7 @@ fun WebAddressBar(
     val scope = rememberCoroutineScope()
     val scheme = if (isHttps) "https" else "http"
     val ipList = AppUiState.ip4s.value.ifEmpty { listOf("127.0.0.1") }
-    val primaryIp = ipList.firstOrNull { isLanAddress(it) } ?: ipList.firstOrNull() ?: "127.0.0.1"
+    val primaryIp = AppUiState.primaryIpv4.value.ifEmpty { "127.0.0.1" }
     val backupIps = listOf(hostname) + ipList.filter { it != primaryIp }
 
     Column(

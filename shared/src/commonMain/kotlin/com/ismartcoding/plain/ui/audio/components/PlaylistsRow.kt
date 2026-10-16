@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.api.graphql.models.AudioPlaylist
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.components.drawerOpenAtRowStart
-import com.ismartcoding.plain.ui.audio.playlists.PlaylistAlbumCover
+import com.ismartcoding.plain.api.graphql.models.AudioAlbumCover
 import com.ismartcoding.plain.ui.audio.playlists.components.PlaylistMosaicCover
 import com.ismartcoding.plain.ui.theme.listItemTitle
 import org.jetbrains.compose.resources.pluralStringResource
@@ -31,7 +31,7 @@ import org.jetbrains.compose.resources.pluralStringResource
 @Composable
 fun PlaylistsRow(
     playlists: List<Pair<AudioPlaylist, Int>>,
-    covers: Map<String, List<PlaylistAlbumCover>>,
+    covers: Map<String, List<AudioAlbumCover>>,
     onPlaylistClick: (AudioPlaylist) -> Unit,
 ) {
     val listState = rememberLazyListState()

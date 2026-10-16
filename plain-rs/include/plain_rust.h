@@ -20,6 +20,7 @@ char *plain_core_start(const char *data_dir, const char *token, const char *conf
 void plain_core_stop(void);
 char *plain_http_stop(void);
 char *plain_graphql(const char *request);
+char *plain_upload_chunk(const char *id, int64_t index, const uint8_t *bytes, size_t len);
 char *plain_resource_open(const char *id);
 char *plain_resource_file(const char *id, int32_t fd, int64_t offset, int64_t length);
 char *plain_resource_write(const char *id, const uint8_t *bytes, size_t len);

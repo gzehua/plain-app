@@ -1,21 +1,9 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.rust.http.post
-
 import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
 
-import com.ismartcoding.plain.api.graphql.models.Certificate
-import com.ismartcoding.plain.platform.system.PackageType
 import kotlin.time.Instant
 
-/**
- * Result of [installPackage] — describes the post-install state of the package.
- *
- * @param packageName the package name parsed from the APK, or empty if unknown.
- * @param lastUpdateTime update time reported by the package manager after the
- *     install completed, or null if the package is brand-new (no row yet).
- * @param isNew true when the package was not previously installed.
- */
 data class PackageInstallResult(
     val packageName: String,
     val lastUpdateTime: Instant?,
@@ -35,12 +23,12 @@ expect suspend fun getPackageInfoMap(ids: List<String>): Map<String, AppPackage?
  */
 expect fun uninstallPackage(id: String)
 
-/**
- * Install the APK at [path]. Returns a [PackageInstallResult] describing the
- * newly installed package, or throws on failure (e.g. file not found, parse
- * error, unsupported format).
- */
-expect fun installPackage(path: String): PackageInstallResult
+expect fun installPackage(paths: List<String>, packageName: String, session: Boolean): PackageInstallResult
+
+expect fun packageInstallProfile(): PackageInstallProfile
+
+@kotlinx.serialization.Serializable
+data class PackageInstallProfile(val densityDpi: Int, val localeTags: List<String>)
 
 /**
  * Returns the launcher icon for the package identified by [packageId], suitable
@@ -79,9 +67,3 @@ expect fun launchPackage(id: String)
  * [id]. No-op on iOS.
  */
 expect fun viewPackageInSettings(id: String)
-
-/**
- * Parse the APK at [path] and return its AndroidManifest.xml as a formatted
- * XML string. Returns an empty string on iOS or on parse failure.
- */
-expect fun getManifestXml(path: String): String

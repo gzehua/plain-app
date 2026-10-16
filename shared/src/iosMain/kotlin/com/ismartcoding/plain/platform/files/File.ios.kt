@@ -55,16 +55,6 @@ actual fun fileSize(path: String): Long =
     (NSFileManager.defaultManager.attributesOfItemAtPath(path, null)?.get(NSFileSize) as? Long) ?: 0L
 
 @OptIn(ExperimentalForeignApi::class)
-actual fun copyFile(srcPath: String, destPath: String): Boolean {
-    if (getCanonicalPath(srcPath) == getCanonicalPath(destPath)) return false
-    val mgr = NSFileManager.defaultManager
-    if (mgr.fileExistsAtPath(destPath)) {
-        mgr.removeItemAtPath(destPath, null)
-    }
-    return mgr.copyItemAtPath(srcPath, destPath, error = null)
-}
-
-@OptIn(ExperimentalForeignApi::class)
 actual fun writeBytesToPath(path: String, bytes: ByteArray): Boolean {
     return try {
         bytes.toNSData().writeToFile(path, atomically = true)
@@ -82,7 +72,11 @@ actual suspend fun copyFileToUri(path: String, uriStr: String): Boolean = withIO
     val accessed = destination.startAccessingSecurityScopedResource()
     try {
         val destinationPath = destination.path ?: return@withIO false
-        copyFile(path, destinationPath)
+        FilesClient.copyToPath(path, destinationPath, overwrite = true)
+    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+    } catch (_: Exception) {
+        false
     } finally {
         if (accessed) destination.stopAccessingSecurityScopedResource()
     }
@@ -95,24 +89,6 @@ actual fun getFileIconPath(extension: String): String = ""
 @OptIn(ExperimentalForeignApi::class)
 actual fun fileExists(path: String): Boolean =
     NSFileManager.defaultManager.fileExistsAtPath(path)
-
-@OptIn(ExperimentalForeignApi::class)
-actual suspend fun readFileRange(path: String, offset: Long, length: Int): ByteArray? = withIO {
-    try {
-        if (!NSFileManager.defaultManager.fileExistsAtPath(path)) return@withIO null
-        val attrs = NSFileManager.defaultManager.attributesOfItemAtPath(path, null) ?: return@withIO null
-        val fileLen = (attrs[NSFileSize] as? Long) ?: return@withIO null
-        if (offset >= fileLen) return@withIO ByteArray(0)
-        val readLen = minOf(length.toLong(), fileLen - offset).toInt()
-        if (readLen <= 0) return@withIO ByteArray(0)
-        val data = NSFileManager.defaultManager.contentsAtPath(path) ?: return@withIO null
-        val bytes = data.toByteArray()
-        bytes.copyOfRange(offset.toInt(), offset.toInt() + readLen)
-    } catch (e: Exception) {
-        LogCat.e("readFileRange: ${e.message}")
-        null
-    }
-}
 
 @OptIn(ExperimentalForeignApi::class)
 actual suspend fun ensureParentDir(path: String) {
@@ -167,18 +143,14 @@ actual suspend fun decodeImageFileToPng(path: String): ByteArray? = withIO {
         if (iw <= 0.0 || ih <= 0.0) return@withIO null
         val cap = DecodePolicy.MAX_FULL_VIEW_EDGE.toDouble()
         val scale = minOf(cap / iw, cap / ih, 1.0)
-        val png = if (scale >= 1.0) {
-            UIImagePNGRepresentation(image)
-        } else {
-            val outW = iw * scale
-            val outH = ih * scale
-            UIGraphicsBeginImageContextWithOptions(CGSizeMake(outW, outH), false, 0.0)
-            try {
-                image.drawInRect(CGRectMake(0.0, 0.0, outW, outH))
-                UIGraphicsGetImageFromCurrentImageContext()?.let { UIImagePNGRepresentation(it) }
-            } finally {
-                UIGraphicsEndImageContext()
-            }
+        val outW = iw * scale
+        val outH = ih * scale
+        UIGraphicsBeginImageContextWithOptions(CGSizeMake(outW, outH), false, 1.0)
+        val png = try {
+            image.drawInRect(CGRectMake(0.0, 0.0, outW, outH))
+            UIGraphicsGetImageFromCurrentImageContext()?.let { UIImagePNGRepresentation(it) }
+        } finally {
+            UIGraphicsEndImageContext()
         }
         png?.toByteArray()
     } catch (e: Exception) {
@@ -309,4 +281,11 @@ private suspend fun <T> withResourceFile(uri: String, block: suspend (Int, Long)
         check(descriptor >= 0) { "Unable to open file resource" }
         try { block(descriptor, -1) } finally { platform.posix.close(descriptor) }
     }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+internal actual suspend fun readPickedFileBytes(uri: String): ByteArray = withIO {
+    val path = NSURL.URLWithString(uri)?.path ?: error("Failed to read the selected file")
+    NSFileManager.defaultManager.contentsAtPath(path)?.toByteArray()
+        ?: error("Failed to read the selected file")
 }

@@ -4,16 +4,16 @@ import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
 import com.ismartcoding.plain.features.downloads.*
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.platform.media.getDownloadsDirPath
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 object SharedFolderDownloadEngine {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val intents = Channel<JsonObject>(128)
+    private val intents = Channel<Request>(128)
     private val stateLock = Mutex()
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     private val version = DownloadQueueVersion()
@@ -36,23 +36,14 @@ object SharedFolderDownloadEngine {
     fun enqueueZip(messageId: String, link: SharedLink, urlToken: String, entries: List<SharedFileDto>, zipName: String) =
         enqueue(messageId, ShareBatchType.ZIP, link, urlToken, entries, "", zipName)
     private fun enqueue(messageId: String, type: ShareBatchType, link: SharedLink, urlToken: String, entries: List<SharedFileDto>, targetDir: String, zipName: String = "") =
-        submit(buildJsonObject {
-            put("action", "enqueue")
-            put("intent", buildJsonObject {
-                put("messageId", messageId); put("kind", type.name); put("link", json.encodeToJsonElement(link))
-                put("urlToken", urlToken); put("entries", json.encodeToJsonElement(entries)); put("targetDir", targetDir)
-                put("downloadsBase", "${getDownloadsDirPath().trimEnd('/')}/PlainApp"); put("zipName", zipName)
-            })
-        })
+        submit(Request.Enqueue(SharedDownloadInput(messageId, type, link, urlToken, entries, targetDir, zipName)))
     fun retryFailed(taskId: String) { control(taskId, "retry") }
-    fun control(id: String, command: String): Boolean = submit(buildJsonObject {
-        put("action", "control"); put("id", id); put("command", command)
-    })
-    private fun submit(body: JsonObject): Boolean = intents.trySend(body).isSuccess.also {
+    fun control(id: String, command: String): Boolean = submit(Request.Control(id, command))
+    private fun submit(request: Request): Boolean = intents.trySend(request).isSuccess.also {
         if (!it) LogCat.e("Shared download request capacity exceeded")
     }
     suspend fun refresh() = stateLock.withLock {
-        val snapshot = call(buildJsonObject { put("action", "snapshot") }).jsonObject
+        val snapshot = call(Request.Snapshot).jsonObject
         val current = snapshot.getValue("revision").jsonPrimitive.long
         if (!version.accept(snapshot.getValue("runtimeId").jsonPrimitive.content, current)) return@withLock
         val tasks = snapshot.getValue("tasks").jsonArray.map { value ->
@@ -75,22 +66,36 @@ object SharedFolderDownloadEngine {
         DownloadCenter.replaceExternal(DOWNLOAD_KIND_SHARE, tasks)
     }
     private const val QUEUE_FIELDS = "runtimeId revision tasks { id messageId type title targetDir link { host port sharedId token pageUrl } urlToken entries { name virtualPath isDir size mimeType hasThumb } zipName generation status error downloadedSize totalSize downloadSpeed totalFiles doneFiles failedFiles currentFile packing failures { path error } }"
-    private suspend fun call(body: JsonObject): JsonElement {
-        return when (val action = body.getValue("action").jsonPrimitive.content) {
-            "snapshot" -> PlainRust.mainQuery("sharedDownloadQueue { $QUEUE_FIELDS }").getValue("sharedDownloadQueue")
-            "enqueue" -> PlainRust.mainGraphql("mutation(\$input: SharedDownloadInput!) { enqueueSharedDownload(input: \$input) }", mapOf("input" to body.getValue("intent")), longRunning = true).getValue("enqueueSharedDownload")
-            "control" -> {
-                val operation = when (body.getValue("command").jsonPrimitive.content) {
-                    "pause" -> "pauseSharedDownload"
-                    "resume" -> "resumeSharedDownload"
-                    "retry" -> "retrySharedDownload"
-                    "cancel" -> "cancelSharedDownload"
-                    "remove" -> "removeSharedDownload"
-                    else -> error("Unknown shared download control")
-                }
-                PlainRust.mainMutate("$operation(id: ${gql(body.getValue("id").jsonPrimitive.content)})", longRunning = true).getValue(operation)
+    private suspend fun call(request: Request): JsonElement = when (request) {
+        Request.Snapshot -> PlainRust.mainQuery("sharedDownloadQueue { $QUEUE_FIELDS }").getValue("sharedDownloadQueue")
+        is Request.Enqueue -> PlainRust.mainGraphql("mutation(\$input: SharedDownloadInput!) { enqueueSharedDownload(input: \$input) }", mapOf("input" to json.encodeToJsonElement(request.input)), longRunning = true).getValue("enqueueSharedDownload")
+        is Request.Control -> {
+            val operation = when (request.command) {
+                "pause" -> "pauseSharedDownload"
+                "resume" -> "resumeSharedDownload"
+                "retry" -> "retrySharedDownload"
+                "cancel" -> "cancelSharedDownload"
+                "remove" -> "removeSharedDownload"
+                else -> error("Unknown shared download control")
             }
-            else -> error("Unknown shared download operation: $action")
+            PlainRust.mainMutate("$operation(id: ${gql(request.id)})", longRunning = true).getValue(operation)
         }
     }
+
+    private sealed interface Request {
+        data object Snapshot : Request
+        data class Enqueue(val input: SharedDownloadInput) : Request
+        data class Control(val id: String, val command: String) : Request
+    }
 }
+
+@Serializable
+internal data class SharedDownloadInput(
+    val messageId: String,
+    val kind: ShareBatchType,
+    val link: SharedLink,
+    val urlToken: String,
+    val entries: List<SharedFileDto>,
+    val targetDir: String,
+    val zipName: String,
+)

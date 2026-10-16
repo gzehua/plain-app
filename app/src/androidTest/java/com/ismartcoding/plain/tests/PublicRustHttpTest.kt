@@ -112,7 +112,7 @@ class PublicRustHttpTest {
                     assertNotNull(result.toString(), result["data"]?.jsonObject?.get("noteCount"))
                 }
                 val info = buildJsonObject { put("dir", root.absolutePath); put("replace", false); put("size", payload.size) }.toString()
-                val encrypted = chaCha20Encrypt(key, info.encodeToByteArray())
+                val encrypted = chaCha20Encrypt(key, "${System.currentTimeMillis()}|${UUID.randomUUID()}|$info".encodeToByteArray())
                 val prefix = "--fixture\r\nContent-Disposition: form-data; name=\"info\"\r\n\r\n".encodeToByteArray()
                 val middle = "\r\n--fixture\r\nContent-Disposition: form-data; name=\"file\"; filename=\"sample.bin\"\r\nContent-Type: application/octet-stream\r\n\r\n".encodeToByteArray()
                 val end = "\r\n--fixture--\r\n".encodeToByteArray()

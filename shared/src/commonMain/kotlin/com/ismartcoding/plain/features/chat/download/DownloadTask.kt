@@ -4,7 +4,7 @@ import com.ismartcoding.plain.api.graphql.models.Peer
 import kotlinx.coroutines.Job
 
 import com.ismartcoding.plain.features.chat.models.MessageFile
-import com.ismartcoding.plain.features.chat.models.PeerRecord
+import com.ismartcoding.plain.api.graphql.models.PeerRecord
 import com.ismartcoding.plain.features.downloads.DOWNLOAD_KIND_CHAT
 import com.ismartcoding.plain.features.downloads.DownloadStatus
 import com.ismartcoding.plain.features.downloads.DownloadTaskHandle

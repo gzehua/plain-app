@@ -1,12 +1,14 @@
 package com.ismartcoding.plain.ui.audio
 
+import com.ismartcoding.plain.lib.logcat.LogCat
+import kotlinx.coroutines.CancellationException
+import com.ismartcoding.plain.features.audio.AudioOverviewClient
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.conflate
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,15 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.features.audio.AudioPlaylistsClient
 import com.ismartcoding.plain.features.audio.AudioQueueClient
-import com.ismartcoding.plain.api.graphql.models.AudioPlaylist
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.withIO
@@ -40,14 +39,12 @@ import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.components.NeedPermissionColumn
 import com.ismartcoding.plain.ui.base.PSheetActionRow
 import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
 import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.media.MediaTopBar
 import com.ismartcoding.plain.ui.audio.components.PlaylistNameDialog
-import com.ismartcoding.plain.ui.audio.AudioHomeArtist
 import com.ismartcoding.plain.ui.audio.AudioHomeViewModel
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.audio.AudioViewModel
@@ -56,12 +53,7 @@ import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
 import com.ismartcoding.plain.ui.state.exitSearchMode
 import com.ismartcoding.plain.ui.navigation.Routing
-import com.ismartcoding.plain.ui.audio.components.ArtistsRow
 import com.ismartcoding.plain.ui.audio.components.AudioFilesSelectModeBottomActions
-import com.ismartcoding.plain.ui.audio.components.AudioListItem
-import com.ismartcoding.plain.ui.audio.components.HomeQuickActions
-import com.ismartcoding.plain.ui.audio.components.HomeSectionHeader
-import com.ismartcoding.plain.ui.audio.components.PlaylistsRow
 import com.ismartcoding.plain.ui.audio.components.ViewAudioBottomSheet
 import com.ismartcoding.plain.ui.audio.player.components.AudioPlayerBar
 import com.ismartcoding.plain.ui.casting.CastDialog
@@ -111,7 +103,7 @@ fun AudioHomePage(
             audioVM.loadAsync(tagsVM)
             audioQueueVM.loadAsync()
             withIO { mediaFoldersVM.loadAsync() }
-            homeVM.loadAsync(audioVM)
+            homeVM.loadAsync(tagsVM)
             setRefreshState(RefreshContentState.Finished)
         }
     }
@@ -147,11 +139,17 @@ fun AudioHomePage(
     val sidebarFilterActive =
         audioVM.trash.value || audioVM.bucketId.value.isNotEmpty() || audioVM.tag.value != null
 
-    LaunchedEffect(Unit) {
-        homeVM.loadAsync(audioVM)
-    }
-    LaunchedEffect(itemsState) {
-        homeVM.rebuild(itemsState)
+    LaunchedEffect(audioVM.hasPermission.value) {
+        if (audioVM.hasPermission.value) {
+            try { homeVM.loadAsync(tagsVM) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (error: Exception) { LogCat.e("Audio home load", error) }
+            AudioOverviewClient.updates.conflate().collect {
+                try { homeVM.refreshOverview(tagsVM) }
+                catch (cancelled: CancellationException) { throw cancelled }
+                catch (error: Exception) { LogCat.e("Audio overview refresh", error) }
+            }
+        }
     }
 
     MediaTopBar(
@@ -211,7 +209,7 @@ fun AudioHomePage(
                     )
                 } else {
                     PullToRefresh(refreshLayoutState = topRefreshLayoutState, userEnable = !dragSelectState.selectMode, modifier = Modifier.weight(1f)) {
-                        HomeSections(
+                        AudioHomeSections(
                             homeVM = homeVM,
                             audioVM = audioVM,
                             audioQueueVM = audioQueueVM,
@@ -264,78 +262,10 @@ fun AudioHomePage(
                 showCreatePlaylist = false
                 scope.launch(Dispatchers.Default) {
                     AudioPlaylistsClient.createPlaylist(name)
-                    homeVM.loadAsync(audioVM)
+                    homeVM.loadAsync(tagsVM)
                 }
             },
             onDismiss = { showCreatePlaylist = false },
         )
-    }
-}
-
-/** The three home sections; pure composition, all state arrives via params. */
-@Composable
-private fun HomeSections(
-    homeVM: AudioHomeViewModel,
-    audioVM: AudioViewModel,
-    audioQueueVM: AudioQueueViewModel,
-    tagsVM: TagsViewModel,
-    castVM: CastViewModel,
-    audioTagsMap: Map<String, List<TagHostRecord>>,
-    isAudioPlaying: Boolean,
-    scrollState: LazyListState,
-    dragSelectState: DragSelectState,
-    playerBarClearance: Dp,
-    paddingValues: PaddingValues,
-    onShuffleAll: () -> Unit,
-    onViewAllItems: () -> Unit,
-    onArtistsViewAll: () -> Unit,
-    onArtistClick: (AudioHomeArtist) -> Unit,
-    onPlaylistClick: (AudioPlaylist) -> Unit,
-) {
-    val artists = homeVM.artists.value
-    val playlists = homeVM.playlists.value
-    val recent = homeVM.recentItems.value
-
-    LazyColumn(modifier = Modifier.fillMaxSize(), state = scrollState) {
-        item(key = "quick_actions") {
-            HomeQuickActions(onShuffleAll = onShuffleAll, onViewAllItems = onViewAllItems)
-        }
-        if (artists.isNotEmpty()) {
-            item(key = "artists_header") {
-                HomeSectionHeader(stringResource(Res.string.artists), onArtistsViewAll)
-            }
-            item(key = "artists") {
-                ArtistsRow(artists.take(10), onArtistClick)
-            }
-        }
-        if (playlists.isNotEmpty()) {
-            item(key = "playlists_header") {
-                HomeSectionHeader(stringResource(Res.string.playlists), null)
-            }
-            item(key = "playlists") {
-                PlaylistsRow(playlists, homeVM.playlistCovers.value, onPlaylistClick)
-            }
-        }
-        item(key = "recent_header") {
-            HomeSectionHeader(stringResource(Res.string.recent), null)
-        }
-        items(recent.size, key = { recent[it].path }) { index ->
-            val item = recent[index]
-            AudioListItem(
-                item = item,
-                audioVM = audioVM,
-                audioQueueVM = audioQueueVM,
-                tagsVM = tagsVM,
-                castVM = castVM,
-                tags = audioTagsMap[item.id] ?: emptyList(),
-                dragSelectState = dragSelectState,
-                isCurrentlyPlaying = isAudioPlaying && audioQueueVM.selectedMediaId.value == item.id,
-                isInQueue = audioQueueVM.isInQueue(item.id),
-            )
-            VerticalSpace(dp = 8.dp)
-        }
-        item(key = "bottom") {
-            VerticalSpace(dp = maxOf(playerBarClearance, 40.dp + paddingValues.calculateBottomPadding()))
-        }
     }
 }

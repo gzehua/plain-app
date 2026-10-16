@@ -5,11 +5,10 @@ import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
-import com.ismartcoding.plain.features.chat.models.ChatChannelRecord
-import com.ismartcoding.plain.features.chat.models.PeerRecord
+import com.ismartcoding.plain.api.graphql.models.ChatChannel
+import com.ismartcoding.plain.api.graphql.models.PeerRecord
 import com.ismartcoding.plain.features.chat.models.getMessagePreview
 import com.ismartcoding.plain.app.events.ChatMessageNotificationEvent
-import com.ismartcoding.plain.api.graphql.models.ChatChannel
 import com.ismartcoding.plain.api.graphql.models.ChatItem
 import com.ismartcoding.plain.api.graphql.models.Peer
 import com.ismartcoding.plain.i18n.Res
@@ -21,7 +20,7 @@ import com.ismartcoding.plain.platform.network.canShowNotifications
 
 object ChatMessageReceiver {
 
-    suspend fun applyCommitted(item: ChatItem, fromPeer: PeerRecord, fromChannel: ChatChannelRecord?) = withIO {
+    suspend fun applyCommitted(item: ChatItem, fromPeer: PeerRecord, fromChannel: ChatChannel?) = withIO {
         val fromChannelId = item.channelId.orEmpty()
         val fromPeerId = item.fromId
         ChatViewModel.onMessagesCreated(
@@ -39,7 +38,7 @@ object ChatMessageReceiver {
     private fun emitNotificationIfNeeded(
         item: ChatItem,
         fromPeer: PeerRecord,
-        fromChannel: ChatChannelRecord?,
+        fromChannel: ChatChannel?,
     ) {
         if (!canShowNotifications()) return
         val preview = item.getMessagePreview()

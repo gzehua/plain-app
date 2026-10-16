@@ -1,6 +1,18 @@
 package com.ismartcoding.plain.platform.system
 
 enum class Capability {
+    PEER_DISCOVERY,
+    BLE_DISCOVERY,
+    WIFI_AWARE,
+    BACKGROUND_SERVICE,
+    LAUNCHER_SHORTCUTS,
+    FILE_BROWSER,
+    IMAGE_LIBRARY,
+    AUDIO_LIBRARY,
+    VIDEO_LIBRARY,
+    DOCUMENT_LIBRARY,
+    SOUND_METER,
+
     BACKGROUND_TIMER,
     BACKGROUND_WAKE,
     FILE_EXPORT,

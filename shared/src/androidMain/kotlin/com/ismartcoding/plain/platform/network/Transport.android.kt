@@ -3,7 +3,7 @@ package com.ismartcoding.plain.platform.network
 import com.ismartcoding.plain.platform.isTPlus
 import com.ismartcoding.plain.rust.http.get
 
-import com.ismartcoding.plain.features.chat.peer.transport.WifiAwareTransport
+import com.ismartcoding.plain.platform.network.aware.WifiAwareTransport
 import com.ismartcoding.plain.wifiAwareManager
 
 actual val isWifiAwareSupported: Boolean

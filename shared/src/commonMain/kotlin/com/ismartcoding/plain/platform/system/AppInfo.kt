@@ -22,7 +22,6 @@ expect fun getDeviceType(): DeviceType
 /**
  * All IPv4 addresses of the device. Empty list on iOS (BLE-only).
  */
-expect fun getDeviceIP4s(): List<String>
 
 fun appDir(): String = com.ismartcoding.plain.rust.request.RustContentApi.directory
 

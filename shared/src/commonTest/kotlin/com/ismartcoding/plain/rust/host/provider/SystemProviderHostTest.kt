@@ -7,9 +7,14 @@ import kotlin.test.assertTrue
 class SystemProviderHostTest {
     @Test
     fun filePrimitivesReachTheSystemProviderAlongsideSystemOperations() {
-        for (method in listOf("imageDecodeBounds", "fileMetadataFacts", "systemProperties", "systemFileIndexRows")) {
+        for (method in listOf("imageDecodeBounds", "systemResourceMimeType", "systemProperties", "systemFileIndexRows")) {
             assertTrue(SystemProviderHost.accepts(method), method)
         }
+    }
+
+    @Test
+    fun retiredMetadataBundleIsNotDispatchable() {
+        assertFalse(SystemProviderHost.accepts("fileMetadataFacts"))
     }
 
     @Test

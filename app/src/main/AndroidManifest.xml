@@ -267,6 +267,10 @@
         </service>
 
         <receiver
+            android:name="com.ismartcoding.plain.platform.system.PackageInstallReceiver"
+            android:exported="false" />
+
+        <receiver
             android:name=".receivers.ServiceStopBroadcastReceiver"
             android:exported="false" />
 

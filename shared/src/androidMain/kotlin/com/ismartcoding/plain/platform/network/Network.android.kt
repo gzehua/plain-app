@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.ismartcoding.plain.appContextValue
-import com.ismartcoding.plain.lib.helpers.NetworkHelper
 
 actual fun getNetworkType(): NetworkType {
     val ctx = appContextValue ?: return NetworkType.NONE
@@ -19,14 +18,8 @@ actual fun getNetworkType(): NetworkType {
     }
 }
 
-actual fun getDeviceIP4(): String = NetworkHelper.getDeviceIP4()
-
-
-actual fun getDeviceIP4sWithPrefixLength(): Set<Pair<String, Short>> {
-    return NetworkHelper.getDeviceIP4sWithPrefixLength()
-}
-
-actual fun isVPNConnected(): Boolean {
-    val ctx = appContextValue ?: return false
-    return NetworkHelper.isVPNConnected(ctx)
+internal actual fun vpnActive(): Boolean {
+    val context = appContextValue ?: return false
+    val manager = context.getSystemService(ConnectivityManager::class.java) ?: return false
+    return manager.getNetworkCapabilities(manager.activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true
 }

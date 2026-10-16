@@ -11,6 +11,8 @@ internal actual object RustCoreBridge {
     private external fun sendNative(action: String, message: String, bytes: ByteArray): String
     actual fun next(stream: String): String = nextNative(stream)
     actual fun send(action: String, message: String, bytes: ByteArray): String = sendNative(action, message, bytes)
+    private external fun uploadChunkNative(id: String, index: Long, bytes: ByteArray): String
+    actual fun uploadChunk(id: String, index: Long, bytes: ByteArray): String = uploadChunkNative(id, index, bytes)
     private external fun resourceOpenNative(id: String): String
     private external fun resourceWriteNative(id: String, bytes: ByteArray): String
     private external fun resourceFileNative(id: String, fd: Int, offset: Long, length: Long): String

@@ -11,8 +11,10 @@ actual suspend fun getPackageInfoMap(ids: List<String>): Map<String, AppPackage?
 
 actual fun uninstallPackage(id: String) = Unit
 
-actual fun installPackage(path: String): PackageInstallResult =
-    throw IllegalArgumentException("APK installation is not supported on iOS")
+actual fun installPackage(paths: List<String>, packageName: String, session: Boolean): PackageInstallResult =
+    error("Package installation is unavailable")
+
+actual fun packageInstallProfile(): PackageInstallProfile = error("Package installation profile is unavailable")
 
 actual fun getApplicationIcon(packageId: String): Any? = null
 
@@ -25,5 +27,3 @@ actual fun canLaunchPackage(id: String): Boolean = false
 actual fun launchPackage(id: String) = Unit
 
 actual fun viewPackageInSettings(id: String) = Unit
-
-actual fun getManifestXml(path: String): String = ""

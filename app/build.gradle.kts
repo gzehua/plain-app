@@ -145,7 +145,7 @@ android {
             excludes += listOf("META-INF/*")
         }
     }
-    sourceSets.getByName("androidTest").java.srcDirs(
+    sourceSets.getByName("androidTest").kotlin.srcDirs(
         "../shared/src/testFixtures/kotlin",
         "../plain-common/src/testFixtures/kotlin",
         "../shared/src/androidTestFixtures/kotlin",
@@ -293,8 +293,7 @@ dependencies {
 
     implementation(libs.okhttp)
 
-    // Google Tink for cryptography (Ed25519 support on all Android versions)
-    implementation(libs.tink.android)
+    androidTestImplementation(libs.tink.android)
 
     implementation(platform(libs.compose.bom))
 

@@ -71,12 +71,10 @@ fun AudioPlayerBottomControls(
             Spacer(modifier = Modifier.height(16.dp))
             AudioPlayerControls(
                 playMode = playMode,
-                onPlayModeChange = {},
                 isTimerActive = isTimerActive,
                 onSleepTimer = onSleepTimer,
                 onOpenQueue = onOpenQueue,
                 isPlaying = isPlaying,
-                scope = scope,
                 onPlayPrevious = onPlayPrevious,
                 onPlayPause = onPlayPause,
                 onPlayNext = onPlayNext,

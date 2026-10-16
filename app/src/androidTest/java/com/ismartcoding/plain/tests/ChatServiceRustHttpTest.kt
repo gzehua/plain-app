@@ -3,7 +3,7 @@ package com.ismartcoding.plain.tests
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.chat.ChatClient
 import com.ismartcoding.plain.features.chat.RustChatStore
-import com.ismartcoding.plain.features.chat.ShareSendHelper
+import com.ismartcoding.plain.features.chat.ShareSendClient
 import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.features.chat.models.MessageFiles
 import com.ismartcoding.plain.features.chat.models.MessageImages
@@ -53,7 +53,7 @@ class ChatServiceRustHttpTest {
             val hash = attachment.uri.removePrefix("fid:").substringBefore('.')
             files += hash
             assertEquals(source.length(), attachment.size)
-            val forward = ChatClient.forward(picked.first().id, local).also { ids += it.id }
+            val forward = ChatClient.forward(picked.first().id, listOf(local)).single().also { ids += it.id }
             assertEquals(ChatStatus.SENT, forward.status)
             val encoded = ResourceCrypto.encrypt(attachment.uri)
             val request = BleBinaryFixture.file("local", encoded, 0, 8192)
@@ -75,7 +75,7 @@ class ChatServiceRustHttpTest {
             assertEquals(7, picture.width)
             assertEquals(5, picture.height)
             assertEquals(image.length(), picture.size)
-            assertTrue(ShareSendHelper.sendFolderShareAsync(listOf(local), root.absolutePath, marker, null))
+            assertEquals(1, ShareSendClient.sendFolderShare(listOf(local), root.absolutePath, marker, null).size)
             val card = created().mapNotNull { it.messageContent.value as? MessageShare }.single()
             shares += card.shareId
             assertEquals(2, card.itemCount)

@@ -17,7 +17,6 @@ import kotlin.concurrent.Volatile
  * without a custom .def file).
  */
 interface IosNetworkInfoProvider {
-    fun getDeviceIP4s(): List<String>
     fun getNetworkType(): String
 }
 
@@ -123,21 +122,6 @@ object IosPlatformRegistry {
     fun setNetworkInfoProvider(provider: IosNetworkInfoProvider) {
         _networkInfoProvider = provider
         LogCat.d("IosPlatformRegistry: network info provider registered")
-    }
-
-    fun getDeviceIP4s(): List<String> {
-        val provider = _networkInfoProvider
-        if (provider == null) {
-            LogCat.w("IosPlatformRegistry: getDeviceIP4s() called before NetworkInfoProvider registered")
-            return emptyList()
-        }
-        val result = provider.getDeviceIP4s().filter { !it.startsWith("169.254.") }
-        if (result.isEmpty()) {
-            LogCat.w("IosPlatformRegistry: NetworkInfoProvider.getDeviceIP4s() returned empty list")
-        } else {
-            LogCat.d("IosPlatformRegistry: getDeviceIP4s() -> ${result.joinToString()}")
-        }
-        return result
     }
 
     fun setPermissionChecker(checker: IosPermissionChecker) {

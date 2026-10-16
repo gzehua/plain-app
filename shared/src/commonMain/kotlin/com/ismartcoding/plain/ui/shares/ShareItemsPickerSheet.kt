@@ -24,7 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,21 +48,16 @@ import com.ismartcoding.plain.ui.components.DirBrowserRow
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-/**
- * Bottom sheet to multi-select real files and folders from device storage.
- * Directory rows enter on tap and toggle selection via the trailing checkbox;
- * file rows toggle on tap anywhere. Confirm returns every selected real path.
- */
 @Composable
 fun ShareItemsPickerSheet(
-    initialSelected: Set<String>,
+    initialSelected: Map<String, Boolean>,
     onDismiss: () -> Unit,
-    onConfirm: (Set<String>) -> Unit,
+    onConfirm: (Map<String, Boolean>) -> Unit,
 ) {
     val rootPath = remember { getInternalStoragePath() }
     var currentPath by remember { mutableStateOf(rootPath) }
     var entries by remember { mutableStateOf<List<FileEntry>>(emptyList()) }
-    val selected = remember { mutableStateListOf<String>().apply { addAll(initialSelected) } }
+    val selected = remember { mutableStateMapOf<String, Boolean>().apply { putAll(initialSelected) } }
 
     LaunchedEffect(currentPath) {
         withIO {
@@ -70,8 +65,8 @@ fun ShareItemsPickerSheet(
         }
     }
 
-    fun toggle(path: String) {
-        if (selected.contains(path)) selected.remove(path) else selected.add(path)
+    fun toggle(entry: FileEntry) {
+        if (selected.containsKey(entry.path)) selected.remove(entry.path) else selected[entry.path] = entry.isDir
     }
 
     PModalBottomSheet(onDismissRequest = onDismiss, modifier = Modifier.fillMaxWidth()) {
@@ -105,19 +100,19 @@ fun ShareItemsPickerSheet(
                     name = entry.name,
                     subtitle = if (entry.isDir) "" else entry.size.formatBytes(),
                     isDir = entry.isDir,
-                    selected = selected.contains(entry.path),
+                    selected = selected.containsKey(entry.path),
                     showCheckbox = true,
                     onClick = {
-                        if (entry.isDir) currentPath = entry.path else toggle(entry.path)
+                        if (entry.isDir) currentPath = entry.path else toggle(entry)
                     },
-                    onCheckedChange = { toggle(entry.path) },
+                    onCheckedChange = { toggle(entry) },
                 )
             }
         }
         BottomActionButtons {
             PFilledButton(
                 text = stringResource(Res.string.done) + " (${selected.size})",
-                onClick = { onConfirm(selected.toSet()) },
+                onClick = { onConfirm(selected.toMap()) },
                 enabled = selected.isNotEmpty(),
                 modifier = Modifier
                     .weight(1f)

@@ -1,25 +1,26 @@
 package com.ismartcoding.plain.platform.network
 
-import com.ismartcoding.plain.platform.isTPlus
 
-import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.features.chat.models.PeerRecord
-import com.ismartcoding.plain.features.chat.peer.transport.WifiAwareTransport
-import com.ismartcoding.plain.lib.extensions.hasPermission
+import com.ismartcoding.plain.platform.network.AwarePeer
+import com.ismartcoding.plain.platform.network.aware.WifiAwareTransport
+import com.ismartcoding.plain.platform.permissions.isGranted
 
 actual fun startAwareIfNeeded(): Boolean {
-    if (!isWifiAwareSupported) return false
-    val hasPermission = if (isTPlus()) {
-        appContext.hasPermission(android.Manifest.permission.NEARBY_WIFI_DEVICES)
-    } else {
-        appContext.hasPermission(android.Manifest.permission.ACCESS_FINE_LOCATION)
-    }
-    if (!hasPermission) return false
+    val permission = wifiAwarePermission() ?: return false
+    if (!permission.isGranted()) return false
     WifiAwareTransport.start()
     return true
 }
 
-actual fun subscribeAwareForPeer(peer: PeerRecord) {
+actual fun subscribeAwareForPeer(peer: AwarePeer, config: AwareConfig) {
     if (!isWifiAwareSupported) return
-    WifiAwareTransport.subscribe(peer)
+    WifiAwareTransport.subscribe(peer, config)
+}
+
+actual fun unsubscribeAwareForPeer(id: String) {
+    if (isWifiAwareSupported) WifiAwareTransport.unsubscribe(id)
+}
+
+actual fun stopAware() {
+    if (isWifiAwareSupported) WifiAwareTransport.stop()
 }

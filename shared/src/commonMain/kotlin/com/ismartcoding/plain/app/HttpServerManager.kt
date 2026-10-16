@@ -13,7 +13,8 @@ import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.notifications.generateNotificationId
-import com.ismartcoding.plain.platform.system.isAndroidOnly
+import com.ismartcoding.plain.platform.system.Capability
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.app.stopHttpServiceAsync
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,8 +51,9 @@ object HttpServerManager {
      * killed).
      */
     fun requestStart(fromUi: Boolean) {
+        if (Capability.BACKGROUND_SERVICE !in getDeviceCapabilities()) return
         if (!UserPrefs.service.value || backgroundState.value == HttpServerState.ON || backgroundState.value.isProcessing()) return
-        if (!isAndroidOnly() || Permission.POST_NOTIFICATIONS.isGranted()) {
+        if (Permission.POST_NOTIFICATIONS.isGranted()) {
             dispatchStart()
             return
         }
@@ -62,6 +64,7 @@ object HttpServerManager {
 
     /** The service preference controls background retention, not HTTP availability. */
     fun setBackgroundEnabled(enable: Boolean, fromUi: Boolean = true) = coIO {
+        check(!enable || Capability.BACKGROUND_SERVICE in getDeviceCapabilities()) { "Unsupported capability BACKGROUND_SERVICE" }
         UserPrefs.service.value = enable
         if (enable) requestStart(fromUi = fromUi) else stopHttpServiceAsync()
     }

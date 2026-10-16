@@ -4,8 +4,11 @@ import com.ismartcoding.plain.features.chat.models.*
 import com.ismartcoding.plain.features.chat.ChatStatus
 import com.ismartcoding.plain.api.graphql.models.*
 import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.SerializationException
 import kotlin.test.Test
+import kotlin.test.assertTrue
+import kotlin.test.assertFalse
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
@@ -101,25 +104,31 @@ class GraphqlModelDecodeTest {
         assertEquals(30000L, info.durationMs)
     }
     @Test
-    fun nativePeerRecordsDecodeSnakeCaseFieldsAndKeepDerivedAddress() {
-        val peer = JsonHelper.jsonDecode<PeerRecord>("""{"id":"peer-1","name":"Peer","ip":"127.0.0.1","key":"key","public_key":"public","status":"PAIRED","port":8080,"device_type":"PHONE","token":"","created_at":"2026-10-12T00:00:00Z","updated_at":"2026-10-12T00:00:00Z","address":{"bestIp":"127.0.0.1","name":"Peer","baseUrl":"https://127.0.0.1:8080","apiUrl":"https://127.0.0.1:8080/peer_graphql","statusWsUrl":"wss://127.0.0.1:8080/peer_status"}}""")
+    fun peerRecordsUseMainCamelCaseFieldsAndKeepDerivedAddress() {
+        val peer = JsonHelper.jsonDecode<PeerRecord>("""{"id":"peer-1","name":"Peer","ip":"127.0.0.1","key":"key","publicKey":"public","status":"PAIRED","port":8080,"deviceType":"PHONE","token":"","createdAt":"2026-10-12T00:00:00Z","updatedAt":"2026-10-12T00:00:00Z","address":{"bestIp":"127.0.0.1","name":"Peer","baseUrl":"https://127.0.0.1:8080","apiUrl":"https://127.0.0.1:8080/peer_graphql","statusWsUrl":"wss://127.0.0.1:8080/peer_status"}}""")
         assertEquals("public", peer.publicKey)
         assertEquals("127.0.0.1", peer.address?.bestIp)
+        val encoded = JsonHelper.jsonEncodeToElement(peer).jsonObject
+        for (field in listOf("publicKey", "deviceType", "createdAt", "updatedAt")) assertTrue(field in encoded)
+        for (field in listOf("public_key", "device_type", "created_at", "updated_at")) assertFalse(field in encoded)
         assertEquals(peer, JsonHelper.jsonDecodeFromElement<PeerRecord>(JsonHelper.jsonEncodeToElement(peer)))
     }
 
     @Test
-    fun nativeChannelMembersRemainAJsonStringAndUseThePublicMemberModel() {
-        val channel = JsonHelper.jsonDecode<ChatChannelRecord>("""{"id":"channel-1","name":"Channel","key":"key","owner_id":"me","members":"[{\"peerId\":\"peer-1\",\"status\":\"JOINED\"}]","version":4294967296,"status":"JOINED","created_at":"2026-10-12T00:00:00Z","updated_at":"2026-10-12T00:00:00Z"}""")
+    fun channelUsesTheMainGraphqlObjectAndMemberArray() {
+        val channel = JsonHelper.jsonDecode<ChatChannel>("""{"id":"channel-1","name":"Channel","ownerId":"owner-1","actions":{"isOwner":false,"canRename":false,"canManageMembers":false,"canLeave":true,"canDelete":false},"members":[{"peerId":"peer-1","status":"JOINED"}],"version":4294967296,"status":"JOINED","createdAt":"2026-10-12T00:00:00Z","updatedAt":"2026-10-12T00:00:00Z"}""")
         assertEquals(4294967296L, channel.version)
-        assertEquals(listOf("peer-1"), channel.memberIds())
-        assertEquals(channel, JsonHelper.jsonDecodeFromElement<ChatChannelRecord>(JsonHelper.jsonEncodeToElement(channel)))
+        assertEquals("owner-1", channel.ownerId)
+        assertEquals(listOf("peer-1"), channel.members.map { it.peerId })
+        assertTrue(channel.actions.canLeave)
+        assertFalse(channel.actions.canDelete)
+        assertEquals(channel, JsonHelper.jsonDecodeFromElement<ChatChannel>(JsonHelper.jsonEncodeToElement(channel)))
     }
 
     @Test
     fun nativeRecordDecodersKeepRejectingIncompleteSnapshots() {
         assertFailsWith<SerializationException> { JsonHelper.jsonDecode<PeerRecord>("""{"id":"peer-1"}""") }
-        assertFailsWith<SerializationException> { JsonHelper.jsonDecode<ChatChannelRecord>("""{"id":"channel-1"}""") }
+        assertFailsWith<SerializationException> { JsonHelper.jsonDecode<ChatChannel>("""{"id":"channel-1"}""") }
     }
 
 }

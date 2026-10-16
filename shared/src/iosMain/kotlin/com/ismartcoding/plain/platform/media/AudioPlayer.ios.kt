@@ -2,41 +2,37 @@
 
 package com.ismartcoding.plain.platform.media
 
-import com.ismartcoding.plain.platform.system.avPlayerCurrentItem
-import com.ismartcoding.plain.platform.system.avPlayerPerform
-import com.ismartcoding.plain.platform.system.avPlayerPerformWithArg
-import com.ismartcoding.plain.platform.system.avPlayerRate
-import com.ismartcoding.plain.platform.system.avPlayerSeekToMs
-import com.ismartcoding.plain.platform.system.avPlayerSetRate
-import com.ismartcoding.plain.platform.system.avPlayerTimeMs
-import com.ismartcoding.plain.rust.http.get
-
 import com.ismartcoding.plain.app.TempData
-import com.ismartcoding.plain.features.audio.AudioCommands
 import com.ismartcoding.plain.features.audio.AudioQueueClient
 import com.ismartcoding.plain.api.graphql.models.AudioItem
-import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.preferences.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
-import platform.AVFoundation.AVPlayerTimeControlStatusPaused
 import platform.AVFoundation.AVPlayerTimeControlStatusPlaying
+import platform.AVFoundation.AVPlayerItemDidPlayToEndTimeNotification
+import platform.AVFoundation.currentItem
+import platform.AVFoundation.addPeriodicTimeObserverForInterval
+import platform.AVFoundation.removeTimeObserver
+import platform.AVFoundation.currentTime
+import platform.AVFoundation.pause
+import platform.AVFoundation.play
+import platform.AVFoundation.rate
+import platform.AVFoundation.replaceCurrentItemWithPlayerItem
+import platform.AVFoundation.seekToTime
+import platform.AVFoundation.timeControlStatus
+import platform.CoreMedia.CMTimeMake
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSOperationQueue
 import platform.Foundation.NSURL
-import platform.Foundation.valueForKey
-import platform.darwin.NSObject
 
 actual fun createAudioPlayer(): AudioPlayer = AVPlayerAudioPlayer
 
@@ -47,121 +43,136 @@ private object AVPlayerAudioPlayer : AudioPlayer {
     private var player: AVPlayer? = null
     private var currentAudio: AudioItem? = null
     private var pendingStart: Pair<AudioItem, Long>? = null
+    private var activeRevision = -1L
+    private var completionObserver: Any? = null
+    private var playbackSpeed = 1f
+
+    override fun bindRevision(revision: Long) {
+        activeRevision = revision
+        observeCompletion()
+    }
+
+    private fun observeCompletion() {
+        completionObserver?.let { NSNotificationCenter.defaultCenter.removeObserver(it) }
+        completionObserver = null
+        val item = player?.currentItem ?: return
+        val revision = activeRevision
+        val path = currentAudio?.path ?: return
+        completionObserver = NSNotificationCenter.defaultCenter.addObserverForName(
+            AVPlayerItemDidPlayToEndTimeNotification, `object` = item, queue = NSOperationQueue.mainQueue,
+        ) {
+            if (activeRevision == revision && player?.currentItem == item) {
+                scope.launch { AudioQueueClient.onCompleted(path, revision) }
+            }
+        }
+    }
     override val currentPath: String get() = if (player == null) "" else currentAudio?.path.orEmpty()
 
     override suspend fun load(audio: AudioItem, positionMs: Long, speed: Float, revision: Long) = withContext(Dispatchers.Main) {
+        stopObservingStart()
         currentAudio = audio
         TempData.audioPlayPosition = positionMs
         playInternal(audio, speed, revision)
     }
 
-    /** Playback intent: true from play() until pause()/clear(); the flow
-     *  mirrors it so play buttons stay steady across track switches. */
     private var playWhenReady = false
-    private var pollJob: Job? = null
+    private var startObserver: Pair<AVPlayer, Any>? = null
     private val scope = CoroutineScope(Dispatchers.Main)
 
     override val progress: Long
         get() {
             val p = player ?: return TempData.audioPlayPosition
-            return avPlayerTimeMs(p as NSObject, "currentTime")
+            return mediaTimeMs(p.currentTime())
         }
 
-    override fun seekTo(positionMs: Long) {
-        val ms = positionMs
-        TempData.audioPlayPosition = ms
-        scope.launch {
-            val p = player ?: return@launch
-            avPlayerSeekToMs(p as NSObject, ms)
-        }
+    override suspend fun seekTo(positionMs: Long) = withContext(Dispatchers.Main) {
+        TempData.audioPlayPosition = positionMs
+        player?.let { it.seekToTime(CMTimeMake(positionMs, 1000)) }
+        Unit
     }
 
-    override fun pause() {
-        scope.launch {
-            playWhenReady = false
-            val p = player ?: return@launch
-            TempData.audioPlayPosition = avPlayerTimeMs(p as NSObject, "currentTime")
-            avPlayerPerform(p as NSObject, "pause")
-            _isPlayingFlow.value = false
-            stopPolling()
+    override suspend fun pause() = withContext(Dispatchers.Main) {
+        playWhenReady = false
+        player?.let {
+            TempData.audioPlayPosition = mediaTimeMs(it.currentTime())
+            it.pause()
         }
+        _isPlayingFlow.value = false
+        stopObservingStart()
     }
 
-    override fun play() {
-        scope.launch {
-            playWhenReady = true
-            val p = player
-            if (p != null) {
-                avPlayerPerform(p as NSObject, "play")
-                avPlayerSetRate(p as NSObject, UserPrefs.audioPlaybackSpeed.value)
-                _isPlayingFlow.value = true
-                startPolling()
-                return@launch
-            }
-
+    override suspend fun play() = withContext(Dispatchers.Main) {
+        playWhenReady = true
+        player?.let {
+            it.play()
+            it.rate = playbackSpeed
+            _isPlayingFlow.value = true
+            observeStart()
         }
+        Unit
     }
 
-    override fun restartIfPlaying() {
-        scope.launch {
-            val p = player ?: return@launch
-            if (avPlayerRate(p as NSObject) > 0f) {
-                avPlayerPerform(p as NSObject, "pause")
-                avPlayerPerform(p as NSObject, "play")
+    override suspend fun restartIfPlaying() = withContext(Dispatchers.Main) {
+        player?.let {
+            if (it.rate > 0f) {
+                it.pause()
+                it.play()
+                it.rate = playbackSpeed
             }
         }
+        Unit
     }
 
-    override fun clear() {
-        scope.launch {
-            playWhenReady = false
-            val p = player
-            if (p != null) {
-                avPlayerPerform(p as NSObject, "pause")
-                avPlayerPerformWithArg(p as NSObject, "replaceCurrentItemWithPlayerItem:", null)
-            }
-            player = null
-            currentAudio = null
-            pendingStart = null
-            _isPlayingFlow.value = false
-            TempData.audioPlayPosition = 0
-            stopPolling()
+    override suspend fun clear() = withContext(Dispatchers.Main) {
+        playWhenReady = false
+        stopObservingStart()
+        completionObserver?.let { NSNotificationCenter.defaultCenter.removeObserver(it) }
+        completionObserver = null
+        player?.let {
+            it.pause()
+            it.replaceCurrentItemWithPlayerItem(null)
         }
+        player = null
+        currentAudio = null
+        pendingStart = null
+        _isPlayingFlow.value = false
+        TempData.audioPlayPosition = 0
     }
 
-    override fun setPlaybackSpeed(speed: Float) {
-        scope.launch {
-            UserPrefs.audioPlaybackSpeed.value = speed
-            val p = player ?: return@launch
-            if (playWhenReady) avPlayerSetRate(p as NSObject, speed)
-        }
+    override suspend fun setPlaybackSpeed(speed: Float) = withContext(Dispatchers.Main) {
+        playbackSpeed = speed
+        if (playWhenReady) player?.let { it.rate = speed }
+        Unit
     }
 
     private fun playInternal(audio: AudioItem, speed: Float, revision: Long) {
         try {
             configureSession()
+            playbackSpeed = speed
             val url = NSURL.fileURLWithPath(audio.path)
             val item = AVPlayerItem(uRL = url)
             val seekMs = TempData.audioPlayPosition
             pendingStart = audio to revision
             val existing = player
             if (existing != null) {
-                avPlayerPerformWithArg(existing as NSObject, "replaceCurrentItemWithPlayerItem:", item)
-                avPlayerSeekToMs(existing as NSObject, seekMs)
-                avPlayerPerform(existing as NSObject, "play")
-                avPlayerSetRate(existing as NSObject, speed)
+                existing.replaceCurrentItemWithPlayerItem(item)
+                existing.seekToTime(CMTimeMake(seekMs, 1000))
+                existing.play()
+                existing.rate = speed
             } else {
-                val newPlayer = AVPlayer(uRL = url)
-                seekPlayerIfNeeded(newPlayer as NSObject, seekMs)
-                avPlayerPerform(newPlayer as NSObject, "play")
-                avPlayerSetRate(newPlayer as NSObject, speed)
+                val newPlayer = AVPlayer(playerItem = item)
+                if (seekMs > 0) newPlayer.seekToTime(CMTimeMake(seekMs, 1000))
+                newPlayer.play()
+                newPlayer.rate = speed
                 player = newPlayer
             }
+            observeCompletion()
             playWhenReady = true
             _isPlayingFlow.value = true
-            startPolling()
+            observeStart()
 
         } catch (e: Exception) {
+            stopObservingStart()
             pendingStart = null
             playWhenReady = false
             _isPlayingFlow.value = false
@@ -173,40 +184,28 @@ private object AVPlayerAudioPlayer : AudioPlayer {
         check(AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, null)) { "Audio session configuration failed" }
     }
 
-    private fun startPolling() {
-        stopPolling()
-        pollJob = scope.launch {
-            while (isActive) {
-                delay(200)
-                val p = player ?: break
-                val position = avPlayerTimeMs(p as NSObject, "currentTime")
-                TempData.audioPlayPosition = position
-                val status = (p.valueForKey("timeControlStatus") as? platform.Foundation.NSNumber)?.intValue()
-                if (status?.toLong() == AVPlayerTimeControlStatusPlaying) {
-                    pendingStart?.let { audio ->
+    private fun observeStart() {
+        stopObservingStart()
+        val pending = pendingStart ?: return
+        val source = player ?: return
+        val item = source.currentItem ?: return
+        val observer = source.addPeriodicTimeObserverForInterval(CMTimeMake(200, 1000), queue = null) {
+            if (playWhenReady && player == source && source.currentItem == item &&
+                pendingStart === pending && source.timeControlStatus == AVPlayerTimeControlStatusPlaying) {
+                scope.launch {
+                    if (playWhenReady && player == source && source.currentItem == item && pendingStart === pending) {
                         pendingStart = null
-                        scope.launch { AudioQueueClient.onStarted(audio.first, audio.second) }
+                        stopObservingStart()
+                        AudioQueueClient.onStarted(pending.first, pending.second)
                     }
-                }
-                val item = avPlayerCurrentItem(p as NSObject)
-                val duration = item?.let { avPlayerTimeMs(it, "duration") } ?: 0L
-                if (playWhenReady && status?.toLong() == AVPlayerTimeControlStatusPaused && duration > 0 && position >= duration - 50) {
-                    onCompleted()
-                    break
                 }
             }
         }
+        startObserver = source to observer
     }
 
-    private fun stopPolling() {
-        pollJob?.cancel()
-        pollJob = null
+    private fun stopObservingStart() {
+        startObserver?.let { (source, observer) -> source.removeTimeObserver(observer) }
+        startObserver = null
     }
-
-    private fun onCompleted() { AudioCommands.submit("COMPLETED") }
-
-}
-
-private fun seekPlayerIfNeeded(target: NSObject, ms: Long) {
-    if (ms > 0) avPlayerSeekToMs(target, ms)
 }

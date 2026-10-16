@@ -19,8 +19,6 @@ import com.ismartcoding.plain.rust.request.*
 import kotlinx.serialization.json.*
 
 object AudioHistoryClient {
-    suspend fun artistPlayCounts(): Map<String, Long> = PlainRust.mainQuery("audioArtistPlayCounts { artist count }")
-        .getValue("audioArtistPlayCounts").jsonArray.associate { r -> r.jsonObject.string("artist") to r.jsonObject.getValue("count").jsonPrimitive.long }
     suspend fun recentPage(limit: Int, offset: Int): List<AudioPlayHistory> = recentPageFiltered("",limit,offset)
     suspend fun recentPageFiltered(text: String, limit: Int, offset: Int): List<AudioPlayHistory> =
         RustContentApi.query("audioPlayHistory(offset: $offset, limit: $limit, query: ${gql(text)}) { $AUDIO_HISTORY_FIELDS }")

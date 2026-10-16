@@ -30,10 +30,6 @@ object DbSchemaSql {
             db["entities"]!!.jsonArray.map { it.jsonObject }.sortedBy { it["tableName"]!!.jsonPrimitive.content }
 
         val sb = StringBuilder()
-        sb.appendLine("-- plain-app Room 数据库 DDL（Room version $version，${entities.size} 张表）")
-        sb.appendLine("-- 自动生成，禁止手改。源：shared/apitest/legacy-room-schemas/com.ismartcoding.plain.platform.AppDatabase/${file.name}")
-        sb.appendLine("-- 再生：./gradlew :shared:testAndroidHostTest --tests \"com.ismartcoding.plain.DbSchemaPrintTest\"")
-        sb.appendLine("-- 过期锁：DbSchemaTest")
         for (e in entities) {
             val table = e["tableName"]!!.jsonPrimitive.content
             sb.appendLine()

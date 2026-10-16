@@ -1,7 +1,10 @@
 package com.ismartcoding.plain.ui.nearby
 
+import com.ismartcoding.plain.platform.system.Capability
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
+
 import androidx.compose.runtime.getValue
-import com.ismartcoding.plain.platform.network.getBestIp
+import androidx.compose.runtime.setValue
 
 import com.ismartcoding.plain.api.graphql.models.NearbyDevice
 import androidx.compose.foundation.layout.Box
@@ -19,7 +22,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -27,14 +29,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.features.chat.models.PeerRecord
+import com.ismartcoding.plain.api.graphql.models.PeerRecord
 import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.toSortName
 import com.ismartcoding.plain.platform.network.BleAvailability
 import com.ismartcoding.plain.platform.network.bleAvailabilityFlow
-import com.ismartcoding.plain.platform.system.isIOS
 import com.ismartcoding.plain.platform.system.openAppSettings
 import com.ismartcoding.plain.ui.base.AlertType
 import com.ismartcoding.plain.ui.base.BottomSpace
@@ -58,29 +59,26 @@ fun NearbyPage(
 ) {
     val nearbyDevices by NearbyViewModel.nearbyDevices.collectAsState()
     val isDiscovering by NearbyViewModel.isDiscovering
-    val isBleScanning by NearbyViewModel.isBleScanning
+    var isBleScanning by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     val bleAvailability by bleAvailabilityFlow.collectAsState()
+    val peerDiscoverySupported = Capability.PEER_DISCOVERY in getDeviceCapabilities()
     val isSearching = isDiscovering || isBleScanning
     val pairedPeers by PeerCacher.pairedPeers.collectAsState()
 
-    LaunchedEffect(Unit) {
-        if (!isDiscovering) {
-            NearbyViewModel.startDiscovering()
+    LaunchedEffect(peerDiscoverySupported) {
+        if (peerDiscoverySupported) {
+            try { com.ismartcoding.plain.features.nearby.RustNearbyDevices.observeDiscovery() }
+            catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+            catch (error: Exception) { com.ismartcoding.plain.lib.logcat.LogCat.e("Nearby discovery failed", error) }
         }
     }
     LaunchedEffect(bleAvailability) {
-        if (bleAvailability == BleAvailability.READY && !isBleScanning) {
-            NearbyViewModel.startBleScanning()
+        if (bleAvailability == BleAvailability.READY) {
+            isBleScanning = true
+            try { com.ismartcoding.plain.features.nearby.BleScanDriver.scan() }
+            finally { isBleScanning = false }
         }
     }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            if (isDiscovering) NearbyViewModel.stopDiscovering()
-            if (isBleScanning) NearbyViewModel.stopBleScanning()
-        }
-    }
-
 
     PScaffold(
         topBar = {
@@ -98,18 +96,15 @@ fun NearbyPage(
                 .fillMaxSize()
                 .padding(top = paddingValues.calculateTopPadding())
         ) {
-            if (bleAvailability != BleAvailability.READY && bleAvailability != BleAvailability.UNSUPPORTED) {
+            if (Capability.BLE_DISCOVERY in getDeviceCapabilities() && bleAvailability != BleAvailability.READY) {
                 item {
                     val description = when {
                         bleAvailability == BleAvailability.BLUETOOTH_OFF -> stringResource(Res.string.bluetooth_off)
-                        isIOS() && bleAvailability == BleAvailability.PERMISSION_DENIED ->
+                        !com.ismartcoding.plain.platform.network.canRequestBluetoothAccess() && bleAvailability == BleAvailability.PERMISSION_DENIED ->
                             stringResource(Res.string.bluetooth_permission_denied)
                         else -> stringResource(Res.string.bluetooth_permission_required_for_nearby)
                     }
-                    // iOS has no in-app permission request or Bluetooth toggle:
-                    // once denied/off, the only recovery is the system Settings
-                    // app. Android keeps launching its own request dialogs.
-                    val openSettings = isIOS() && bleAvailability != BleAvailability.UNKNOWN
+                    val openSettings = !com.ismartcoding.plain.platform.network.canRequestBluetoothAccess() && bleAvailability != BleAvailability.UNKNOWN
                     PAlert(
                         description = description,
                         AlertType.WARNING,
@@ -166,7 +161,7 @@ fun NearbyPage(
 internal fun LazyListScope.nearbyDeviceListItems(
     nearbyDevices: List<NearbyDevice>,
     peerVM: PeerViewModel,
-    pairedPeers: List<com.ismartcoding.plain.features.chat.models.PeerRecord>,
+    pairedPeers: List<com.ismartcoding.plain.api.graphql.models.PeerRecord>,
 ) {
     val sortedDevices = nearbyDevices.sortedBy { it.name.toSortName() }
     items(sortedDevices, key = { it.id }) { item ->

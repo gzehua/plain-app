@@ -8,23 +8,10 @@ object SmsProviderContract {
     const val MMS_PDU_RETRIEVE_CONF = 132
     const val MMS_CONTENT_FILTER = "m_type IN ($MMS_PDU_SEND_REQ, $MMS_PDU_RETRIEVE_CONF)"
 
-    data class MessageIds(
-        val sms: List<String>,
-        val mms: List<String>,
-    )
-
     data class SmsSentIntentIdentity(
         val action: String,
         val data: String,
     )
-
-    fun partitionMessageIds(value: String): MessageIds {
-        val ids = value.split(',').map(String::trim).filter(String::isNotEmpty)
-        return MessageIds(
-            sms = ids.filterNot { it.startsWith("mms_") },
-            mms = ids.filter { it.startsWith("mms_") }.map { it.removePrefix("mms_") },
-        )
-    }
 
     fun parseRecipientIds(value: String): List<String> {
         return value.trim()

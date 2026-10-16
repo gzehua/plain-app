@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.platform.files
 
-import com.ismartcoding.plain.platform.files.fileSize
 
 import com.ismartcoding.plain.ui.components.codeeditor.engine.ByteSource
 import com.ismartcoding.plain.ui.components.codeeditor.engine.ChunkedByteSource
@@ -13,18 +12,12 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toLong
 import kotlinx.cinterop.usePinned
-import platform.Foundation.NSFileManager
-import platform.posix.O_CREAT
 import platform.posix.O_RDONLY
-import platform.posix.O_TRUNC
-import platform.posix.O_WRONLY
 import platform.posix.close
 import platform.posix.fstat
-import platform.posix.fsync
 import platform.posix.open
 import platform.posix.pread
 import platform.posix.stat
-import platform.posix.write
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun openByteSource(path: String): ByteSource {
@@ -61,38 +54,4 @@ actual fun openByteSource(path: String): ByteSource {
         }
     }
     return ChunkedByteSource(source)
-}
-
-@OptIn(ExperimentalForeignApi::class)
-actual fun writeByteChunksStreaming(path: String, chunks: Iterator<ByteArray>): Boolean {
-    return try {
-        val manager = NSFileManager.defaultManager
-        val tmp = path + ".ce_tmp"
-        manager.createFileAtPath(tmp, contents = null, attributes = null)
-        val fd = open(tmp, O_WRONLY or O_CREAT or O_TRUNC, 0x1A4)
-        if (fd < 0) return false
-        try {
-            while (chunks.hasNext()) {
-                val bytes = chunks.next()
-                bytes.usePinned { pinned ->
-                    var done = 0
-                    while (done < bytes.size) {
-                        val n = write(fd, pinned.addressOf(done), (bytes.size - done).toULong())
-                        if (n <= 0L) return false
-                        done += n.toInt()
-                    }
-                }
-            }
-            fsync(fd)
-        } finally {
-            close(fd)
-        }
-        if (manager.fileExistsAtPath(path)) {
-            manager.removeItemAtPath(path, error = null)
-        }
-        manager.moveItemAtPath(tmp, toPath = path, error = null)
-        true
-    } catch (e: Exception) {
-        false
-    }
 }

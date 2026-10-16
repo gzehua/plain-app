@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.api.graphql.models
 
-import com.ismartcoding.plain.ui.pomodoro.PomodoroState
+import com.ismartcoding.plain.api.graphql.models.PomodoroState
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 

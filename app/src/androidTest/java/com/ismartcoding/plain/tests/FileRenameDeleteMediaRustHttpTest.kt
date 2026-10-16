@@ -91,14 +91,14 @@ class FileRenameDeleteMediaRustHttpTest {
             assertNull(FilesClient.rename(sourcePath, collision.name))
             assertEquals("existing", collision.readText())
             assertEquals(destinationPath, FilesClient.rename(sourcePath, "renamed.png"))
-            val renameTask = FileTaskHelper.list(0, 1000, "").single { task -> task.completedOps.any { it.src == sourcePath && it.dst == destinationPath } }
+            val renameTask = FileTaskClient.list(0, 1000, "").single { task -> task.completedOps.any { it.src == sourcePath && it.dst == destinationPath } }
             assertEquals(FileTaskType.MOVE, renameTask.type)
             assertEquals(FileTaskStatus.DONE, renameTask.status)
-            assertEquals(FileTaskStatus.DONE, FileTaskHelper.get(renameTask.id)!!.status)
+            assertEquals(FileTaskStatus.DONE, FileTaskClient.get(renameTask.id)!!.status)
             assertFalse(File(sourcePath).exists())
             assertTrue(File(destinationPath).isFile)
             val moved = queryFileTaskMedia(listOf(destinationPath)).single()
-            assertEquals(DataType.IMAGE, moved.type)
+            assertEquals(1, moved.providerType)
             ids.add(moved.id)
             assertEquals(listOf(imageTag), TagsClient.getTagRelationsByKey(moved.id, DataType.IMAGE).map { it.tagId })
             if (oldId != moved.id) assertTrue(TagsClient.getTagRelationsByKey(oldId, DataType.IMAGE).isEmpty())
@@ -113,7 +113,7 @@ class FileRenameDeleteMediaRustHttpTest {
             assertFalse(ImageEmbeddings.getAllIds().any { it in ids })
             assertFalse(FilesClient.delete(destinationPath))
         } finally {
-            FileTaskHelper.list(0, 1000, "").filter { task -> task.completedOps.any { it.src.startsWith(root.path + "/") } }.forEach { FileTaskHelper.remove(it.id) }
+            FileTaskClient.list(0, 1000, "").filter { task -> task.completedOps.any { it.src.startsWith(root.path + "/") } }.forEach { FileTaskClient.remove(it.id) }
             tags.forEach { TagsClient.delete(it) }
             ImageEmbeddings.deleteByIds(ids.toList())
             uri?.let { resolver.delete(it, null, null) }

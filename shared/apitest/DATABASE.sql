@@ -1,7 +1,3 @@
--- plain-app Room 数据库 DDL（Room version 31，29 张表）
--- 自动生成，禁止手改。源：shared/apitest/legacy-room-schemas/com.ismartcoding.plain.platform.AppDatabase/31.json
--- 再生：./gradlew :shared:testAndroidHostTest --tests "com.ismartcoding.plain.DbSchemaPrintTest"
--- 过期锁：DbSchemaTest
 
 CREATE TABLE IF NOT EXISTS `archived_conversations` (`conversation_id` TEXT NOT NULL, `conversation_date` TEXT NOT NULL, PRIMARY KEY(`conversation_id`));
 

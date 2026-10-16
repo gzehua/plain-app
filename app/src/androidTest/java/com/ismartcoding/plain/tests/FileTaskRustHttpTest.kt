@@ -27,6 +27,14 @@ import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class FileTaskRustHttpTest {
+    private suspend fun awaitTask(id: String): com.ismartcoding.plain.api.graphql.models.FileHostTask {
+        while (true) {
+            val task = checkNotNull(FileTaskClient.get(id))
+            if (task.status == FileTaskStatus.DONE || task.status == FileTaskStatus.ERROR) return task
+            delay(100)
+        }
+    }
+
     @Test
     fun fileTasksCopyMoveTrackActualTargetsAndReportRealFailures() = runBlocking {
         val root = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir,"file-task-${UUID.randomUUID()}").apply { mkdirs() }
@@ -37,40 +45,40 @@ class FileTaskRustHttpTest {
             val source = File(root,"source.txt").apply { writeText("synthetic") }
             val target = File(root,"target.txt").apply { writeText("existing") }
             val second = File(root,"second.txt").apply { writeText("two") }
-            val copied = FileTaskHelper.create(FileTaskType.COPY,listOf(FileTaskOp(source.path,target.path),FileTaskOp(second.path,File(root,"second-copy.txt").path))).also { ids.add(it.id) }
-            val done = withTimeout(20_000) { FileTaskHelper.wait(copied.id) }
+            val copied = FileTaskClient.create(FileTaskType.COPY,listOf(FileTaskOp(source.path,target.path),FileTaskOp(second.path,File(root,"second-copy.txt").path))).also { ids.add(it.id) }
+            val done = withTimeout(20_000) { awaitTask(copied.id) }
             assertEquals(FileTaskStatus.DONE,done.status)
             assertEquals(12L,done.doneBytes)
             assertEquals(2L,done.doneItems)
             assertEquals("existing",target.readText())
             assertEquals("synthetic",File(root,"target (1).txt").readText())
             assertEquals(File(root,"target (1).txt").path,done.completedOps[0].dst)
-            assertEquals(done.completedOps,FileTaskHelper.get(done.id)!!.completedOps)
+            assertEquals(done.completedOps,FileTaskClient.get(done.id)!!.completedOps)
             assertFalse(File(root,"target (2).txt").exists())
-            assertTrue(FileTaskHelper.list(0,0,"").isEmpty())
+            assertTrue(FileTaskClient.list(0,0,"").isEmpty())
             val movedRoot = File(root,"moved")
-            val moved = FileTaskHelper.create(FileTaskType.MOVE,listOf(FileTaskOp(File(root,"target (1).txt").path,movedRoot.path))).also { ids.add(it.id) }
-            assertEquals(FileTaskStatus.DONE,withTimeout(20_000) { FileTaskHelper.wait(moved.id) }.status)
+            val moved = FileTaskClient.create(FileTaskType.MOVE,listOf(FileTaskOp(File(root,"target (1).txt").path,movedRoot.path))).also { ids.add(it.id) }
+            assertEquals(FileTaskStatus.DONE,withTimeout(20_000) { awaitTask(moved.id) }.status)
             assertFalse(File(root,"target (1).txt").exists())
             assertEquals("synthetic",movedRoot.readText())
-            val failed = FileTaskHelper.create(FileTaskType.COPY,listOf(FileTaskOp(File(root,"missing").path,File(root,"never").path))).also { ids.add(it.id) }
-            val error = withTimeout(20_000) { FileTaskHelper.wait(failed.id) }
+            val failed = FileTaskClient.create(FileTaskType.COPY,listOf(FileTaskOp(File(root,"missing").path,File(root,"never").path))).also { ids.add(it.id) }
+            val error = withTimeout(20_000) { awaitTask(failed.id) }
             assertEquals(FileTaskStatus.ERROR,error.status)
             assertTrue(error.error.isNotEmpty())
             assertTrue(error.completedOps.isEmpty())
             assertFalse(File(root,"never").exists())
             check(external.mkdirs())
-            val externalCopy = FileTaskHelper.create(FileTaskType.COPY,listOf(FileTaskOp(source.path,external.path))).also { ids.add(it.id) }
-            assertEquals(FileTaskStatus.DONE,withTimeout(25_000) { FileTaskHelper.wait(externalCopy.id) }.status)
+            val externalCopy = FileTaskClient.create(FileTaskType.COPY,listOf(FileTaskOp(source.path,external.path))).also { ids.add(it.id) }
+            assertEquals(FileTaskStatus.DONE,withTimeout(25_000) { awaitTask(externalCopy.id) }.status)
             val externalSource = File(external,source.name)
             assertEquals("synthetic",externalSource.readText())
             val externalTarget = File(external,"moved.txt")
-            val externalMove = FileTaskHelper.create(FileTaskType.MOVE,listOf(FileTaskOp(externalSource.path,externalTarget.path))).also { ids.add(it.id) }
-            assertEquals(FileTaskStatus.DONE,withTimeout(25_000) { FileTaskHelper.wait(externalMove.id) }.status)
+            val externalMove = FileTaskClient.create(FileTaskType.MOVE,listOf(FileTaskOp(externalSource.path,externalTarget.path))).also { ids.add(it.id) }
+            assertEquals(FileTaskStatus.DONE,withTimeout(25_000) { awaitTask(externalMove.id) }.status)
             assertFalse(externalSource.exists())
             assertEquals("synthetic",externalTarget.readText())
             var rejected = false
-            try { FileTaskHelper.create(FileTaskType.COPY,listOf(FileTaskOp("/system/test",File(root,"forbidden").path))) }
+            try { FileTaskClient.create(FileTaskType.COPY,listOf(FileTaskOp("/system/test",File(root,"forbidden").path))) }
             catch (_: Exception) { rejected = true }
             assertTrue(rejected)
             val spoofedCaller = runCatching { RustContentApi.query("fileTask(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, id: ${JsonPrimitive(done.id)}) { id }") }
@@ -84,7 +92,7 @@ class FileTaskRustHttpTest {
             assertTrue(publicFailed)
         } finally {
             RustSystemState.setApiPermissions(originalPermissions)
-            FileTaskHelper.list(0,1000,"").filter { task -> task.completedOps.any { it.src.startsWith(root.path+"/") } || task.id in ids }.forEach { FileTaskHelper.remove(it.id) }
+            FileTaskClient.list(0,1000,"").filter { task -> task.completedOps.any { it.src.startsWith(root.path+"/") } || task.id in ids }.forEach { FileTaskClient.remove(it.id) }
             root.deleteRecursively()
             external.deleteRecursively()
             com.ismartcoding.plain.platform.files.scanFileTaskPaths(listOf(File(external,"source.txt").path,File(external,"moved.txt").path))

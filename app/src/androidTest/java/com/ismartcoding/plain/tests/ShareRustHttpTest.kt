@@ -4,7 +4,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ismartcoding.plain.features.shares.SharesClient
 import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
 import kotlinx.serialization.json.*
 import com.ismartcoding.plain.preferences.UserPrefs
 import kotlinx.coroutines.runBlocking
@@ -40,7 +39,7 @@ class ShareRustHttpTest {
             assertEquals(File(folder,"a.txt").canonicalPath,SharesClient.resolveSharedPath(share.id,encrypted))
             assertEquals("photos/a.txt",SharesClient.browse(share.id,"photos").second.filter { !it.isDir }.single().virtualPath)
             val folderId = ResourceCrypto.encrypt("{\"sharedId\":\"${share.id}\",\"virtualPath\":\"photos\"}",Base64.decode(share.urlToken))
-            val entries = PlainRust.mainQuery("shareZipEntries(id: ${gql(share.id)}, fileId: ${gql(folderId)}) { virtualPath realPath isDir }")
+            val entries = PlainRust.mainQuery("shareZipEntries(id: ${JsonPrimitive(share.id)}, fileId: ${JsonPrimitive(folderId)}) { virtualPath realPath isDir }")
                 .getValue("shareZipEntries").jsonArray
             assertEquals(listOf("a.txt", "empty/"), entries.map { it.jsonObject.getValue("virtualPath").jsonPrimitive.content })
             assertTrue(entries.single { it.jsonObject.getValue("isDir").jsonPrimitive.boolean }.jsonObject.getValue("realPath").jsonPrimitive.content.endsWith("/empty"))

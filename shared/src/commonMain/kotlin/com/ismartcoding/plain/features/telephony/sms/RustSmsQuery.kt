@@ -16,10 +16,6 @@ object RustSmsQuery {
         PlainRust.mainQuery("smsIds(query: ${gql(query)}, includeTrashed: $includeTrashed)")
             .getValue("smsIds").jsonArray.map { it.jsonPrimitive.content }.toSet()
 
-    suspend fun textIds(filters: List<String>): Set<String> =
-        PlainRust.mainQuery("mmsTextIds(filters: [${filters.joinToString(",", transform = ::gql)}])")
-            .getValue("mmsTextIds").jsonArray.map { it.jsonPrimitive.content }.toSet()
-
     suspend fun count(query: String): Int =
         PlainRust.mainQuery("smsCount(query: ${gql(query)})").getValue("smsCount").jsonPrimitive.int
 

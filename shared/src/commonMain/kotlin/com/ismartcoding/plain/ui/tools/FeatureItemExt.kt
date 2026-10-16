@@ -68,5 +68,6 @@ fun FeatureItem.Companion.getList(navController: NavHostController): List<Featur
         )
     }
 
-    return list
+    val capabilities = com.ismartcoding.plain.platform.system.getDeviceCapabilities()
+    return list.filter { it.type.has(capabilities) }
 }

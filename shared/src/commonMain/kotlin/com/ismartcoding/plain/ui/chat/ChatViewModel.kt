@@ -3,7 +3,7 @@ package com.ismartcoding.plain.ui.chat
 import com.ismartcoding.plain.features.chat.ChatClient
 import com.ismartcoding.plain.features.chat.ChatMessageReceiver
 import com.ismartcoding.plain.features.chat.RustChatStore
-import com.ismartcoding.plain.features.chat.ShareSendHelper
+import com.ismartcoding.plain.features.chat.ShareSendClient
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +37,7 @@ import kotlinx.coroutines.sync.withLock
 
 /**
  * Process-wide chat state holder. UI (ChatPage), non-UI writers
- * (ShareSendHelper, GraphQL mutations, ChatMessageReceiver, download
+ * (ShareSendClient, GraphQL mutations, ChatMessageReceiver, download
  * completion) all talk to this single instance directly instead of
  * synchronizing through events. [ChatClient] sends business commands to
  * the Rust HTTP service.
@@ -133,11 +133,10 @@ object ChatViewModel : ISelectableViewModel<VChat> {
         }
     }
 
-    fun forwardMessage(messageId: String, target: ChatTarget) {
+    fun forwardMessage(messageId: String, targets: List<ChatTarget>) {
         launchSafe {
-            val item2 = ChatClient.forward(messageId, target)
-            publishCreated(target, listOf(item2))
-            if (item2.status == ChatStatus.SENT) {
+            val items = ChatClient.forward(messageId, targets)
+            if (items.isNotEmpty() && items.all { it.status == ChatStatus.SENT }) {
                 DialogHelper.showSuccess(Res.string.sent)
             }
         }

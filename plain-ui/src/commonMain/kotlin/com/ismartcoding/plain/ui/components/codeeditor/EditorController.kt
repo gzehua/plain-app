@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.components.codeeditor
 
+import kotlinx.coroutines.sync.withLock
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.TextRange
@@ -314,17 +315,23 @@ class EditorController(private val scope: kotlinx.coroutines.CoroutineScope, pri
         gotoTop()
     }
 
-    suspend fun saveAsync(): Result<Unit> {
-        val d = doc ?: return Result.failure(IllegalStateException("no document"))
-        return withContext(Dispatchers.Default) {
-            val ok = fileIO.writeByteChunksStreaming(path, d.byteChunks())
-            if (ok) {
-                snapshot = d.snapshot()
-                isDirty.value = false
-                Result.success(Unit)
-            } else {
-                Result.failure(IllegalStateException("save failed"))
+    private val saveLock = kotlinx.coroutines.sync.Mutex()
+
+    suspend fun saveAsync(): Result<Unit> = saveLock.withLock {
+        val d = doc ?: return@withLock Result.failure(IllegalStateException("no document"))
+        val destination = path
+        val saved = d.snapshot()
+        val ok = withContext(Dispatchers.Default) {
+            fileIO.writeByteChunksStreaming(destination, d.byteChunks(saved))
+        }
+        if (ok) {
+            if (doc === d && path == destination) {
+                snapshot = saved
+                isDirty.value = d.version != saved.version
             }
+            Result.success(Unit)
+        } else {
+            Result.failure(IllegalStateException("save failed"))
         }
     }
 

@@ -64,3 +64,5 @@ interface BleTransport {
 }
 
 expect fun bleTransport(): BleTransport
+
+expect fun canRequestBluetoothAccess(): Boolean

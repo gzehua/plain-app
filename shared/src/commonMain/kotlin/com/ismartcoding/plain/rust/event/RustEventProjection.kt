@@ -14,9 +14,11 @@ import kotlinx.serialization.json.*
 
 internal object RustEventProjection {
     suspend fun reconcile() {
+        com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
         com.ismartcoding.plain.ui.feeds.FeedWorkerState.refresh()
         com.ismartcoding.plain.features.videos.VideoProgressHost.restore()
         com.ismartcoding.plain.preferences.Prefs.refresh()
+        com.ismartcoding.plain.features.settings.AppUpdateDownloads.refresh()
         com.ismartcoding.plain.features.sessions.refreshOnlineClientIds()
         com.ismartcoding.plain.features.chat.download.DownloadQueue.refresh()
         com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine.refresh()
@@ -26,9 +28,10 @@ internal object RustEventProjection {
         com.ismartcoding.plain.features.nearby.RustMdnsRuntime.refresh()
         com.ismartcoding.plain.features.dlna.DlnaRendererState.refresh()
         com.ismartcoding.plain.features.dlna.sender.RustDlnaSender.refresh()
+        com.ismartcoding.plain.ui.pomodoro.PomodoroProjection.refresh()
         com.ismartcoding.plain.features.images.search.RustImageModels.refresh()
         com.ismartcoding.plain.features.chat.peer.PeerTransportProjection.refresh()
-        com.ismartcoding.plain.features.chat.peer.PeerStatusManager.refresh()
+        com.ismartcoding.plain.ui.chat.peer.PeerCacher.refreshOnline()
         com.ismartcoding.plain.ui.chat.peer.PeerCacher.load()
         com.ismartcoding.plain.features.chat.channel.ChannelCacher.load()
         com.ismartcoding.plain.features.chat.ChatCacher.load()
@@ -38,26 +41,30 @@ internal object RustEventProjection {
         val type = message.type
         val payload = message.payload
         when (type) {
-            EventType.IMAGE_INDEX_UPDATED.name -> com.ismartcoding.plain.features.images.search.RustImageModels.refresh()
+            EventType.NETWORK_CHANGED.name -> com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
             EventType.WEB_LOGIN_COMPLETED.name -> {
                 val facts = JsonHelper.jsonDecode<com.ismartcoding.plain.features.sessions.WebLoginCompletedFacts>(payload)
                 if (facts.chatPaired) com.ismartcoding.plain.features.chat.peer.PeerManager.load()
                 val request = facts.request
                 com.ismartcoding.plain.platform.notifications.sendWebLoginNotification(request.browserName, request.browserVersion, request.osName, request.osVersion, facts.clientIp)
             }
-            EventType.WEB_SOCKET_REGISTERED.name -> com.ismartcoding.plain.app.onWebSocketSessionStarted()
 
             EventType.MEDIA_ACTION_FINISHED.name -> com.ismartcoding.plain.ui.media.actions.MediaActionProjection.apply(payload)
             EventType.HTTP_SERVER_STARTED.name -> {
                 val started = JsonHelper.jsonDecode<com.ismartcoding.plain.rust.http.HttpServerStarted>(payload)
                 com.ismartcoding.plain.rust.request.RustContentApi.httpStarted(started.generation, started.httpPort)
+                com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
             }
             EventType.HTTP_SERVER_FAILED.name -> {
                 val failure = JsonHelper.jsonDecode<com.ismartcoding.plain.rust.http.HttpServerFailure>(payload)
                 com.ismartcoding.plain.app.onRustHttpServerFailed(failure.generation, failure.message)
             }
+            EventType.PEER_UPDATED.name -> {
+                val id = JsonHelper.jsonDecode<JsonObject>(payload).getValue("id").jsonPrimitive.content
+                com.ismartcoding.plain.ui.chat.peer.PeerCacher.refreshPeer(id)
+            }
             EventType.PEER_STATUS_UPDATED.name -> {
-                com.ismartcoding.plain.features.chat.peer.PeerStatusManager.refresh()
+                com.ismartcoding.plain.ui.chat.peer.PeerCacher.refreshOnline()
                 com.ismartcoding.plain.ui.chat.peer.PeerCacher.load()
                 com.ismartcoding.plain.features.chat.ChatCacher.load()
             }
@@ -67,12 +74,12 @@ internal object RustEventProjection {
                 val id = obj["id"]?.jsonPrimitive?.contentOrNull
                 val online = obj["online"]?.jsonPrimitive?.booleanOrNull
                 if (id != null && online != null) {
-                    com.ismartcoding.plain.features.chat.peer.PeerStatusManager.applyOne(id, online)
+                    com.ismartcoding.plain.ui.chat.peer.PeerCacher.setOnline(id, online)
                 } else {
-                    com.ismartcoding.plain.features.chat.peer.PeerStatusManager.refresh()
+                    com.ismartcoding.plain.ui.chat.peer.PeerCacher.refreshOnline()
                 }
             }
-            EventType.MDNS_UPDATED.name, EventType.NEARBY_DISCOVERY_STARTED.name, EventType.NEARBY_DISCOVERY_STOPPED.name -> com.ismartcoding.plain.features.nearby.RustMdnsRuntime.refresh(if (type == EventType.MDNS_UPDATED.name) payload else null)
+            EventType.MDNS_UPDATED.name, EventType.NEARBY_DISCOVERY_STARTED.name, EventType.NEARBY_DISCOVERY_STOPPED.name -> com.ismartcoding.plain.features.nearby.RustMdnsRuntime.refresh()
             EventType.DLNA_RENDERER_UPDATED.name -> com.ismartcoding.plain.features.dlna.DlnaRendererState.apply(
                 JsonHelper.jsonDecode<JsonObject>(payload).getValue("renderer").jsonObject)
             EventType.NEARBY_DEVICES_UPDATED.name -> {
@@ -93,7 +100,7 @@ internal object RustEventProjection {
                             com.ismartcoding.plain.ui.chat.ChatViewModel.onMessagesCreated(target, listOf(item), scroll = true)
                             com.ismartcoding.plain.features.chat.ChatCacher.load()
                         } else com.ismartcoding.plain.features.chat.peer.RustPeerStore.getById(item.fromId)?.let { peer ->
-                            val channel = item.channelId?.takeIf { it.isNotEmpty() }?.let { com.ismartcoding.plain.features.chat.channel.RustChannelStore.getById(it) }
+                            val channel = item.channelId?.takeIf { it.isNotEmpty() }?.let { com.ismartcoding.plain.features.chat.channel.channelGraphql(it) }
                             com.ismartcoding.plain.features.chat.ChatMessageReceiver.applyCommitted(item, peer, channel)
                         }
                     }
@@ -121,7 +128,11 @@ internal object RustEventProjection {
             }
             EventType.ONLINE_CLIENTS_UPDATED.name -> com.ismartcoding.plain.features.sessions.setOnlineClientIds(
                 JsonHelper.jsonDecode<JsonElement>(payload).jsonArray.map { it.jsonPrimitive.content }.toSet())
-            EventType.PREFS_UPDATED.name -> com.ismartcoding.plain.preferences.Prefs.refresh()
+            EventType.PREFS_UPDATED.name -> {
+                com.ismartcoding.plain.preferences.Prefs.refresh()
+                com.ismartcoding.plain.features.settings.AppUpdateDownloads.refresh()
+                com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
+            }
             EventType.IMAGE_MODELS_UPDATED.name -> com.ismartcoding.plain.features.images.search.RustImageModels.apply(JsonHelper.jsonDecode<JsonObject>(payload))
             EventType.DLNA_SENDER_UPDATED.name -> com.ismartcoding.plain.features.dlna.sender.RustDlnaSender.apply(JsonHelper.jsonDecode<JsonObject>(payload))
             EventType.WEB_LOGIN_REQUESTED.name -> {
@@ -133,6 +144,7 @@ internal object RustEventProjection {
                 sendEvent(HWebRequestReceivedEvent())
             }
             EventType.SHARED_FOLDER_DOWNLOAD_UPDATED.name -> com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine.refresh()
+            EventType.APP_UPDATE_DOWNLOAD_UPDATED.name -> com.ismartcoding.plain.features.settings.AppUpdateDownloads.apply(JsonHelper.jsonDecode(payload))
             EventType.FEED_SYNC_UPDATED.name -> com.ismartcoding.plain.ui.feeds.FeedWorkerState.apply(JsonHelper.jsonDecode<com.ismartcoding.plain.ui.feeds.FeedSyncUpdate>(payload))
             EventType.CONTENT_CHANGED.name -> {
                 com.ismartcoding.plain.preferences.Prefs.refresh()
@@ -143,11 +155,8 @@ internal object RustEventProjection {
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) { com.ismartcoding.plain.lib.logcat.LogCat.e("Favorite folders refresh",error) }
                 NotesViewModel.reloadAsync()
-                com.ismartcoding.plain.features.pomodoro.PomodoroHost.refresh()
             }
-            EventType.POMODORO_ACTION.name -> {
-                com.ismartcoding.plain.features.pomodoro.PomodoroHost.refresh()
-            }
+            EventType.POMODORO_ACTION.name -> com.ismartcoding.plain.ui.pomodoro.PomodoroProjection.apply(payload)
         }
     }
 }

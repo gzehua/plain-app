@@ -18,7 +18,17 @@ import kotlinx.serialization.json.*
 
 object AudioQueueClient {
     suspend fun playback(): AudioPlayback = JsonHelper.jsonDecodeFromElement(
-        RustContentApi.query("audioPlayback { mediaId path mode isPlaying positionMs }").getValue("audioPlayback"))
+        RustContentApi.query("audioPlayback { mediaId path mode isPlaying positionMs revision }").getValue("audioPlayback"))
+
+    suspend fun resolveNext(isNext: Boolean, shuffle: Boolean = false): AudioItem? {
+        val current = playback()
+        val action = if (isNext) "NEXT" else "PREVIOUS"
+        val result = PlainRust.mainMutate("advanceAudioSelection(action: $action, expectedPath: ${gql(current.path.orEmpty())}, expectedRevision: ${current.revision}, shuffle: $shuffle) { track { $AUDIO_TRACK_FIELDS } }")
+            .getValue("advanceAudioSelection")
+        if (result is JsonNull) return null
+        val track = result.jsonObject.getValue("track")
+        return if (track is JsonNull) null else JsonHelper.jsonDecodeFromElement(track)
+    }
 
     suspend fun clearQueue() { RustContentApi.mutate("clearAudioQueue") }
 
@@ -31,14 +41,18 @@ object AudioQueueClient {
     suspend fun removeQueued(mediaId: String) { RustContentApi.mutate("removeAudioFromQueue(mediaId: ${gql(mediaId)})") }
     suspend fun reorderQueued(mediaIds: List<String>) { RustContentApi.mutate("reorderAudioQueue(mediaIds: ${gqlIds(mediaIds)})") }
     suspend fun queuedMediaIds(): Set<String> = PlainRust.mainQuery("audioQueuedMediaIds").getValue("audioQueuedMediaIds").jsonArray.map { it.jsonPrimitive.content }.toSet()
-    suspend fun resolveNext(isNext: Boolean, shuffle: Boolean): AudioItem? =
-        PlainRust.mainMutate("selectNextAudio(isNext: $isNext, shuffle: $shuffle) { $AUDIO_TRACK_FIELDS }")
-            .getValue("selectNextAudio").takeUnless { it is JsonNull }?.audioTrack()
 
     suspend fun onStarted(audio: AudioItem, revision: Long) {
         PlainRust.publish(com.ismartcoding.plain.app.events.HostEvent(
             com.ismartcoding.plain.app.events.EventType.AUDIO_STARTED_REPORTED,
-            JsonHelper.jsonEncode(AudioStartedReport(audio.path, revision)),
+            JsonHelper.jsonEncode(AudioPlaybackReport(audio.path, revision)),
+        ))
+    }
+
+    suspend fun onCompleted(path: String, revision: Long) {
+        PlainRust.publish(com.ismartcoding.plain.app.events.HostEvent(
+            com.ismartcoding.plain.app.events.EventType.AUDIO_COMPLETED_REPORTED,
+            JsonHelper.jsonEncode(AudioPlaybackReport(path, revision)),
         ))
     }
 

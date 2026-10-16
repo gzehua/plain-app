@@ -24,7 +24,7 @@ actual suspend fun systemSmsFacts(method: String, params: kotlinx.serialization.
         else -> error("Unsupported SMS facts")
     }
 
-actual suspend fun mediaBucketItemFacts(dataType: DataType): List<com.ismartcoding.plain.rust.host.provider.MediaBucketItemFacts> = emptyList()
+actual suspend fun mediaBucketItemFacts(dataType: DataType, plan: com.ismartcoding.plain.rust.host.provider.ProviderPlan): List<com.ismartcoding.plain.rust.host.provider.MediaBucketItemFacts> = emptyList()
 
 actual suspend fun fileIndexId(path: String): String? = null
 actual suspend fun fileIndexRows(plan: com.ismartcoding.plain.rust.host.provider.ProviderPlan, limit: Int, offset: Int, sortBy: com.ismartcoding.plain.features.files.FileSortBy): List<com.ismartcoding.plain.api.graphql.models.File> = emptyList()

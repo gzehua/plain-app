@@ -20,7 +20,8 @@ import com.ismartcoding.plain.features.settings.HttpServerState
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.app.HttpServerManager
-import com.ismartcoding.plain.platform.system.isAndroidOnly
+import com.ismartcoding.plain.platform.system.Capability
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.ui.base.*
 import com.ismartcoding.plain.ui.apps.components.*
 import com.ismartcoding.plain.ui.audio.components.*
@@ -49,7 +50,7 @@ fun PlainAppServiceSection(
     val expansion = stringResource(if (expanded) Res.string.expanded else Res.string.collapsed)
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         VerticalSpace(8.dp)
-        if (isAndroidOnly()) {
+        if (Capability.BACKGROUND_SERVICE in getDeviceCapabilities()) {
             PListItem(
                 title = stringResource(Res.string.keep_online_in_background),
                 subtitle = stringResource(Res.string.keep_online_in_background_desc),
@@ -80,7 +81,7 @@ fun PlainAppServiceSection(
                     text = stringResource(Res.string.connection_keeps_dropping_help),
                     style = MaterialTheme.typography.tipsText(),
                 )
-                VerticalSpace(12.dp)
+                VerticalSpace(16.dp)
                 POutlinedButton(
                     modifier = Modifier.fillMaxWidth(),
                     text = stringResource(Res.string.stay_online),

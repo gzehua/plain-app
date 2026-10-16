@@ -10,6 +10,16 @@ import io.ktor.http.decodeURLPart
 import kotlinx.serialization.json.*
 
 object FilesClient {
+    suspend fun size(path: String): Long = PlainRust.mainQuery("fileInfo(path: ${gql(path)}) { size }")
+        .getValue("fileInfo").jsonObject.getValue("size").jsonPrimitive.long
+
+    suspend fun writeChunks(path: String, chunks: Iterator<ByteArray>): Boolean =
+        com.ismartcoding.plain.rust.request.RustUploadChunks.replace(path, chunks)
+
+    suspend fun copyToPath(srcPath: String, targetPath: String, overwrite: Boolean): Boolean =
+        PlainRust.mainMutate("copyFile(src: ${gql(srcPath)}, dst: ${gql(targetPath)}, overwrite: $overwrite)", longRunning = true)
+            .getValue("copyFile").jsonPrimitive.boolean
+
     suspend fun copyToDirectory(srcPath: String, dirPath: String, fileName: String): String {
         val result = PlainRust.mainGraphql(
             "mutation(\$src:String!,\$directory:String!,\$name:String!){copyFileToDirectory(src:\$src,directory:\$directory,name:\$name)}",
@@ -66,8 +76,12 @@ object FilesClient {
         val value = PlainRust.mainMutate("renameFilePath(path: ${gql(path)}, name: ${gql(name)})").getValue("renameFilePath")
         return if (value is JsonNull) null else value.jsonPrimitive.content
     }
-    suspend fun delete(path: String): Boolean = PlainRust.mainMutate("deleteFiles(paths: [${gql(path)}]) { affectedCount }")
-        .getValue("deleteFiles").jsonObject.getValue("affectedCount").jsonPrimitive.int > 0
+    suspend fun delete(path: String): Boolean = deleteMany(listOf(path)) > 0
+
+    suspend fun deleteMany(paths: List<String>): Int = PlainRust.mainMutate(
+        "deleteFiles(paths: ${com.ismartcoding.plain.rust.request.gqlIds(paths)}) { affectedCount }",
+        longRunning = true,
+    ).getValue("deleteFiles").jsonObject.getValue("affectedCount").jsonPrimitive.int
 
     private suspend fun read(root: String, query: String, text: String?, showHidden: Boolean?, sortBy: FileSortBy, offset: Int = 0, limit: Int? = null, countOnly: Boolean = false): JsonObject =
         PlainRust.mainQuery("browseFiles(root: ${gql(root)}, query: ${gql(query)}, text: ${text?.let(::gql) ?: "null"}, showHidden: ${showHidden ?: "null"}, sortBy: ${sortBy.name}, offset: $offset, limit: ${limit ?: Int.MAX_VALUE}, countOnly: $countOnly) { count items { $fields } }").getValue("browseFiles").jsonObject

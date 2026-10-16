@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.audio.player
 
-import com.ismartcoding.plain.preferences.*
+import com.ismartcoding.plain.features.audio.AudioCommands
 
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.background
@@ -24,8 +24,6 @@ import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.audio.MediaPlayMode
 import com.ismartcoding.plain.platform.media.audioSetPlaybackSpeed
 import com.ismartcoding.plain.ui.media.viewer.PlaybackSpeedButton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.list_music as ui_drawable_list_music
@@ -42,7 +40,6 @@ import com.ismartcoding.plain.i18n.pause
 @Composable
 fun AudioPlayerControls(
     playMode: MediaPlayMode,
-    onPlayModeChange: (MediaPlayMode) -> Unit,
     isTimerActive: Boolean,
     onSleepTimer: () -> Unit,
     onOpenQueue: () -> Unit,
@@ -51,25 +48,14 @@ fun AudioPlayerControls(
     onPlayPause: () -> Unit,
     onPlayNext: () -> Unit,
     speed: Float,
-    scope: CoroutineScope,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        SpeedButton(speed = speed, scope = scope)
+        SpeedButton(speed = speed)
         IconButton(
-            onClick = {
-                scope.launch {
-                    val nextMode = when (playMode) {
-                        MediaPlayMode.REPEAT -> MediaPlayMode.REPEAT_ONE
-                        MediaPlayMode.REPEAT_ONE -> MediaPlayMode.SHUFFLE
-                        MediaPlayMode.SHUFFLE -> MediaPlayMode.REPEAT
-                    }
-                    UserPrefs.audioPlayMode.value = nextMode
-                    onPlayModeChange(nextMode)
-                }
-            },
+            onClick = { AudioCommands.cycleMode() },
             modifier = Modifier.size(44.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
         ) {
             Icon(
@@ -136,10 +122,9 @@ fun AudioPlayerControls(
 }
 
 @Composable
-private fun SpeedButton(speed: Float, scope: CoroutineScope) {
+private fun SpeedButton(speed: Float) {
     fun applySpeed(s: Float) {
         audioSetPlaybackSpeed(s)
-        scope.launch { UserPrefs.audioPlaybackSpeed.value = s }
     }
     PlaybackSpeedButton(
         speed = speed,

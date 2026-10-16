@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.audio.playlists
 
+import com.ismartcoding.plain.api.graphql.models.AudioAlbumCover
 import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -21,7 +22,7 @@ import androidx.compose.ui.unit.dp
 internal fun PlaylistTracksList(
     name: String,
     itemCount: Int,
-    albums: List<PlaylistAlbumCover>,
+    albums: List<AudioAlbumCover>,
     gradientIndex: Int,
     rowAudios: List<AudioTrack>,
     audioVM: AudioViewModel,

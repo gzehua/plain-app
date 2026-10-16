@@ -3,7 +3,6 @@ package com.ismartcoding.plain.platform.media
 import com.ismartcoding.plain.rust.http.get
 
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.features.audio.AudioPlayer as AndroidAudioPlayer
 import com.ismartcoding.plain.api.graphql.models.AudioItem
 import kotlinx.coroutines.flow.StateFlow
 
@@ -14,25 +13,27 @@ private object ExoPlayerAudioPlayer : AudioPlayer {
 
     override val currentPath: String get() = AndroidAudioPlayer.currentPath
 
+    override fun bindRevision(revision: Long) = AndroidAudioPlayer.bindRevision(revision)
+
     override suspend fun load(audio: AudioItem, positionMs: Long, speed: Float, revision: Long) = AndroidAudioPlayer.load(appContext, audio, positionMs, speed, revision)
 
     override val progress: Long
         get() = AndroidAudioPlayer.playerProgress
 
-    override fun seekTo(positionMs: Long) = AndroidAudioPlayer.seekTo(positionMs)
+    override suspend fun seekTo(positionMs: Long) = AndroidAudioPlayer.seekTo(positionMs)
 
-    override fun pause() = AndroidAudioPlayer.pause()
+    override suspend fun pause() = AndroidAudioPlayer.pause()
 
-    override fun play() = AndroidAudioPlayer.play()
+    override suspend fun play() = AndroidAudioPlayer.play()
 
-    override fun restartIfPlaying() {
+    override suspend fun restartIfPlaying() {
         if (AndroidAudioPlayer.isPlaying()) {
             AndroidAudioPlayer.pause()
             AndroidAudioPlayer.play()
         }
     }
 
-    override fun clear() = AndroidAudioPlayer.clear()
+    override suspend fun clear() = AndroidAudioPlayer.clear()
 
-    override fun setPlaybackSpeed(speed: Float) = AndroidAudioPlayer.setPlaybackSpeed(speed)
+    override suspend fun setPlaybackSpeed(speed: Float) = AndroidAudioPlayer.setPlaybackSpeed(speed)
 }

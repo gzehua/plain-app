@@ -60,5 +60,5 @@ internal fun sampleSystemProperties(names: List<String>): Map<String, JsonElemen
 }
 
 private val dynamicSystemPropertyNames = setOf(
-    "language", "display.width", "display.height", "display.density", "ipv4Addresses", "wifiAwareRunning",
+    "language", "display.width", "display.height", "display.density", "wifiAwareRunning",
 )

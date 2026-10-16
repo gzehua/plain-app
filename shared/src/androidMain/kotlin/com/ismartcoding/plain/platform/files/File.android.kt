@@ -7,7 +7,6 @@ import com.ismartcoding.plain.features.files.extension
 import com.ismartcoding.plain.api.graphql.models.File as FileEntry
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.app.AppHelper
 import com.ismartcoding.plain.platform.files.FileHelper
@@ -26,22 +25,12 @@ import com.ismartcoding.plain.ui.media.thumbnail.DecodeLimiter
 import com.ismartcoding.plain.thumbnail.DecodePolicy
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.RandomAccessFile
 
 actual fun deleteFileAt(path: String) {
     File(path).delete()
 }
 
 actual fun fileSize(path: String): Long = File(path).takeIf { it.isFile }?.length() ?: 0L
-
-actual fun copyFile(srcPath: String, destPath: String): Boolean {
-    return try {
-        File(srcPath).copyTo(File(destPath), overwrite = true)
-        true
-    } catch (_: Exception) {
-        false
-    }
-}
 
 actual fun writeBytesToPath(path: String, bytes: ByteArray): Boolean {
     return try {
@@ -62,25 +51,6 @@ actual fun getFileIconPath(extension: String): String =
     AppHelper.getFileIconPath(extension)
 
 actual fun fileExists(path: String): Boolean = File(path).exists()
-
-actual suspend fun readFileRange(path: String, offset: Long, length: Int): ByteArray? = withIO {
-    try {
-        val file = File(path)
-        if (!file.exists() || !file.isFile) return@withIO null
-        val fileLen = file.length()
-        if (offset >= fileLen) return@withIO ByteArray(0)
-        val readLen = minOf(length.toLong(), fileLen - offset).toInt()
-        if (readLen <= 0) return@withIO ByteArray(0)
-        val bytes = ByteArray(readLen)
-        RandomAccessFile(file, "r").use { raf ->
-            raf.seek(offset)
-            raf.readFully(bytes)
-        }
-        bytes
-    } catch (e: Exception) {
-        null
-    }
-}
 
 actual suspend fun ensureParentDir(path: String) {
     withIO {
@@ -126,15 +96,14 @@ actual suspend fun decodeImageFileToPng(path: String): ByteArray? = withIO {
         // Cap the decoded edge: a 48 MP HEIC would otherwise allocate ~192 MB
         // per open view, which is fatal on small-heap compatibility containers.
         // 4096 px keeps 12 MP photos pixel-exact.
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeFile(path, bounds)
-        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@withPermit null
-        val opts = BitmapFactory.Options().apply {
-            inSampleSize = DecodePolicy.capSampleSize(
-                bounds.outWidth, bounds.outHeight, DecodePolicy.MAX_FULL_VIEW_EDGE
-            )
+        val bitmap = android.graphics.ImageDecoder.decodeBitmap(
+            android.graphics.ImageDecoder.createSource(File(path))
+        ) { decoder, info, _ ->
+            decoder.allocator = android.graphics.ImageDecoder.ALLOCATOR_SOFTWARE
+            decoder.setTargetSampleSize(DecodePolicy.capSampleSize(
+                info.size.width, info.size.height, DecodePolicy.MAX_FULL_VIEW_EDGE
+            ))
         }
-        val bitmap = BitmapFactory.decodeFile(path, opts) ?: return@withPermit null
         try {
             ByteArrayOutputStream().use { baos ->
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
@@ -240,4 +209,9 @@ actual suspend fun copyFileToUri(path: String, uriStr: String): Boolean = withIO
         source.copyTo(destination, overwrite = true)
     }
     true
+}
+
+internal actual suspend fun readPickedFileBytes(uri: String): ByteArray = withIO {
+    com.ismartcoding.plain.appContext.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use { it.readBytes() }
+        ?: error("Failed to read the selected file")
 }

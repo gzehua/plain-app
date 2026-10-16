@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.features.chat.models
 
+import com.ismartcoding.plain.api.graphql.models.PeerRecord
+
 import com.ismartcoding.plain.ui.extensions.getFinalPath
 
 suspend fun MessageFile.getPreviewPath(peer: PeerRecord?): String {

@@ -27,7 +27,7 @@ import com.ismartcoding.plain.ui.base.AlphabetIndexBar
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.ui.audio.AudioHomeArtist
+import com.ismartcoding.plain.api.graphql.models.AudioArtist
 import com.ismartcoding.plain.ui.audio.AudioHomeViewModel
 import com.ismartcoding.plain.ui.audio.AudioViewModel
 import com.ismartcoding.plain.ui.navigation.Routing
@@ -126,7 +126,7 @@ fun ArtistsPage(
 }
 
 @Composable
-private fun ArtistRow(artist: AudioHomeArtist, onClick: () -> Unit) {
+private fun ArtistRow(artist: AudioArtist, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

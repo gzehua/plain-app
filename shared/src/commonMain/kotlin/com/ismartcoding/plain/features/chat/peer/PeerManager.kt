@@ -22,16 +22,8 @@ object PeerManager {
         true
     }
 
-    fun setOnlineStatus(peerId: String, online: Boolean) {
-        PeerCacher.setOnline(peerId, online)
-    }
-
     suspend fun load() = withIO {
         PeerCacher.load()
-        PeerCacher.setOnlineMap(
-            PeerCacher.peersMap.value.values
-                .filter { it.isPaired() }
-                .associate { it.id to PeerStatusManager.isOnline(it.id) }
-        )
+        PeerCacher.refreshOnline()
     }
 }

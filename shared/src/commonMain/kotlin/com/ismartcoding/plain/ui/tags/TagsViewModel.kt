@@ -131,7 +131,8 @@ class TagsViewModel : ViewModel() {
         loadAsync()
     }
 
-    private suspend fun refreshRelations(keys: Set<String>) {
+    internal suspend fun refreshRelations(keys: Set<String>) {
+        if (keys.isEmpty()) return
         val fresh = TagsClient.getTagRelationsByKeysMap(keys, dataType.value)
         _tagsMapFlow.update { current -> current.toMutableMap().apply {
             keys.forEach { this[it] = fresh[it].orEmpty() }

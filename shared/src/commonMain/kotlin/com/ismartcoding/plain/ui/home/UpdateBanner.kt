@@ -4,6 +4,8 @@ import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
 import com.ismartcoding.plain.preferences.*
 
+import com.ismartcoding.plain.platform.system.AppFeatureType
+import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,8 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,14 +30,12 @@ import com.ismartcoding.plain.app.events.CancelUpdateDownloadEvent
 import com.ismartcoding.plain.app.events.DownloadUpdateEvent
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.system.exitApp
-import com.ismartcoding.plain.platform.files.fileExists
 import com.ismartcoding.plain.platform.system.installApk
 import com.ismartcoding.plain.ui.base.PBanner
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.features.web.WebHelper
 import com.ismartcoding.plain.ui.settings.UpdateViewModel
-import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.lightbulb as ui_drawable_lightbulb
 
@@ -45,6 +43,7 @@ private const val GITHUB_RELEASES_URL = "https://github.com/plainhub/plain-app/r
 
 @Composable
 fun UpdateBanner(updateVM: UpdateViewModel) {
+    if (!AppFeatureType.CHECK_UPDATES.has()) return
     val system = RustSystemState.state.collectAsStateValue()
     val updateInfo = system.updateInfo
     val newVersion = updateInfo.newVersion
@@ -53,25 +52,9 @@ fun UpdateBanner(updateVM: UpdateViewModel) {
     val downloadFailed = updateVM.downloadFailed.value
     val isDownloadComplete = updateVM.isDownloadComplete.value
     val downloadedFilePath = updateVM.downloadedFilePath.value
-    val scope = rememberCoroutineScope()
 
     val needsUpdate = system.appUpdateAvailable
 
-    LaunchedEffect(Unit) {
-        val info = RustSystemState.state.value.updateInfo
-        val path = info.downloadedApkPath
-        if (path.isNotEmpty()) {
-            val downloadedVersionNeedsUpdate =
-                RustSystemState.state.value.appUpdateAvailable
-            if (fileExists(path) && downloadedVersionNeedsUpdate
-                && !updateVM.isDownloading.value && !updateVM.isDownloadComplete.value
-            ) {
-                updateVM.onDownloadComplete(path)
-            } else {
-                RustSystemState.patchUpdate(UpdateInfoPatch(downloadedApkPath = ""))
-            }
-        }
-    }
 
     when {
         isDownloading -> {
@@ -79,11 +62,10 @@ fun UpdateBanner(updateVM: UpdateViewModel) {
                 newVersion = newVersion.toString(),
                 progress = downloadProgress,
                 onCancel = {
-                    updateVM.cancelDownload()
                     sendEvent(CancelUpdateDownloadEvent())
                 },
             )
-            VerticalSpace(dp = 12.dp)
+            VerticalSpace(dp = 16.dp)
         }
 
         isDownloadComplete -> {
@@ -93,23 +75,21 @@ fun UpdateBanner(updateVM: UpdateViewModel) {
                     exitApp()
                 },
                 onDismiss = {
-                    scope.launch { RustSystemState.patchUpdate(UpdateInfoPatch(downloadedApkPath = "")) }
                     updateVM.resetDownload()
                 },
             )
-            VerticalSpace(dp = 12.dp)
+            VerticalSpace(dp = 16.dp)
         }
 
         downloadFailed -> {
             DownloadFailedBanner(
                 onGitHub = { WebHelper.open(GITHUB_RELEASES_URL) },
                 onRetry = {
-                    updateVM.startDownload()
                     sendEvent(DownloadUpdateEvent())
                 },
                 onDismiss = { updateVM.resetDownload() },
             )
-            VerticalSpace(dp = 12.dp)
+            VerticalSpace(dp = 16.dp)
         }
 
         needsUpdate -> {
@@ -118,7 +98,7 @@ fun UpdateBanner(updateVM: UpdateViewModel) {
                 desc = stringResource(Res.string.get_new_updates_desc),
                 icon = UiRes.drawable.ui_drawable_lightbulb,
             ) { updateVM.showDialog() }
-            VerticalSpace(dp = 12.dp)
+            VerticalSpace(dp = 16.dp)
         }
     }
 }

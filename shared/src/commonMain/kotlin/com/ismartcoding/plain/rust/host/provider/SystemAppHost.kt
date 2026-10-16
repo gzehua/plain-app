@@ -36,12 +36,12 @@ internal object SystemAppHost {
             sendEvent(com.ismartcoding.plain.app.events.HOpenWebSettingsEvent(feature))
             JsonHelper.jsonEncodeToElement(true)
         }
+        "systemVpnActive" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.network.vpnActive())
         "systemNetworkType" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.network.getNetworkType().name)
         "systemScheduleBackgroundWake" -> {
             com.ismartcoding.plain.platform.system.scheduleBackgroundWake(params["atMs"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.long)
             JsonHelper.jsonEncodeToElement(true)
         }
-        "systemIpv4Address" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.network.getDeviceIP4())
         "systemProperties" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.sampleSystemProperties(
             params.getValue("names").jsonArray.map { it.jsonPrimitive.content },
         ))

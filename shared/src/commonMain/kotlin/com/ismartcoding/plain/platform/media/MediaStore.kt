@@ -9,25 +9,31 @@ import com.ismartcoding.plain.features.files.FileSortBy
 /**
  * Move media items of [dataType] identified by [ids] to the trash.
  */
-expect suspend fun trashMedia(dataType: DataType, ids: Set<String>)
+suspend fun trashMedia(dataType: DataType, ids: Set<String>) {
+    com.ismartcoding.plain.features.media.actions.MediaActionClient.run(dataType, com.ismartcoding.plain.features.media.actions.MediaAction.TRASH, ids)
+}
 
 /**
  * Restore media items of [dataType] identified by [ids] from the trash.
  */
-expect suspend fun restoreMedia(dataType: DataType, ids: Set<String>)
+suspend fun restoreMedia(dataType: DataType, ids: Set<String>) {
+    com.ismartcoding.plain.features.media.actions.MediaActionClient.run(dataType, com.ismartcoding.plain.features.media.actions.MediaAction.RESTORE, ids)
+}
 
 /**
  * Permanently delete media items of [dataType] identified by [ids] from disk and MediaStore.
  * If [fromTrash] is true, only items already in the trash are deleted.
  */
-expect suspend fun deleteMedia(dataType: DataType, ids: Set<String>, fromTrash: Boolean)
+suspend fun deleteMedia(dataType: DataType, ids: Set<String>, fromTrash: Boolean) {
+    com.ismartcoding.plain.features.media.actions.MediaActionClient.run(dataType, com.ismartcoding.plain.features.media.actions.MediaAction.DELETE, ids, fromTrash)
+}
 
 /**
  * Move media files of [dataType] identified by [ids] into the directory [destDir].
- * Returns true when all items were moved successfully. Returns false on
- * platforms without a media store (iOS).
+ * Returns true when all items were moved successfully.
  */
-expect suspend fun moveMedia(dataType: DataType, ids: Set<String>, destDir: String): Boolean
+suspend fun moveMedia(dataType: DataType, ids: Set<String>, destDir: String): Boolean =
+    com.ismartcoding.plain.features.media.actions.MediaActionClient.run(dataType, com.ismartcoding.plain.features.media.actions.MediaAction.MOVE, ids, destDir = destDir) == ids.size
 
 /**
  * Combined image search: filename + optional AI semantic search.
@@ -44,7 +50,7 @@ suspend fun searchImagesCombined(
 /**
  * Whether the on-device AI image search model is loaded and ready.
  */
-fun isImageSearchModelReady(): Boolean = com.ismartcoding.plain.features.images.search.ImageSearchManager.isModelReady()
+fun isImageSearchModelReady(): Boolean = com.ismartcoding.plain.features.images.search.RustImageModels.snapshot.value.status == com.ismartcoding.plain.features.images.search.ImageSearchStatusType.READY
 
 /**
  * Returns a URI string for the media item identified by [id] of [dataType],
@@ -65,16 +71,7 @@ expect suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set
  */
 suspend fun countImagesCombined(queryText: String, extraQuery: String): Int = com.ismartcoding.plain.features.images.search.RustImageSearch.count(queryText, extraQuery)
 
-/**
- * Start a full scan of all images to (re)build the AI search index.
- * If [force] is true, re-index even if already indexed.
- */
-fun startImageIndexFullScan(force: Boolean) = com.ismartcoding.plain.features.images.index.ImageIndexHelper.startAsync(force)
 
-/**
- * Cancel any in-progress image indexing operation.
- */
-fun cancelImageIndex() = com.ismartcoding.plain.features.images.index.ImageIndexHelper.cancelAsync()
 
 /**
  * Build a snapshot of the current image-search status (model state, indexing progress).
@@ -153,20 +150,8 @@ expect suspend fun deleteContacts(ids: Set<String>)
 
 expect fun readSentMmsCandidates(minimumId: Long, launchTimeSec: Long): List<com.ismartcoding.plain.features.telephony.sms.MmsCandidateFacts>
 
-/**
- * Enable the on-device AI image search model (downloads model if needed).
- */
-suspend fun enableImageSearchAsync() = com.ismartcoding.plain.features.images.search.ImageSearchManager.enableAsync()
 
-/**
- * Disable the on-device AI image search model and release resources.
- */
-suspend fun disableImageSearchAsync() = com.ismartcoding.plain.features.images.search.ImageSearchManager.disableAsync()
 
-/**
- * Cancel any in-progress download of the AI image search model.
- */
-fun cancelImageModelDownload() = com.ismartcoding.plain.features.images.search.ImageSearchManager.cancelDownload()
 
 expect suspend fun searchMedia(dataType: DataType, plan: ProviderPlan, limit: Int, offset: Int, sortBy: FileSortBy): List<IData>
 expect suspend fun countMedia(dataType: DataType, plan: ProviderPlan): Int

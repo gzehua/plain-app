@@ -13,7 +13,6 @@ actual fun getPlatformName(): String = "android"
 
 actual fun getDeviceType(): DeviceType = PhoneHelper.getDeviceType(appContextValue!!)
 
-actual fun getDeviceIP4s(): List<String> = NetworkHelper.getDeviceIP4s().toList()
 
 actual fun cacheDirPath(): String = appContext.cacheDir.absolutePath
 

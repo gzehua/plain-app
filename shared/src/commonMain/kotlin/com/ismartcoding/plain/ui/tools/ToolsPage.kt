@@ -26,6 +26,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.platform.system.AppFeatureType
+import com.ismartcoding.plain.platform.system.Capability
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
+import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.features.dlna.sender.RustDlnaSender
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.casting
@@ -64,7 +67,7 @@ fun ToolsPage(
         UserPrefs.homeFeatures.collectAsStateValue()
     val notesEnabled =
         UserPrefs.parseFeatures(featuresStr)
-            .contains(AppFeatureType.NOTES.name)
+            .contains(AppFeatureType.NOTES.name) && AppFeatureType.NOTES.has()
 
     MainNavScaffold(
         selectedIndex = 2,
@@ -87,19 +90,21 @@ fun ToolsPage(
                                 navController.navigate(Routing.CustomFeatures)
                             },
                         )
-                        PDropdownMenuItem(
-                            text = { Text(stringResource(Res.string.launcher_shortcuts)) },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(UiRes.drawable.ui_drawable_grid_3x3),
-                                    contentDescription = null,
-                                )
-                            },
-                            onClick = {
-                                dismiss()
-                                navController.navigate(Routing.LauncherShortcuts)
-                            },
-                        )
+                        if (Capability.LAUNCHER_SHORTCUTS in getDeviceCapabilities()) {
+                            PDropdownMenuItem(
+                                text = { Text(stringResource(Res.string.launcher_shortcuts)) },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(UiRes.drawable.ui_drawable_grid_3x3),
+                                        contentDescription = null,
+                                    )
+                                },
+                                onClick = {
+                                    dismiss()
+                                    navController.navigate(Routing.LauncherShortcuts)
+                                },
+                            )
+                        }
                     }
                 },
             )

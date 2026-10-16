@@ -10,7 +10,6 @@ import android.media.AudioAttributes
 import android.view.textclassifier.TextClassificationManager
 import android.view.textclassifier.TextClassifier
 import coil3.SingletonImageLoader
-import com.ismartcoding.plain.features.images.search.ImageSearchManager
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.ui.theme.DarkTheme
 import com.ismartcoding.plain.platform.system.has
@@ -64,8 +63,6 @@ object MainAppHelper {
             if (UserPrefs.service.value && PlugInControlReceiver.isUSBConnected(app)) {
                 sendEvent(PowerConnectedEvent())
             }
-
-            ImageSearchManager.restoreIfEnabled()
 
             if (AppFeatureType.CHECK_UPDATES.has()) {
                 com.ismartcoding.plain.ui.settings.checkAppUpdate(showToast = false, automatic = true)

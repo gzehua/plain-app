@@ -21,10 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import coil3.compose.AsyncImage
+import androidx.compose.foundation.Image
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.platform.system.isAndroidOnly
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.rocket as ui_drawable_rocket
@@ -42,7 +41,7 @@ fun PDonationBanner(
         WeChatDonateDialog { showWeChatDialog = false }
     }
 
-    val effectiveOnClick: () -> Unit = if (isZhCN && isAndroidOnly()) {
+    val effectiveOnClick: () -> Unit = if (isZhCN) {
         { showWeChatDialog = true }
     } else {
         onClick
@@ -71,12 +70,12 @@ private fun WeChatDonateDialog(onDismiss: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                AsyncImage(
-                    model = "file:///android_asset/donate_wechat.webp",
+                Image(
+                    painter = painterResource(Res.drawable.donate_wechat),
                     contentDescription = null,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(16.dp))
                 Text(
                     text = "请用微信扫码",
                     style = MaterialTheme.typography.bodyMedium,

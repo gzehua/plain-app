@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.features.chat.models
 
+import com.ismartcoding.plain.api.graphql.models.PeerRecord
+
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 
 fun PeerRecord.getBestIp(): String = address?.bestIp.orEmpty()

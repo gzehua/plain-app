@@ -49,7 +49,7 @@ class EventDirectionContractTest {
         for (path in listOf("rust/event/RustEventProjection.kt", "features/nearby/PairingProjection.kt",
             "features/nearby/RustNearbyDevices.kt", "features/nearby/RustMdnsRuntime.kt",
             "features/chat/channel/ChannelSystemMessageReceiver.kt", "features/images/search/RustImageModels.kt",
-            "features/dlna/DlnaRendererState.kt", "features/pomodoro/PomodoroHost.kt")) {
+            "features/dlna/DlnaRendererState.kt", "ui/pomodoro/PomodoroProjection.kt")) {
             val source = File(sources, path).readText()
             assertTrue("$path must only project HTTP state locally", !source.contains("HostEvent"))
         }

@@ -1,18 +1,13 @@
 package com.ismartcoding.plain.ui.pomodoro
 
 import androidx.compose.runtime.Composable
+import com.ismartcoding.plain.api.graphql.models.PomodoroState
 import com.ismartcoding.plain.i18n.*
 import org.jetbrains.compose.resources.stringResource
 
-enum class PomodoroState {
-    WORK, SHORT_BREAK, LONG_BREAK;
-
-    @Composable
-    fun getText(): String {
-        return when (this) {
-            WORK -> stringResource(Res.string.work_time)
-            SHORT_BREAK -> stringResource(Res.string.short_break)
-            LONG_BREAK -> stringResource(Res.string.long_break)
-        }
-    }
+@Composable
+fun PomodoroState.getText(): String = when (this) {
+    PomodoroState.WORK -> stringResource(Res.string.work_time)
+    PomodoroState.SHORT_BREAK -> stringResource(Res.string.short_break)
+    PomodoroState.LONG_BREAK -> stringResource(Res.string.long_break)
 }

@@ -15,7 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.ui.audio.playlists.PlaylistAlbumCover
+import com.ismartcoding.plain.api.graphql.models.AudioAlbumCover
 import com.ismartcoding.plain.ui.theme.listItemSubtitle
 import com.ismartcoding.plain.ui.theme.listItemTitle
 import org.jetbrains.compose.resources.pluralStringResource
@@ -25,7 +25,7 @@ import org.jetbrains.compose.resources.pluralStringResource
 fun PlaylistHeaderRow(
     name: String,
     itemCount: Int,
-    albums: List<PlaylistAlbumCover>,
+    albums: List<AudioAlbumCover>,
     gradientIndex: Int,
 ) {
     Row(

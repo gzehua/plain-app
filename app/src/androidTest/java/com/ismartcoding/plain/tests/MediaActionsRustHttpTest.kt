@@ -114,7 +114,7 @@ class MediaActionsRustHttpTest {
             AudioQueueClient.enqueue(listOf(track))
             AudioQueueClient.setCurrent(id)
             var failed = false
-            try { MediaActionHelper.run(DataType.AUDIO,MediaAction.TRASH,listOf(id,missingId)) }
+            try { MediaActionClient.run(DataType.AUDIO,MediaAction.TRASH,listOf(id,missingId)) }
             catch (error: Exception) { failed = error.message?.contains("1 media actions failed (1 completed)") == true }
             assertTrue("Partial failure must be visible",failed)
             assertTrue(TagsClient.getTagRelationsByKey(id,DataType.AUDIO).isEmpty())
@@ -142,7 +142,7 @@ class MediaActionsRustHttpTest {
             TagsClient.editTagRelations(DataType.IMAGE,TagRelationStub(imageId,"Synthetic image",1),listOf(imageTag),emptyList())
             ImageEmbeddings.insertAll(listOf(imageEmbedding(imageId,imagePath,ByteBuffer.allocate(512*4).apply { putFloat(1f) }.array())))
             moveDir = File(File(imagePath).parentFile,"$prefix-moved")
-            assertEquals(1,MediaActionHelper.run(DataType.IMAGE,MediaAction.MOVE,listOf(imageId),destDir=checkNotNull(moveDir).path))
+            assertEquals(1,MediaActionClient.run(DataType.IMAGE,MediaAction.MOVE,listOf(imageId),destDir=checkNotNull(moveDir).path))
             val movedPath = File(moveDir,File(imagePath).name).path
             assertFalse(File(imagePath).exists())
             assertTrue(File(movedPath).isFile)

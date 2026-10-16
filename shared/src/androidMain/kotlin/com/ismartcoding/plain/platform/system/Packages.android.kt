@@ -3,10 +3,8 @@ package com.ismartcoding.plain.platform.system
 import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
 
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.features.BundleApkInstaller
 import com.ismartcoding.plain.features.PackageHelper
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.lib.apk.ApkParsers
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.packageManager
 import kotlin.time.Instant
@@ -23,39 +21,21 @@ actual fun uninstallPackage(id: String) {
     PackageHelper.uninstall(appContext, id)
 }
 
-actual fun installPackage(path: String): PackageInstallResult {
-    val file = java.io.File(path)
-    if (!file.exists()) {
-        throw IllegalArgumentException("File does not exist")
-    }
-    return when (file.extension.lowercase()) {
-        "apk" -> installApkFile(file)
-        in BundleApkInstaller.BUNDLE_EXTENSIONS -> BundleApkInstaller.install(file)
-        else -> throw IllegalArgumentException("Unsupported file format. Supported: .apk, .apkm, .apks, .xapk")
-    }
+actual fun packageInstallProfile(): PackageInstallProfile {
+    val configuration = appContext.resources.configuration
+    return PackageInstallProfile(configuration.densityDpi, configuration.locales.toLanguageTags().split(','))
 }
 
-private fun installApkFile(file: java.io.File): PackageInstallResult {
-    LogCat.d("Installing APK file: ${file.name}")
-    val apkMeta = ApkParsers.getMetaInfo(file)
-        ?: throw IllegalArgumentException("Failed to parse APK package ID")
-
-    PackageHelper.install(appContext, file)
-    val packageName = apkMeta.packageName ?: ""
-    return try {
-        val pkg = packageManager.getPackageInfo(packageName, 0)
-        PackageInstallResult(
-            packageName = packageName,
-            lastUpdateTime = Instant.fromEpochMilliseconds(pkg.lastUpdateTime),
-            isNew = false,
-        )
-    } catch (e: Exception) {
-        PackageInstallResult(
-            packageName = packageName,
-            lastUpdateTime = null,
-            isNew = true,
-        )
+actual fun installPackage(paths: List<String>, packageName: String, session: Boolean): PackageInstallResult {
+    require(paths.isNotEmpty())
+    val files = paths.map { java.io.File(it) }
+    require(files.all { it.isFile }) { "APK file not found" }
+    val installed = runCatching { packageManager.getPackageInfo(packageName, 0) }.getOrNull()
+    if (session) PackageInstallSession.write(files) else {
+        require(files.size == 1)
+        PackageHelper.install(appContext, files.single())
     }
+    return PackageInstallResult(packageName, installed?.let { Instant.fromEpochMilliseconds(it.lastUpdateTime) }, installed == null)
 }
 
 actual fun getApplicationIcon(packageId: String): Any? {
@@ -82,13 +62,4 @@ actual fun launchPackage(id: String) {
 
 actual fun viewPackageInSettings(id: String) {
     PackageHelper.viewInSettings(appContext, id)
-}
-
-actual fun getManifestXml(path: String): String {
-    return try {
-        ApkParsers.getManifestXml(path)
-    } catch (e: Exception) {
-        LogCat.d(e.toString())
-        ""
-    }
 }

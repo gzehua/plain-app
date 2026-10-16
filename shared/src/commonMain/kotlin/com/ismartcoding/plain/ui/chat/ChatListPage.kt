@@ -20,7 +20,7 @@ import com.ismartcoding.plain.features.chat.ChatCacher
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.features.chat.models.getBestIp
 import com.ismartcoding.plain.ui.chat.peer.PeerCacher
-import com.ismartcoding.plain.features.chat.peer.PeerStatusManager
+import com.ismartcoding.plain.features.chat.peer.PeerStatusClient
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.platform.system.DeviceType
 import com.ismartcoding.plain.ui.platform.system.getIcon
@@ -40,13 +40,14 @@ import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.network.BleAvailability
 import com.ismartcoding.plain.app.HttpServerManager
-import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.network.bleAvailabilityFlow
+import com.ismartcoding.plain.platform.network.canRequestBluetoothAccess
+import com.ismartcoding.plain.platform.network.wifiAwarePermission
+import com.ismartcoding.plain.platform.system.Capability
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.network.ensureBlePermissionAsync
 import com.ismartcoding.plain.platform.network.isBleReady
 import com.ismartcoding.plain.platform.permissions.isGranted
-import com.ismartcoding.plain.platform.system.isIOS
-import com.ismartcoding.plain.platform.isTPlus
 import com.ismartcoding.plain.platform.system.openAppSettings
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.base.AlertType
@@ -85,17 +86,19 @@ fun ChatListPage(
     val pairedPeers = PeerCacher.pairedPeers.collectAsStateValue()
     val unpairedPeers = PeerCacher.unpairedPeers.collectAsStateValue()
     val refreshState = rememberRefreshLayoutState {
-        PeerStatusManager.reconnectNow("chat_list_pull_refresh")
+        PeerStatusClient.reconnectNow("chat_list_pull_refresh")
         peerVM.load()
         channelVM.load()
         setRefreshState(RefreshContentState.Finished)
     }
     val channels = ChannelCacher.channels.collectAsStateValue()
 
-    val awarePermission = remember { if (isTPlus()) Permission.NEARBY_WIFI_DEVICES else Permission.ACCESS_FINE_LOCATION }
-    var awareReady by remember { mutableStateOf(awarePermission.isGranted()) }
     val bleAvailability by bleAvailabilityFlow.collectAsState()
-    val bleReady = bleAvailability == BleAvailability.READY
+    val capabilities = getDeviceCapabilities()
+    val awareSupported = Capability.WIFI_AWARE in capabilities
+    val awarePermission = remember { wifiAwarePermission() }
+    var awareReady by remember(awareSupported, awarePermission) { mutableStateOf(!awareSupported || awarePermission?.isGranted() == true) }
+    val bleReady = Capability.BLE_DISCOVERY !in capabilities || bleAvailability == BleAvailability.READY
     var pendingNearbyRequest by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
@@ -108,17 +111,18 @@ fun ChatListPage(
                     }
                     if (pendingNearbyRequest && !awareReady) {
                         pendingNearbyRequest = false
-                        sendEvent(RequestPermissionsEvent(awarePermission))
+                        awarePermission?.let { sendEvent(RequestPermissionsEvent(it)) }
                     }
                 }
 
                 is PermissionsResultEvent -> {
-                    val key = awarePermission.toSysPermission()
+                    val permission = awarePermission ?: return@collect
+                    val key = permission.toSysPermission()
                     if (!event.map.containsKey(key)) return@collect
-                    val granted = awarePermission.isGranted()
+                    val granted = permission.isGranted()
                     awareReady = granted
                     if (granted) {
-                        PeerStatusManager.ensureAwareStarted()
+                        PeerStatusClient.ensureAwareStarted()
                         sendEvent(StartNearbyServiceEvent())
                     }
                 }
@@ -149,23 +153,15 @@ fun ChatListPage(
                             buttonSize = ButtonSize.SMALL,
                             onClick = {
                                 when {
-                                    isIOS() && !bleReady -> {
-                                        // iOS cannot re-show the one-time system
-                                        // prompt once denied; recovery is Settings.
-                                        if (bleAvailability != BleAvailability.UNKNOWN) {
-                                            openAppSettings()
-                                        } else {
-                                            scope.launch { ensureBlePermissionAsync() }
-                                        }
-                                        if (!awareReady) sendEvent(RequestPermissionsEvent(awarePermission))
-                                    }
                                     !bleReady -> {
-                                        // Permission/adapter recovery only; scanning
-                                        // is not started from this page.
                                         pendingNearbyRequest = !awareReady
-                                        scope.launch { ensureBlePermissionAsync() }
+                                        if (canRequestBluetoothAccess()) {
+                                            scope.launch { ensureBlePermissionAsync() }
+                                        } else {
+                                            openAppSettings()
+                                        }
                                     }
-                                    else -> sendEvent(RequestPermissionsEvent(awarePermission))
+                                    else -> awarePermission?.let { sendEvent(RequestPermissionsEvent(it)) }
                                 }
                             },
                         )

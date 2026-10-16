@@ -64,10 +64,10 @@ class ApiContractTest {
         // Counted over all operation fields, not just the ones taking arguments.
         val queries = operationFieldNamesIn("Query")
         val mutations = operationFieldNamesIn("Mutation")
-        if (queries.size != 190 || mutations.size != 283) {
+        if (queries.size != 192 || mutations.size != 291) {
             fail(
                 "shared/apitest/schema.graphqls declares ${queries.size} Query / ${mutations.size} " +
-                    "Mutation operations — the contract has 190 / 283. The snapshot looks truncated or " +
+                    "Mutation operations — the contract has 192 / 291. The snapshot looks truncated or " +
                     "drifted; every check in this class reads it, so they would pass on an empty file.",
             )
         }
@@ -193,6 +193,8 @@ class ApiContractTest {
                 forbiddenPattern("prefsPath|prefEntries|deletePrefEntry|setPref|deletePref") {
                     "legacy preference operations must not return; use userPrefs/systemPrefs and setUserPref/removeUserPref: $it"
                 }
+        forbiddenPattern("restoreImageSearch") { "Image model restoration belongs to shared Rust startup: $it" }
+        forbiddenPattern("peerAwareConfig|PeerAwareConfig") { "Aware SDK parameters belong to shared Rust platform requests: $it" }
         forbiddenPattern("MediaActionResult") { "legacy MediaActionResult must not come back — use ActionResult — $it" }
         forbiddenPattern("smsAllCounts") { "renamed to smsBoxCounts — $it" }
         forbiddenPattern("feedsCount") { "renamed to feedEntryCounts — $it" }

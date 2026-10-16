@@ -13,6 +13,7 @@ internal object FileResourceHost {
         val extra = request.params
         val operation = request.operation
         return when (operation) {
+            "write" -> JsonPrimitive(writeResourceFile(extra.source, path))
             "mime" -> JsonHelper.jsonEncodeToElement(getContentTypeForPath(path))
             "packageIcon", "decodePng" -> {
                 val bytes = when (operation) {

@@ -4,7 +4,6 @@ import com.ismartcoding.plain.platform.isQPlus
 
 import com.ismartcoding.plain.api.graphql.models.File as FileEntry
 
-import android.content.ContentUris
 import android.provider.CallLog
 import android.provider.ContactsContract
 import com.ismartcoding.plain.appContext
@@ -19,22 +18,21 @@ actual suspend fun deleteSystemProviderFacts(provider: DataType, ids: Set<String
     }
     ids.filter { id ->
         val number = id.toLongOrNull() ?: return@filter false
-        val row = ContentUris.withAppendedId(uri, number)
-        runCatching {
-            appContext.contentResolver.delete(row, null, null) > 0 &&
-                appContext.contentResolver.query(row, arrayOf("_id"), null, null, null)?.use { !it.moveToFirst() } == true
-        }.getOrDefault(false)
+        val arguments = arrayOf(number.toString())
+        val selection = if (provider == DataType.CONTACT) "_id = ? AND deleted = 0" else "_id = ?"
+        appContext.contentResolver.delete(uri, "_id = ?", arguments) > 0 &&
+            appContext.contentResolver.query(uri, arrayOf("_id"), selection, arguments, null)?.use { !it.moveToFirst() } == true
     }.toSet()
 }
 
 actual suspend fun systemSmsFacts(method: String, params: kotlinx.serialization.json.JsonObject): kotlinx.serialization.json.JsonElement =
     com.ismartcoding.plain.features.telephony.sms.SmsHelper.facts(appContext, method, params)
 
-actual suspend fun mediaBucketItemFacts(dataType: DataType): List<com.ismartcoding.plain.rust.host.provider.MediaBucketItemFacts> = when (dataType) {
-    DataType.IMAGE -> com.ismartcoding.plain.platform.media.provider.ImageMediaStoreHelper.getBucketItemFactsAsync(appContext)
-    DataType.VIDEO -> com.ismartcoding.plain.platform.media.provider.VideoMediaStoreHelper.getBucketItemFactsAsync(appContext)
-    DataType.AUDIO -> if (com.ismartcoding.plain.platform.isQPlus()) com.ismartcoding.plain.features.audio.AudioMediaStoreHelper.getBucketItemFactsAsync(appContext) else emptyList()
-    DataType.DOC -> com.ismartcoding.plain.docs.DocMediaStoreHelper.getDocBucketItemFactsAsync(appContext)
+actual suspend fun mediaBucketItemFacts(dataType: DataType, plan: com.ismartcoding.plain.rust.host.provider.ProviderPlan): List<com.ismartcoding.plain.rust.host.provider.MediaBucketItemFacts> = when (dataType) {
+    DataType.IMAGE -> com.ismartcoding.plain.platform.media.provider.ImageMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where())
+    DataType.VIDEO -> com.ismartcoding.plain.platform.media.provider.VideoMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where())
+    DataType.AUDIO -> if (com.ismartcoding.plain.platform.isQPlus()) com.ismartcoding.plain.features.audio.AudioMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where()) else emptyList()
+    DataType.DOC -> if (isQPlus()) com.ismartcoding.plain.platform.media.provider.DocMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where()) else emptyList()
     else -> emptyList()
 }
 

@@ -5,20 +5,16 @@ import com.ismartcoding.plain.ui.i18n.LocaleHelper
 
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isEnabledAsync
-import com.ismartcoding.plain.rust.http.RustHttpEngine
-import com.ismartcoding.plain.rust.http.RustTlsCertificate
 
 import com.ismartcoding.plain.preferences.*
 
 import android.content.Intent
-import android.net.Uri
 import androidx.core.content.ContextCompat
 import com.ismartcoding.plain.i18n.background_online_failed
 import com.ismartcoding.plain.app.Constants
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.features.chat.peer.PeerStatusManager
-import com.ismartcoding.plain.features.chat.peer.transport.WifiAwareTransport
+import com.ismartcoding.plain.platform.network.aware.WifiAwareTransport
 import com.ismartcoding.plain.features.settings.HttpServerState
 import com.ismartcoding.plain.features.ClipboardWatcher
 import com.ismartcoding.plain.features.telephony.sms.SmsProviderObserver
@@ -35,32 +31,6 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
 
-actual suspend fun getSSLSignature(): ByteArray = RustTlsCertificate.signature()
-
-actual suspend fun generateSSLKeyStore() {
-    RustTlsCertificate.regenerate()
-}
-
-actual suspend fun replaceSSLKeyStoreAsync(
-    mode: SslCertImportMode,
-    firstUri: String,
-    secondUri: String,
-    password: String,
-): ByteArray = withIO {
-    when (mode) {
-        SslCertImportMode.PKCS12 -> RustTlsCertificate.importPkcs12(readUriBytes(firstUri), password)
-        SslCertImportMode.PEM -> RustTlsCertificate.importPem(readUriText(firstUri), readUriText(secondUri))
-    }
-}
-
-private fun readUriBytes(uriStr: String): ByteArray {
-    val uri = Uri.parse(uriStr)
-    return appContext.contentResolver.openInputStream(uri)?.use { it.readBytes() }
-        ?: throw IllegalStateException("Failed to read the selected file")
-}
-
-private fun readUriText(uriStr: String): String = readUriBytes(uriStr).toString(Charsets.UTF_8)
-
 // The SMS/MMS hooks below serve the web desktop bridge, whose only clients are
 // connected web sessions — so they live exactly as long as the server:
 // - SmsProviderObserver pushes a debounced WS event when the phone's SMS
@@ -71,15 +41,10 @@ actual suspend fun onHttpServerStarted() {
     PNotificationListenerService.toggle(service, Permission.NOTIFICATION_LISTENER.isEnabledAsync())
     SmsProviderObserver.start(service)
     ClipboardWatcher.start()
-    PeerStatusManager.start()
-}
-
-actual suspend fun onWebSocketSessionStarted() {
 }
 
 actual suspend fun onHttpServerStopped() {
     HttpServerResources.stop()
-    PeerStatusManager.stop()
     SmsProviderObserver.stop()
     ClipboardWatcher.stop()
     PNotificationListenerService.toggle(appContext, false)
@@ -120,10 +85,6 @@ actual suspend fun stopHttpServiceAsync(): Unit = withIO {
         HttpServerManager.backgroundError.value = ""
     }
 }
-
-actual fun isHttpServerRunning(): Boolean = RustHttpEngine.isRunning
-
-actual fun isMdnsRunning(): Boolean = RustMdnsRuntime.running
 
 actual fun getAwareAttachStatus(): String =
     if (WifiAwareTransport.awareSession != null) "attached" else "not attached"

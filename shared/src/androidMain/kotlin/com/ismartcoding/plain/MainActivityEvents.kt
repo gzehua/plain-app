@@ -11,7 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hasRoute
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.features.chat.peer.PeerStatusManager
+import com.ismartcoding.plain.features.chat.peer.PeerStatusClient
 import com.ismartcoding.plain.app.events.HChannelInviteCanceledEvent
 import com.ismartcoding.plain.app.events.HChannelInviteReceivedEvent
 import com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent
@@ -196,7 +196,7 @@ internal fun MainActivity.initEvents() {
                 }
 
                 is HPairingSuccessEvent -> {
-                    PeerStatusManager.reconnectNow("post_pairing")
+                    PeerStatusClient.reconnectNow("post_pairing")
                 }
             }
         }

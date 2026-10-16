@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.app.TempData
-import com.ismartcoding.plain.features.chat.peer.PeerStatusManager
+import com.ismartcoding.plain.features.chat.peer.PeerStatusClient
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.features.settings.HttpServerState
@@ -34,10 +34,7 @@ import com.ismartcoding.plain.i18n.vpn_web_conflict_warning
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.permissions.Permission
-import com.ismartcoding.plain.platform.system.getDeviceIP4s
-import com.ismartcoding.plain.platform.system.isAndroidOnly
 import com.ismartcoding.plain.platform.permissions.isGranted
-import com.ismartcoding.plain.platform.network.isVPNConnected
 import com.ismartcoding.plain.ui.base.AlertType
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PAlert
@@ -71,7 +68,7 @@ fun HomePage(
     val serviceEnabled = UserPrefs.service.collectAsStateValue()
     var systemAlertWindow by remember { mutableStateOf(Permission.SYSTEM_ALERT_WINDOW.isGranted()) }
     val refreshState = rememberRefreshLayoutState {
-        PeerStatusManager.reconnectNow("home_pull_refresh")
+        PeerStatusClient.reconnectNow("home_pull_refresh")
         peerVM.load()
         channelVM.load()
         setRefreshState(RefreshContentState.Finished)
@@ -85,10 +82,6 @@ fun HomePage(
 
     LaunchedEffect(Channel.sharedFlow) {
         Channel.sharedFlow.collect { event ->
-            if (updateVM.consumeUpdateDownloadEvent(event)) {
-                return@collect
-            }
-
             when (event) {
                 is PermissionsResultEvent -> {
                     systemAlertWindow = Permission.SYSTEM_ALERT_WINDOW.isGranted()
@@ -99,9 +92,7 @@ fun HomePage(
                 }
 
                 is WindowFocusChangedEvent -> {
-                    mainVM.isVPNConnected.value = isVPNConnected()
-                    val ips = getDeviceIP4s().filter { it.isNotEmpty() }
-                    AppUiState.ip4s.value = ips
+                    com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
                     systemAlertWindow = Permission.SYSTEM_ALERT_WINDOW.isGranted()
                     if (event.hasFocus) {
                         HttpServerManager.ensureStarted()
@@ -132,7 +123,7 @@ fun HomePage(
                 item {
                     TopSpace()
                     if (serviceEnabled) {
-                        if (mainVM.isVPNConnected.value) {
+                        if (AppUiState.vpnActive.value) {
                             PAlert(
                                 description = stringResource(Res.string.vpn_web_conflict_warning),
                                 AlertType.WARNING,

@@ -30,7 +30,7 @@ import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.system.openFileExternal
 import com.ismartcoding.plain.platform.system.shareFile
-import com.ismartcoding.plain.platform.files.statFile
+import com.ismartcoding.plain.features.files.FilesClient
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.components.PIconButton
 import com.ismartcoding.plain.ui.base.PScaffold
@@ -54,7 +54,7 @@ fun OtherFilePage(
 
     LaunchedEffect(path, title) {
         displayTitle = withIO { AppFileDisplayNameHelper.resolveDisplayNameByPath(path, title) }
-        fileSize = withIO { statFile(path)?.size ?: 0L }
+        fileSize = FilesClient.size(path)
     }
 
     PScaffold(

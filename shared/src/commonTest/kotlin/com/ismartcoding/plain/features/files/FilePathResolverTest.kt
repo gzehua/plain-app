@@ -14,23 +14,30 @@ class FilePathResolverTest {
         runCurrent()
         assertEquals(listOf(listOf("app://image", "fid:first")), requests)
         assertEquals(listOf("/resolved/app://image", "/resolved/fid:first", "/resolved/app://image", "/ordinary", "https://example.invalid/image"), result.await())
-        assertEquals("/resolved/app://image", resolver.resolve("app://image"))
-        assertEquals(1, requests.size)
     }
 
     @Test
-    fun batchesAreBoundedAndSuccessfulCacheEntriesAreEvictedByUse() = runTest {
+    fun batchesAreBoundedAndCompletedResultsAreResolvedAgain() = runTest {
         val requests = mutableListOf<List<String>>()
-        val resolver = FilePathResolver(backgroundScope, { paths -> requests.add(paths); paths.map { "/$it" } }, maxEntries = 2, batchSize = 2)
+        var currentPath: String? = "/original"
+        val resolver = FilePathResolver(backgroundScope, { paths ->
+            requests.add(paths)
+            paths.map { currentPath }
+        }, batchSize = 2)
         val result = async { resolver.resolveAll(listOf("fid:a", "fid:b", "fid:c")) }
         runCurrent()
         assertEquals(listOf(listOf("fid:a", "fid:b"), listOf("fid:c")), requests)
-        assertEquals(listOf("/fid:a", "/fid:b", "/fid:c"), result.await())
-        assertEquals("/fid:b", resolver.resolve("fid:b"))
-        val evicted = async { resolver.resolve("fid:a") }
+        assertEquals(listOf("/original", "/original", "/original"), result.await())
+
+        currentPath = "/current"
+        val changed = async { resolver.resolve("fid:a") }
         runCurrent()
-        assertEquals("/fid:a", evicted.await())
-        assertEquals(listOf("fid:a"), requests.last())
+        assertEquals("/current", changed.await())
+        currentPath = null
+        val removed = async { resolver.resolve("fid:a") }
+        runCurrent()
+        assertEquals("", removed.await())
+        assertEquals(listOf(listOf("fid:a", "fid:b"), listOf("fid:c"), listOf("fid:a"), listOf("fid:a")), requests)
     }
 
     @Test

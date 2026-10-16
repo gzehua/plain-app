@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.ismartcoding.plain.app.TempData
-import com.ismartcoding.plain.features.nearby.MdnsDiscoverManager
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.device_name
 import com.ismartcoding.plain.ui.resources.save as ui_drawable_save

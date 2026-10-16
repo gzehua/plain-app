@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -83,7 +83,6 @@ fun MarkdownTable(
 ) {
     val tableMaxWidth = LocalMarkdownDimens.current.tableMaxWidth
     val tableCellWidth = LocalMarkdownDimens.current.tableCellWidth
-    val tableCornerSize = LocalMarkdownDimens.current.tableCornerSize
     val dividerColor = LocalMarkdownColors.current.dividerColor
 
     val columnsCount = remember(node) { node.findChildOfType(HEADER)?.children?.count { it.type == CELL } ?: 0 }
@@ -93,7 +92,7 @@ fun MarkdownTable(
     val backgroundCodeColor = LocalMarkdownColors.current.tableBackground
     BoxWithConstraints(
         modifier = Modifier
-            .background(backgroundCodeColor, RoundedCornerShape(tableCornerSize))
+            .background(backgroundCodeColor, MaterialTheme.shapes.medium)
             .widthIn(max = tableMaxWidth)
             .semantics {
                 collectionInfo = CollectionInfo(rowCount = rowsCount, columnCount = columnsCount)

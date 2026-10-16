@@ -6,5 +6,5 @@ import com.ismartcoding.plain.ui.components.codeeditor.engine.ByteSource
 interface EditorFileIO {
     fun nowMillis(): Long
     fun openByteSource(path: String): ByteSource
-    fun writeByteChunksStreaming(path: String, chunks: Iterator<ByteArray>): Boolean
+    suspend fun writeByteChunksStreaming(path: String, chunks: Iterator<ByteArray>): Boolean
 }

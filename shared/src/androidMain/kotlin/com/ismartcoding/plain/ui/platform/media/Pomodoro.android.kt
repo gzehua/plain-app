@@ -31,7 +31,7 @@ import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.extensions.isAudioFast
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.preferences.*
-import com.ismartcoding.plain.ui.pomodoro.PomodoroState
+import com.ismartcoding.plain.api.graphql.models.PomodoroState
 import com.ismartcoding.plain.ui.theme.BrandPrimary
 import java.io.File
 import kotlin.math.PI

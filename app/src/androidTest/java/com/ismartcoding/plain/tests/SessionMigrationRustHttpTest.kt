@@ -75,7 +75,7 @@ class SessionMigrationRustHttpTest {
             RustSystemState.setTwoFactor(true)
             startHttpEngineAsync()
             val client = generateECDHKeyPair()
-            val digest = sha512(RustSystemState.state.value.password.encodeToByteArray())
+            val digest = java.security.MessageDigest.getInstance("SHA-512").digest(RustSystemState.state.value.password.encodeToByteArray()).joinToString("") { "%02x".format(it) }
             val passwordKey = digest.take(32).encodeToByteArray()
             val request = AuthRequest(digest, "Fixture", "1", "Android", "1", true,
                 Base64Lenient.encode(client.publicKeyEncoded))

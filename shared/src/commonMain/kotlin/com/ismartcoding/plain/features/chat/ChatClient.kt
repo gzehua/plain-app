@@ -31,8 +31,9 @@ object ChatClient {
     suspend fun sendText(target: ChatTarget, text: String): ChatItem =
         RustChatStore.decodeGraphql(PlainRust.mainMutate("sendChatText(target: ${gql(target.encodedToId)}, text: ${gql(text)}) { ${RustChatStore.FIELDS} }", longRunning = true).getValue("sendChatText"))
 
-    suspend fun forward(id: String, target: ChatTarget): ChatItem =
-        RustChatStore.decodeGraphql(PlainRust.mainMutate("forwardChatItem(id: ${gql(id)}, target: ${gql(target.encodedToId)}) { ${RustChatStore.FIELDS} }", longRunning = true).getValue("forwardChatItem"))
+    suspend fun forward(id: String, targets: List<ChatTarget>): List<ChatItem> =
+        PlainRust.mainMutate("forwardChatItems(id: ${gql(id)}, targets: ${gqlIds(targets.map { it.encodedToId })}) { ${RustChatStore.FIELDS} }", longRunning = true)
+            .getValue("forwardChatItems").jsonArray.map(RustChatStore::decodeGraphql)
 
     suspend fun retry(id: String): ChatItem =
         RustChatStore.decodeGraphql(PlainRust.mainMutate("retryChatItem(id: ${gql(id)}) { ${RustChatStore.FIELDS} }").getValue("retryChatItem"))

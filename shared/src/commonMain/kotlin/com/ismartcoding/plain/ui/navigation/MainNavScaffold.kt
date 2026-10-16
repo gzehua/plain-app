@@ -38,7 +38,7 @@ import com.ismartcoding.plain.ui.resources.house as ui_drawable_house
 import com.ismartcoding.plain.ui.resources.message_circle as ui_drawable_message_circle
 import com.ismartcoding.plain.ui.resources.search as ui_drawable_search
 import com.ismartcoding.plain.i18n.tools
-import com.ismartcoding.plain.platform.system.isAndroidOnly
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.theme.primaryPill
 import org.jetbrains.compose.resources.DrawableResource
@@ -58,7 +58,7 @@ internal val mainNavItems: List<MainNavItem>
     get() = buildList {
         add(MainNavItem(0, UiRes.drawable.ui_drawable_house, Res.string.home))
         add(MainNavItem(1, UiRes.drawable.ui_drawable_message_circle, Res.string.chat))
-        if (isAndroidOnly()) {
+        if (com.ismartcoding.plain.ui.tools.hasTools(getDeviceCapabilities())) {
             add(MainNavItem(2, UiRes.drawable.ui_drawable_grid_3x3, Res.string.tools))
         }
         add(MainNavItem(3, UiRes.drawable.ui_drawable_search, Res.string.search))

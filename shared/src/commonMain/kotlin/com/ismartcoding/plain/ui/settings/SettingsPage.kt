@@ -80,7 +80,6 @@ fun SettingsPage(navController: NavHostController, updateViewModel: UpdateViewMo
             if (event is DownloadUpdateEvent) {
                 listState.animateScrollToItem(0)
             }
-            updateViewModel.consumeUpdateDownloadEvent(event)
         }
     }
 

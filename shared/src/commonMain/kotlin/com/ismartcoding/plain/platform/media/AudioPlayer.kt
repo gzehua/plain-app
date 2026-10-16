@@ -13,14 +13,15 @@ import kotlinx.coroutines.withContext
 interface AudioPlayer {
     val isPlayingFlow: StateFlow<Boolean>
     val currentPath: String
+    fun bindRevision(revision: Long)
     suspend fun load(audio: AudioItem, positionMs: Long, speed: Float, revision: Long)
     val progress: Long
-    fun seekTo(positionMs: Long)
-    fun pause()
-    fun play()
-    fun restartIfPlaying()
-    fun clear()
-    fun setPlaybackSpeed(speed: Float)
+    suspend fun seekTo(positionMs: Long)
+    suspend fun pause()
+    suspend fun play()
+    suspend fun restartIfPlaying()
+    suspend fun clear()
+    suspend fun setPlaybackSpeed(speed: Float)
 }
 
 expect fun createAudioPlayer(): AudioPlayer

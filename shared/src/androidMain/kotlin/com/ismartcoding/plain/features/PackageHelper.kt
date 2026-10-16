@@ -219,11 +219,6 @@ object PackageHelper {
 
     fun install(context: Context, file: File) {
         try {
-            if (!file.name.lowercase().endsWith(".apk")) {
-                LogCat.e("Invalid file extension: ${file.name}")
-                throw IllegalArgumentException("Invalid file extension: ${file.name}")
-            }
-
             val uri = androidx.core.content.FileProvider.getUriForFile(
                 context,
                 AppIntents.AUTHORITY,

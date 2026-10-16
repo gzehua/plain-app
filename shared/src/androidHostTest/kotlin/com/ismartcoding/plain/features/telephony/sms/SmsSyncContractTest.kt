@@ -48,14 +48,6 @@ class SmsSyncContractTest {
     }
 
     @Test
-    fun `message IDs are partitioned between SMS and MMS providers`() {
-        val ids = SmsProviderContract.partitionMessageIds("12,mms_34,56,mms_78")
-
-        assertEquals(listOf("12", "56"), ids.sms)
-        assertEquals(listOf("34", "78"), ids.mms)
-    }
-
-    @Test
     fun `recipient IDs retain every distinct participant`() {
         assertEquals(
             listOf("7", "8", "9"),

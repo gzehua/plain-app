@@ -86,3 +86,5 @@ object AndroidBleTransport : BleTransport {
 
     override fun createServer(): BleGattServer = AndroidBleGattServer()
 }
+
+actual fun canRequestBluetoothAccess(): Boolean = true

@@ -36,7 +36,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.extensions.timeAgo
-import com.ismartcoding.plain.features.feeds.FeedSyncErrorCode
 import com.ismartcoding.plain.ui.feeds.FeedWorkerState
 import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
 import com.ismartcoding.plain.api.graphql.models.Feed

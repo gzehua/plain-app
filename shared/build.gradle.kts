@@ -12,6 +12,12 @@ plugins {
 // building for the simulator. Saves ~3-5s of configuration overhead per
 // build. Restore by omitting the flag (default: both targets enabled).
 val enableDeviceTarget = (findProperty("enableDeviceTarget") as? String)?.toBoolean() ?: true
+val cargoBinDir = File(System.getenv("CARGO_HOME") ?: "${System.getProperty("user.home")}/.cargo", "bin")
+val rustupExe = cargoBinDir.resolve("rustup")
+val cargoExe = cargoBinDir.resolve("cargo")
+listOf(rustupExe, cargoExe).forEach {
+    require(it.canExecute()) { "Rust tool not found or not executable: ${it.absolutePath}" }
+}
 
 kotlin {
     jvmToolchain(17)
@@ -53,7 +59,7 @@ kotlin {
         val rustTargetDir = layout.buildDirectory.dir("rust-target")
         val onnxRuntimeDir = layout.buildDirectory.dir("onnxruntime/$rustTarget")
         val installRustTarget = tasks.register<Exec>("installPlainRustTarget${iosTarget.name.replaceFirstChar { it.uppercase() }}") {
-            commandLine("rustup", "target", "add", rustTarget)
+            commandLine(rustupExe.absolutePath, "target", "add", rustTarget)
         }
         val buildPlainRust = tasks.register<Exec>("buildPlainRust${iosTarget.name.replaceFirstChar { it.uppercase() }}") {
             dependsOn(installRustTarget)
@@ -64,7 +70,7 @@ kotlin {
             environment("CARGO_TARGET_DIR", rustTargetDir.get().asFile.absolutePath)
             environment("PLAIN_ONNX_RUNTIME_DIR", onnxRuntimeDir.get().asFile.absolutePath)
             // iOS frameworks consume only the static archive.
-            commandLine("cargo", "rustc", "--locked", "--manifest-path", rootProject.file("plain-rs/Cargo.toml"), "--lib", "--crate-type", "staticlib", "--release", "--target", rustTarget)
+            commandLine(cargoExe.absolutePath, "rustc", "--locked", "--manifest-path", rootProject.file("plain-rs/Cargo.toml"), "--lib", "--crate-type", "staticlib", "--release", "--target", rustTarget)
         }
         iosTarget.compilations.getByName("main").cinterops.create("plainPrefs") {
             defFile(rootProject.file("shared/src/nativeInterop/cinterop/plainPrefs.def"))
@@ -128,7 +134,6 @@ kotlin {
             implementation(libs.libphonenumber.geocoder)
             implementation(libs.libphonenumber.carrier)
 
-            implementation(libs.tink.android)
             implementation(libs.androidx.exifinterface)
             implementation(libs.androidx.appcompat)
             implementation(libs.coil)
@@ -188,6 +193,7 @@ kotlin {
 dependencies {
     add("androidHostTestImplementation", kotlin("test"))
     add("androidHostTestImplementation", libs.junit)
+    add("androidHostTestImplementation", libs.tink.android)
 }
 
 compose.resources {

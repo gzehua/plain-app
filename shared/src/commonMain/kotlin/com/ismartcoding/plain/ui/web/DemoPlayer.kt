@@ -36,18 +36,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.platform.network.isLanAddress
 import org.jetbrains.compose.resources.painterResource
 import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.play_arrow as ui_drawable_play_arrow
 
 /** First LAN IPv4 known to the app, or a stable fallback for the demos. */
-internal fun demoServerIp(): String =
-    AppUiState.ip4s.value.let { ips ->
-        ips.firstOrNull { isLanAddress(it) && it.count { c -> c == '.' } == 3 }
-            ?: ips.firstOrNull { it.count { c -> c == '.' } == 3 }
-    } ?: "192.0.2.20"
+internal fun demoServerIp(): String = AppUiState.primaryIpv4.value.ifEmpty { "192.0.2.20" }
 
 /**
  * Shared player for the compose-drawn demo "videos": dark bezel, content box,

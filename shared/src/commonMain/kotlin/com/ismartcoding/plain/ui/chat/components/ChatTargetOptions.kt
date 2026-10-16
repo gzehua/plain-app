@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.chat.components
 
+import com.ismartcoding.plain.ui.chat.isJoined
+import com.ismartcoding.plain.ui.chat.joinedMembers
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue

@@ -25,7 +25,6 @@ import com.ismartcoding.plain.features.files.FilesType
 import com.ismartcoding.plain.platform.system.hasPermission
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.features.files.ZipBrowserHelper
-import com.ismartcoding.plain.helpers.FilePathValidator
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.system.appDir
@@ -243,8 +242,7 @@ class FilesViewModel : ISearchableViewModel<FileEntry>, ISelectableViewModel<Fil
             DialogHelper.showLoading()
             try {
                 withIO {
-                    FilePathValidator.requireAllSafe(paths.toList())
-                    paths.forEach { FilesClient.delete(it) }
+                    FilesClient.deleteMany(paths.toList())
                 }
             } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
             catch (error: Exception) { DialogHelper.showMessage(error) }

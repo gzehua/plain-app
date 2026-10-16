@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.features.nearby
 
-import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 
 import com.ismartcoding.plain.platform.network.ble.RustBleWire
 import com.ismartcoding.plain.platform.network.ble.BleServices
@@ -12,13 +11,8 @@ import com.ismartcoding.plain.features.nearby.NearbyMessageType
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.network.bleTransport
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -27,63 +21,20 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 
-/**
- * BLE scan driver — the App half of Rust-owned BLE discovery.
- *
- * The App runs the radio loop and nothing else: each discovered advertisement
- * is reduced to its shortId and handed to Rust via [RustNearbyWire.scanSeen].
- * Rust decides when a GATT read is due, then calls back into [read] over the
- * host socket to perform exactly one DISCOVER read. The resulting device is
- * published by Rust over `NEARBY_DEVICES_UPDATED` / `WS_NEARBY_DEVICE_FOUND`,
- * so this class never touches the discovered-device list.
- */
 object BleScanDriver {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private var scanJob: Job? = null
-
-    /** Whether the App-side BLE scan loop is currently running. */
-    var isScanning: Boolean = false
-        private set
-
-    /**
-     * Starts the radio loop. Safe to call repeatedly — a running loop is kept.
-     * Returns immediately; the loop feeds Rust asynchronously.
-     */
-    fun start() {
-        if (scanJob?.isActive == true) return
-        scanJob = scope.launch {
-            isScanning = true
-            try {
-                feedScan()
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (error: Throwable) {
-                LogCat.e("BLE scan driver", error)
-            } finally {
-                isScanning = false
-            }
-        }
+    suspend fun scan() {
+        try { feedScan() }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (error: Throwable) { LogCat.e("BLE scan driver", error) }
     }
 
-    fun stop() {
-        scanJob?.cancel()
-        scanJob = null
-        isScanning = false
-    }
-
-    /**
-     * The radio loop: for every advertised device, hand its shortId to Rust.
-     * Rust replies with a step, but the decision to read is now Rust's — the
-     * App simply ignores the step and lets the worker drive reads via [read].
-     */
     private suspend fun feedScan() {
         val scan = RustNearbyWire.beginScan()
         try {
             forEachAdvertisement { shortId ->
-                // Feed Rust and let it decide. A thrown error here must not
-                // kill the loop; skip the advertisement and keep scanning.
-                runCatching { RustNearbyWire.scanSeen(scan, shortId) }
-                    .onFailure { LogCat.d("[BLE] scanSeen $shortId: ${it.message}") }
+                try { RustNearbyWire.scanSeen(scan, shortId) }
+                catch (cancelled: CancellationException) { throw cancelled }
+                catch (error: Exception) { LogCat.d("[BLE] scanSeen $shortId: ${error.message}") }
             }
         } finally {
             withContext(NonCancellable) { RustNearbyWire.endScan(scan) }

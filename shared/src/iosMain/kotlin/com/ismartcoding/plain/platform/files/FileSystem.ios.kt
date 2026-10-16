@@ -4,24 +4,12 @@ package com.ismartcoding.plain.platform.files
 
 import com.ismartcoding.plain.platform.system.appDir
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
-
 import com.ismartcoding.plain.features.files.DStorageStatsItem
-import com.ismartcoding.plain.features.files.FileSortBy
-import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.lib.logcat.LogCat
-import kotlin.time.Instant
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.toKString
-import kotlinx.datetime.toKotlinInstant
-import platform.Foundation.NSDate
-import platform.Foundation.NSFileModificationDate
 import platform.Foundation.NSFileSystemFreeSize
 import platform.Foundation.NSFileSystemSize
 import platform.Foundation.NSFileManager
-import platform.Foundation.NSFileSize
-import platform.Foundation.NSFileType
-import platform.Foundation.NSFileTypeDirectory
 
 actual fun getInternalStoragePath(): String = appDir()
 
@@ -51,24 +39,4 @@ actual fun getUSBStorageStats(): List<DStorageStatsItem> = emptyList()
 actual fun getCanonicalPath(path: String): String {
     val resolved = platform.posix.realpath(path, null) ?: return path
     return try { resolved.toKString() } finally { platform.posix.free(resolved) }
-}
-
-actual fun statFile(path: String): FileEntry? {
-    if (!NSFileManager.defaultManager.fileExistsAtPath(path)) return null
-    val name = path.substringAfterLast('/')
-    return buildFile(path, name)
-}
-
-private fun buildFile(path: String, name: String): FileEntry? {
-    val mgr = NSFileManager.defaultManager
-    val attrs = try {
-        mgr.attributesOfItemAtPath(path, null) ?: return null
-    } catch (e: Exception) {
-        return null
-    }
-    val isDir = attrs[NSFileType] == NSFileTypeDirectory
-    val size = if (isDir) 0L else (attrs[NSFileSize] as? Long) ?: 0L
-    val updatedAt = (attrs[NSFileModificationDate] as? NSDate?)?.toKotlinInstant()
-        ?: Instant.fromEpochMilliseconds(0)
-    return FileEntry(name = name, path = path, permission = "", createdAt = null, updatedAt = updatedAt, size = size, isDir = isDir, childCount = 0, mediaId = "")
 }

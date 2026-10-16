@@ -61,7 +61,6 @@ fun initIosApp() {
     com.ismartcoding.plain.platform.system.IosWindowFocusEvents.register()
 
     // Network path monitor (recreates the mDNS responder socket on network changes)
-    com.ismartcoding.plain.platform.system.IosNetworkMonitor.init()
 
     // Coil image loader: iOS has no ServiceLoader-discovered network fetcher,
     // so register our NSURLSession-backed one explicitly.

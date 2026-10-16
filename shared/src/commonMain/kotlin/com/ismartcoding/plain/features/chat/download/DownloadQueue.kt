@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.chat.download
 
 import com.ismartcoding.plain.features.chat.models.MessageFile
-import com.ismartcoding.plain.features.chat.models.PeerRecord
+import com.ismartcoding.plain.api.graphql.models.PeerRecord
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 import com.ismartcoding.plain.app.events.HDownloadTaskDoneEvent
 import com.ismartcoding.plain.features.downloads.DOWNLOAD_KIND_CHAT
@@ -88,7 +88,7 @@ object DownloadQueue {
         downloadProgress.value = tasks
         DownloadCenter.replaceExternal(DOWNLOAD_KIND_CHAT, tasks.values.toList())
     }
-    private const val QUEUE_FIELDS = "runtimeId revision tasks { id messageId generation status error downloaded total speed file { id: fileId uri size durationMs width height summary fileName } peer { id name ip key public_key: publicKey status port device_type: deviceType token created_at: createdAt updated_at: updatedAt } }"
+    private const val QUEUE_FIELDS = "runtimeId revision tasks { id messageId generation status error downloaded total speed file { id: fileId uri size durationMs width height summary fileName } peer { id name ip key publicKey status port deviceType token createdAt updatedAt } }"
     private suspend fun call(body: JsonObject): JsonElement {
         val action = body.getValue("action").jsonPrimitive.content
         if (action == "snapshot") return PlainRust.mainQuery("chatDownloadQueue { $QUEUE_FIELDS }").getValue("chatDownloadQueue")

@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.features.telephony.sms
 
-import com.ismartcoding.plain.api.graphql.models.SmsAttachment
-
 import android.Manifest
 import android.app.PendingIntent
 import android.content.pm.PackageManager
@@ -23,22 +21,11 @@ import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.extensions.queryCursor
 import com.ismartcoding.plain.platform.telephony.getSims
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.helpers.FilterField
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
-import com.ismartcoding.plain.lib.TimeHelper
-import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.smsManager
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.receivers.SmsSentReceiver
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import java.util.Locale
 
 object SmsHelper {
     // Lazy so merely touching this object (e.g. from the server stop hooks or
@@ -49,7 +36,6 @@ object SmsHelper {
 
     private const val MMS_ADDR_TYPE_FROM = 137
     private const val MMS_ADDR_TYPE_TO = 151
-    private const val MMS_INSERT_ADDRESS_TOKEN = "insert-address-token"
 
     private fun manager(subscriptionId: Int?): SmsManager =
         if (subscriptionId != null && subscriptionId >= 0) {
@@ -120,10 +106,9 @@ object SmsHelper {
 
     private fun cursorToMmsMessage(context: Context, cursor: Cursor, cache: MutableMap<String, Int>): SmsRowFacts {
         val rawMmsId = cursor.getStringValue(Telephony.Mms._ID, cache)
-        val bodyAndAttachments = readMmsBodyAndAttachments(context, rawMmsId)
         return SmsRowFacts(
             id = "mms_$rawMmsId",
-            body = bodyAndAttachments.first,
+            body = "",
             address = "",
             addressCandidates = readMmsAddresses(context, rawMmsId),
             date = cursor.getTimeSecondsValue(Telephony.Mms.DATE, cache),
@@ -133,7 +118,7 @@ object SmsHelper {
             type = cursor.getIntValue(Telephony.Mms.MESSAGE_BOX, cache),
             subscriptionId = cursor.getIntValue(Telephony.Mms.SUBSCRIPTION_ID, cache, -1),
             isMms = true,
-            attachments = bodyAndAttachments.second,
+            parts = readMmsParts(context, rawMmsId),
         )
     }
 
@@ -167,83 +152,41 @@ object SmsHelper {
         val addrUri = "content://mms/$mmsId/addr".toUri()
         val colType = Telephony.Mms.Addr.TYPE
         val colAddress = Telephony.Mms.Addr.ADDRESS
-        val candidates = context.contentResolver.queryCursor(
+        return context.contentResolver.queryCursor(
             addrUri,
             arrayOf(colAddress, colType),
             "$colType = ? OR $colType = ?",
             arrayOf(MMS_ADDR_TYPE_FROM.toString(), MMS_ADDR_TYPE_TO.toString()),
-            null
+            null,
         )?.map { cursor, cache ->
-            val address = cursor.getStringValue(colAddress, cache)
-            val type = cursor.getIntValue(colType, cache)
-            Pair(address, type)
-        } ?: emptyList()
-
-        return candidates.filter { it.first.isNotEmpty() && !it.first.equals(MMS_INSERT_ADDRESS_TOKEN, true) }
-            .map { MmsAddressFacts(it.first, it.second == MMS_ADDR_TYPE_FROM) }
+            MmsAddressFacts(
+                cursor.getStringValue(colAddress, cache),
+                cursor.getIntValue(colType, cache) == MMS_ADDR_TYPE_FROM,
+            )
+        }.orEmpty()
     }
 
-    internal fun readMmsBodyAndAttachments(context: Context, mmsId: String): Pair<String, List<SmsAttachment>> {
-        val bodyParts = mutableListOf<String>()
-        val attachments = mutableListOf<SmsAttachment>()
-
+    internal fun readMmsParts(context: Context, mmsId: String): List<MmsPartFacts> =
         context.contentResolver.queryCursor(
             mmsPartUri,
-            arrayOf(
-                Telephony.Mms.Part._ID,
-                Telephony.Mms.Part.CONTENT_TYPE,
-                Telephony.Mms.Part.NAME,
-                Telephony.Mms.Part.FILENAME,
-                Telephony.Mms.Part._DATA,
-                Telephony.Mms.Part.TEXT,
-            ),
-            "mid = ?",
-            arrayOf(mmsId),
-            null
-        )?.use { cursor ->
-            val cache = mutableMapOf<String, Int>()
-            while (cursor.moveToNext()) {
-                val partId = cursor.getStringValue(Telephony.Mms.Part._ID, cache)
-                val contentType = cursor.getStringValue(Telephony.Mms.Part.CONTENT_TYPE, cache)
-                val contentTypeLower = contentType.lowercase(Locale.ROOT)
-                val dataColumn = cursor.getStringValue(Telephony.Mms.Part._DATA, cache)
-
-                if (contentTypeLower == "text/plain") {
-                    val text = readMmsTextPart(
-                        context,
-                        partId,
-                        cursor.getStringValue(Telephony.Mms.Part.TEXT, cache),
-                        dataColumn,
-                    )
-                    if (text.isNotEmpty()) {
-                        bodyParts.add(text)
-                    }
-                    continue
-                }
-
-                if (contentTypeLower.startsWith("image/") ||
-                    contentTypeLower.startsWith("video/") ||
-                    contentTypeLower.startsWith("audio/") ||
-                    dataColumn.isNotEmpty()
-                ) {
-                    val rawName = cursor.getStringValue(Telephony.Mms.Part.NAME, cache)
-                    val fileName = if (rawName.isNotEmpty()) rawName else cursor.getStringValue(Telephony.Mms.Part.FILENAME, cache)
-                    attachments.add(
-                        SmsAttachment(
-                            path = "content://mms/part/$partId",
-                            contentType = contentType,
-                            name = fileName,
-                        )
-                    )
-                }
-            }
-        }
-
-        val body = bodyParts.joinToString("\n").trim().ifEmpty {
-            if (attachments.isNotEmpty()) "[MMS]" else ""
-        }
-        return Pair(body, attachments)
-    }
+            arrayOf(Telephony.Mms.Part._ID, Telephony.Mms.Part.CONTENT_TYPE,
+                Telephony.Mms.Part.NAME, Telephony.Mms.Part.FILENAME,
+                Telephony.Mms.Part._DATA, Telephony.Mms.Part.TEXT),
+            "mid = ?", arrayOf(mmsId), null,
+        )?.map { cursor, cache ->
+            val partId = cursor.getStringValue(Telephony.Mms.Part._ID, cache)
+            val type = cursor.getStringValue(Telephony.Mms.Part.CONTENT_TYPE, cache)
+            val data = cursor.getStringValue(Telephony.Mms.Part._DATA, cache)
+            val inline = cursor.getStringValue(Telephony.Mms.Part.TEXT, cache)
+            MmsPartFacts(
+                path = "content://mms/part/$partId",
+                contentType = type,
+                name = cursor.getStringValue(Telephony.Mms.Part.NAME, cache),
+                fileName = cursor.getStringValue(Telephony.Mms.Part.FILENAME, cache),
+                hasData = data.isNotEmpty(),
+                text = if (type.equals("text/plain", ignoreCase = true)) readMmsTextPart(context, partId, inline, data) else inline,
+            )
+        }.orEmpty()
 
     private fun readMmsTextPart(context: Context, partId: String, inlineText: String, dataColumn: String): String {
         if (inlineText.isNotEmpty() || dataColumn.isEmpty()) return inlineText
@@ -254,9 +197,6 @@ object SmsHelper {
                 .orEmpty()
         }.getOrDefault("")
     }
-
-    internal suspend fun findMmsIdsMatchingText(context: Context, filters: List<String>): Set<String>? =
-        if (filters.isEmpty()) null else RustSmsQuery.textIds(filters)
 
     private fun mmsTextFacts(context: Context): Map<String, List<String>> {
         val textByMmsId = linkedMapOf<String, MutableList<String>>()

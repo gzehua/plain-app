@@ -2,15 +2,6 @@
 
 package com.ismartcoding.plain.ui.platform.media
 
-import com.ismartcoding.plain.platform.system.avPlayerCurrentItem
-import com.ismartcoding.plain.platform.system.avPlayerItemIsBuffering
-import com.ismartcoding.plain.platform.system.avPlayerPerform
-import com.ismartcoding.plain.platform.system.avPlayerPerformWithArg
-import com.ismartcoding.plain.platform.system.avPlayerRate
-import com.ismartcoding.plain.platform.system.avPlayerSeekToMs
-import com.ismartcoding.plain.platform.system.avPlayerSetMuted
-import com.ismartcoding.plain.platform.system.avPlayerSetRate
-import com.ismartcoding.plain.platform.system.avPlayerTimeMs
 import com.ismartcoding.plain.rust.http.get
 
 import androidx.compose.runtime.Composable
@@ -32,6 +23,18 @@ import platform.AVFoundation.AVLayerVideoGravityResizeAspect
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
 import platform.AVFoundation.AVPlayerLayer
+import platform.AVFoundation.currentItem
+import platform.AVFoundation.currentTime
+import platform.AVFoundation.duration
+import platform.AVFoundation.muted
+import platform.AVFoundation.pause
+import platform.AVFoundation.play
+import platform.AVFoundation.playbackLikelyToKeepUp
+import platform.AVFoundation.rate
+import platform.AVFoundation.replaceCurrentItemWithPlayerItem
+import platform.AVFoundation.seekToTime
+import platform.CoreMedia.CMTimeMake
+import com.ismartcoding.plain.platform.media.mediaTimeMs
 import platform.CoreGraphics.CGRect
 import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSCoder
@@ -46,24 +49,22 @@ private class AVPlayerVideoController : VideoPlayerController {
     private var eventListener: ((VideoPlayerEvent) -> Unit)? = null
     private var lastIsPlaying = false
 
-    private fun ensurePlayer(): AVPlayer? = player
-
     override fun play() {
         val p = player ?: return
-        avPlayerPerform(p, "play")
+        p.play()
         startPolling()
     }
 
     override fun pause() {
         val p = player ?: return
-        avPlayerPerform(p, "pause")
+        p.pause()
         stopPolling()
     }
 
     override fun stop() {
         val p = player ?: return
-        avPlayerPerform(p, "pause")
-        avPlayerSeekToMs(p, 0L)
+        p.pause()
+        p.seekToTime(CMTimeMake(0, 1000))
         stopPolling()
     }
 
@@ -71,26 +72,26 @@ private class AVPlayerVideoController : VideoPlayerController {
 
     override fun seekTo(positionMs: Long) {
         val p = player ?: return
-        avPlayerSeekToMs(p, positionMs)
+        p.seekToTime(CMTimeMake(positionMs, 1000))
         eventListener?.invoke(VideoPlayerEvent.PositionDiscontinuity)
     }
 
     override fun setPlaybackSpeed(speed: Float) {
         val p = player ?: return
-        avPlayerSetRate(p, speed)
+        p.rate = speed
     }
 
     override fun setMuted(muted: Boolean) {
         val p = player ?: return
-        avPlayerSetMuted(p, muted)
+        p.muted = muted
     }
 
     override fun release() {
         stopPolling()
         val p = player
         if (p != null) {
-            avPlayerPerform(p, "pause")
-            avPlayerPerformWithArg(p, "replaceCurrentItemWithPlayerItem:", null)
+            p.pause()
+            p.replaceCurrentItemWithPlayerItem(null)
         }
         player = null
         eventListener = null
@@ -105,9 +106,9 @@ private class AVPlayerVideoController : VideoPlayerController {
         val item = AVPlayerItem(uRL = url)
         val existing = player
         if (existing != null) {
-            avPlayerPerformWithArg(existing, "replaceCurrentItemWithPlayerItem:", item)
+            existing.replaceCurrentItemWithPlayerItem(item)
         } else {
-            val newPlayer = AVPlayer(uRL = url)
+            val newPlayer = AVPlayer(playerItem = item)
             player = newPlayer
         }
     }
@@ -120,19 +121,19 @@ private class AVPlayerVideoController : VideoPlayerController {
     override fun abandonAudioFocus() {}
 
     override val durationMs: Long
-        get() = player?.let { avPlayerTimeMs(it, "duration") } ?: 0L
+        get() = player?.currentItem?.let { mediaTimeMs(it.duration) } ?: 0L
 
     override val currentPositionMs: Long
-        get() = player?.let { avPlayerTimeMs(it, "currentTime") } ?: 0L
+        get() = player?.let { mediaTimeMs(it.currentTime()) } ?: 0L
 
     override val bufferedPercentage: Int get() = 0
     override val isPlaying: Boolean
-        get() = player?.let { avPlayerRate(it) > 0f } ?: false
+        get() = player?.let { it.rate > 0f } ?: false
     override val isBuffering: Boolean
         get() {
             val p = player ?: return false
-            val item = avPlayerCurrentItem(p) ?: return false
-            return avPlayerItemIsBuffering(item)
+            val item = p.currentItem ?: return false
+            return !item.playbackLikelyToKeepUp
         }
 
     private fun startPolling() {
@@ -141,7 +142,7 @@ private class AVPlayerVideoController : VideoPlayerController {
             while (isActive) {
                 delay(500)
                 val p = player ?: break
-                val playing = avPlayerRate(p) > 0f
+                val playing = p.rate > 0f
                 if (playing != lastIsPlaying) {
                     lastIsPlaying = playing
                     eventListener?.invoke(

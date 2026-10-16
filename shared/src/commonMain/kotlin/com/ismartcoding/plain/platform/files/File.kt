@@ -9,9 +9,6 @@ expect fun deleteFileAt(path: String)
 /** Size in bytes of the file at [path], or 0 if it does not exist. */
 expect fun fileSize(path: String): Long
 
-/** Copy [srcPath] to [destPath], overwriting an existing destination. false on failure. */
-expect fun copyFile(srcPath: String, destPath: String): Boolean
-
 /**
  * Write [bytes] to a regular file at [path], replacing any existing content.
  * Returns true on success, false on failure. The parent directory must exist.
@@ -38,15 +35,6 @@ expect fun getFileIconPath(extension: String): String
  * Whether a file exists at the given [path].
  */
 expect fun fileExists(path: String): Boolean
-
-/**
- * Read a byte range `[offset, offset + length)` from the regular file at [path].
- * Returns the bytes read (possibly shorter than [length] when the range extends
- * past EOF), an empty array when [offset] is at or past EOF, or null when the
- * file cannot be opened. Used by the `/fs` route to serve chunked ranges over
- * low-throughput transports (e.g. BLE).
- */
-expect suspend fun readFileRange(path: String, offset: Long, length: Int): ByteArray?
 
 /**
  * Ensure the parent directory of [path] exists (creates it if missing).
@@ -140,3 +128,5 @@ expect suspend fun getFileByMediaId(mediaId: String): FileEntry?
 internal expect suspend fun provideResourceFile(id: String, uri: String)
 
 expect suspend fun copyFileToUri(path: String, uriStr: String): Boolean
+
+internal expect suspend fun readPickedFileBytes(uri: String): ByteArray

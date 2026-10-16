@@ -8,7 +8,6 @@ import com.ismartcoding.plain.rust.http.get
 import android.content.ContentUris
 import android.net.Uri
 import android.provider.DocumentsContract
-import com.ismartcoding.plain.features.audio.AudioMedia
 import android.provider.MediaStore
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.lib.withIO
@@ -37,7 +36,7 @@ actual suspend fun audioLibraryResolve(ids: List<String>, paths: List<String>): 
                         mediaId = mediaId,
                         path = filePath,
                         title = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)).orEmpty(),
-                        artist = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)).orEmpty().replace(MediaStore.UNKNOWN_STRING, ""),
+                        artist = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)).orEmpty(),
                         albumId = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)).toString(),
                         durationMs = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)),
                         aliases = paths.filter { path -> val uri = Uri.parse(path); if (uri.scheme == "content") systemAudioMediaId(uri) == mediaId else (if (uri.scheme == "file") uri.path else path) == filePath },

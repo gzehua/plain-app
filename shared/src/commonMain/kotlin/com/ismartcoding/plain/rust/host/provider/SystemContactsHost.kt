@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.rust.host.provider
 
-import com.ismartcoding.plain.features.contacts.DContentItem
-
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
 

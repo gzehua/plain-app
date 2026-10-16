@@ -19,13 +19,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.components.drawerOpenAtRowStart
-import com.ismartcoding.plain.ui.audio.AudioHomeArtist
+import com.ismartcoding.plain.api.graphql.models.AudioArtist
 
 /** Horizontally scrolling artist tiles. */
 @Composable
 fun ArtistsRow(
-    artists: List<AudioHomeArtist>,
-    onArtistClick: (AudioHomeArtist) -> Unit,
+    artists: List<AudioArtist>,
+    onArtistClick: (AudioArtist) -> Unit,
 ) {
     val listState = rememberLazyListState()
     LazyRow(

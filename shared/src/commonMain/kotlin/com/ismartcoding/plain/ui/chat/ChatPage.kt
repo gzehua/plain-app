@@ -37,25 +37,16 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.ui.chat.ChatViewModel
-import com.ismartcoding.plain.features.chat.ShareSendHelper
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
-import com.ismartcoding.plain.features.chat.models.ChatChannelRecord
 import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 import com.ismartcoding.plain.features.chat.peer.PeerTransportPrewarmer
 import com.ismartcoding.plain.features.chat.ChatChannelStatus
 import com.ismartcoding.plain.features.nearby.PeerStatus
-import com.ismartcoding.plain.features.files.PickFileTag
-import com.ismartcoding.plain.features.files.PickFileType
-import com.ismartcoding.plain.app.events.PickFileResultEvent
-import com.ismartcoding.plain.features.shares.ShareExpiry
 import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.lib.Channel
-import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
 import com.ismartcoding.plain.ui.navigation.PBackHandler
-import com.ismartcoding.plain.ui.chat.handleChatFileSelection
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.components.ActionButtonMore
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
@@ -86,29 +77,10 @@ import com.ismartcoding.plain.ui.state.toggleSelectAll
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.chat.components.ChatInput
 import com.ismartcoding.plain.ui.chat.components.ChatListItem
-import com.ismartcoding.plain.ui.chat.components.FolderShareSheet
-import com.ismartcoding.plain.ui.chat.components.ForwardTargetDialog
 import com.ismartcoding.plain.ui.chat.components.TransportIcon
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-
-internal suspend fun scrollToLatest(
-    chatVM: ChatViewModel,
-    scrollState: androidx.compose.foundation.lazy.LazyListState,
-    previousTopMessageId: String?,
-) {
-    repeat(20) {
-        val currentTopMessageId = chatVM.itemsFlow.value.firstOrNull()?.id
-        if (currentTopMessageId != null && currentTopMessageId != previousTopMessageId) {
-            scrollState.scrollToItem(0)
-            return
-        }
-        delay(50)
-    }
-    scrollState.scrollToItem(0)
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -145,8 +117,6 @@ fun ChatPage(
     val focusManager = LocalFocusManager.current
     val previewerState = rememberPreviewerState()
 
-    val sharedFlow = Channel.sharedFlow
-
     DisposableEffect(id) {
         TempData.activeToId = id
         onDispose {
@@ -169,22 +139,7 @@ fun ChatPage(
         }
     }
 
-    LaunchedEffect(sharedFlow) {
-        sharedFlow.collect { event ->
-            when (event) {
-                is PickFileResultEvent -> {
-                    if (event.tag != PickFileTag.SEND_MESSAGE) return@collect
-                    handleChatFileSelection(event, chatVM, peerVM, focusManager)
-                }
-            }
-        }
-    }
-
-    LaunchedEffect(chatVM) {
-        chatVM.scrollToLatest.collect { previousTopId ->
-            scrollToLatest(chatVM, scrollState, previousTopId)
-        }
-    }
+    ChatPageEffects(chatVM, peerVM, focusManager, scrollState)
 
     PBackHandler(enabled = chatVM.selectMode.value || previewerState.visible) {
         if (previewerState.visible) scope.launch { previewerState.closeTransform() }
@@ -333,36 +288,12 @@ fun ChatPage(
 
     MediaPreviewer(state = previewerState)
 
-    if (showFolderShareSheet) {
-        FolderShareSheet(
-            onDismiss = { showFolderShareSheet = false },
-            onConfirm = { dirPath, name, expiry ->
-                showFolderShareSheet = false
-                scope.launch {
-                    ShareSendHelper.sendFolderShareAsync(
-                        targets = listOf(chatTarget.value),
-                        dirPath = dirPath,
-                        name = name,
-                        expiresAt = expiry.expiresAt(TimeHelper.now()),
-                    )
-                }
-            },
-        )
-    }
-
-    if (showForwardDialog) {
-        messageToForward?.let { message ->
-            ForwardTargetDialog(
-                onDismiss = {
-                    showForwardDialog = false
-                    messageToForward = null
-                },
-                onTargetsSelected = { targets ->
-                    targets.forEach { chatVM.forwardMessage(message.id, it) }
-                    showForwardDialog = false
-                    messageToForward = null
-                },
-            )
-        }
-    }
+    ChatPageDialogs(
+        showFolderShare = showFolderShareSheet,
+        target = chatTarget.value,
+        onDismissFolder = { showFolderShareSheet = false },
+        forwardMessage = messageToForward.takeIf { showForwardDialog },
+        onDismissForward = { showForwardDialog = false; messageToForward = null },
+        onForward = { message, targets -> chatVM.forwardMessage(message.id, targets) },
+    )
 }

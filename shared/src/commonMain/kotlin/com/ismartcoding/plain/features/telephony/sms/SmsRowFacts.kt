@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.features.telephony.sms
 
-import com.ismartcoding.plain.api.graphql.models.SmsAttachment
-
 import com.ismartcoding.plain.db.IData
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
@@ -18,7 +16,7 @@ data class SmsRowFacts(
     val type: Int,
     val subscriptionId: Int,
     val isMms: Boolean = false,
-    val attachments: List<SmsAttachment> = emptyList(),
+    val parts: List<MmsPartFacts> = emptyList(),
     val addressCandidates: List<MmsAddressFacts> = emptyList(),
 ) : IData
 

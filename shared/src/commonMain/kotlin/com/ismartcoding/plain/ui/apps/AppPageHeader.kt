@@ -21,11 +21,10 @@ import com.ismartcoding.plain.platform.system.PackageType
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.settings
 import com.ismartcoding.plain.lib.coMain
-import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.system.PackageDetails
 import com.ismartcoding.plain.platform.system.canLaunchPackage
 import com.ismartcoding.plain.platform.system.getApplicationIcon
-import com.ismartcoding.plain.platform.system.getManifestXml
+import com.ismartcoding.plain.features.packages.PackagesClient
 import com.ismartcoding.plain.platform.system.launchPackage
 import com.ismartcoding.plain.platform.system.uninstallPackage
 import com.ismartcoding.plain.platform.system.viewPackageInSettings
@@ -99,7 +98,7 @@ fun AppPageHeader(
                     coMain {
                         try {
                             DialogHelper.showLoading()
-                            val content = withIO { getManifestXml(item.path) }
+                            val content = PackagesClient.manifest(item.id)
                             DialogHelper.hideLoading()
                             navController.navigateText("Manifest", content, "xml")
                         } catch (ex: Exception) {

@@ -5,12 +5,13 @@ import kotlinx.serialization.json.JsonObject
 
 object SystemProviderHost {
     internal fun accepts(method: String): Boolean =
-        method.startsWith("system") || method == "fileMetadataFacts" || method == "imageDecodeBounds"
+        method.startsWith("system") || method == "imageDecodeBounds"
 
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
         "systemPackageFacts",
         "systemPackageStatuses",
         "systemInstallPackage",
+        "systemPackageInstallProfile",
         "systemUninstallPackages" -> SystemPackagesHost.handle(method, params)
         "systemNotificationFacts",
         "systemCancelNotifications",
@@ -55,7 +56,7 @@ object SystemProviderHost {
         "systemFileIndexId",
         "systemFileIndexRows",
         "systemFileIndexCount",
-        "fileMetadataFacts",
+        "systemResourceMimeType",
         "systemMountFacts",
         "imageDecodeBounds" -> SystemFilesHost.handle(method, params)
         "systemMediaBucketItemFacts",
@@ -69,8 +70,8 @@ object SystemProviderHost {
         "systemOpenAccessibilitySettings",
         "systemOpenWebSettings",
         "systemNetworkType",
+        "systemVpnActive",
         "systemScheduleBackgroundWake",
-        "systemIpv4Address",
         "systemProperties",
         "systemBatterySample",
         "systemMemoryAvailable",

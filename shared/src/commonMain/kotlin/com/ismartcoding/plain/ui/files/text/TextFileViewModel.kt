@@ -22,7 +22,7 @@ class TextFileViewModel : ViewModel() {
     val controller = EditorController(viewModelScope, object : EditorFileIO {
         override fun nowMillis() = com.ismartcoding.plain.lib.TimeHelper.nowMillis()
         override fun openByteSource(path: String) = com.ismartcoding.plain.platform.files.openByteSource(path)
-        override fun writeByteChunksStreaming(path: String, chunks: Iterator<ByteArray>) =
+        override suspend fun writeByteChunksStreaming(path: String, chunks: Iterator<ByteArray>) =
             com.ismartcoding.plain.platform.files.writeByteChunksStreaming(path, chunks)
     })
     val showMoreActions = mutableStateOf(false)

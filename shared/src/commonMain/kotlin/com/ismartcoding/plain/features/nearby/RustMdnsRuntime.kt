@@ -2,7 +2,6 @@ package com.ismartcoding.plain.features.nearby
 
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
-import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.ui.nearby.NearbyViewModel
@@ -14,7 +13,7 @@ import kotlinx.serialization.json.*
 import kotlin.concurrent.Volatile
 
 object RustMdnsRuntime {
-    private class Command(val body: JsonObject, val reply: CompletableDeferred<JsonObject>)
+    private class Command(val request: Request, val reply: CompletableDeferred<JsonObject>)
     private val commands = Channel<Command>(64)
     private val projection = Mutex()
     @Volatile private var current = JsonObject(emptyMap())
@@ -25,26 +24,13 @@ object RustMdnsRuntime {
         coIO {
             for (command in commands) {
                 try {
-                    val row = call(command.body)
+                    val row = call(command.request)
                     apply(row)
-                    if (command.body["action"]?.jsonPrimitive?.content == "restart") {
-                        PeerCacher.load()
-                        val devices = RustNearbyDevices.snapshot()
-                        RustNearbyDevices.apply(devices)
-                    }
                     command.reply.complete(row)
                 } catch (cancelled: CancellationException) {
                     command.reply.cancel(cancelled)
                     throw cancelled
                 } catch (error: Throwable) {
-                    // Throwable, not Exception: this loop is the only consumer
-                    // of `commands`, so anything that escapes it — a JNI
-                    // UnsatisfiedLinkError, an OutOfMemoryError, a failure
-                    // from a Rust call that raises an Error rather than an
-                    // exception — kills the consumer for the life of the
-                    // process. Every later command then waits on a reply
-                    // nobody will ever complete, which is how a wedged
-                    // runtime turns into a hung HTTP-server stop.
                     command.reply.completeExceptionally(error)
                     LogCat.e("Rust mDNS control", error)
                 }
@@ -52,42 +38,33 @@ object RustMdnsRuntime {
         }
     }
 
-    private fun enqueue(action: String, enabled: Boolean? = null, token: String? = null): CompletableDeferred<JsonObject> {
+    private fun enqueue(request: Request): CompletableDeferred<JsonObject> {
         val reply = CompletableDeferred<JsonObject>()
-        val body = buildJsonObject { put("action", action); enabled?.let { put("enabled", it) }; token?.let { put("token", it) } }
-        if (!commands.trySend(Command(body, reply)).isSuccess) {
+        if (!commands.trySend(Command(request, reply)).isSuccess) {
             val error = IllegalStateException("mDNS control queue is full")
             reply.completeExceptionally(error)
             LogCat.e("Rust mDNS control", error)
         }
         return reply
     }
-    fun request(action: String) { enqueue(action) }
-    suspend fun control(action: String): JsonObject = enqueue(action).await()
-    suspend fun capture(enabled: Boolean) = enqueue("capture", enabled).await()
-    fun stopCapture() { enqueue("capture", false) }
-    suspend fun debugStart(token: String) = enqueue("debugStart", token = token).await()
-    fun debugStop(token: String) { enqueue("debugStop", token = token) }
-    suspend fun snapshot(): JsonObject = call(buildJsonObject { put("action", "snapshot") }).also { apply(it) }
+    fun startReceiver() { enqueue(Request.Receiver) }
+    suspend fun debugStart(token: String) = enqueue(Request.DebugStart(token)).await()
+    fun debugStop(token: String) { enqueue(Request.DebugStop(token)) }
+    suspend fun snapshot(): JsonObject = PlainRust.mainQuery("mdnsState { $STATE_FIELDS }").getValue("mdnsState").jsonObject.also { apply(it) }
     private const val STATE_FIELDS = "runtimeId revision receiver running scanning published manualScanning debugSessionCount capturing services { serviceType instanceName instanceFqdn hostname port txtRecords ips ipv6 complete } packetsIn { time direction srcIp srcPort dstIp dstPort size summary detail } packetsOut { time direction srcIp srcPort dstIp dstPort size summary detail }"
-    private suspend fun call(body: JsonObject): JsonObject {
-        val action = body.getValue("action").jsonPrimitive.content
-        if (action == "snapshot") return PlainRust.mainQuery("mdnsState { $STATE_FIELDS }").getValue("mdnsState").jsonObject
-        val operation = when (action) {
-            "receiver" -> "startMdnsReceiver"
-            "start" -> "startMdnsDiscovery"
-            "stop" -> "stopMdnsDiscovery"
-            "browse" -> "browseMdns"
-            "restart" -> "restartMdnsDiscovery"
-            "publish" -> "publishMdns"
-            "update" -> "updateMdnsPublication"
-            "unpublish" -> "unpublishMdns"
-            "capture" -> "setMdnsCapture(enabled: ${body.getValue("enabled").jsonPrimitive.boolean})"
-            "debugStart" -> "acquireMdnsDebugSession(token: ${gql(body.getValue("token").jsonPrimitive.content)})"
-            "debugStop" -> "releaseMdnsDebugSession(token: ${gql(body.getValue("token").jsonPrimitive.content)})"
-            else -> error("Unknown mDNS operation: $action")
+    private suspend fun call(request: Request): JsonObject {
+        val operation = when (request) {
+            Request.Receiver -> "startMdnsReceiver"
+            is Request.DebugStart -> "acquireMdnsDebugSession(token: ${gql(request.token)})"
+            is Request.DebugStop -> "releaseMdnsDebugSession(token: ${gql(request.token)})"
         }
         return PlainRust.mainMutate("$operation { $STATE_FIELDS }").getValue(operation.substringBefore('(')).jsonObject
+    }
+
+    private sealed interface Request {
+        data object Receiver : Request
+        data class DebugStart(val token: String) : Request
+        data class DebugStop(val token: String) : Request
     }
 
     private suspend fun apply(row: JsonObject) = projection.withLock {
@@ -96,21 +73,7 @@ object RustMdnsRuntime {
         current = row
         NearbyViewModel.isDiscovering.value = scanning
     }
-    suspend fun refresh(payload: String? = null) {
-        val row = snapshot()
-        if (payload == null) return
-        val event = Json.parseToJsonElement(payload).jsonObject
-        if (event["runtimeId"] != row["runtimeId"]) return
-        val peer = event["peerId"]?.jsonPrimitive?.contentOrNull ?: return
-        PeerCacher.load()
-        if (event["online"]?.jsonPrimitive?.booleanOrNull != true) return
-        val revision = event.getValue("revision").jsonPrimitive.long
-        if (row.getValue("revision").jsonPrimitive.long != revision) return
-        val latest = snapshot()
-        if (latest["runtimeId"] == event["runtimeId"] && latest.getValue("revision").jsonPrimitive.long == revision && latest.getValue("scanning").jsonPrimitive.boolean) {
-            com.ismartcoding.plain.features.chat.peer.PeerStatusManager.refresh()
-        }
-    }
+    suspend fun refresh() { snapshot() }
     fun services(row: JsonObject): List<MdnsServiceSnapshot> = row.getValue("services").jsonArray.map {
         val service = it.jsonObject
         fun text(key: String) = service.getValue(key).jsonPrimitive.content

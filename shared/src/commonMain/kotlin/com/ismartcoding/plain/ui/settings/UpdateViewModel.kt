@@ -3,76 +3,34 @@ package com.ismartcoding.plain.ui.settings
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.ismartcoding.plain.app.events.UpdateDownloadCompleteEvent
-import com.ismartcoding.plain.app.events.UpdateDownloadFailedEvent
-import com.ismartcoding.plain.app.events.UpdateDownloadProgressEvent
-import com.ismartcoding.plain.lib.ChannelEvent
+import androidx.lifecycle.viewModelScope
+import com.ismartcoding.plain.app.events.CancelUpdateDownloadEvent
+import com.ismartcoding.plain.features.settings.AppUpdateDownloads
+import com.ismartcoding.plain.lib.sendEvent
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class UpdateViewModel : ViewModel() {
-    var updateDialogVisible = mutableStateOf(false)
-    var isDownloading = mutableStateOf(false)
-    var downloadProgress = mutableIntStateOf(0)
-    var downloadFailed = mutableStateOf(false)
-    var isDownloadComplete = mutableStateOf(false)
-    var downloadedFilePath = mutableStateOf("")
+    val updateDialogVisible = mutableStateOf(false)
+    val isDownloading = mutableStateOf(false)
+    val downloadProgress = mutableIntStateOf(0)
+    val downloadFailed = mutableStateOf(false)
+    val isDownloadComplete = mutableStateOf(false)
+    val downloadedFilePath = mutableStateOf("")
+
+    init {
+        viewModelScope.launch {
+            AppUpdateDownloads.state.collect { snapshot ->
+                isDownloading.value = snapshot.status == "DOWNLOADING"
+                downloadProgress.intValue = snapshot.progress
+                downloadFailed.value = snapshot.status == "FAILED"
+                isDownloadComplete.value = snapshot.status == "COMPLETED"
+                downloadedFilePath.value = snapshot.filePath
+            }
+        }
+    }
 
     fun showDialog() { updateDialogVisible.value = true }
     fun hideDialog() { updateDialogVisible.value = false }
-
-    fun startDownload() {
-        isDownloading.value = true
-        downloadProgress.intValue = 0
-        downloadFailed.value = false
-        isDownloadComplete.value = false
-        downloadedFilePath.value = ""
-    }
-
-    fun onDownloadProgress(progress: Int) {
-        downloadProgress.intValue = progress
-    }
-
-    fun onDownloadComplete(filePath: String) {
-        isDownloading.value = false
-        downloadProgress.intValue = 100
-        isDownloadComplete.value = true
-        downloadedFilePath.value = filePath
-    }
-
-    fun onDownloadFailed() {
-        isDownloading.value = false
-        downloadFailed.value = true
-    }
-
-    fun cancelDownload() {
-        isDownloading.value = false
-        downloadProgress.intValue = 0
-        isDownloadComplete.value = false
-        downloadedFilePath.value = ""
-    }
-
-    fun resetDownload() {
-        isDownloading.value = false
-        downloadProgress.intValue = 0
-        downloadFailed.value = false
-        isDownloadComplete.value = false
-        downloadedFilePath.value = ""
-    }
-
-    fun consumeUpdateDownloadEvent(event: ChannelEvent): Boolean {
-        return when (event) {
-            is UpdateDownloadProgressEvent -> {
-                onDownloadProgress(event.progress)
-                true
-            }
-            is UpdateDownloadCompleteEvent -> {
-                onDownloadComplete(event.filePath)
-                true
-            }
-            is UpdateDownloadFailedEvent -> {
-                onDownloadFailed()
-                true
-            }
-            else -> false
-        }
-    }
+    fun resetDownload() { sendEvent(CancelUpdateDownloadEvent()) }
 }

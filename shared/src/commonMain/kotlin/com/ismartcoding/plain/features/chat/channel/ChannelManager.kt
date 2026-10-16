@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.chat.channel
 
 import com.ismartcoding.plain.features.chat.ChatClient
-import com.ismartcoding.plain.features.chat.models.ChatChannelRecord
+import com.ismartcoding.plain.api.graphql.models.ChatChannel
 import com.ismartcoding.plain.features.chat.peer.GraphQLResponse
 
 object ChannelManager {
@@ -10,13 +10,13 @@ object ChannelManager {
         ChatClient.refreshLatestChats()
     }
 
-    suspend fun createChannel(name: String): ChatChannelRecord {
+    suspend fun createChannel(name: String): ChatChannel {
         val record = createChannelGraphql(name)
         afterMutation()
         return record
     }
 
-    suspend fun renameChannel(channelId: String, newName: String): ChatChannelRecord {
+    suspend fun renameChannel(channelId: String, newName: String): ChatChannel {
         val record = updateChannelGraphql(channelId, newName)
         afterMutation()
         return record
@@ -32,7 +32,7 @@ object ChannelManager {
         afterMutation()
     }
 
-    suspend fun inviteMember(channelId: String, peerId: String): ChatChannelRecord {
+    suspend fun inviteMember(channelId: String, peerId: String): ChatChannel {
         val record = addMemberGraphql(channelId, peerId)
         afterMutation()
         return record
@@ -43,7 +43,7 @@ object ChannelManager {
         afterMutation()
     }
 
-    suspend fun kickMember(channelId: String, peerId: String): ChatChannelRecord {
+    suspend fun kickMember(channelId: String, peerId: String): ChatChannel {
         val record = removeMemberGraphql(channelId, peerId)
         afterMutation()
         return record

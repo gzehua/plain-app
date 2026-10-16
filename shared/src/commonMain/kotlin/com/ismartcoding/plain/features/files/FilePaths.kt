@@ -11,22 +11,19 @@ import kotlinx.serialization.json.*
 internal class FilePathResolver(
     private val scope: CoroutineScope,
     private val fetch: suspend (List<String>) -> List<String?>,
-    private val maxEntries: Int = 2048,
     private val batchSize: Int = 128,
 ) {
     private val lock = Mutex()
-    private val cache = LinkedHashMap<String, String>()
     private val waiting = LinkedHashMap<String, CompletableDeferred<String>>()
     private val queued = LinkedHashMap<String, CompletableDeferred<String>>()
     private var scheduled = false
 
-    init { require(maxEntries > 0 && batchSize > 0) }
+    init { require(batchSize > 0) }
 
     suspend fun resolve(reference: String): String {
         if (!needsResolution(reference)) return reference
         scope.coroutineContext.ensureActive()
         val result = lock.withLock {
-            cache.remove(reference)?.let { cache[reference] = it; return it }
             val result = waiting[reference] ?: CompletableDeferred<String>().also {
                 waiting[reference] = it
                 queued[reference] = it
@@ -72,10 +69,6 @@ internal class FilePathResolver(
                     result.fold(
                         onSuccess = { values ->
                             val path = values[index].orEmpty()
-                            if (path.isNotEmpty()) {
-                                cache[reference] = path
-                                while (cache.size > maxEntries) cache.remove(cache.keys.first())
-                            }
                             completion.complete(path)
                         },
                         onFailure = { completion.completeExceptionally(it) },

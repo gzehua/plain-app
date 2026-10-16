@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.nearby
 
-import com.ismartcoding.plain.features.nearby.BleScanDriver
 import com.ismartcoding.plain.features.nearby.RustNearbyDevices
 
 import com.ismartcoding.plain.ui.state.launchSafe
@@ -11,11 +10,9 @@ import com.ismartcoding.plain.api.graphql.models.NearbyDevice
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.features.chat.peer.PeerManager
-import com.ismartcoding.plain.features.nearby.MdnsDiscoverManager
 import com.ismartcoding.plain.features.nearby.PairingInitiator
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.network.ensureBlePermissionAsync
-import com.ismartcoding.plain.platform.network.isBluetoothReadyToUse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -29,22 +26,8 @@ object NearbyViewModel {
     var isDiscovering = mutableStateOf(false)
     val itemStatus = mutableStateMapOf<String, NearbyItemStatus>()
 
-    var isBleScanning = mutableStateOf(false)
 
     private var blePermissionJob: Job? = null
-
-    fun startDiscovering() {
-        MdnsDiscoverManager.startPeriodicDiscovery()
-        scope.launchSafe {
-            val devices = com.ismartcoding.plain.features.nearby.RustNearbyDevices.startDiscovery()
-            com.ismartcoding.plain.features.nearby.RustNearbyDevices.apply(devices)
-        }
-    }
-
-    fun stopDiscovering() {
-        MdnsDiscoverManager.stopPeriodicDiscovery()
-        scope.launchSafe { com.ismartcoding.plain.features.nearby.RustNearbyDevices.stopDiscovery() }
-    }
 
     fun requestBlePermission() {
         if (blePermissionJob?.isActive == true) return
@@ -53,25 +36,9 @@ object NearbyViewModel {
                 LogCat.e("BLE permission error: ${it.message}", it)
             },
             block = {
-                if (ensureBlePermissionAsync()) {
-                    startBleScanning()
-                }
+                ensureBlePermissionAsync()
             }
         )
-    }
-
-    fun startBleScanning() {
-        if (isBleScanning.value) return
-        if (!isBluetoothReadyToUse()) return
-        isBleScanning.value = true
-        // The App only runs the BLE radio loop; Rust owns the session, drives
-        // GATT reads, and publishes discovered devices over the event stream.
-        com.ismartcoding.plain.features.nearby.BleScanDriver.start()
-    }
-
-    fun stopBleScanning() {
-        isBleScanning.value = false
-        com.ismartcoding.plain.features.nearby.BleScanDriver.stop()
     }
 
     fun startPairing(device: NearbyDevice) {

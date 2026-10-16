@@ -23,15 +23,10 @@ import androidx.navigation.NavHostController
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher
-import com.ismartcoding.plain.features.chat.models.ChatChannelRecord
-import com.ismartcoding.plain.features.chat.models.PeerRecord
-import com.ismartcoding.plain.features.chat.models.canLeave
+import com.ismartcoding.plain.api.graphql.models.ChatChannel
+import com.ismartcoding.plain.api.graphql.models.PeerRecord
 import com.ismartcoding.plain.features.chat.models.getBestIp
 import com.ismartcoding.plain.features.chat.models.getName
-import com.ismartcoding.plain.features.chat.models.getOwner
-import com.ismartcoding.plain.features.chat.models.isMe
-import com.ismartcoding.plain.features.chat.models.isOwnedByMe
-import com.ismartcoding.plain.features.chat.models.mePeer
 import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.components.ButtonType
@@ -94,18 +89,17 @@ fun ChannelInfoPage(
     // updates after Rust commits an invite, kick, or acceptance.
     val channels = ChannelCacher.channels.collectAsState()
     val liveChannel = channels.value.find { it.id == chatTarget.value.toId }
-    val ownedByMe = liveChannel?.isOwnedByMe() == true
     val showRenameDialog = remember { mutableStateOf(false) }
     val selectedMemberPeer = remember { mutableStateOf<PeerMember?>(null) }
 
     val ownerPeerId: String? = remember(liveChannel?.ownerId) {
         if (liveChannel?.ownerId.isNullOrEmpty()) null
-        else if (liveChannel.isOwnedByMe()) TempData.clientId
+        else if (liveChannel.actions.isOwner) TempData.clientId
         else liveChannel.ownerId
     }
-    val memberPeers: List<PeerMember> = remember(liveChannel?.members, ownerPeerId) {
+    val memberPeers: List<PeerMember> = remember(liveChannel?.members, ownerPeerId, com.ismartcoding.plain.ui.app.LocalDeviceState.peer.value) {
         liveChannel?.members?.mapNotNull { m ->
-            val peer = if (m.isMe()) mePeer() else PeerCacher.getPeer(m.peerId) ?: return@mapNotNull null
+            val peer = (if (m.isMe()) mePeer() else PeerCacher.getPeer(m.peerId)) ?: return@mapNotNull null
             PeerMember(peer, m, isSelf = m.isMe(), isOwner = m.peerId == ownerPeerId)
         } ?: emptyList()
     }
@@ -127,7 +121,7 @@ fun ChannelInfoPage(
         }
         addAll(pendingMembers.sortedBy { it.displayName() })
     }
-    val addablePeers: List<PeerRecord> = if (ownedByMe) {
+    val addablePeers: List<PeerRecord> = if (liveChannel?.actions?.canManageMembers == true) {
         val presentIds = liveChannel.members.map { it.peerId }.toMutableSet().apply {
             ownerPeerId?.let { add(it) }
         }
@@ -152,10 +146,10 @@ fun ChannelInfoPage(
                 item {
                     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                         PListItem(
-                            modifier = if (ownedByMe) Modifier.clickable { showRenameDialog.value = true } else Modifier,
+                            modifier = if (liveChannel.actions.canRename) Modifier.clickable { showRenameDialog.value = true } else Modifier,
                             title = stringResource(Res.string.channel_name),
                             value = liveChannel.name,
-                            showMore = ownedByMe,
+                            showMore = liveChannel.actions.canRename,
                         )
                     }
                 }
@@ -165,7 +159,7 @@ fun ChannelInfoPage(
                 item {
                     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                         displayMembers.forEach { pm ->
-                            val canManage = ownedByMe && !pm.isSelf && !pm.isOwner
+                            val canManage = liveChannel.actions.canManageMembers && !pm.isSelf && !pm.isOwner
                             val selfPendingInvite = pm.isSelf && pm.isPending()
                             val ownerPeer = if (selfPendingInvite) liveChannel.getOwner() else null
                             ChannelMemberListItem(
@@ -195,7 +189,7 @@ fun ChannelInfoPage(
                     }
                 }
 
-                if (ownedByMe && addablePeers.isNotEmpty()) {
+                if (liveChannel.actions.canManageMembers && addablePeers.isNotEmpty()) {
                     item { VerticalSpace(dp = 16.dp) }
                     item { Subtitle(text = stringResource(Res.string.add_member)) }
                     item {
@@ -241,7 +235,7 @@ fun ChannelInfoPage(
                             dismissButton = Pair(cancelText) {})
                     })
             }
-            if (liveChannel != null && ownedByMe) {
+            if (liveChannel != null && liveChannel.actions.canDelete) {
                 item {
                     val deleteChannelText = stringResource(Res.string.delete_channel);
                     val deleteChannelWarningText = stringResource(Res.string.delete_channel_warning);
@@ -264,7 +258,7 @@ fun ChannelInfoPage(
                         })
                 }
             }
-            if (liveChannel != null && liveChannel.canLeave()) {
+            if (liveChannel != null && liveChannel.actions.canLeave) {
                 item {
                     val leaveChannelText = stringResource(Res.string.leave_channel)
                     val leaveChannelWarningText = stringResource(Res.string.leave_channel_warning)
@@ -282,30 +276,6 @@ fun ChannelInfoPage(
                                 confirmButton = Pair(leaveChannelText) {
                                     channelVM.leaveChannel(liveChannel.id)
                                     navController.navigateUp()
-                                },
-                                dismissButton = Pair(cancelText) {})
-                        })
-                }
-            }
-            if (liveChannel != null && !ownedByMe && !liveChannel.isJoined()) {
-                item {
-                    val deleteChannelText = stringResource(Res.string.delete_channel);
-                    val deleteChannelWarningText = stringResource(Res.string.delete_channel_warning);
-                    val cancelText = stringResource(Res.string.cancel)
-                    VerticalSpace(dp = 16.dp)
-                    POutlinedButton(
-                        text = deleteChannelText,
-                        type = ButtonType.DANGER,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        onClick = {
-                            DialogHelper.showConfirmDialog(
-                                title = deleteChannelText,
-                                message = deleteChannelWarningText,
-                                confirmButton = Pair(deleteChannelText) {
-                                    channelVM.removeChannel(liveChannel.id)
-                                    navController.popBackStack(navController.graph.startDestinationId, false)
                                 },
                                 dismissButton = Pair(cancelText) {})
                         })
@@ -331,7 +301,7 @@ fun ChannelInfoPage(
     selectedMemberPeer.value?.let { sp ->
         MemberInfoDialog(
             peerMember = sp,
-            ownedByMe,
+            canManageMembers = liveChannel?.actions?.canManageMembers == true,
             liveChannel = liveChannel,
             channelVM = channelVM,
             onDismiss = { selectedMemberPeer.value = null },
@@ -342,8 +312,8 @@ fun ChannelInfoPage(
 @Composable
 private fun MemberInfoDialog(
     peerMember: PeerMember,
-    ownedByMe: Boolean,
-    liveChannel: ChatChannelRecord?,
+    canManageMembers: Boolean,
+    liveChannel: ChatChannel?,
     channelVM: ChannelViewModel,
     onDismiss: () -> Unit,
 ) {
@@ -358,7 +328,7 @@ private fun MemberInfoDialog(
                 onClick = onDismiss,
             )
         },
-        dismissButton = if (ownedByMe && !peerMember.isOwner && !peerMember.isSelf && liveChannel != null) {
+        dismissButton = if (canManageMembers && !peerMember.isOwner && !peerMember.isSelf && liveChannel != null) {
             {
                 if (peerMember.isPending()) {
                     PFilledButton(

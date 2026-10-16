@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.chat.channel
 
-import com.ismartcoding.plain.features.chat.models.ChatChannelRecord
+import com.ismartcoding.plain.api.graphql.models.ChatChannel
 import com.ismartcoding.plain.features.chat.peer.GraphQLError
 import com.ismartcoding.plain.features.chat.peer.GraphQLResponse
 import com.ismartcoding.plain.lib.JsonHelper
@@ -12,12 +12,12 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 private const val CHANNEL_FIELDS =
-    "id ownerId name members { peerId status } version status createdAt updatedAt"
+    "id ownerId name actions { isOwner canRename canManageMembers canLeave canDelete } members { peerId status } version status createdAt updatedAt"
 
-internal fun decodeChannel(value: JsonElement): ChatChannelRecord =
+internal fun decodeChannel(value: JsonElement): ChatChannel =
     JsonHelper.jsonDecodeFromElement(value)
 
-internal suspend fun createChannelGraphql(name: String): ChatChannelRecord = withIO {
+internal suspend fun createChannelGraphql(name: String): ChatChannel = withIO {
     decodeChannel(
         PlainRust.mainMutate(
             "createChatChannel(name: ${gql(name)}) { $CHANNEL_FIELDS }",
@@ -26,7 +26,7 @@ internal suspend fun createChannelGraphql(name: String): ChatChannelRecord = wit
     )
 }
 
-internal suspend fun updateChannelGraphql(id: String, name: String): ChatChannelRecord = withIO {
+internal suspend fun updateChannelGraphql(id: String, name: String): ChatChannel = withIO {
     decodeChannel(
         PlainRust.mainMutate(
             "updateChatChannel(id: ${gql(id)}, name: ${gql(name)}) { $CHANNEL_FIELDS }",
@@ -45,7 +45,7 @@ internal suspend fun leaveChannelGraphql(id: String): Boolean = withIO {
         .getValue("leaveChatChannel").jsonPrimitive.content == "true"
 }
 
-internal suspend fun addMemberGraphql(id: String, peerId: String): ChatChannelRecord = withIO {
+internal suspend fun addMemberGraphql(id: String, peerId: String): ChatChannel = withIO {
     decodeChannel(
         PlainRust.mainMutate(
             "addChatChannelMember(id: ${gql(id)}, peerId: ${gql(peerId)}) { $CHANNEL_FIELDS }",
@@ -54,7 +54,7 @@ internal suspend fun addMemberGraphql(id: String, peerId: String): ChatChannelRe
     )
 }
 
-internal suspend fun removeMemberGraphql(id: String, peerId: String): ChatChannelRecord = withIO {
+internal suspend fun removeMemberGraphql(id: String, peerId: String): ChatChannel = withIO {
     decodeChannel(
         PlainRust.mainMutate(
             "removeChatChannelMember(id: ${gql(id)}, peerId: ${gql(peerId)}) { $CHANNEL_FIELDS }",
@@ -77,7 +77,11 @@ internal suspend fun declineInviteGraphql(id: String): Boolean = withIO {
         .getValue("declineChatChannelInvite").jsonPrimitive.content == "true"
 }
 
-internal suspend fun snapshotChannelsGraphql(): List<ChatChannelRecord> = withIO {
+internal suspend fun snapshotChannelsGraphql(): List<ChatChannel> = withIO {
     PlainRust.mainQuery("chatChannels { $CHANNEL_FIELDS }").getValue("chatChannels")
-        .let { JsonHelper.jsonDecodeFromElement<List<ChatChannelRecord>>(it) }
+        .let { JsonHelper.jsonDecodeFromElement<List<ChatChannel>>(it) }
+}
+internal suspend fun channelGraphql(id: String): com.ismartcoding.plain.api.graphql.models.ChatChannel? {
+    val value = PlainRust.mainQuery("chatChannelRecord(id: ${gql(id)}) { $CHANNEL_FIELDS }").getValue("chatChannelRecord")
+    return if (value is kotlinx.serialization.json.JsonNull) null else decodeChannel(value)
 }

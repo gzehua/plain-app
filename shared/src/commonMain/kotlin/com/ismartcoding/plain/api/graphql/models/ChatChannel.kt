@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ChatChannel(
+    val actions: ChatChannelActions,
     var id: String,
     var ownerId: String,
     var name: String,

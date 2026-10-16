@@ -16,7 +16,6 @@ import com.ismartcoding.plain.app.events.HChannelInviteReceivedEvent
  * directly and dispatch commands through it.
  */
 class MainViewModel : ViewModel() {
-    var isVPNConnected = mutableStateOf(false)
     var currentRootTab = mutableIntStateOf(0)
     var pendingLoginEvent = mutableStateOf<HConfirmToAcceptLoginEvent?>(null)
     var pendingPairingRequest = mutableStateOf<PairingRequestInput?>(null)

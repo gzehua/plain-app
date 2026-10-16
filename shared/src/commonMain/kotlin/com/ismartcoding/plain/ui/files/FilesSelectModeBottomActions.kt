@@ -10,7 +10,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.helpers.FilePathValidator
 import com.ismartcoding.plain.platform.system.shareFiles
 import com.ismartcoding.plain.ui.base.BottomActionButtons
 import com.ismartcoding.plain.ui.components.IconTextSmallButtonCopy
@@ -87,8 +86,7 @@ fun FilesSelectModeBottomActions(
                                 DialogHelper.showLoading()
                                 try {
                                     withIO {
-                                        FilePathValidator.requireAllSafe(paths.toList())
-                                        paths.forEach { FilesClient.delete(it) }
+                                        FilesClient.deleteMany(paths.toList())
                                     }
                                 } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
                                 catch (error: Exception) { DialogHelper.showMessage(error) }

@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.audio.playlists
 
+import com.ismartcoding.plain.api.graphql.models.AudioAlbumCover
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.ismartcoding.plain.ui.audio.playlists.components.sortedByAudio
@@ -103,7 +104,7 @@ fun PlaylistDetailPage(
 
     var playlistName by remember { mutableStateOf("") }
     var items by remember { mutableStateOf<List<AudioItem>>(listOf()) }
-    var albumCovers by remember { mutableStateOf<List<PlaylistAlbumCover>>(emptyList()) }
+    var albumCovers by remember { mutableStateOf<List<AudioAlbumCover>>(emptyList()) }
     var version by remember { mutableIntStateOf(0) }
     var showMore by remember { mutableStateOf(false) }
     var showRename by remember { mutableStateOf(false) }
@@ -128,7 +129,7 @@ fun PlaylistDetailPage(
     }
 
     LaunchedEffect(items) {
-        albumCovers = if (items.isEmpty()) emptyList() else loadPlaylistAlbumCovers(items)
+        albumCovers = if (items.isEmpty()) emptyList() else AudioPlaylistsClient.covers(listOf(playlistId))[playlistId].orEmpty()
     }
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {

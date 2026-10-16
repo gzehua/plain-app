@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.state
 
-import com.ismartcoding.plain.ui.audio.AudioViewModel
-import com.ismartcoding.plain.ui.media.BaseMediaViewModel
 
 import java.io.File
 import kotlin.test.Test
@@ -20,7 +18,6 @@ class TrashCascadeGuardTest {
         fail("source not found: $relativePath (from ${System.getProperty("user.dir")})")
     }
 
-    /** Body of the named top-level fun, brace-matched. */
     private fun functionBody(source: String, name: String): String {
         val m = Regex("fun $name\\(").find(source) ?: fail("fun $name() not found")
         val open = source.indexOf('{', m.range.last)
@@ -48,11 +45,11 @@ class TrashCascadeGuardTest {
 
     @Test
     fun `native media actions call the shared Rust coordinator`() {
-        val bridge = source("shared/src/androidMain/kotlin/com/ismartcoding/plain/platform/media/MediaStore.android.kt")
-        for (name in listOf("trashMedia","restoreMedia","deleteMedia","moveMedia")) {
-            assertTrue(functionBody(bridge,name).contains("MediaActionHelper.run"), "$name must route through Rust")
+        val bridge = source("shared/src/commonMain/kotlin/com/ismartcoding/plain/platform/media/MediaStore.kt")
+        for (name in listOf("trashMedia","restoreMedia","deleteMedia")) {
+            assertTrue(functionBody(bridge,name).contains("MediaActionClient.run"), "$name must route through Rust")
         }
-        val helper = source("shared/src/commonMain/kotlin/com/ismartcoding/plain/features/media/actions/MediaActionHelper.kt")
+        val helper = source("shared/src/commonMain/kotlin/com/ismartcoding/plain/features/media/actions/MediaActionClient.kt")
         assertTrue(helper.contains("mediaAction"))
         assertTrue(helper.contains("failedIds"))
     }
@@ -71,8 +68,6 @@ class TrashCascadeGuardTest {
             "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/media/BaseMediaViewModel.kt"
         const val audioVmPath =
             "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/audio/AudioViewModel.kt"
-        const val queueManagerPath =
-            "shared/src/commonMain/kotlin/com/ismartcoding/plain/features/audio/AudioQueueClient.kt"
         const val playlistDetailPagePath =
             "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/audio/playlists/PlaylistDetailPage.kt"
     }

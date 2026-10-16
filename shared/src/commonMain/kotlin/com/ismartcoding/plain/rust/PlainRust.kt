@@ -88,12 +88,12 @@ object PlainRust {
     internal fun initialize(dataDir: String, token: String, config: String): String = RustCoreBridge.start(dataDir, token, config)
     internal fun stopHttp() = RustCoreBridge.stop()
 
-    internal fun start(sessionProvider: () -> ContentApiSession) {
+    internal fun start() {
         check(!started) { "PlainRust already started" }
         capabilities.value = JsonHelper.jsonDecode(RustCoreBridge.next("capabilities"))
         started = true
-        RustHostApi.start(scope, sessionProvider)
-        scope.launch { pump("host") { hostRequests.send(it) } }
+        RustHostApi.start(scope)
+        scope.launch { pump("host", closed = { hostRequests.cancel() }) { hostRequests.send(it) } }
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
             events.collect { event ->
                 try {
@@ -111,11 +111,12 @@ object PlainRust {
         }
     }
 
-    private suspend fun pump(stream: String, consume: suspend (String) -> Unit) {
-        while (currentCoroutineContext().isActive) {
-            val value = withContext(RustDispatchers.events) { RustCoreBridge.next(stream) }
-            if (value.isNotEmpty()) consume(value)
-        }
+    private suspend fun pump(stream: String, closed: () -> Unit = {}, consume: suspend (String) -> Unit) {
+        com.ismartcoding.plain.rust.bridge.readRustStream(
+            next = { withContext(RustDispatchers.events) { RustCoreBridge.next(stream) } },
+            consume = consume,
+            closed = closed,
+        )
     }
 
     suspend fun publish(event: HostEvent): Int {

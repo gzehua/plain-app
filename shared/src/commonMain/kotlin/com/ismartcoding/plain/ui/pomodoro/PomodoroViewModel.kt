@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.pomodoro
 
-import com.ismartcoding.plain.features.pomodoro.PomodoroHost
 
 import com.ismartcoding.plain.ui.state.launchSafe
 
@@ -8,20 +7,14 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.features.pomodoro.PomodoroHelper
-import com.ismartcoding.plain.api.graphql.models.PomodoroRecord
-import com.ismartcoding.plain.api.graphql.models.PomodoroSettings
-import com.ismartcoding.plain.lib.TimeHelper
+import com.ismartcoding.plain.features.pomodoro.PomodoroClient
 import com.ismartcoding.plain.preferences.*
-import com.ismartcoding.plain.ui.pomodoro.PomodoroState
-import com.ismartcoding.plain.ui.pomodoro.PomodoroToday
+import com.ismartcoding.plain.api.graphql.models.PomodoroState
+import com.ismartcoding.plain.api.graphql.models.PomodoroToday
 import kotlinx.coroutines.Job
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 
 class PomodoroViewModel : ViewModel() {
 
-    // State variables
     var currentState = mutableStateOf(PomodoroState.WORK)
     var isRunning = mutableStateOf(false)
     var adjustJob = mutableStateOf<Job?>(null)
@@ -32,17 +25,14 @@ class PomodoroViewModel : ViewModel() {
     var settings = mutableStateOf(UserPrefs.pomodoroSettings.value)
 
     val showSettings = mutableStateOf(false)
-    var todayRecord = mutableStateOf<PomodoroRecord?>(null)
 
     private var totalSeconds = UserPrefs.pomodoroSettings.value.workDurationMin * 60
 
     suspend fun loadAsync() {
         settings.value = UserPrefs.pomodoroSettings.value
-        PomodoroHelper.configureDay(force = true)
         refreshAsync()
-        com.ismartcoding.plain.features.pomodoro.PomodoroHost.refresh()
     }
-    suspend fun refreshAsync() { applySnapshot(PomodoroHelper.today()) }
+    suspend fun refreshAsync() { applySnapshot(PomodoroClient.today()) }
     fun applySnapshot(today: PomodoroToday) {
         currentState.value = today.state
         completedCount.intValue = today.completedCount
@@ -52,12 +42,11 @@ class PomodoroViewModel : ViewModel() {
         isRunning.value = today.isRunning
         isPaused.value = today.isPaused
     }
-    fun startSession() { viewModelScope.launchSafe { applySnapshot(PomodoroHelper.start(timeLeft.intValue)) } }
-    fun pauseSession() { viewModelScope.launchSafe { applySnapshot(PomodoroHelper.pause()) } }
-    fun resetTimer() { viewModelScope.launchSafe { applySnapshot(PomodoroHelper.stop()) } }
-    fun adjustTime(seconds: Int) { viewModelScope.launchSafe { applySnapshot(PomodoroHelper.adjust(seconds)) } }
+    fun startSession() { viewModelScope.launchSafe { applySnapshot(PomodoroClient.start(timeLeft.intValue)) } }
+    fun pauseSession() { viewModelScope.launchSafe { applySnapshot(PomodoroClient.pause()) } }
+    fun resetTimer() { viewModelScope.launchSafe { applySnapshot(PomodoroClient.stop()) } }
+    fun adjustTime(seconds: Int) { viewModelScope.launchSafe { applySnapshot(PomodoroClient.adjust(seconds)) } }
     fun updateTimeForCurrentState() { viewModelScope.launchSafe { loadAsync() } }
-    internal fun getCurrentDateString(): String = TimeHelper.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
     fun formatTime(seconds: Int): String = "${(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}"
     fun getTotalSeconds(): Int = totalSeconds
 }

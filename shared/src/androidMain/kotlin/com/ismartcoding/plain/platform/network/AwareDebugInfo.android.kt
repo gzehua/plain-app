@@ -7,7 +7,7 @@ import android.Manifest
 import android.net.wifi.aware.Characteristics
 import android.os.Build
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.features.chat.peer.transport.WifiAwareTransport
+import com.ismartcoding.plain.platform.network.aware.WifiAwareTransport
 import com.ismartcoding.plain.lib.extensions.hasPermission
 import com.ismartcoding.plain.wifiAwareManager
 

@@ -12,6 +12,7 @@ import com.ismartcoding.plain.rustprefs.plain_resource_close
 import com.ismartcoding.plain.rustprefs.plain_resource_file
 import com.ismartcoding.plain.rustprefs.plain_resource_open
 import com.ismartcoding.plain.rustprefs.plain_resource_write
+import com.ismartcoding.plain.rustprefs.plain_upload_chunk
 import kotlinx.cinterop.*
 
 @OptIn(ExperimentalForeignApi::class)
@@ -33,6 +34,13 @@ internal actual object RustCoreBridge {
     actual fun send(action: String, message: String, bytes: ByteArray): String = memScoped {
         bytes.usePinned { pinned ->
             val pointer = checkNotNull(plain_events_send(action.cstr.ptr, message.cstr.ptr,
+                if (bytes.isEmpty()) null else pinned.addressOf(0).reinterpret(), bytes.size.toULong()))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual fun uploadChunk(id: String, index: Long, bytes: ByteArray): String = memScoped {
+        bytes.usePinned { pinned ->
+            val pointer = checkNotNull(plain_upload_chunk(id.cstr.ptr, index,
                 if (bytes.isEmpty()) null else pinned.addressOf(0).reinterpret(), bytes.size.toULong()))
             try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
         }

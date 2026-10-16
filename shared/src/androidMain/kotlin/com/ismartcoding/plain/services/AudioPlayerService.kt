@@ -23,7 +23,8 @@ import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.audio.AudioAction
-import com.ismartcoding.plain.features.audio.AudioPlayer
+import com.ismartcoding.plain.platform.media.AndroidAudioPlayer
+import com.ismartcoding.plain.features.audio.AudioCommands
 import com.ismartcoding.plain.features.audio.AudioServiceAction
 
 @OptIn(UnstableApi::class)
@@ -50,19 +51,13 @@ class AudioPlayerService : MediaLibraryService() {
                     if (mediaItem == null) {
                         return@coMain
                     }
-                    AudioPlayer.setChangedNotify(AudioAction.MEDIA_ITEM_TRANSITION)
+                    AndroidAudioPlayer.setChangedNotify(AudioAction.MEDIA_ITEM_TRANSITION)
                 }
             }
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             LogCat.d("onIsPlayingChanged: $isPlaying")
-        }
-
-        override fun onPlaybackStateChanged(playbackState: Int) {
-            if (playbackState == Player.STATE_ENDED) {
-                com.ismartcoding.plain.features.audio.AudioCommands.submit("COMPLETED")
-            }
         }
 
     }
@@ -102,7 +97,7 @@ class AudioPlayerService : MediaLibraryService() {
             override fun setPlaybackSpeed(speed: Float) = com.ismartcoding.plain.platform.media.audioSetPlaybackSpeed(speed)
             override fun stop() = com.ismartcoding.plain.platform.media.audioPause()
             override fun seekToPrevious() {
-                AudioPlayer.skipToPrevious()
+                AudioCommands.submit("PREVIOUS")
             }
 
             override fun getAvailableCommands(): Player.Commands {
@@ -116,7 +111,7 @@ class AudioPlayerService : MediaLibraryService() {
             }
 
             override fun seekToNext() {
-                AudioPlayer.skipToNext()
+                AudioCommands.submit("NEXT")
             }
         }
         val s = MediaLibrarySession.Builder(this, forwardingPlayer, object : MediaLibrarySession.Callback {
@@ -171,7 +166,7 @@ class AudioPlayerService : MediaLibraryService() {
             player.stop()
             nativePlayer = null
             player.release()
-            AudioPlayer.release()
+            AndroidAudioPlayer.release()
         }
     }
 }

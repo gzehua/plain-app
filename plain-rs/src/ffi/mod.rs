@@ -4,3 +4,4 @@ pub(crate) mod prefs;
 pub(crate) mod resources;
 pub mod server;
 pub(crate) mod values;
+pub(crate) mod uploads;

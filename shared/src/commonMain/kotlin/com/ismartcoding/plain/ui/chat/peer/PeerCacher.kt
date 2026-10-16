@@ -2,11 +2,9 @@ package com.ismartcoding.plain.ui.chat.peer
 
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 
-import androidx.compose.runtime.mutableStateMapOf
-import com.ismartcoding.plain.api.graphql.models.Peer
 
 import com.ismartcoding.plain.features.chat.ChatCacher
-import com.ismartcoding.plain.features.chat.models.PeerRecord
+import com.ismartcoding.plain.api.graphql.models.PeerRecord
 import com.ismartcoding.plain.features.chat.peer.transport.PeerTransportType
 import com.ismartcoding.plain.features.nearby.PeerStatus
 import com.ismartcoding.plain.api.graphql.models.ChatItem
@@ -20,13 +18,16 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
+import com.ismartcoding.plain.rust.PlainRust
+import kotlinx.serialization.json.*
 import kotlinx.coroutines.flow.stateIn
 
 object PeerCacher {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     val peersMap = MutableStateFlow<Map<String, PeerRecord>>(emptyMap())
-    val onlineMap = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+    private val onlineMap = MutableStateFlow<Map<String, Boolean>>(emptyMap())
 
     val currentTransportMap = MutableStateFlow<Map<String, PeerTransportType>>(emptyMap())
 
@@ -42,14 +43,18 @@ object PeerCacher {
         .map { it.filterValues { online -> online }.keys.toSet() }
         .stateIn(scope, SharingStarted.Eagerly, emptySet())
 
-    fun setOnlineMap(map: Map<String, Boolean>) {
-        onlineMap.value = map
+    suspend fun refreshOnline() {
+        val peers = PlainRust.mainQuery("peers { id online }").getValue("peers").jsonArray
+        onlineMap.value = peers.associate { it.jsonObject.getValue("id").jsonPrimitive.content to it.jsonObject.getValue("online").jsonPrimitive.boolean }
     }
 
     fun setOnline(peerId: String, online: Boolean) {
-        val current = onlineMap.value
-        if (current[peerId] == online) return
-        onlineMap.value = current.toMutableMap().also { it[peerId] = online }
+        onlineMap.update { it + (peerId to online) }
+    }
+
+    suspend fun refreshPeer(peerId: String) = withIO {
+        val peer = RustPeerStore.getById(peerId)
+        peersMap.update { if (peer == null) it - peerId else it + (peerId to peer) }
     }
 
     fun isPeerOnline(peerId: String): Boolean = onlineMap.value[peerId] == true

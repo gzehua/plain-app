@@ -27,3 +27,5 @@ object IosBleTransport : BleTransport {
 
     override fun createServer(): BleGattServer = IosBleGattServer()
 }
+
+actual fun canRequestBluetoothAccess(): Boolean = bleAvailability() == BleAvailability.UNKNOWN

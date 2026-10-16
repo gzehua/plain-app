@@ -10,4 +10,5 @@ data class AudioPlayback(
     var mode: MediaPlayMode,
     var isPlaying: Boolean,
     var positionMs: Long,
+    var revision: Long = 0,
 )

@@ -5,7 +5,7 @@ import com.ismartcoding.plain.features.images.search.HImageSearchStatusChangedEv
 
 import com.ismartcoding.plain.api.graphql.models.PairingRequestInput
 import com.ismartcoding.plain.platform.network.ble.PairingTransport
-import com.ismartcoding.plain.features.nearby.MdnsDiscoverManager
+import com.ismartcoding.plain.features.nearby.RustMdnsRuntime
 import com.ismartcoding.plain.ui.state.ActionSourceType
 import com.ismartcoding.plain.ui.state.ActionType
 import com.ismartcoding.plain.features.audio.AudioAction
@@ -24,8 +24,7 @@ import com.ismartcoding.plain.lib.ChannelEvent
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.media.audioPause
-import com.ismartcoding.plain.features.settings.cancelUpdateDownloadAsync
-import com.ismartcoding.plain.features.settings.downloadUpdateAsync
+import com.ismartcoding.plain.features.settings.AppUpdateDownloads
 import com.ismartcoding.plain.platform.network.isBluetoothAdvertiseReady
 import com.ismartcoding.plain.platform.media.restartAudioIfPlaying
 import com.ismartcoding.plain.platform.notifications.sendChatMessageNotification
@@ -61,7 +60,7 @@ class ShowPermissionWizardEvent : ChannelEvent()
 class RestartAppEvent : ChannelEvent()
 
 
-class HPomodoroChangedEvent(val today: com.ismartcoding.plain.ui.pomodoro.PomodoroToday) : HEvent()
+class HPomodoroChangedEvent(val today: com.ismartcoding.plain.api.graphql.models.PomodoroToday) : HEvent()
 
 class FetchBookmarkMetadataEvent(val bookmarkId: String, val url: String) : ChannelEvent()
 
@@ -112,9 +111,6 @@ class ClearAudioQueueEvent : ChannelEvent()
 
 class DownloadUpdateEvent : ChannelEvent()
 class CancelUpdateDownloadEvent : ChannelEvent()
-// UpdateDownloadProgressEvent / UpdateDownloadCompleteEvent / UpdateDownloadFailedEvent
-// moved to shared/.../events/UpdateDownloadEvents.kt so UpdateViewModel can pattern-match
-// on them without app/-side references.
 
 class SleepTimerEvent(val durationMs: Long) : ChannelEvent()
 
@@ -193,18 +189,18 @@ object AppEvents {
                     }
 
                     is StartNearbyServiceEvent -> {
-                        MdnsDiscoverManager.startReceiver()
+                        RustMdnsRuntime.startReceiver()
                         if (isBluetoothAdvertiseReady()) {
                             PairingTransport.startAdvertising()
                         }
                     }
 
                     is DownloadUpdateEvent -> {
-                        downloadUpdateAsync()
+                        runUpdateDownloadCommand { AppUpdateDownloads.start() }
                     }
 
                     is CancelUpdateDownloadEvent -> {
-                        cancelUpdateDownloadAsync()
+                        runUpdateDownloadCommand { AppUpdateDownloads.cancel() }
                     }
 
                     is ChatMessageNotificationEvent -> {
@@ -217,6 +213,18 @@ object AppEvents {
 
                 }
             }
+        }
+    }
+}
+
+private fun runUpdateDownloadCommand(action: suspend () -> Unit) {
+    coIO {
+        try {
+            action()
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            com.ismartcoding.plain.ui.components.DialogHelper.showErrorMessage(error.toString())
         }
     }
 }

@@ -3,18 +3,12 @@ package com.ismartcoding.plain.platform.media
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.platform.system.ShizukuHelper
-import com.ismartcoding.plain.platform.files.getMimeTypeFromExtension
-import com.ismartcoding.plain.rust.http.request
-
-import com.ismartcoding.plain.features.tags.TagRelationStub
-
-
 
 import android.provider.Telephony
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.audio.AudioMediaStoreHelper
 import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.docs.DocMediaStoreHelper
+import com.ismartcoding.plain.platform.media.provider.DocMediaStoreHelper
 import com.ismartcoding.plain.rust.host.provider.ProviderPlan
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.platform.media.provider.CallMediaStoreHelper
@@ -26,23 +20,6 @@ import com.ismartcoding.plain.features.telephony.sms.SmsProviderContract
 import com.ismartcoding.plain.features.files.FileSortBy
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.CancellationException
-
-
-actual suspend fun trashMedia(dataType: DataType, ids: Set<String>) {
-    com.ismartcoding.plain.features.media.actions.MediaActionHelper.run(dataType,com.ismartcoding.plain.features.media.actions.MediaAction.TRASH,ids)
-}
-
-actual suspend fun restoreMedia(dataType: DataType, ids: Set<String>) {
-    com.ismartcoding.plain.features.media.actions.MediaActionHelper.run(dataType,com.ismartcoding.plain.features.media.actions.MediaAction.RESTORE,ids)
-}
-
-actual suspend fun deleteMedia(dataType: DataType, ids: Set<String>, fromTrash: Boolean) {
-    com.ismartcoding.plain.features.media.actions.MediaActionHelper.run(dataType,com.ismartcoding.plain.features.media.actions.MediaAction.DELETE,ids,fromTrash)
-}
-
-actual suspend fun moveMedia(dataType: DataType, ids: Set<String>, destDir: String): Boolean {
-    return com.ismartcoding.plain.features.media.actions.MediaActionHelper.run(dataType,com.ismartcoding.plain.features.media.actions.MediaAction.MOVE,ids,destDir=destDir) == ids.size
-}
 
 actual suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.features.telephony.sms.SmsDeletionReceipt = com.ismartcoding.plain.lib.withIO {
     check(ShizukuHelper.isGranted()) { "Shizuku is not available or not granted" }
@@ -72,10 +49,6 @@ actual suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.feat
     com.ismartcoding.plain.features.telephony.sms.SmsDeletionReceipt(deleted, failed)
 }
 
-
-
-
-
 actual fun getMediaItemUriString(dataType: DataType, id: String): String = when (dataType) {
     DataType.IMAGE -> ImageMediaStoreHelper.getItemUri(id).toString()
     DataType.VIDEO -> VideoMediaStoreHelper.getItemUri(id).toString()
@@ -83,8 +56,6 @@ actual fun getMediaItemUriString(dataType: DataType, id: String): String = when 
     DataType.DOC -> DocMediaStoreHelper.getItemUri(id).toString()
     else -> ""
 }
-
-
 
 actual suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set<String> = when (dataType) {
     DataType.AUDIO -> AudioMediaStoreHelper.getPathsByIdsAsync(appContext, ids)
@@ -94,17 +65,11 @@ actual suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set
     else -> emptySet()
 }
 
-
-
-
-
 actual fun divideSmsText(body: String, subscriptionId: Int?): List<String> = SmsHelper.divideText(body, subscriptionId)
 actual fun sendSmsParts(request: com.ismartcoding.plain.features.telephony.sms.SmsDispatchRequest) = SmsHelper.sendParts(request)
 
-
 actual fun call(number: String, showDialer: Boolean) =
     com.ismartcoding.plain.platform.media.provider.CallMediaStoreHelper.call(appContext, number, showDialer)
-
 
 actual fun mimeTypeFromExtension(extension: String): String =
     android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
@@ -140,7 +105,6 @@ actual fun getScreenSize(): Pair<Int, Int> {
 internal actual fun platformDownloadsDirPath(): String =
     android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).absolutePath
 
-
 actual fun updateContact(id: String, input: com.ismartcoding.plain.features.contacts.ContactInput) =
     com.ismartcoding.plain.platform.media.provider.ContactMediaStoreHelper.updateAsync(id, input)
 
@@ -165,17 +129,13 @@ actual fun readSentMmsCandidates(minimumId: Long, launchTimeSec: Long): List<com
         buildList {
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idIndex)
-                val (body, attachments) = SmsHelper.readMmsBodyAndAttachments(context, id.toString())
                 add(com.ismartcoding.plain.features.telephony.sms.MmsCandidateFacts(id,
-                    SmsHelper.readMmsAddresses(context, id.toString()), body,
-                    cursor.getString(threadIndex).orEmpty(), attachments.map { it.contentType }))
+                    SmsHelper.readMmsAddresses(context, id.toString()), SmsHelper.readMmsParts(context, id.toString()),
+                    cursor.getString(threadIndex).orEmpty()))
             }
         }
     } ?: emptyList()
 }
-
-
-
 
 actual suspend fun searchMedia(dataType: DataType, plan: ProviderPlan, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> {
     if (dataType == DataType.CALL && !Permission.READ_CALL_LOG.isGranted()) return emptyList()

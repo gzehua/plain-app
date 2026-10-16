@@ -275,6 +275,13 @@ class LineVectorDocument internal constructor(
         version = snapshot.version + 1
     }
 
+    fun byteChunks(snapshot: DocSnapshot, chunkSize: Int = 256 * 1024): Iterator<ByteArray> {
+        val frozen = LineVectorDocument(source, snapshot.starts, snapshot.lens, snapshot.crlf, dominantCrlf, snapshot.lastLineHasTerminator)
+        frozen.edited.putAll(snapshot.edited)
+        snapshot.edited.forEach { (line, text) -> frozen.editedByteLens[line] = text.encodeToByteArray().size }
+        return frozen.byteChunks(chunkSize)
+    }
+
     /** Streaming serialization for save; never holds the whole file in memory. */
     fun byteChunks(chunkSize: Int = 256 * 1024): Iterator<ByteArray> {
         val doc = this

@@ -22,6 +22,7 @@ suspend fun initCommonPreferences() {
     com.ismartcoding.plain.features.videos.VideoProgressHost.restore()
     com.ismartcoding.plain.features.audio.AudioEngineHost.start()
     TempData.deviceName.value = UserPrefs.deviceName.value
+    com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
     PeerCacher.load()
     ChannelCacher.load()
     ChatCacher.load()

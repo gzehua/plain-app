@@ -3,12 +3,17 @@ package com.ismartcoding.plain.rust.host.provider
 
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
+import kotlinx.serialization.Serializable
+import com.ismartcoding.plain.platform.media.MediaVolumeRevision
+import com.ismartcoding.plain.platform.media.mediaStoreRevision
 
 internal object SystemMediaHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
         "systemMediaBucketItemFacts" -> JsonHelper.jsonEncodeToElement(
-            com.ismartcoding.plain.platform.system.mediaBucketItemFacts(mediaDataType(params)))
+            com.ismartcoding.plain.platform.system.mediaBucketItemFacts(mediaDataType(params), params.providerPlan()))
         "systemMediaRows" -> {
+            val includeRevision = params["includeRevision"]?.jsonPrimitive?.booleanOrNull == true
+            val before = if (includeRevision) mediaStoreRevision() else null
             val items = com.ismartcoding.plain.platform.media.searchMedia(
                 mediaDataType(params),
                 params.providerPlan(),
@@ -16,7 +21,9 @@ internal object SystemMediaHost {
                 params.getValue("offset").jsonPrimitive.int,
                 fileSortBy(params),
             )
-            JsonHelper.jsonEncodeToElement(items.map { mediaFacts(it) })
+            val rows = items.map { mediaFacts(it) }
+            if (includeRevision) JsonHelper.jsonEncodeToElement(MediaRowsFacts(rows, before, mediaStoreRevision()))
+            else JsonHelper.jsonEncodeToElement(rows)
         }
         "systemMediaCount" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.countMedia(
             mediaDataType(params), params.providerPlan()))
@@ -84,3 +91,10 @@ internal object SystemMediaHost {
     private fun fileSortBy(params: JsonObject) =
         com.ismartcoding.plain.features.files.FileSortBy.valueOf(params.getValue("sortBy").jsonPrimitive.content)
 }
+
+@Serializable
+internal data class MediaRowsFacts(
+    val rows: List<JsonElement>,
+    val revisionBefore: List<MediaVolumeRevision>?,
+    val revisionAfter: List<MediaVolumeRevision>?,
+)

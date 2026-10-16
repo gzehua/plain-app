@@ -2,7 +2,6 @@ package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.features.permissions.DFeaturePermission
 import com.ismartcoding.plain.platform.permissions.Permission
-import com.ismartcoding.plain.platform.isQPlus
 
 enum class AppFeatureType {
     WEB_PORTAL,

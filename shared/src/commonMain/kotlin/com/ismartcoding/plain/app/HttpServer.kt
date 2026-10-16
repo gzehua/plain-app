@@ -27,9 +27,11 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonPrimitive
 
-expect suspend fun getSSLSignature(): ByteArray
+suspend fun getSSLSignature(): ByteArray = com.ismartcoding.plain.rust.http.RustTlsCertificate.signature()
 
-expect suspend fun generateSSLKeyStore()
+suspend fun generateSSLKeyStore() {
+    com.ismartcoding.plain.rust.http.RustTlsCertificate.regenerate()
+}
 
 /**
  * Source format of a user-provided SSL certificate for [replaceSSLKeyStoreAsync].
@@ -54,12 +56,22 @@ enum class SslCertImportMode {
  * @throws Exception when the file cannot be read or parsed, the password is wrong,
  *         or no usable private key is found
  */
-expect suspend fun replaceSSLKeyStoreAsync(
+suspend fun replaceSSLKeyStoreAsync(
     mode: SslCertImportMode,
     firstUri: String,
     secondUri: String = "",
     password: String = "",
-): ByteArray
+): ByteArray = withIO {
+    when (mode) {
+        SslCertImportMode.PKCS12 -> com.ismartcoding.plain.rust.http.RustTlsCertificate.importPkcs12(
+            com.ismartcoding.plain.platform.files.readPickedFileBytes(firstUri), password,
+        )
+        SslCertImportMode.PEM -> com.ismartcoding.plain.rust.http.RustTlsCertificate.importPem(
+            com.ismartcoding.plain.platform.files.readPickedFileBytes(firstUri).decodeToString(throwOnInvalidSequence = true),
+            com.ismartcoding.plain.platform.files.readPickedFileBytes(secondUri).decodeToString(throwOnInvalidSequence = true),
+        )
+    }
+}
 
 /**
  * Reset the web console password to a new random value and persist it.
@@ -71,7 +83,6 @@ suspend fun startHttpEngineAsync() = RustHttpEngine.start()
 suspend fun stopHttpEngineAsync() = RustHttpEngine.stop()
 
 expect suspend fun onHttpServerStarted()
-expect suspend fun onWebSocketSessionStarted()
 expect suspend fun onHttpServerStopped()
 expect fun startHttpServerService()
 expect suspend fun stopHttpServiceAsync()
@@ -177,7 +188,7 @@ fun restartServer() {
     }
 }
 
-expect fun isHttpServerRunning(): Boolean
-expect fun isMdnsRunning(): Boolean
+fun isHttpServerRunning(): Boolean = RustHttpEngine.isRunning
+fun isMdnsRunning(): Boolean = com.ismartcoding.plain.features.nearby.RustMdnsRuntime.running
 expect fun getAwareAttachStatus(): String
 expect fun getAwareDiscoveredPeerCount(): Int

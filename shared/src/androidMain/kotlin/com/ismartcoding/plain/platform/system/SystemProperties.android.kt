@@ -31,7 +31,6 @@ internal actual fun readSystemProperties(names: List<String>): Map<String, JsonE
                 ]
             }""")
             "deviceType" -> JsonPrimitive(getDeviceType().name)
-            "ipv4Addresses" -> kotlinx.serialization.json.JsonArray(getDeviceIP4s().map(::JsonPrimitive))
             "wifiAwareSupported" -> JsonPrimitive(isWifiAwareSupported)
             "wifiAwareRunning" -> JsonPrimitive(com.ismartcoding.plain.app.TempData.awareRunning.value)
             "name" -> JsonPrimitive(PhoneHelper.getDeviceName(appContext))

@@ -1,12 +1,17 @@
 package com.ismartcoding.plain.platform.files
 
+import com.ismartcoding.plain.features.files.FilesClient
 import com.ismartcoding.plain.ui.components.codeeditor.engine.ByteSource
+import com.ismartcoding.plain.lib.logcat.LogCat
+import kotlinx.coroutines.CancellationException
 
-/** Opens a positioned-read byte source for editor loading (plain path, file:// or content://). */
 expect fun openByteSource(path: String): ByteSource
 
-/**
- * Streams chunks to [path] with an atomic replace (temp file + rename) for plain paths.
- * Returns false on failure.
- */
-expect fun writeByteChunksStreaming(path: String, chunks: Iterator<ByteArray>): Boolean
+suspend fun writeByteChunksStreaming(path: String, chunks: Iterator<ByteArray>): Boolean = try {
+    FilesClient.writeChunks(path, chunks)
+} catch (cancelled: CancellationException) {
+    throw cancelled
+} catch (error: Exception) {
+    LogCat.e("File save failed", error)
+    false
+}

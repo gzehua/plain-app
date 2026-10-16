@@ -13,17 +13,6 @@ internal object RustImageModels {
     private var version = -1L
     private val state = MutableStateFlow(ImageModelsSnapshot())
     val snapshot = state.asStateFlow()
-    suspend fun call(command: ImageModelsCommand) {
-        val mutation = when (command) {
-            ImageModelsCommand.Restore -> "restoreImageSearch"
-            ImageModelsCommand.Enable -> "enableImageSearch"
-            ImageModelsCommand.Disable -> "disableImageSearch"
-            ImageModelsCommand.Cancel -> "cancelImageModelDownload"
-            ImageModelsCommand.Release -> "releaseImageModelMemory"
-        }
-        PlainRust.mainMutate(mutation)
-        refresh()
-    }
     suspend fun refresh() {
         apply(PlainRust.mainQuery("imageModelsState { version status downloadProgress errorMessage modelSize modelDir isIndexing totalImages indexedImages }").getValue("imageModelsState").jsonObject)
     }

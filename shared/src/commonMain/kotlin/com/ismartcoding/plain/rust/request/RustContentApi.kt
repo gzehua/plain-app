@@ -78,7 +78,7 @@ object RustContentApi {
     private var collectorsStarted = false
 
     private val startupConfig by lazy {
-        RustHttpServerConfig(isDebugBuild(), RustWebAssets.ensure(), startupSystemProperties())
+        RustHttpServerConfig(isDebugBuild(), webAssetsSource(), startupSystemProperties())
     }
 
     fun start() = lock.withLock {
@@ -92,16 +92,16 @@ object RustContentApi {
         check(ports.cacheDir == cacheDirectory) { "Rust cache root differs from startup configuration" }
         imageCachePath = ports.imageCacheDir
         videoCachePath = ports.videoCacheDir
+        kotlinx.coroutines.runBlocking(com.ismartcoding.plain.platform.IODispatcher) { com.ismartcoding.plain.preferences.RustSystemState.refresh() }
         localSession = ContentApiSession(
             "http://127.0.0.1:${ports.httpPort}",
             TempData.clientId,
             token,
         )
         if (!collectorsStarted) {
-            PlainRust.start { checkNotNull(localSession) }
+            PlainRust.start()
             collectorsStarted = true
         }
-        kotlinx.coroutines.runBlocking(com.ismartcoding.plain.platform.IODispatcher) { com.ismartcoding.plain.preferences.RustSystemState.refresh() }
         httpGeneration = ports.generation
         lastHttpGeneration = maxOf(lastHttpGeneration, ports.generation)
 

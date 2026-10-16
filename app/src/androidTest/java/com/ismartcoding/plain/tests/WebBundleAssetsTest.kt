@@ -8,7 +8,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * The Rust HTTP listener cannot read the APK top level, so [RustWebAssets]
+ * The Rust HTTP listener cannot read the APK top level, so Rust
  * unpacks the bundle from the assets dir. If the build stops shipping
  * `src/main/resources` under assets, every web route 404s while the host
  * unit tests stay green — `AssetManager` does not exist on the JVM.
@@ -24,7 +24,7 @@ class WebBundleAssetsTest {
         assertNotNull("assets.list(\"web\") returned null — the bundle is not packaged as assets", children)
         assertTrue(
             "assets/web is empty — the bundle is only in the APK java-resources top level, " +
-                "so RustWebAssets cannot unpack it and every web route will 404",
+                "so the core cannot unpack it and every web route will 404",
             children!!.isNotEmpty(),
         )
     }
@@ -47,11 +47,5 @@ class WebBundleAssetsTest {
         )
     }
 
-    @Test
-    fun unpackingProducesAReadableRoot() {
-        val root = com.ismartcoding.plain.rust.http.RustWebAssets.ensure()
-        assertTrue("RustWebAssets.ensure() returned an empty root", root.isNotEmpty())
-        val index = java.io.File(root, "index.html")
-        assertTrue("unpacked bundle has no index.html at $index", index.isFile)
-    }
+
 }

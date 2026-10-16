@@ -4,6 +4,8 @@ import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
 import com.ismartcoding.plain.preferences.*
 
+import com.ismartcoding.plain.platform.system.AppFeatureType
+import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn
@@ -40,6 +42,7 @@ import com.ismartcoding.plain.ui.resources.rocket as ui_drawable_rocket
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdateDialog(updateVM: UpdateViewModel) {
+    if (!AppFeatureType.CHECK_UPDATES.has()) return
     val updateInfo = RustSystemState.state.collectAsStateValue().updateInfo
     val newVersion = updateInfo.newVersion
     val newVersionPublishDate = updateInfo.publishDate
@@ -86,7 +89,6 @@ fun UpdateDialog(updateVM: UpdateViewModel) {
                     buttonSize = ButtonSize.MEDIUM,
                     onClick = {
                         updateVM.hideDialog()
-                        updateVM.startDownload()
                         sendEvent(DownloadUpdateEvent())
                     },
                 )

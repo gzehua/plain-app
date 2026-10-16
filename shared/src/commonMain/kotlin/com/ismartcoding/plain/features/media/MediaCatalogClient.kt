@@ -20,6 +20,16 @@ object MediaCatalogClient {
         DataType.DOC -> "docs"
         else -> error("Unsupported media type: $type")
     }
+    internal fun fields(type: DataType): String {
+        val extra = when (type) {
+            DataType.AUDIO -> "artist durationMs albumId albumFileId isFavorite"
+            DataType.IMAGE -> "width height rotation takenAt isFavorite"
+            DataType.VIDEO -> "durationMs width height rotation takenAt isFavorite"
+            DataType.DOC -> "durationMs extension"
+            else -> error("Unsupported media type: $type")
+        }
+        return "$COMMON $extra"
+    }
     suspend fun rows(type: DataType, query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> {
         when (type) {
             DataType.CALL -> return com.ismartcoding.plain.features.telephony.CallsClient.search(query, limit, offset)
@@ -28,14 +38,7 @@ object MediaCatalogClient {
             else -> Unit
         }
         val root = root(type)
-        val extra = when (type) {
-            DataType.AUDIO -> "artist durationMs albumId albumFileId isFavorite"
-            DataType.IMAGE -> "width height rotation takenAt isFavorite"
-            DataType.VIDEO -> "durationMs width height rotation takenAt isFavorite"
-            DataType.DOC -> "durationMs extension"
-            else -> error("Unsupported media type: $type")
-        }
-        return PlainRust.mainQuery("$root(query: ${gql(query)}, limit: $limit, offset: $offset, sortBy: ${sortBy.name}) { $COMMON $extra }").getValue(root).jsonArray.map {
+        return PlainRust.mainQuery("$root(query: ${gql(query)}, limit: $limit, offset: $offset, sortBy: ${sortBy.name}) { ${fields(type)} }").getValue(root).jsonArray.map {
             val row = it.jsonObject
             when (type) {
                 DataType.AUDIO -> com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<AudioTrack>(row)

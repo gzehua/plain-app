@@ -17,7 +17,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.features.chat.ShareSendHelper
+import com.ismartcoding.plain.features.chat.ShareSendClient
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.features.shares.ShareExpiry
 import com.ismartcoding.plain.features.shares.SharesClient
@@ -98,10 +98,7 @@ fun CreateShareDialog(
                 showForwardDialog = false
                 onDismiss()
                 scope.launch {
-                    ShareSendHelper.sendContentAsync(
-                        targets,
-                        ShareSendHelper.buildShareContent(share!!),
-                    )
+                    ShareSendClient.sendShare(targets, share!!.id)
                     DialogHelper.showSuccess(Res.string.sent)
                 }
             },

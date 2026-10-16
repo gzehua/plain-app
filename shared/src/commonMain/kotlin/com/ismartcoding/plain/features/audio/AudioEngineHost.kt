@@ -73,14 +73,15 @@ object AudioEngineHost {
                 val speed = params.getValue("speed").jsonPrimitive.float
                 require(position >= 0 && requestedRevision >= 0 && speed.isFinite() && speed > 0)
                 val action = params.string("action")
+                player.bindRevision(requestedRevision)
                 var loaded = false
                 when (action) {
                     "PLAY", "SEEK" -> {
                         val track = params.getValue("track").audioTrack()
                         if (action == "PLAY" && !params.getValue("newTrack").jsonPrimitive.boolean && player.currentPath == track.path) {
                             player.seekTo(position)
-                            player.play()
                             player.setPlaybackSpeed(speed)
+                            player.play()
                         } else if (action == "SEEK" && player.currentPath == track.path) {
                             player.seekTo(position)
                         } else { player.load(track, position, speed, requestedRevision); loaded = true }
@@ -91,7 +92,6 @@ object AudioEngineHost {
                     "SET_SPEED" -> player.setPlaybackSpeed(speed)
                     else -> error("Unknown audio engine command: $action")
                 }
-                yield()
                 revision = requestedRevision
                 JsonObject(report(player) + ("loaded" to JsonPrimitive(loaded))).let { reported -> if (action == "PLAY" || action == "SEEK") JsonObject(reported + ("positionMs" to JsonPrimitive(position))) else reported }
             }

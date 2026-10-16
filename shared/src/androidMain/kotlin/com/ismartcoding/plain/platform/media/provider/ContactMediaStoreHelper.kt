@@ -1,8 +1,6 @@
 package com.ismartcoding.plain.platform.media.provider
 
-import com.ismartcoding.plain.features.contacts.DOrganization
 
-import com.ismartcoding.plain.api.graphql.models.ContactGroup
 import com.ismartcoding.plain.appContext
 import android.content.ContentProviderOperation
 import android.content.ContentUris
@@ -22,7 +20,7 @@ import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.helpers.StringHelper
 import com.ismartcoding.plain.rust.host.provider.*
-import com.ismartcoding.plain.features.contacts.ContentHelper
+import com.ismartcoding.plain.platform.contacts.ContactDataHelper
 import com.ismartcoding.plain.features.contacts.SourceHelper
 import com.ismartcoding.plain.features.contacts.ContactInput
 
@@ -88,55 +86,55 @@ object ContactMediaStoreHelper {
         }
 
         ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE.let { type ->
-            operations.add(ContentHelper.newDelete(id, type))
-            operations.add(ContentHelper.newInsert(id, type, contact.nickname))
+            operations.add(ContactDataHelper.newDelete(id, type))
+            operations.add(ContactDataHelper.newInsert(id, type, contact.nickname))
         }
 
         ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE.let { type ->
-            operations.add(ContentHelper.newDelete(id, type))
-            operations.addAll(contact.phoneNumbers.map { ContentHelper.newInsert(id, type, it) })
+            operations.add(ContactDataHelper.newDelete(id, type))
+            operations.addAll(contact.phoneNumbers.map { ContactDataHelper.newInsert(id, type, it) })
         }
 
         ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE.let { type ->
-            operations.add(ContentHelper.newDelete(id, type))
-            operations.addAll(contact.emails.map { ContentHelper.newInsert(id, type, it) })
+            operations.add(ContactDataHelper.newDelete(id, type))
+            operations.addAll(contact.emails.map { ContactDataHelper.newInsert(id, type, it) })
         }
 
         ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE.let { type ->
-            operations.add(ContentHelper.newDelete(id, type))
-            operations.addAll(contact.addresses.map { ContentHelper.newInsert(id, type, it) })
+            operations.add(ContactDataHelper.newDelete(id, type))
+            operations.addAll(contact.addresses.map { ContactDataHelper.newInsert(id, type, it) })
         }
 
         ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE.let { type ->
-            operations.add(ContentHelper.newDelete(id, type))
-            operations.addAll(contact.ims.map { ContentHelper.newInsert(id, type, it) })
+            operations.add(ContactDataHelper.newDelete(id, type))
+            operations.addAll(contact.ims.map { ContactDataHelper.newInsert(id, type, it) })
         }
 
         ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE.let { type ->
-            operations.add(ContentHelper.newDelete(id, type))
-            operations.addAll(contact.events.map { ContentHelper.newInsert(id, type, it) })
+            operations.add(ContactDataHelper.newDelete(id, type))
+            operations.addAll(contact.events.map { ContactDataHelper.newInsert(id, type, it) })
         }
 
         ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE.let { type ->
-            operations.add(ContentHelper.newDelete(id, type))
-            operations.add(ContentHelper.newInsert(id, type, contact.notes))
+            operations.add(ContactDataHelper.newDelete(id, type))
+            operations.add(ContactDataHelper.newInsert(id, type, contact.notes))
         }
 
         ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE.let { type ->
-            operations.add(ContentHelper.newDelete(id, type))
+            operations.add(ContactDataHelper.newDelete(id, type))
             contact.organization?.let {
-                operations.add(ContentHelper.newOrgInsert(id, it))
+                operations.add(ContactDataHelper.newOrgInsert(id, it))
             }
         }
 
         ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE.let { type ->
-            operations.add(ContentHelper.newDelete(id, type))
-            operations.addAll(contact.websites.map { ContentHelper.newInsert(id, type, it) })
+            operations.add(ContactDataHelper.newDelete(id, type))
+            operations.addAll(contact.websites.map { ContactDataHelper.newInsert(id, type, it) })
         }
 
         ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE.let { type ->
-            operations.add(ContentHelper.newDelete(id, type))
-            operations.addAll(contact.groupIds.map { ContentHelper.newInsert(id, type, it.value) })
+            operations.add(ContactDataHelper.newDelete(id, type))
+            operations.addAll(contact.groupIds.map { ContactDataHelper.newInsert(id, type, it.value) })
         }
 
 //            val uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contact.contactId.toString())
@@ -171,45 +169,45 @@ object ContactMediaStoreHelper {
 
         val id = "0"
         ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE.let { type ->
-            operations.add(ContentHelper.newInsert(id, type, contact.nickname))
+            operations.add(ContactDataHelper.newInsert(id, type, contact.nickname))
         }
 
         ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE.let { type ->
-            operations.addAll(contact.phoneNumbers.map { ContentHelper.newInsert(id, type, it) })
+            operations.addAll(contact.phoneNumbers.map { ContactDataHelper.newInsert(id, type, it) })
         }
 
         ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE.let { type ->
-            operations.addAll(contact.emails.map { ContentHelper.newInsert(id, type, it) })
+            operations.addAll(contact.emails.map { ContactDataHelper.newInsert(id, type, it) })
         }
 
         ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE.let { type ->
-            operations.addAll(contact.addresses.map { ContentHelper.newInsert(id, type, it) })
+            operations.addAll(contact.addresses.map { ContactDataHelper.newInsert(id, type, it) })
         }
 
         ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE.let { type ->
-            operations.addAll(contact.ims.map { ContentHelper.newInsert(id, type, it) })
+            operations.addAll(contact.ims.map { ContactDataHelper.newInsert(id, type, it) })
         }
 
         ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE.let { type ->
-            operations.addAll(contact.events.map { ContentHelper.newInsert(id, type, it) })
+            operations.addAll(contact.events.map { ContactDataHelper.newInsert(id, type, it) })
         }
 
         ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE.let { type ->
-            operations.add(ContentHelper.newInsert(id, type, contact.notes))
+            operations.add(ContactDataHelper.newInsert(id, type, contact.notes))
         }
 
         ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE.let {
             contact.organization?.let {
-                operations.add(ContentHelper.newOrgInsert(id, it))
+                operations.add(ContactDataHelper.newOrgInsert(id, it))
             }
         }
 
         ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE.let { type ->
-            operations.addAll(contact.websites.map { ContentHelper.newInsert(id, type, it) })
+            operations.addAll(contact.websites.map { ContactDataHelper.newInsert(id, type, it) })
         }
 
         ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE.let { type ->
-            operations.addAll(contact.groupIds.map { ContentHelper.newInsert(id, type, it.value) })
+            operations.addAll(contact.groupIds.map { ContactDataHelper.newInsert(id, type, it.value) })
         }
 
         val results = context.contentResolver.applyBatch(ContactsContract.AUTHORITY, operations)
@@ -226,7 +224,8 @@ object ContactMediaStoreHelper {
         limit: Int,
         offset: Int,
     ): List<ContactFacts> = withIO {
-        val contentMap = ContentHelper.getMap(context)
+        val contentMap = ContactDataHelper.getMap(context)
+        val groupMap = com.ismartcoding.plain.features.contacts.GroupHelper.getAll().associateBy { it.id }
         context.contentResolver.getPagingCursor(
             uriExternal, getProjection(), where, limit, offset,
             SortBy(ContactsContract.Data.DISPLAY_NAME_PRIMARY, SortDirection.ASC)
@@ -247,7 +246,7 @@ object ContactMediaStoreHelper {
 
             val nicknames = contentMap[rawId]?.nicknames ?: arrayListOf()
             val notes = contentMap[rawId]?.notes ?: arrayListOf()
-            val groups = ArrayList<ContactGroup>()
+            val groups = contentMap[rawId]?.groupIds.orEmpty().mapNotNull { groupMap[it.toString()] }
             val organizations = contentMap[rawId]?.organizations ?: arrayListOf()
             val websites = contentMap[rawId]?.websites ?: arrayListOf()
             val events = contentMap[rawId]?.events ?: arrayListOf()
@@ -255,18 +254,16 @@ object ContactMediaStoreHelper {
             val addresses = contentMap[rawId]?.addresses ?: arrayListOf()
             val ims = contentMap[rawId]?.ims ?: arrayListOf()
             val phoneNumbers = contentMap[rawId]?.phoneNumbers ?: arrayListOf()
-            fun details(items: List<com.ismartcoding.plain.features.contacts.DContentItem>) =
-                items.map { ContactDetailFacts(it.value, it.type, it.label) }
             ContactFacts(
                 id = rawId, prefix = prefix, firstName = givenName, middleName = middleName,
                 lastName = familyName, suffix = suffix, nickname = nicknames.firstOrNull().orEmpty(),
                 photoId = photoUri,
-                phoneNumbers = phoneNumbers.map { ContactPhoneFacts(it.value, it.type, it.label, it.normalizedNumber) },
-                emails = details(emails), addresses = details(addresses), events = details(events),
-                websites = details(websites), ims = details(ims), source = accountName,
+                phoneNumbers = phoneNumbers,
+                emails = emails, addresses = addresses, events = events,
+                websites = websites, ims = ims, source = accountName,
                 starred = starred != 0, contactId = contactId, thumbnailId = thumbnailUri,
                 notes = notes.firstOrNull().orEmpty(), groups = groups.map { ContactGroupFacts(it.id.toString(), it.name) },
-                organization = organizations.firstOrNull()?.let { ContactOrganizationFacts(it.company, it.title) }
+                organization = organizations.firstOrNull()
                     ?: ContactOrganizationFacts("", ""),
                 ringtone = ringtone, updatedAt = updatedAt.toString(),
             )

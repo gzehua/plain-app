@@ -11,7 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.features.chat.ShareSendHelper
+import com.ismartcoding.plain.features.chat.ShareSendClient
 import com.ismartcoding.plain.features.chat.models.MessageContent
 import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.features.chat.models.MessageFiles
@@ -66,7 +66,7 @@ fun AppFileInfoBottomSheet(
                 showForwardDialog = false
                 onDismiss()
                 scope.launch {
-                    ShareSendHelper.sendContentAsync(targets, content)
+                    ShareSendClient.sendContent(targets, content)
                     DialogHelper.showSuccess(Res.string.sent)
                 }
             }

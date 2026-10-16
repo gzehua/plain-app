@@ -60,7 +60,25 @@ class SystemProviderSerializationTest {
     fun smsEmptyResponsesKeepPlatformContract() {
         assertEquals("""{"sms":0,"mms":0}""", JsonHelper.jsonEncode(SmsCountFacts(0, 0)))
         assertEquals("""{"items":[],"canonicalAddresses":[],"ownNumbers":[]}""", JsonHelper.jsonEncode(SmsRowsFacts(emptyList(), emptyList(), emptyList())))
-        assertEquals("""{"items":[],"ownNumbers":[],"snippets":{}}""", JsonHelper.jsonEncode(SmsConversationFacts(emptyList(), emptyList(), emptyMap())))
+        assertEquals("""{"items":[],"ownNumbers":[],"snippetCandidates":{}}""", JsonHelper.jsonEncode(SmsConversationFacts(emptyList(), emptyList(), emptyMap())))
+    }
+
+    @Test
+    fun mmsFactsExposeRawPartsAndDatedCandidatesWithoutBusinessProjection() {
+        val part = com.ismartcoding.plain.features.telephony.sms.MmsPartFacts(
+            "content://mms/part/1", "image/jpeg", "", "photo.jpg", true, "",
+        )
+        assertEquals(
+            """{"path":"content://mms/part/1","contentType":"image/jpeg","name":"","fileName":"photo.jpg","hasData":true,"text":""}""",
+            JsonHelper.jsonEncode(part),
+        )
+        val candidate = com.ismartcoding.plain.features.telephony.sms.MmsCandidateFacts(
+            1L, emptyList(), listOf(part), "2",
+        )
+        val json = JsonHelper.jsonEncode(candidate)
+        assertTrue(json.contains("\"parts\":"))
+        assertTrue(!json.contains("\"body\":"))
+        assertTrue(!json.contains("attachmentContentTypes"))
     }
 
     @Test

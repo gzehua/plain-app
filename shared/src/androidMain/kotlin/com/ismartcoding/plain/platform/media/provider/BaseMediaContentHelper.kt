@@ -69,21 +69,7 @@ abstract class BaseMediaContentHelper {
         return paths
     }
 
-    fun getBucketItemFactsAsync(context: Context): List<MediaBucketItemFacts> = queryBucketItemFacts(
-        context,
-        if (mediaType == MediaType.AUDIO) {
-            "${MediaStore.Audio.Media.DURATION} > 0 AND ${MediaStore.MediaColumns.BUCKET_DISPLAY_NAME} != ''"
-        } else {
-            "${MediaStore.MediaColumns.BUCKET_DISPLAY_NAME} != ''"
-        },
-        null,
-    )
-
-    protected fun queryBucketItemFacts(
-        context: Context,
-        selection: String,
-        selectionArgs: Array<String>?,
-    ): List<MediaBucketItemFacts> {
+    fun getBucketItemFactsAsync(context: Context, where: ContentWhere): List<MediaBucketItemFacts> {
         val projection = arrayOf(
             MediaStore.MediaColumns.BUCKET_ID,
             MediaStore.MediaColumns.BUCKET_DISPLAY_NAME,
@@ -93,8 +79,8 @@ abstract class BaseMediaContentHelper {
         return context.contentResolver.query(
             uriExternal,
             projection,
-            selection,
-            selectionArgs,
+            where.toSelection(),
+            where.args.toTypedArray(),
             "${MediaStore.MediaColumns.DATE_MODIFIED} DESC",
         )?.map { cursor, cache ->
             val name = cursor.getStringValue(MediaStore.MediaColumns.BUCKET_DISPLAY_NAME, cache)

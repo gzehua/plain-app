@@ -30,7 +30,6 @@ actual fun getDeviceType(): DeviceType {
     }
 }
 
-actual fun getDeviceIP4s(): List<String> = IosPlatformRegistry.getDeviceIP4s()
 
 actual fun cacheDirPath(): String =
     NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true)[0] as String

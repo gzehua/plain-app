@@ -58,7 +58,7 @@ object AudioMediaStoreHelper : BaseMediaContentHelper() {
         getPagingCursorAsync(context, where, limit, offset, sortBy.toSortBy())?.map { cursor, cache ->
             val id = cursor.getStringValue(MediaStore.Audio.Media._ID, cache)
             val title = cursor.getStringValue(MediaStore.Audio.Media.TITLE, cache)
-            val artist = cursor.getStringValue(MediaStore.Audio.Media.ARTIST, cache).replace(MediaStore.UNKNOWN_STRING, "")
+            val artist = cursor.getStringValue(MediaStore.Audio.Media.ARTIST, cache)
             val size = cursor.getLongValue(MediaStore.Audio.Media.SIZE, cache)
             val durationMs = cursor.getLongValue(MediaStore.Audio.Media.DURATION, cache)
             val createdAt = cursor.getTimeSecondsValue(MediaStore.Audio.Media.DATE_ADDED, cache)

@@ -52,9 +52,9 @@ object SmsConversationHelper {
         com.ismartcoding.plain.lib.JsonHelper.jsonEncodeToElement(SmsConversationFacts(
             items = rows,
             ownNumbers = own,
-            snippets = beforeDates.mapNotNull { (id, value) ->
-                getSnippetBeforeDate(context, id, value.jsonPrimitive.long)?.let { id to it }
-            }.toMap(),
+            snippetCandidates = beforeDates.mapValues { (id, value) ->
+                getSnippetsBeforeDate(context, id, value.jsonPrimitive.long)
+            },
         ))
     }
 
@@ -62,9 +62,7 @@ object SmsConversationHelper {
     private val smsUri = Telephony.Sms.CONTENT_URI
     private val mmsUri = Telephony.Mms.CONTENT_URI
 
-    private data class DatedSnippet(val value: String, val dateMillis: Long)
-
-    private fun getSnippetBeforeDate(context: Context, threadId: String, beforeDate: Long): String? {
+    private fun getSnippetsBeforeDate(context: Context, threadId: String, beforeDate: Long): List<SmsSnippetFacts> {
         val smsSnippet = context.contentResolver.queryCursor(
             smsUri,
             arrayOf(Telephony.Sms.BODY, Telephony.Sms.DATE),
@@ -72,9 +70,9 @@ object SmsConversationHelper {
             arrayOf(threadId, beforeDate.toString()),
             "${Telephony.Sms.DATE} DESC LIMIT 1",
         )?.find { cursor, cache ->
-            DatedSnippet(
-                cursor.getStringValue(Telephony.Sms.BODY, cache),
-                cursor.getTimeValue(Telephony.Sms.DATE, cache).toEpochMilliseconds(),
+            SmsSnippetFacts(
+                value = cursor.getStringValue(Telephony.Sms.BODY, cache),
+                dateMillis = cursor.getTimeValue(Telephony.Sms.DATE, cache).toEpochMilliseconds(),
             )
         }
         val mmsSnippet = context.contentResolver.queryCursor(
@@ -85,12 +83,13 @@ object SmsConversationHelper {
             "${Telephony.Mms.DATE} DESC LIMIT 1",
         )?.find { cursor, cache ->
             val id = cursor.getStringValue(Telephony.Mms._ID, cache)
-            DatedSnippet(
-                SmsHelper.readMmsBodyAndAttachments(context, id).first,
-                cursor.getTimeSecondsValue(Telephony.Mms.DATE, cache).toEpochMilliseconds(),
+            SmsSnippetFacts(
+                value = "",
+                dateMillis = cursor.getTimeSecondsValue(Telephony.Mms.DATE, cache).toEpochMilliseconds(),
+                parts = SmsHelper.readMmsParts(context, id),
             )
         }
-        return listOfNotNull(smsSnippet, mmsSnippet).maxByOrNull { it.dateMillis }?.value
+        return listOfNotNull(smsSnippet, mmsSnippet)
     }
 
     private val canonicalAddressesUri = "content://mms-sms/canonical-addresses".toUri()

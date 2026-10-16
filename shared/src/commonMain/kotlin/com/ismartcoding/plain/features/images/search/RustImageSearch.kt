@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.features.images.search
 
-import com.ismartcoding.plain.rust.host.provider.MediaFacts
-import kotlin.time.Instant
 
 import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
 import com.ismartcoding.plain.rust.PlainRust
