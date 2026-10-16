@@ -1,0 +1,13 @@
+package com.ismartcoding.plain.api.graphql.models
+
+import kotlin.time.Instant
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Certificate(
+    var issuer: String,
+    var subject: String,
+    var serialNumber: String,
+    var validFrom: Instant,
+    var validTo: Instant,
+)

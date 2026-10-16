@@ -1,0 +1,155 @@
+package com.ismartcoding.plain.ui.casting
+
+import com.ismartcoding.plain.i18n.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.features.dlna.sender.RustDlnaSender
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
+import com.ismartcoding.plain.ui.platform.media.getAudioMetadata
+import com.ismartcoding.plain.ui.base.PBottomSheetTopAppBar
+import com.ismartcoding.plain.ui.base.PModalBottomSheet
+import com.ismartcoding.plain.ui.components.reorderable.ReorderableItem
+import com.ismartcoding.plain.ui.components.reorderable.rememberReorderableLazyListState
+import com.ismartcoding.plain.ui.casting.CastViewModel
+import com.ismartcoding.plain.ui.components.DialogHelper
+import com.ismartcoding.plain.ui.theme.cardBackgroundActive
+import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.delete_forever as ui_drawable_delete_forever
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AudioCastPlaylistPage(castVM: CastViewModel, onDismissRequest: () -> Unit) {
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val castItems by RustDlnaSender.items.collectAsState()
+    val currentUri by RustDlnaSender.currentUri.collectAsState()
+    val isPlaying by RustDlnaSender.isPlaying.collectAsState()
+    val progressMs by RustDlnaSender.progressMs.collectAsState()
+    val durationMs by RustDlnaSender.durationMs.collectAsState()
+    val supportsCallback by RustDlnaSender.supportsCallback.collectAsState()
+    var nowPlayingTitle by remember { mutableStateOf("") }
+    var nowPlayingArtist by remember { mutableStateOf("") }
+    LaunchedEffect(currentUri) {
+        if (currentUri.isNotEmpty()) {
+            val (t, a) = getAudioMetadata(currentUri)
+            nowPlayingTitle = t
+            nowPlayingArtist = a
+        } else {
+            nowPlayingTitle = ""
+            nowPlayingArtist = ""
+        }
+    }
+    val lazyListState = rememberLazyListState()
+    val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        scope.launch(Dispatchers.Default) { castVM.reorderCastItems(from.index, to.index) }
+    }
+
+    PModalBottomSheet(onDismissRequest = onDismissRequest, sheetState = sheetState) {
+        Column {
+            PBottomSheetTopAppBar(
+                title = if (castItems.isNotEmpty()) LocaleHelper.getStringF(Res.string.playlist_title, castItems.size) else stringResource(Res.string.cast_playlist),
+                subtitle = if (castItems.isEmpty()) "" else stringResource(Res.string.drag_number_to_reorder_list),
+                actions = {
+                    if (castItems.isNotEmpty()) {
+                        IconButton(onClick = {
+                            DialogHelper.showConfirmDialog(
+                                title = LocaleHelper.getString(Res.string.clear_all),
+                                message = LocaleHelper.getString(Res.string.clear_all_confirm),
+                                confirmButton = Pair(LocaleHelper.getString(Res.string.confirm)) {
+                                    scope.launch(Dispatchers.Default) { castVM.clearCastItems() }
+                                },
+                                dismissButton = Pair(LocaleHelper.getString(Res.string.cancel)) {},
+                                danger = true,
+                            )
+                        }) {
+                            Icon(painter = painterResource(UiRes.drawable.ui_drawable_delete_forever), contentDescription = "Clear playlist", tint = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                })
+
+            if (currentUri.isNotEmpty()) {
+                CastNowPlayingControls(
+                    title = nowPlayingTitle,
+                    artist = nowPlayingArtist,
+                    isPlaying = isPlaying,
+                    progressMs = progressMs,
+                    durationMs = durationMs,
+                    supportsCallback = supportsCallback,
+                    deviceName = castVM.currentDeviceName,
+                    onPlay = { castVM.playCast() },
+                    onPause = { castVM.pauseCast() },
+                )
+            }
+
+            if (castItems.isEmpty()) {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f), contentAlignment = Alignment.Center) {
+                    Text(text = stringResource(Res.string.cast_playlist_empty), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            } else {
+                LazyColumn(state = lazyListState, modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f), contentPadding = PaddingValues(bottom = 96.dp)) {
+                    itemsIndexed(castItems, { _, item -> item.path }) { index, audio ->
+                        val isPlaying = currentUri == audio.path
+                        ReorderableItem(reorderableLazyListState, key = audio.path) { isDragging ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { castVM.cast(audio) },
+                                colors = CardDefaults.cardColors(containerColor = if (isPlaying) MaterialTheme.colorScheme.cardBackgroundActive else MaterialTheme.colorScheme.cardBackgroundNormal)
+                            ) {
+                                with(this@ReorderableItem) {
+                                    AudioCastPlaylistItemContent(
+                                        item = audio, index = index, isPlaying = isPlaying,
+                                        isLoading = castVM.isLoading.value && isPlaying,
+                                        onLoadMetadata = { path ->
+                                            val (title, artist) = getAudioMetadata(path)
+                                            title to artist
+                                        },
+                                        onRemove = { scope.launch(Dispatchers.Default) { castVM.removeCastItemAt(index) } })
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

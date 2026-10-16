@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.preferences
 
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.platform.PlatformLock
+import com.ismartcoding.plain.platform.system.PlatformLock
 import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.rust.request.RustContentApi
 import kotlinx.coroutines.runBlocking

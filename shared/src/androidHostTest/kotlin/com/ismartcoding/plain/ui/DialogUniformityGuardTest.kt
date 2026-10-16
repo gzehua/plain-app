@@ -18,15 +18,15 @@ class DialogUniformityGuardTest {
 
     /** Legacy multi-field/special-layout dialogs frozen as-is; do NOT extend. */
     private val allowlist = setOf(
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/components/WebAddressBarEditDialogs.kt",
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/web/components/WebAddressBarEditDialogs.kt",
         "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/components/ColorPickerDialog.kt",
         // Sanctioned multi-field: image url + description + width, plus a browse button.
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/components/mdeditor/MdEditorInsertImageDialog.kt",
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/feeds/AddFeedDialog.kt",
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/feeds/EditFeedDialog.kt",
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/pomodoro/PomodoroSettingsDialog.kt",
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/files/CreateShareDialog.kt",
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/ViewTextFileBottomSheet.kt",
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/editor/markdown/MdEditorInsertImageDialog.kt",
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/feeds/AddFeedDialog.kt",
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/feeds/EditFeedDialog.kt",
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/pomodoro/PomodoroSettingsDialog.kt",
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/files/CreateShareDialog.kt",
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/media/ViewTextFileBottomSheet.kt",
     )
 
     private val uiRoot = "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui"

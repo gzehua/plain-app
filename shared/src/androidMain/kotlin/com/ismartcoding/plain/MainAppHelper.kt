@@ -1,5 +1,8 @@
 package com.ismartcoding.plain
 
+import com.ismartcoding.plain.app.Constants
+import com.ismartcoding.plain.app.initCommonPreferences
+
 import com.ismartcoding.plain.preferences.*
 
 import android.app.Application
@@ -7,21 +10,21 @@ import android.media.AudioAttributes
 import android.view.textclassifier.TextClassificationManager
 import android.view.textclassifier.TextClassifier
 import coil3.SingletonImageLoader
-import com.ismartcoding.plain.ai.ImageSearchManager
-import com.ismartcoding.plain.enums.AppFeatureType
-import com.ismartcoding.plain.enums.DarkTheme
-import com.ismartcoding.plain.enums.has
-import com.ismartcoding.plain.events.AppEvents
-import com.ismartcoding.plain.events.PowerConnectedEvent
-import com.ismartcoding.plain.helpers.AppHelper
+import com.ismartcoding.plain.features.images.search.ImageSearchManager
+import com.ismartcoding.plain.platform.system.AppFeatureType
+import com.ismartcoding.plain.ui.theme.DarkTheme
+import com.ismartcoding.plain.platform.system.has
+import com.ismartcoding.plain.app.events.AppEvents
+import com.ismartcoding.plain.app.events.PowerConnectedEvent
+import com.ismartcoding.plain.app.AppHelper
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.platform.isQPlus
 import com.ismartcoding.plain.platform.isUPlus
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.platform.initDiskLogging
+import com.ismartcoding.plain.platform.system.initDiskLogging
 import com.ismartcoding.plain.preferences.setDarkMode
 import com.ismartcoding.plain.receivers.PlugInControlReceiver
-import com.ismartcoding.plain.platform.newImageLoader
+import com.ismartcoding.plain.platform.system.newImageLoader
 import com.ismartcoding.plain.workers.FeedFetchWorker
 import dalvik.system.ZipPathValidator
 
@@ -37,7 +40,7 @@ object MainAppHelper {
         initDiskLogging()
 
         AppEvents.register()
-        com.ismartcoding.plain.platform.HttpServerManager.ensureStarted()
+        com.ismartcoding.plain.app.HttpServerManager.ensureStarted()
         NetworkMonitor.init(app)
         if (isQPlus()) {
             try {

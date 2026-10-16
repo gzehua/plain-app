@@ -21,10 +21,10 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.TempData
-import com.ismartcoding.plain.enums.AudioAction
-import com.ismartcoding.plain.audio.AudioPlayer
-import com.ismartcoding.plain.enums.AudioServiceAction
+import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.features.audio.AudioAction
+import com.ismartcoding.plain.features.audio.AudioPlayer
+import com.ismartcoding.plain.features.audio.AudioServiceAction
 
 @OptIn(UnstableApi::class)
 class AudioPlayerService : MediaLibraryService() {
@@ -96,11 +96,11 @@ class AudioPlayerService : MediaLibraryService() {
         nativePlayer = player
         player.addListener(listener)
         val forwardingPlayer = object : ForwardingPlayer(player) {
-            override fun play() = com.ismartcoding.plain.platform.audioPlay()
-            override fun pause() = com.ismartcoding.plain.platform.audioPause()
-            override fun seekTo(positionMs: Long) = com.ismartcoding.plain.platform.audioSeekTo(positionMs)
-            override fun setPlaybackSpeed(speed: Float) = com.ismartcoding.plain.platform.audioSetPlaybackSpeed(speed)
-            override fun stop() = com.ismartcoding.plain.platform.audioPause()
+            override fun play() = com.ismartcoding.plain.platform.media.audioPlay()
+            override fun pause() = com.ismartcoding.plain.platform.media.audioPause()
+            override fun seekTo(positionMs: Long) = com.ismartcoding.plain.platform.media.audioSeekTo(positionMs)
+            override fun setPlaybackSpeed(speed: Float) = com.ismartcoding.plain.platform.media.audioSetPlaybackSpeed(speed)
+            override fun stop() = com.ismartcoding.plain.platform.media.audioPause()
             override fun seekToPrevious() {
                 AudioPlayer.skipToPrevious()
             }
@@ -144,7 +144,7 @@ class AudioPlayerService : MediaLibraryService() {
         }
         when (intent?.action) {
             AudioServiceAction.QUIT.name -> {
-                com.ismartcoding.plain.platform.audioPause()
+                com.ismartcoding.plain.platform.media.audioPause()
             }
 
         }

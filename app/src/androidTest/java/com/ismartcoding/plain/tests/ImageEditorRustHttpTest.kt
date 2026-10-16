@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.features.ImageEditorProjectHelper
+import com.ismartcoding.plain.features.images.editor.ImageEditorProjectsClient
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -14,25 +14,25 @@ class ImageEditorRustHttpTest {
     fun canvasProjectsUseRustAndListsReturnSummaries() = runBlocking {
         val id = "image-rust-${UUID.randomUUID()}"
         try {
-            val saved = ImageEditorProjectHelper.addOrUpdateAsync(id) {
+            val saved = ImageEditorProjectsClient.addOrUpdateAsync(id) {
                 stateB64 = "AQID"
                 thumbnail = "data:image/jpeg;base64,AQID"
                 canvasWidth = 100
                 canvasHeight = 200
                 layerCount = 2
             }
-            val summary = ImageEditorProjectHelper.listAsync(50).first { it.id.value == id }
+            val summary = ImageEditorProjectsClient.listAsync(50).first { it.id.value == id }
             assertEquals(saved.thumbnail, summary.thumbnail)
             assertEquals(100, summary.canvasWidth)
-            val updated = ImageEditorProjectHelper.addOrUpdateAsync(id) { stateB64 = "BAU="; layerCount = 3 }
+            val updated = ImageEditorProjectsClient.addOrUpdateAsync(id) { stateB64 = "BAU="; layerCount = 3 }
             assertEquals(saved.createdAt, updated.createdAt)
             assertEquals(saved.thumbnail, updated.thumbnail)
-            assertEquals("BAU=", checkNotNull(ImageEditorProjectHelper.getByIdAsync(id)).stateB64)
-            ImageEditorProjectHelper.broadcastUpdate(id, "AQID")
-            ImageEditorProjectHelper.deleteAsync(id)
-            assertNull(ImageEditorProjectHelper.getByIdAsync(id))
+            assertEquals("BAU=", checkNotNull(ImageEditorProjectsClient.getByIdAsync(id)).stateB64)
+            ImageEditorProjectsClient.broadcastUpdate(id, "AQID")
+            ImageEditorProjectsClient.deleteAsync(id)
+            assertNull(ImageEditorProjectsClient.getByIdAsync(id))
         } finally {
-            ImageEditorProjectHelper.deleteAsync(id)
+            ImageEditorProjectsClient.deleteAsync(id)
         }
     }
 }

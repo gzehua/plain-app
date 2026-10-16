@@ -1,0 +1,179 @@
+package com.ismartcoding.plain.ui.web
+
+import com.ismartcoding.plain.preferences.*
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.ui.base.BottomSpace
+import com.ismartcoding.plain.ui.components.FaqItem
+import com.ismartcoding.plain.ui.base.HorizontalSpace
+import com.ismartcoding.plain.ui.base.PCard
+import com.ismartcoding.plain.ui.base.PListItem
+import com.ismartcoding.plain.ui.base.PScaffold
+import com.ismartcoding.plain.ui.base.PTopAppBar
+import com.ismartcoding.plain.ui.components.StepItem
+import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.TopSpace
+import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.web.components.WebAddressPager
+import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
+import com.ismartcoding.plain.features.web.WebHelper
+import com.ismartcoding.plain.ui.navigation.Routing
+import com.ismartcoding.plain.ui.theme.PlainTheme
+import com.ismartcoding.plain.ui.theme.green
+import com.ismartcoding.plain.ui.theme.grey
+import com.ismartcoding.plain.ui.theme.orange
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.circle_alert as ui_drawable_circle_alert
+import com.ismartcoding.plain.ui.resources.circle_help as ui_drawable_circle_help
+import com.ismartcoding.plain.ui.resources.lock as ui_drawable_lock
+import com.ismartcoding.plain.ui.resources.refresh_ccw as ui_drawable_refresh_ccw
+import com.ismartcoding.plain.ui.resources.smartphone as ui_drawable_smartphone
+import com.ismartcoding.plain.ui.resources.troubleshoot as ui_drawable_troubleshoot
+import com.ismartcoding.plain.i18n.troubleshoot
+
+private const val TROUBLESHOOTING_GUIDE_URL = "https://plainapp.app/docs/troubleshooting"
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HowToUsePage(
+    navController: NavHostController,
+    onRunDiagnostics: () -> Unit,
+) {
+
+    PScaffold(
+        topBar = {
+            PTopAppBar(onNavigateBack = { navController.navigateUp() }, title = stringResource(Res.string.how_to_use))
+        },
+        content = { paddingValues ->
+            LazyColumn(modifier = Modifier.padding(top = paddingValues.calculateTopPadding())) {
+                item {
+                    TopSpace()
+                    Subtitle(text = stringResource(Res.string.quick_start))
+                    PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
+                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                            StepItem(index = 1, title = stringResource(Res.string.step_connect_network_title))
+                            VerticalSpace(dp = 8.dp)
+                            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                SameNetworkDemo()
+                            }
+                            VerticalSpace(dp = 16.dp)
+                            StepItem(index = 2, title = stringResource(Res.string.step_choose_ip_title))
+                            VerticalSpace(dp = 8.dp)
+                            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                WebAddressPager()
+                            }
+                            VerticalSpace(dp = 16.dp)
+                            StepItem(index = 3, title = stringResource(Res.string.step_open_url_title))
+                            VerticalSpace(dp = 8.dp)
+                            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                OpenAddressDemo()
+                            }
+                        }
+                    }
+                    VerticalSpace(dp = 16.dp)
+                    PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
+                        PListItem(
+                            modifier = Modifier.clickable { navController.navigate(Routing.Onboarding) },
+                            icon = UiRes.drawable.ui_drawable_refresh_ccw,
+                            title = stringResource(Res.string.onboarding_replay),
+                            showMore = true,
+                        )
+                    }
+                    VerticalSpace(dp = 16.dp)
+                }
+                item {
+                    Subtitle(text = stringResource(Res.string.troubleshooting))
+                    PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
+                        FaqItem(
+                            icon = UiRes.drawable.ui_drawable_circle_alert,
+                            tint = MaterialTheme.colorScheme.error,
+                            question = stringResource(Res.string.faq_cannot_open_q),
+                            answer = stringResource(Res.string.faq_cannot_open_a),
+                        ) {
+                            RunDiagnosticsChip(onClick = onRunDiagnostics)
+                        }
+                        FaqItem(
+                            icon = UiRes.drawable.ui_drawable_lock,
+                            tint = MaterialTheme.colorScheme.orange,
+                            question = stringResource(Res.string.faq_https_warning_q),
+                            answer = stringResource(Res.string.browser_https_error_tips),
+                            answerFooter = { FaqCertDemo() },
+                            answerFooterFullWidth = true,
+                        )
+                        FaqItem(
+                            icon = UiRes.drawable.ui_drawable_smartphone,
+                            tint = MaterialTheme.colorScheme.orange,
+                            question = stringResource(Res.string.faq_stay_online_q),
+                            answer = stringResource(Res.string.faq_stay_online_a),
+                            answerFooter = { FaqStayOnlineDemo() },
+                            answerFooterFullWidth = true,
+                        )
+                    }
+                    VerticalSpace(dp = 16.dp)
+                    PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
+                        PListItem(
+                            modifier = Modifier.clickable { WebHelper.open(TROUBLESHOOTING_GUIDE_URL) },
+                            icon = UiRes.drawable.ui_drawable_circle_help,
+                            title = stringResource(Res.string.more_help),
+                            subtitle = TROUBLESHOOTING_GUIDE_URL.removePrefix("https://"),
+                            showMore = true,
+                        )
+                    }
+                    BottomSpace(paddingValues)
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun RunDiagnosticsChip(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                painter = painterResource(UiRes.drawable.ui_drawable_troubleshoot),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(16.dp),
+            )
+            HorizontalSpace(dp = 4.dp)
+            Text(
+                text = stringResource(Res.string.run_diagnostics),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}

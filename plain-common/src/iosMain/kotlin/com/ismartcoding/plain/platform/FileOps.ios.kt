@@ -2,6 +2,8 @@
 
 package com.ismartcoding.plain.platform
 
+import com.ismartcoding.plain.rust.http.get
+
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import platform.Foundation.NSFileManager

@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.preferences
 
 import androidx.appcompat.app.AppCompatDelegate
-import com.ismartcoding.plain.enums.DarkTheme
+import com.ismartcoding.plain.ui.theme.DarkTheme
 
 fun setDarkMode(theme: DarkTheme) {
     AppCompatDelegate.setDefaultNightMode(when (theme) {

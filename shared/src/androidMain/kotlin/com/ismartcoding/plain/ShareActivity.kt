@@ -1,8 +1,12 @@
 package com.ismartcoding.plain
 
-import com.ismartcoding.plain.platform.appCacheDir
+import com.ismartcoding.plain.app.AppIntents
+import com.ismartcoding.plain.app.Constants
+import com.ismartcoding.plain.app.IntentExtras
 
-import com.ismartcoding.plain.ui.extensions.collectAsStateValue
+import com.ismartcoding.plain.platform.system.appCacheDir
+
+import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
 import com.ismartcoding.plain.preferences.*
 
@@ -15,11 +19,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.lifecycleScope
-import com.ismartcoding.plain.platform.sendPickedAttachments
-import com.ismartcoding.plain.chat.data.ChatTarget
-import com.ismartcoding.plain.enums.DarkTheme
-import com.ismartcoding.plain.features.NoteHelper
-import com.ismartcoding.plain.helpers.FileHelper
+import com.ismartcoding.plain.features.chat.sendPickedAttachments
+import com.ismartcoding.plain.features.chat.data.ChatTarget
+import com.ismartcoding.plain.ui.theme.DarkTheme
+import com.ismartcoding.plain.features.notes.NotesClient
+import com.ismartcoding.plain.platform.files.FileHelper
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.cannot_get_content
 import com.ismartcoding.plain.i18n.note_saved
@@ -29,9 +33,9 @@ import com.ismartcoding.plain.i18n.sent_to_n_targets
 import com.ismartcoding.plain.lib.extensions.parcelable
 import com.ismartcoding.plain.lib.extensions.parcelableArrayList
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.platform.LocaleHelper
-import com.ismartcoding.plain.ui.models.ShareViewModel
-import com.ismartcoding.plain.ui.page.share.ShareSheet
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
+import com.ismartcoding.plain.ui.shares.ShareViewModel
+import com.ismartcoding.plain.ui.shares.send.ShareSheet
 import com.ismartcoding.plain.ui.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -187,7 +191,7 @@ class ShareActivity : ComponentActivity() {
     private fun saveAsNoteAsync() {
         val text = vm.text ?: return
         lifecycleScope.launch {
-            NoteHelper.addOrUpdateAsync("") {
+            NotesClient.addOrUpdateAsync("") {
                 title = text.lineSequence().firstOrNull()?.take(50).orEmpty()
                 content = text
             }

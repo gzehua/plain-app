@@ -1,0 +1,156 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+
+package com.ismartcoding.plain.ui.shares.browser
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.ui.components.ButtonType
+import com.ismartcoding.plain.features.shares.SharedFileDto
+import com.ismartcoding.plain.features.shares.SharedInfoDto
+import com.ismartcoding.plain.features.shares.SharedLink
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.lib.TimeHelper
+import com.ismartcoding.plain.lib.extensions.formatBytes
+import com.ismartcoding.plain.lib.extensions.getFilenameExtension
+import com.ismartcoding.plain.platform.system.formatDateTime
+import com.ismartcoding.plain.ui.components.PIconButton
+import com.ismartcoding.plain.ui.base.POutlinedButton
+import com.ismartcoding.plain.ui.components.CheckCircle
+import com.ismartcoding.plain.ui.media.FileEntryThumb
+import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.download as ui_drawable_download
+import com.ismartcoding.plain.i18n.download
+
+/** Load-failure strip with a retry action. */
+@Composable
+internal fun ErrorBanner(onRetry: () -> Unit) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.errorContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(Res.string.cannot_load_share),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.weight(1f),
+            )
+            POutlinedButton(
+                text = stringResource(Res.string.retry),
+                onClick = onRetry,
+                type = ButtonType.DANGER,
+                modifier = Modifier.padding(start = 8.dp),
+            )
+        }
+    }
+}
+
+/** FilesPage-style file row: rounded card, shared thumbnail, name + size, select checkbox. */
+@Composable
+internal fun EntryRow(
+    entry: SharedFileDto,
+    link: SharedLink,
+    urlToken: String,
+    selectMode: Boolean,
+    selected: Boolean,
+    busy: Boolean,
+    previewLoading: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    onDownload: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .background(
+                if (selectMode && selected) {
+                    MaterialTheme.colorScheme.primaryContainer
+                } else {
+                    MaterialTheme.colorScheme.cardBackgroundNormal
+                },
+            ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (selectMode) {
+                CheckCircle(selected = selected)
+                Box(modifier = Modifier.size(8.dp))
+            }
+            FileEntryThumb(
+                name = entry.name,
+                path = "",
+                isDir = entry.isDir,
+                isMedia = SharedThumbCache.isThumbable(entry),
+                remoteThumb = { SharedThumbCache.thumbPath(link, urlToken, entry) },
+            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 16.dp),
+            ) {
+                Text(
+                    text = entry.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (!entry.isDir && entry.size > 0) {
+                    Text(
+                        text = entry.size.formatBytes(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            if (!selectMode && !busy && !previewLoading) {
+                PIconButton(
+                    icon = UiRes.drawable.ui_drawable_download,
+                    contentDescription = stringResource(Res.string.download),
+                    tint = MaterialTheme.colorScheme.primary,
+                ) { onDownload() }
+            }
+        }
+        if (previewLoading) {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+            )
+        }
+    }
+}

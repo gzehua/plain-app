@@ -9,13 +9,13 @@ import android.content.Intent
 import android.net.wifi.WifiManager
 import androidx.core.app.NotificationManagerCompat
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.AppIntents
-import com.ismartcoding.plain.platform.Permission
-import com.ismartcoding.plain.platform.isGranted
-import com.ismartcoding.plain.platform.LocaleHelper
-import com.ismartcoding.plain.helpers.NotificationHelper
+import com.ismartcoding.plain.app.AppIntents
+import com.ismartcoding.plain.platform.permissions.Permission
+import com.ismartcoding.plain.platform.permissions.isGranted
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
+import com.ismartcoding.plain.ui.platform.notifications.NotificationHelper
 import com.ismartcoding.plain.notificationManager
-import com.ismartcoding.plain.platform.HttpServerManager
+import com.ismartcoding.plain.app.HttpServerManager
 
 class NetworkStateReceiver : BroadcastReceiver() {
     @SuppressLint("MissingPermission")

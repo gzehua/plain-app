@@ -2,7 +2,43 @@ package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
+import com.ismartcoding.plain.app.*
+import com.ismartcoding.plain.ui.app.*
+import com.ismartcoding.plain.features.chat.*
+import com.ismartcoding.plain.ui.chat.*
+import com.ismartcoding.plain.features.feeds.*
+import com.ismartcoding.plain.ui.feeds.*
+import com.ismartcoding.plain.features.images.search.*
+import com.ismartcoding.plain.features.sessions.*
+import com.ismartcoding.plain.ui.sessions.*
+import com.ismartcoding.plain.features.shares.*
+import com.ismartcoding.plain.ui.shares.*
 import com.ismartcoding.plain.platform.*
+import com.ismartcoding.plain.platform.contacts.*
+import com.ismartcoding.plain.platform.files.*
+import com.ismartcoding.plain.ui.platform.files.*
+import com.ismartcoding.plain.platform.media.*
+import com.ismartcoding.plain.ui.platform.media.*
+import com.ismartcoding.plain.platform.network.*
+import com.ismartcoding.plain.platform.permissions.*
+import com.ismartcoding.plain.app.*
+import com.ismartcoding.plain.ui.app.*
+import com.ismartcoding.plain.ui.navigation.*
+import com.ismartcoding.plain.features.sessions.*
+import com.ismartcoding.plain.ui.sessions.*
+import com.ismartcoding.plain.features.settings.*
+import com.ismartcoding.plain.ui.settings.*
+import com.ismartcoding.plain.platform.files.*
+import com.ismartcoding.plain.ui.platform.files.*
+import com.ismartcoding.plain.platform.media.*
+import com.ismartcoding.plain.ui.platform.media.*
+import com.ismartcoding.plain.platform.notifications.*
+import com.ismartcoding.plain.ui.platform.notifications.*
+import com.ismartcoding.plain.platform.system.*
+import com.ismartcoding.plain.ui.platform.system.*
+import com.ismartcoding.plain.ui.state.*
+import com.ismartcoding.plain.platform.telephony.*
+import com.ismartcoding.plain.rust.http.*
 import com.ismartcoding.plain.testing.CryptoFixtures.chaCha20Encrypt
 import com.ismartcoding.plain.testing.CryptoFixtures.chaCha20Decrypt
 import com.ismartcoding.plain.preferences.*
@@ -33,7 +69,7 @@ class PublicRustHttpTest {
             UserPrefs.desktopAccess.value = true
             stopHttpEngineAsync()
             startHttpEngineAsync()
-            assertTrue(com.ismartcoding.plain.platform.checkHttpServerAsync())
+            assertTrue(com.ismartcoding.plain.app.checkHttpServerAsync())
             val port = UserPrefs.httpPort.value
             val tlsPort = UserPrefs.httpsPort.value
             val trust = object : javax.net.ssl.X509TrustManager {
@@ -53,8 +89,8 @@ class PublicRustHttpTest {
                 client.request("HEAD", "http://127.0.0.1:$port/health").use { assertEquals(200, it.status.value); assertEquals(0, it.bodyAsBytes().size) }
                 client.post("http://127.0.0.1:$port/init", ByteArray(0)).use { assertEquals(400, it.status.value) }
                 client.get("http://127.0.0.1:$port/").use { assertEquals(200, it.status.value); assertTrue(it.bodyAsText().contains("window.__SERVER_TIME__=")) }
-                com.ismartcoding.plain.features.session.RustSessionStore.create(fixtureName)
-                val session = com.ismartcoding.plain.features.session.RustSessionStore.list().single { it.name == fixtureName }
+                com.ismartcoding.plain.features.sessions.RustSessionStore.create(fixtureName)
+                val session = com.ismartcoding.plain.features.sessions.RustSessionStore.list().single { it.name == fixtureName }
                 clientId = session.clientId
                 key = com.ismartcoding.plain.helpers.Base64Lenient.decode(session.token)
                 val initBody = chaCha20Encrypt(key, "authenticated-init".encodeToByteArray())
@@ -101,7 +137,7 @@ class PublicRustHttpTest {
             }
         } finally {
             stopHttpEngineAsync()
-            if (clientId.isNotEmpty()) com.ismartcoding.plain.features.session.RustSessionStore.delete(clientId)
+            if (clientId.isNotEmpty()) com.ismartcoding.plain.features.sessions.RustSessionStore.delete(clientId)
             root.deleteRecursively()
             UserPrefs.service.value = oldService
             UserPrefs.desktopAccess.value = oldDesktop

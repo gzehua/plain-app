@@ -19,10 +19,10 @@ class SmsSentReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         receiverScope.launch {
             try {
-                val report = com.ismartcoding.plain.features.sms.SmsPartSentReport(requestId, partIndex, partCount,
+                val report = com.ismartcoding.plain.features.telephony.sms.SmsPartSentReport(requestId, partIndex, partCount,
                     broadcastResultCode == Activity.RESULT_OK, broadcastResultCode)
-                com.ismartcoding.plain.rust.PlainRust.publish(com.ismartcoding.plain.events.HostEvent(
-                    com.ismartcoding.plain.events.EventType.SMS_PART_SENT_REPORTED, com.ismartcoding.plain.lib.JsonHelper.jsonEncode(report)))
+                com.ismartcoding.plain.rust.PlainRust.publish(com.ismartcoding.plain.app.events.HostEvent(
+                    com.ismartcoding.plain.app.events.EventType.SMS_PART_SENT_REPORTED, com.ismartcoding.plain.lib.JsonHelper.jsonEncode(report)))
             } finally {
                 pendingResult.finish()
             }

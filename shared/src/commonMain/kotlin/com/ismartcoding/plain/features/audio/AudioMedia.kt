@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.audio
 
-import com.ismartcoding.plain.graphql.models.AudioItem
+import com.ismartcoding.plain.api.graphql.models.AudioItem
 import kotlinx.serialization.Serializable
 
 @Serializable

@@ -1,0 +1,54 @@
+package com.ismartcoding.plain.ui.chat.components
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.features.chat.models.MessageText
+import com.ismartcoding.plain.ui.base.PClickableText
+import com.ismartcoding.plain.ui.base.linkify
+import com.ismartcoding.plain.ui.components.urlAt
+import com.ismartcoding.plain.ui.chat.VChat
+
+@Composable
+fun ChatText(
+    focusManager: FocusManager,
+    m: VChat,
+    isSelectMode: Boolean,
+    onSelect: (String) -> Unit,
+    onDoubleClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
+    val messageText = m.value as MessageText
+    val text = messageText.text.linkify()
+
+    PClickableText(
+        text = text,
+        style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .fillMaxWidth(),
+        onClick = { position ->
+            if (isSelectMode) {
+                onSelect(m.id)
+            } else {
+                focusManager.clearFocus()
+                text.urlAt(position)
+            }
+        },
+        onDoubleClick = onDoubleClick,
+        onLongClick = onLongClick
+    )
+
+    if (messageText.linkPreviews.isNotEmpty()) {
+        messageText.linkPreviews.forEach { linkPreview ->
+            ChatLinkPreview(
+                linkPreview = linkPreview,
+            )
+        }
+    }
+}

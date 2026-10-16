@@ -1,11 +1,11 @@
 package com.ismartcoding.plain.crypto
 
-import com.ismartcoding.plain.platform.chaCha20Encrypt
-import com.ismartcoding.plain.platform.computeECDHSharedKey
-import com.ismartcoding.plain.platform.generateECDHKeyPair
-import com.ismartcoding.plain.platform.generateEd25519KeyPair
-import com.ismartcoding.plain.platform.signEd25519
-import com.ismartcoding.plain.platform.verifyEd25519
+import com.ismartcoding.plain.platform.system.chaCha20Encrypt
+import com.ismartcoding.plain.platform.system.computeECDHSharedKey
+import com.ismartcoding.plain.platform.system.generateECDHKeyPair
+import com.ismartcoding.plain.platform.system.generateEd25519KeyPair
+import com.ismartcoding.plain.platform.system.signEd25519
+import com.ismartcoding.plain.platform.system.verifyEd25519
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -172,7 +172,7 @@ class CryptoVectorGenerator {
         System.arraycopy(nonce, 0, blob, 0, nonce.size)
         System.arraycopy(ciphertext, 0, blob, nonce.size, ciphertext.size)
 
-        val decrypted = com.ismartcoding.plain.platform.chaCha20Decrypt(key, blob)
+        val decrypted = com.ismartcoding.plain.platform.system.chaCha20Decrypt(key, blob)
         assertNotNull(decrypted, "XChaCha20 decrypt of reconstructed blob must succeed")
         assertEquals(v.plaintext, decrypted.decodeToString(), "Decrypted plaintext must match")
     }

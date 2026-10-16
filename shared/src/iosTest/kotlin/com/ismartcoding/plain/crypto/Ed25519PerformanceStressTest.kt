@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.crypto
 
-import com.ismartcoding.plain.platform.generateEd25519KeyPair
-import com.ismartcoding.plain.platform.signEd25519
-import com.ismartcoding.plain.platform.verifyEd25519
+import com.ismartcoding.plain.platform.system.generateEd25519KeyPair
+import com.ismartcoding.plain.platform.system.signEd25519
+import com.ismartcoding.plain.platform.system.verifyEd25519
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.bluetooth.client
 
-import com.ismartcoding.plain.platform.LocaleHelper
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
 
 import com.ismartcoding.plain.i18n.*
 
@@ -18,7 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.ui.helpers.DialogHelper
+import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 

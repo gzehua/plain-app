@@ -4,7 +4,7 @@ import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.ui.base.TextFieldDialog
+import com.ismartcoding.plain.ui.components.TextFieldDialog
 
 @Composable
 fun AddToHomeDialog(

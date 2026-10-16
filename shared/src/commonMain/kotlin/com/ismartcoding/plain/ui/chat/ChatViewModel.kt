@@ -1,0 +1,213 @@
+package com.ismartcoding.plain.ui.chat
+
+import com.ismartcoding.plain.features.chat.ChatClient
+import com.ismartcoding.plain.features.chat.ChatMessageReceiver
+import com.ismartcoding.plain.features.chat.RustChatStore
+import com.ismartcoding.plain.features.chat.ShareSendHelper
+
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import com.ismartcoding.plain.features.chat.data.ChatTarget
+import com.ismartcoding.plain.features.chat.data.ChatTargetType
+import com.ismartcoding.plain.features.chat.models.MessageContent
+import com.ismartcoding.plain.features.chat.models.MessageFile
+import com.ismartcoding.plain.features.chat.peer.RustPeerStore
+import com.ismartcoding.plain.features.chat.ChatStatus
+import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.api.graphql.models.Root
+import com.ismartcoding.plain.i18n.Res
+import com.ismartcoding.plain.i18n.sent
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.ui.components.DialogHelper
+import com.ismartcoding.plain.ui.state.ISelectableViewModel
+import com.ismartcoding.plain.ui.chat.VChat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
+/**
+ * Process-wide chat state holder. UI (ChatPage), non-UI writers
+ * (ShareSendHelper, GraphQL mutations, ChatMessageReceiver, download
+ * completion) all talk to this single instance directly instead of
+ * synchronizing through events. [ChatClient] sends business commands to
+ * the Rust HTTP service.
+ *
+ * Writers may run on arbitrary dispatchers; [mutex] serializes the
+ * persist-then-publish sequence so per-message updates (placeholder insert
+ * followed by a final-state update) land on the in-memory list in order.
+ */
+object ChatViewModel : ISelectableViewModel<VChat> {
+    internal val _itemsFlow = MutableStateFlow<List<VChat>>(emptyList())
+    override val itemsFlow: StateFlow<List<VChat>> = _itemsFlow
+    val selectedItem = mutableStateOf<VChat?>(null)
+    override var selectMode = mutableStateOf(false)
+    override val selectedIds = mutableStateListOf<String>()
+
+    private val _target = MutableStateFlow(ChatTarget("local", ChatTargetType.PEER))
+    val target = _target.asStateFlow()
+
+    private val _scrollToLatest = Channel<String?>(Channel.BUFFERED)
+    val scrollToLatest: Flow<String?> = _scrollToLatest.receiveAsFlow()
+
+    private val mutex = Mutex()
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    private fun launchSafe(block: suspend CoroutineScope.() -> Unit) {
+        scope.launch {
+            runCatching { block() }
+        }
+    }
+
+    suspend fun initializeTargetAsync(chatId: String) = withIO {
+        _target.value = ChatTarget.parseId(chatId)
+    }
+
+    suspend fun fetchAsync(toId: String) = withIO {
+        val current = _target.value
+        val dao = RustChatStore
+        val isChannel = current.type == ChatTargetType.CHANNEL
+        val list = if (isChannel) dao.getByChannelId(current.toId) else dao.getByPeerId(toId)
+        _itemsFlow.value = list.sortedByDescending { it.createdAt }.map { chat ->
+            val fromName = if (isChannel && chat.fromId != "me") {
+                RustPeerStore.getById(chat.fromId)?.name ?: ""
+            } else ""
+            VChat.from(chat, fromName)
+        }
+    }
+
+    fun addAll(items: List<ChatItem>) {
+        _itemsFlow.update { items.map { VChat.from(it) } + it.filterNot { existing -> items.any { incoming -> incoming.id == existing.id } } }
+    }
+
+    fun addAllAndScroll(items: List<ChatItem>) {
+        val previousTopId = _itemsFlow.value.firstOrNull()?.id
+        addAll(items)
+        _scrollToLatest.trySend(previousTopId)
+    }
+
+    fun update(item: ChatItem) {
+        _itemsFlow.update { currentList ->
+            val index = currentList.indexOfFirst { it.id == item.id }
+            if (index >= 0) currentList.toMutableList().also { it[index] = VChat.from(item) }
+            else currentList
+        }
+    }
+
+    fun remove(id: String) {
+        _itemsFlow.update { it.filterNot { chat -> chat.id == id } }
+    }
+
+    fun removeIds(ids: Set<String>) {
+        if (ids.isEmpty()) return
+        _itemsFlow.update { it.filterNot { chat -> ids.contains(chat.id) } }
+    }
+
+    fun clearAllMessages() {
+        launchSafe {
+            val target = target.value
+            ChatClient.clearAllMessages(target)
+            _itemsFlow.value = emptyList()
+        }
+    }
+
+    fun resendMessage(messageId: String) {
+        launchSafe {
+            update(ChatClient.deliver(messageId))
+        }
+    }
+
+    fun resendToMembers(messageId: String, peerIds: List<String>) {
+        launchSafe {
+            update(ChatClient.deliver(messageId, peerIds))
+        }
+    }
+
+    fun forwardMessage(messageId: String, target: ChatTarget) {
+        launchSafe {
+            val item2 = ChatClient.forward(messageId, target)
+            publishCreated(target, listOf(item2))
+            if (item2.status == ChatStatus.SENT) {
+                DialogHelper.showSuccess(Res.string.sent)
+            }
+        }
+    }
+
+    fun delete(ids: Set<String>) {
+        launchSafe {
+            ChatClient.deleteByIds(ids)
+            _itemsFlow.update { it.filterNot { m -> ids.contains(m.id) } }
+        }
+    }
+
+    private suspend fun doSendMessage(target: ChatTarget, content: MessageContent): Boolean = withIO {
+        val item = ChatClient.sendContent(target, content)
+        publishCreated(target, listOf(item), scroll = true)
+        item.status == ChatStatus.SENT
+    }
+
+    fun sendContent(content: MessageContent, onResult: (Boolean) -> Unit = {}) {
+        launchSafe {
+            onResult(doSendMessage(target.value, content))
+        }
+    }
+
+    fun sendTextMessage(text: String, onResult: (Boolean) -> Unit = {}) {
+        launchSafe {
+            onResult(ChatClient.sendText(target.value, text).status == ChatStatus.SENT)
+        }
+    }
+
+    suspend fun sendFilesImmediate(files: List<MessageFile>, isImageVideo: Boolean): String = withIO {
+        val item = ChatClient.insertFilesImmediate(target.value, files, isImageVideo)
+        publishCreated(target.value, listOf(item), scroll = true)
+        item.id
+    }
+
+    /**
+     * Entry point for non-UI writers delivering already-persisted messages
+     * (share-to-chat, incoming WebSocket, GraphQL-created messages). Updates
+     * the open conversation when the target matches. Root message events
+     * are forwarded to desktop clients by RustContentApi.
+     */
+    suspend fun onMessagesCreated(target: ChatTarget, items: List<ChatItem>, scroll: Boolean = false) = mutex.withLock {
+        if (_target.value == target) {
+            if (scroll) {
+                val previousTopId = _itemsFlow.value.firstOrNull()?.id
+                _itemsFlow.update { items.map { VChat.from(it) } + it.filterNot { existing -> items.any { incoming -> incoming.id == existing.id } } }
+                _scrollToLatest.trySend(previousTopId)
+            } else {
+                _itemsFlow.update { items.map { VChat.from(it) } + it.filterNot { existing -> items.any { incoming -> incoming.id == existing.id } } }
+            }
+        }
+    }
+
+    suspend fun onMessageUpdated(id: String) {
+        val chat = ChatClient.getChatItem(id) ?: return
+        mutex.withLock {
+            update(chat)
+        }
+    }
+
+    suspend fun onConversationCleared(encodedTarget: String) = mutex.withLock {
+        if (_target.value.encodedToId == encodedTarget) _itemsFlow.value = emptyList()
+    }
+
+    suspend fun onMessagesDeleted(ids: Set<String>) = mutex.withLock {
+        removeIds(ids)
+    }
+
+    private suspend fun publishCreated(target: ChatTarget, items: List<ChatItem>, scroll: Boolean = false) =
+        onMessagesCreated(target, items, scroll)
+
+}

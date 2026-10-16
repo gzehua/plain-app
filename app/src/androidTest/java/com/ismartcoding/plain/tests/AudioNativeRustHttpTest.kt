@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.audio.*
+import com.ismartcoding.plain.ui.audio.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
@@ -18,8 +19,8 @@ import java.util.UUID
 class AudioNativeRustHttpTest {
     @Test
     fun silentNativePlaybackReportsActualStartAndResumeThroughRust() = runBlocking {
-        assertTrue(AudioQueueManager.queuedMediaIds().isEmpty())
-        assertTrue(AudioQueueManager.playback().path.isNullOrEmpty())
+        assertTrue(AudioQueueClient.queuedMediaIds().isEmpty())
+        assertTrue(AudioQueueClient.playback().path.isNullOrEmpty())
         val file = File(appContext.cacheDir, "audio-native-${UUID.randomUUID()}.wav")
         val samples = 8_000 * 20 * 2
         val header = ByteBuffer.allocate(44).order(ByteOrder.LITTLE_ENDIAN)
@@ -31,9 +32,9 @@ class AudioNativeRustHttpTest {
         suspend fun playback() = com.ismartcoding.plain.rust.PlainRust.mainQuery("audioPlayback { path positionMs revision }").getValue("audioPlayback").jsonObject
         try {
             com.ismartcoding.plain.rust.PlainRust.mainMutate("audioPlayPath(path: ${JsonPrimitive(file.absolutePath)}) {path positionMs revision}")
-            assertTrue(AudioPlayHistoryManager.recentPageFiltered(file.name,20,0).isEmpty())
-            assertTrue(AudioQueueManager.queuedMediaIds().isEmpty())
-            assertNull(AudioQueueManager.playback().mediaId)
+            assertTrue(AudioHistoryClient.recentPageFiltered(file.name,20,0).isEmpty())
+            assertTrue(AudioQueueClient.queuedMediaIds().isEmpty())
+            assertNull(AudioQueueClient.playback().mediaId)
             withTimeout(5_000) {
                 while (playback().getValue("positionMs").jsonPrimitive.long < 100) delay(100)
             }
@@ -45,11 +46,11 @@ class AudioNativeRustHttpTest {
             AudioCommands.command("PLAY")
             delay(300)
             assertTrue(playback().getValue("positionMs").jsonPrimitive.long >= paused)
-            assertTrue(AudioPlayHistoryManager.recentPageFiltered(file.name,20,0).isEmpty())
+            assertTrue(AudioHistoryClient.recentPageFiltered(file.name,20,0).isEmpty())
         } finally {
             try {
                 AudioCommands.command("CLEAR")
-                AudioQueueManager.clearQueue()
+                AudioQueueClient.clearQueue()
             } finally {
                 AudioEngineHost.install(oldEngine)
                 file.delete()

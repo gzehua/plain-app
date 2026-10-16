@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.services
 
-import com.ismartcoding.plain.platform.Permission
-import com.ismartcoding.plain.platform.isGranted
-import com.ismartcoding.plain.platform.isEnabledAsync
+import com.ismartcoding.plain.platform.permissions.Permission
+import com.ismartcoding.plain.platform.permissions.isGranted
+import com.ismartcoding.plain.platform.permissions.isEnabledAsync
 import com.ismartcoding.plain.lib.receiveEventHandler
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.isDebugBuild
@@ -18,14 +18,14 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.AndroidTempData
 import com.ismartcoding.plain.activityManager
-import com.ismartcoding.plain.enums.AppFeatureType
-import com.ismartcoding.plain.enums.has
+import com.ismartcoding.plain.platform.system.AppFeatureType
+import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.extensions.toAppNotification
-import com.ismartcoding.plain.features.getGrantedWebPermissionsAsync
+import com.ismartcoding.plain.features.permissions.getGrantedWebPermissionsAsync
 import com.ismartcoding.plain.packageManager
-import com.ismartcoding.plain.features.notification.RustNotificationEvents
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
+import com.ismartcoding.plain.features.notifications.RustNotificationEvents
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.lib.sendEvent
 import kotlinx.coroutines.Job
 

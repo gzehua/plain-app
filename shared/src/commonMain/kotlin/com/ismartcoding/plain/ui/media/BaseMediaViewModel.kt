@@ -1,0 +1,150 @@
+package com.ismartcoding.plain.ui.media
+
+import com.ismartcoding.plain.ui.tags.TagsViewModel
+import com.ismartcoding.plain.ui.state.ISearchableViewModel
+import com.ismartcoding.plain.ui.state.launchSafe
+
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.platform.system.DataType
+import com.ismartcoding.plain.app.events.MediaStoreChangedEvent
+import com.ismartcoding.plain.features.tags.TagsClient
+import com.ismartcoding.plain.features.files.FileSortBy
+import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.helpers.SearchHelper
+import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.platform.media.countMedia
+import com.ismartcoding.plain.platform.media.deleteMedia
+import com.ismartcoding.plain.platform.media.restoreMedia
+import com.ismartcoding.plain.platform.media.searchMedia
+import com.ismartcoding.plain.platform.media.trashMedia
+import com.ismartcoding.plain.ui.components.DialogHelper
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+
+abstract class BaseMediaViewModel<T : IData> : ISearchableViewModel<T>, ViewModel() {
+    internal val _itemsFlow = MutableStateFlow<List<T>>(emptyList())
+    val itemsFlow: StateFlow<List<T>> = _itemsFlow
+    var tag = mutableStateOf<TagHostRecord?>(null)
+    var trash = mutableStateOf(false)
+    var bucketId = mutableStateOf("")
+    var showLoading = mutableStateOf(true)
+    var hasPermission = mutableStateOf(false)
+    var total = mutableIntStateOf(0)
+    var totalTrash = mutableIntStateOf(0)
+    val noMore = mutableStateOf(false)
+    val offset = mutableIntStateOf(0)
+    val limit = mutableIntStateOf(1000)
+    val sortBy = mutableStateOf(FileSortBy.DATE_DESC)
+    var selectedItem = mutableStateOf<T?>(null)
+    val showRenameDialog = mutableStateOf(false)
+    val showTagsDialog = mutableStateOf(false)
+    val showSortAndBrowseDialog = mutableStateOf(false)
+
+    /** When true, folders are displayed as a list instead of a grid (e.g. audio). */
+    open val showFoldersAsList: Boolean = false
+
+    override val showSearchBar = mutableStateOf(false)
+    override val searchActive = mutableStateOf(false)
+    override val queryText = mutableStateOf("")
+
+    abstract val dataType: DataType
+
+    internal open fun getTotalQuery(): String {
+        var query = "${SearchHelper.buildTextFilter(queryText.value)} trash:false"
+        if (bucketId.value.isNotEmpty()) {
+            query += " bucket_id:${bucketId.value}"
+        }
+        return query
+    }
+
+    internal fun getTrashQuery(): String {
+        var query = "${SearchHelper.buildTextFilter(queryText.value)} trash:true"
+        if (bucketId.value.isNotEmpty()) {
+            query += " bucket_id:${bucketId.value}"
+        }
+        return query
+    }
+
+    internal open suspend fun getQuery(): String {
+        var query = "${SearchHelper.buildTextFilter(queryText.value)} trash:${trash.value}"
+        if (tag.value != null) {
+            val tagId = tag.value!!.id
+            val ids = TagsClient.getKeysByTagId(tagId)
+            query += " ids:${ids.joinToString(",")}"
+        }
+        if (bucketId.value.isNotEmpty()) {
+            query += " bucket_id:${bucketId.value}"
+        }
+        return query
+    }
+
+    suspend fun moreAsync(tagsVM: TagsViewModel) = withIO {
+        offset.intValue += limit.intValue
+        val items = searchMediaAsync(getQuery())
+        _itemsFlow.update { it + items }
+        tagsVM.loadMoreAsync(items.map { it.id }.toSet())
+        noMore.value = items.size < limit.intValue
+        showLoading.value = false
+    }
+
+    open suspend fun loadAsync(tagsVM: TagsViewModel) = withIO {
+        offset.intValue = 0
+        _itemsFlow.value = searchMediaAsync(getQuery())
+        tagsVM.loadAsync(_itemsFlow.value.map { it.id }.toSet())
+        total.intValue = countMediaAsync(getTotalQuery())
+        totalTrash.intValue = countMediaAsync(getTrashQuery())
+        noMore.value = _itemsFlow.value.size < limit.intValue
+        showLoading.value = false
+    }
+
+    fun trash(tagsVM: TagsViewModel, ids: Set<String>) {
+        trashItems(tagsVM, ids)
+    }
+
+    fun restore(tagsVM: TagsViewModel, ids: Set<String>) {
+        restoreItems(tagsVM, ids)
+    }
+
+    open fun delete(tagsVM: TagsViewModel, ids: Set<String>) {
+        viewModelScope.launchSafe { applyMediaAction(tagsVM) { deleteMedia(dataType, ids, trash.value) } }
+    }
+
+    fun trashItems(tagsVM: TagsViewModel, ids: Set<String>) {
+        viewModelScope.launchSafe { applyMediaAction(tagsVM) { trashMedia(dataType, ids) } }
+    }
+
+    fun restoreItems(tagsVM: TagsViewModel, ids: Set<String>) {
+        viewModelScope.launchSafe { applyMediaAction(tagsVM) { restoreMedia(dataType, ids) } }
+    }
+
+    private suspend fun applyMediaAction(tagsVM: TagsViewModel, action: suspend () -> Unit) {
+        DialogHelper.showLoading()
+        try { action() }
+        finally {
+            try { loadAsync(tagsVM) }
+            finally {
+                DialogHelper.hideLoading()
+                sendEvent(MediaStoreChangedEvent(dataType))
+            }
+        }
+    }
+
+    suspend fun countMediaAsync(
+        query: String,
+    ): Int = withIO {
+        countMedia(dataType, query)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    suspend fun searchMediaAsync(
+        query: String,
+    ): List<T> = withIO {
+        searchMedia(dataType, query, limit.intValue, offset.intValue, sortBy.value) as List<T>
+    }
+}

@@ -14,7 +14,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.enums.ButtonSize
+import com.ismartcoding.plain.ui.components.ButtonSize
 
 @Composable
 internal fun ButtonContent(text: String, icon: Painter?, size: ButtonSize, loading: Boolean) {

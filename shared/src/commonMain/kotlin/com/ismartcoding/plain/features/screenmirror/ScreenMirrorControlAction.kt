@@ -1,0 +1,17 @@
+package com.ismartcoding.plain.features.screenmirror
+
+enum class ScreenMirrorControlAction {
+    TAP,
+    LONG_PRESS,
+    SWIPE,
+    SCROLL,
+    BACK,
+    HOME,
+    RECENTS,
+    LOCK_SCREEN,
+    KEY,
+    TOUCH,
+    TOUCH_DOWN,
+    TOUCH_MOVE,
+    TOUCH_UP,
+}

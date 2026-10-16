@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.components
 
-import com.ismartcoding.plain.graphql.models.Doc as Document
+import com.ismartcoding.plain.api.graphql.models.Doc as Document
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -19,22 +19,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
-import com.ismartcoding.plain.graphql.models.Doc
-import com.ismartcoding.plain.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Doc
+import com.ismartcoding.plain.api.graphql.models.TagHostRecord
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.lib.extensions.isPdfFile
 import com.ismartcoding.plain.lib.extensions.isTextFile
-import com.ismartcoding.plain.platform.fileToUriString
-import com.ismartcoding.plain.platform.formatDateTime
-import com.ismartcoding.plain.platform.getFileIconPath
+import com.ismartcoding.plain.platform.files.fileToUriString
+import com.ismartcoding.plain.platform.system.formatDateTime
+import com.ismartcoding.plain.platform.files.getFileIconPath
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
-import com.ismartcoding.plain.ui.models.DocsViewModel
-import com.ismartcoding.plain.ui.nav.navigateOtherFile
-import com.ismartcoding.plain.ui.nav.navigatePdf
-import com.ismartcoding.plain.ui.nav.navigateTextFile
+import com.ismartcoding.plain.ui.files.documents.DocsViewModel
+import com.ismartcoding.plain.ui.navigation.navigateOtherFile
+import com.ismartcoding.plain.ui.navigation.navigatePdf
+import com.ismartcoding.plain.ui.navigation.navigateTextFile
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import com.ismartcoding.plain.ui.theme.listItemSubtitle
 import com.ismartcoding.plain.ui.theme.listItemTag

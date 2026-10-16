@@ -2,11 +2,11 @@ package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.enums.HttpServerState
-import com.ismartcoding.plain.platform.HttpServerManager
-import com.ismartcoding.plain.platform.startHttpEngineAsync
-import com.ismartcoding.plain.platform.stopHttpEngineAsync
-import com.ismartcoding.plain.platform.stopHttpServerCoreAsync
+import com.ismartcoding.plain.features.settings.HttpServerState
+import com.ismartcoding.plain.app.HttpServerManager
+import com.ismartcoding.plain.app.startHttpEngineAsync
+import com.ismartcoding.plain.app.stopHttpEngineAsync
+import com.ismartcoding.plain.app.stopHttpServerCoreAsync
 import com.ismartcoding.plain.preferences.UserPrefs
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -50,7 +50,7 @@ class HttpServerStopLifecycleRustHttpTest {
             UserPrefs.desktopAccess.value = true
             stopHttpEngineAsync()
             startHttpEngineAsync()
-            assertTrue(com.ismartcoding.plain.platform.checkHttpServerAsync())
+            assertTrue(com.ismartcoding.plain.app.checkHttpServerAsync())
             val port = UserPrefs.httpPort.value
             HttpServerManager.serverState.value = HttpServerState.ON
 

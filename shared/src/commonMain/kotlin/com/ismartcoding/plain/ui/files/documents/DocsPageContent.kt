@@ -1,0 +1,101 @@
+package com.ismartcoding.plain.ui.files.documents
+
+import com.ismartcoding.plain.api.graphql.models.Doc as Document
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.ismartcoding.plain.api.graphql.models.Doc
+import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.ui.base.BottomSpace
+import com.ismartcoding.plain.ui.base.NoDataColumn
+import com.ismartcoding.plain.ui.base.TopSpace
+import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
+import com.ismartcoding.plain.ui.base.dragselect.listDragSelect
+import com.ismartcoding.plain.ui.base.fastscroll.LazyColumnScrollbar
+import com.ismartcoding.plain.ui.base.pullrefresh.LoadMoreRefreshContent
+import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
+import com.ismartcoding.plain.ui.base.pullrefresh.RefreshLayoutState
+import com.ismartcoding.plain.ui.components.DocItem
+import com.ismartcoding.plain.ui.files.documents.DocsViewModel
+import com.ismartcoding.plain.ui.tags.TagsViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun ColumnScope.DocsPageContent(
+    navController: NavHostController, docsVM: DocsViewModel,
+    tagsVM: TagsViewModel,
+    itemsState: List<Document>,
+    dragSelectState: DragSelectState,
+    docsTagsMap: Map<String, List<TagHostRecord>>,
+    scrollBehavior: TopAppBarScrollBehavior,
+    topRefreshLayoutState: RefreshLayoutState, paddingValues: PaddingValues,
+) {
+    val scope = rememberCoroutineScope()
+
+    PullToRefresh(refreshLayoutState = topRefreshLayoutState, userEnable = !dragSelectState.selectMode, modifier = Modifier.weight(1f)) {
+        AnimatedVisibility(visible = true, enter = fadeIn(), exit = fadeOut()) {
+            if (itemsState.isNotEmpty()) {
+                val scrollState = docsVM.scrollStateMap[0] ?: rememberLazyListState()
+                LazyColumnScrollbar(state = scrollState) {
+                    LazyColumn(
+                        Modifier
+                            .fillMaxSize()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection)
+                            .listDragSelect(items = itemsState, state = dragSelectState, itemIndexOffset = 1),
+                        state = scrollState
+                    ) {
+                        item { TopSpace() }
+                        items(itemsState, key = { it.id }) { m ->
+                            val tags = docsTagsMap[m.id] ?: emptyList()
+                            DocItem(
+                                navController = navController,
+                                docsVM = docsVM,
+                                dragSelectState = dragSelectState,
+                                m = m,
+                                tags = tags,
+                                onTagClick = { tag ->
+                                    docsVM.trash.value = false
+                                    docsVM.bucketId.value = ""
+                                    docsVM.tag.value = tag
+                                    scope.launch(Dispatchers.Default) {
+                                        docsVM.loadAsync(tagsVM)
+                                    }
+                                }
+                            )
+                            VerticalSpace(dp = 8.dp)
+                        }
+                        item(key = "loadMore") {
+                            if (itemsState.isNotEmpty() && !docsVM.noMore.value) {
+                                LaunchedEffect(Unit) {
+                                    scope.launch(Dispatchers.Default) { docsVM.moreAsync(tagsVM) }
+                                }
+                            }
+                            LoadMoreRefreshContent(docsVM.noMore.value)
+                        }
+                        item(key = "bottomSpace") { BottomSpace(paddingValues) }
+                    }
+                }
+            } else {
+                NoDataColumn(loading = docsVM.showLoading.value, search = docsVM.showSearchBar.value)
+            }
+        }
+    }
+}

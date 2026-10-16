@@ -1,11 +1,11 @@
 package com.ismartcoding.plain.db
 
-import com.ismartcoding.plain.chat.models.MessageFile
-import com.ismartcoding.plain.chat.models.MessageFiles
-import com.ismartcoding.plain.chat.models.MessageImages
-import com.ismartcoding.plain.chat.models.MessageText
-import com.ismartcoding.plain.chat.models.MessageType
-import com.ismartcoding.plain.graphql.models.ChatItem
+import com.ismartcoding.plain.features.chat.models.MessageFile
+import com.ismartcoding.plain.features.chat.models.MessageFiles
+import com.ismartcoding.plain.features.chat.models.MessageImages
+import com.ismartcoding.plain.features.chat.models.MessageText
+import com.ismartcoding.plain.features.chat.models.MessageType
+import com.ismartcoding.plain.api.graphql.models.ChatItem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.serialization.encodeToString

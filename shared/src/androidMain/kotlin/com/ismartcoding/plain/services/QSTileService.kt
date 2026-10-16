@@ -8,8 +8,8 @@ import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.CancellationException
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.desktop_access
-import com.ismartcoding.plain.platform.LocaleHelper
-import com.ismartcoding.plain.platform.setDesktopAccessEnabled
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
+import com.ismartcoding.plain.platform.system.setDesktopAccessEnabled
 import com.ismartcoding.plain.preferences.UserPrefs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

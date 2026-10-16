@@ -1,8 +1,16 @@
 package com.ismartcoding.plain.tests.fixtures
 
 import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.content.*
-import com.ismartcoding.plain.graphql.models.ImageHostEmbeddingInput
+import com.ismartcoding.plain.features.feeds.*
+import com.ismartcoding.plain.ui.feeds.*
+import com.ismartcoding.plain.features.files.*
+import com.ismartcoding.plain.ui.files.*
+import com.ismartcoding.plain.features.notes.*
+import com.ismartcoding.plain.ui.notes.*
+import com.ismartcoding.plain.features.tags.*
+import com.ismartcoding.plain.ui.tags.*
+import com.ismartcoding.plain.rust.request.*
+import com.ismartcoding.plain.api.graphql.models.ImageHostEmbeddingInput
 import kotlin.io.encoding.Base64
 import kotlinx.serialization.json.*
 

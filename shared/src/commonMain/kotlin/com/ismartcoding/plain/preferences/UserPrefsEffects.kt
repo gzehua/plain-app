@@ -1,13 +1,13 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.TempData
+import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.dlna.DlnaRendererState
-import com.ismartcoding.plain.platform.HttpServerManager
-import com.ismartcoding.plain.platform.feedWorkerCancelRepeat
-import com.ismartcoding.plain.platform.feedWorkerStartRepeat
-import com.ismartcoding.plain.platform.onScreenMirrorQualityChanged
-import com.ismartcoding.plain.platform.setSystemLocale
-import com.ismartcoding.plain.platform.stopHttpServiceAsync
+import com.ismartcoding.plain.app.HttpServerManager
+import com.ismartcoding.plain.features.feeds.feedWorkerCancelRepeat
+import com.ismartcoding.plain.features.feeds.feedWorkerStartRepeat
+import com.ismartcoding.plain.platform.media.onScreenMirrorQualityChanged
+import com.ismartcoding.plain.platform.system.setSystemLocale
+import com.ismartcoding.plain.app.stopHttpServiceAsync
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

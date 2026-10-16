@@ -1,6 +1,6 @@
 package com.ismartcoding.plain
 
-import com.ismartcoding.plain.graphql.models.Notification as AppNotification
+import com.ismartcoding.plain.api.graphql.models.Notification as AppNotification
 import android.app.Notification
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList

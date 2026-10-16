@@ -1,0 +1,14 @@
+package com.ismartcoding.plain.ui.components
+
+import com.ismartcoding.plain.ui.base.PIconTextSmallButton
+
+import androidx.compose.runtime.Composable
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.trash_2 as ui_drawable_trash_2
+import org.jetbrains.compose.resources.stringResource
+
+@Composable
+fun IconTrashButton(click: () -> Unit) {
+    PIconTextSmallButton(UiRes.drawable.ui_drawable_trash_2, text = stringResource(Res.string.move_to_trash), onClick = click)
+}

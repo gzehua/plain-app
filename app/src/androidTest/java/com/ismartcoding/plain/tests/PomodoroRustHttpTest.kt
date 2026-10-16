@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.features.PomodoroHelper
-import com.ismartcoding.plain.ui.page.pomodoro.PomodoroState
+import com.ismartcoding.plain.features.pomodoro.PomodoroHelper
+import com.ismartcoding.plain.ui.pomodoro.PomodoroState
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Assume.assumeTrue

@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import com.ismartcoding.plain.enums.ButtonSize
-import com.ismartcoding.plain.enums.ButtonType
+import com.ismartcoding.plain.ui.components.ButtonSize
+import com.ismartcoding.plain.ui.components.ButtonType
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.loading as ui_string_loading
 import org.jetbrains.compose.resources.stringResource

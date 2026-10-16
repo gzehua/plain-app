@@ -1,0 +1,69 @@
+package com.ismartcoding.plain.ui.files.components
+
+import com.ismartcoding.plain.i18n.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.ui.files.FilesViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.x as ui_drawable_x
+
+@Composable
+fun FilePasteBar(
+    filesVM: FilesViewModel,
+    coroutineScope: CoroutineScope,
+    onPasteComplete: () -> Unit
+) {
+    BottomAppBar {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = {
+                filesVM.cutFiles.clear()
+                filesVM.copyFiles.clear()
+                filesVM.showPasteBar.value = false
+            }) {
+                Icon(painter = painterResource(UiRes.drawable.ui_drawable_x), contentDescription = "Cancel")
+            }
+
+            Text(
+                text = if (filesVM.cutFiles.isNotEmpty())
+                    pluralStringResource(Res.plurals.moving_items, filesVM.cutFiles.size, filesVM.cutFiles.size)
+                else
+                    pluralStringResource(Res.plurals.copying_items, filesVM.copyFiles.size, filesVM.copyFiles.size),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+            Button(onClick = {
+                coroutineScope.launch {
+                    if (filesVM.cutFiles.isNotEmpty()) {
+                        executeCutFiles(filesVM, onPasteComplete)
+                    } else if (filesVM.copyFiles.isNotEmpty()) {
+                        executeCopyFiles(filesVM, onPasteComplete)
+                    }
+                }
+            }) {
+                Text(stringResource(Res.string.paste))
+            }
+        }
+    }
+}

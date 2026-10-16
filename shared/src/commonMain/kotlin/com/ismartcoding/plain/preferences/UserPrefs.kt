@@ -1,18 +1,18 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.graphql.models.Video as MediaVideo
-import com.ismartcoding.plain.data.FilePathData
-import com.ismartcoding.plain.data.NotificationFilterData
-import com.ismartcoding.plain.enums.AppFeatureType
-import com.ismartcoding.plain.enums.DarkTheme
-import com.ismartcoding.plain.enums.MediaPlayMode
-import com.ismartcoding.plain.enums.ScreenMirrorMode
-import com.ismartcoding.plain.features.file.FileSortBy
-import com.ismartcoding.plain.graphql.models.AudioItem
-import com.ismartcoding.plain.graphql.models.PomodoroSettings
-import com.ismartcoding.plain.graphql.models.ScreenMirrorQuality
-import com.ismartcoding.plain.graphql.models.Video
-import com.ismartcoding.plain.platform.Locale
+import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
+import com.ismartcoding.plain.features.files.FilePathData
+import com.ismartcoding.plain.features.notifications.NotificationFilterData
+import com.ismartcoding.plain.platform.system.AppFeatureType
+import com.ismartcoding.plain.ui.theme.DarkTheme
+import com.ismartcoding.plain.features.audio.MediaPlayMode
+import com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode
+import com.ismartcoding.plain.features.files.FileSortBy
+import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.api.graphql.models.PomodoroSettings
+import com.ismartcoding.plain.api.graphql.models.ScreenMirrorQuality
+import com.ismartcoding.plain.api.graphql.models.Video
+import com.ismartcoding.plain.platform.system.Locale
 
 /**
  * Every user preference, one declaration per field.

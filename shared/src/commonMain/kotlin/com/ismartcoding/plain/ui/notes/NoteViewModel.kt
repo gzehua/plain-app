@@ -1,0 +1,12 @@
+package com.ismartcoding.plain.ui.notes
+
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import com.ismartcoding.plain.api.graphql.models.Note
+
+class NoteViewModel : ViewModel() {
+    var editMode = mutableStateOf(false)
+    val item = mutableStateOf<Note?>(null)
+    var content = mutableStateOf("")
+    val showSelectTagsDialog = mutableStateOf(false)
+}

@@ -3,11 +3,11 @@ package com.ismartcoding.plain.tests
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ismartcoding.plain.rust.request.RustContentApi
-import com.ismartcoding.plain.features.file.FileSortBy
-import com.ismartcoding.plain.enums.PathKind
-import com.ismartcoding.plain.platform.listFilesInDir
-import com.ismartcoding.plain.platform.searchFilesInDir
-import com.ismartcoding.plain.platform.searchFilesByName
+import com.ismartcoding.plain.features.files.FileSortBy
+import com.ismartcoding.plain.features.files.PathKind
+import com.ismartcoding.plain.platform.files.listFilesInDir
+import com.ismartcoding.plain.platform.files.searchFilesInDir
+import com.ismartcoding.plain.platform.files.searchFilesByName
 import com.ismartcoding.plain.preferences.RustSystemState
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*

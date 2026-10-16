@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.lib.pdfviewer.util
 
-import com.ismartcoding.plain.platform.appCacheDir
+import com.ismartcoding.plain.platform.system.appCacheDir
 
 import android.content.Context
 import java.io.*

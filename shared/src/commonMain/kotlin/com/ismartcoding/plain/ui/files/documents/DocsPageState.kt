@@ -1,0 +1,70 @@
+package com.ismartcoding.plain.ui.files.documents
+
+import androidx.compose.runtime.getValue
+
+import com.ismartcoding.plain.api.graphql.models.Doc as Document
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import com.ismartcoding.plain.api.graphql.models.Doc
+import com.ismartcoding.plain.api.graphql.models.MediaBucket
+import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.TagHostRelation
+import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
+import com.ismartcoding.plain.ui.base.dragselect.rememberListDragSelectState
+import com.ismartcoding.plain.ui.files.documents.DocsViewModel
+import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
+import com.ismartcoding.plain.ui.tags.TagsViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+data class DocsPageState(
+    val itemsState: List<Document>,
+    val dragSelectState: DragSelectState,
+    val scrollBehavior: TopAppBarScrollBehavior,
+    val tagsState: List<TagHostRecord>,
+    val tagsMapState: Map<String, List<TagHostRelation>>,
+    val scrollState: LazyListState,
+    val bucketsMap: Map<String, MediaBucket>,
+) {
+    companion object {
+        @OptIn(ExperimentalMaterial3Api::class)
+        @Composable
+        fun create(
+            docsVM: DocsViewModel,
+            tagsVM: TagsViewModel,
+            mediaFoldersVM: MediaFoldersViewModel,
+        ): DocsPageState {
+            LaunchedEffect(Unit) {
+                tagsVM.dataType.value = docsVM.dataType
+                mediaFoldersVM.dataType.value = docsVM.dataType
+            }
+
+            val tagsState by tagsVM.itemsFlow.collectAsState()
+            val itemsState by docsVM.itemsFlow.collectAsState()
+            val scrollState = rememberLazyListState()
+            val dragSelectState = rememberListDragSelectState({ scrollState })
+            val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
+                canScroll = {
+                    scrollState.firstVisibleItemIndex > 0 && !dragSelectState.selectMode
+                }
+            )
+            val tagsMapState by tagsVM.tagsMapFlow.collectAsState()
+            val bucketsMap by mediaFoldersVM.bucketsMapFlow.collectAsState()
+
+            return DocsPageState(
+                itemsState = itemsState,
+                dragSelectState = dragSelectState,
+                scrollBehavior = scrollBehavior,
+                tagsState = tagsState,
+                tagsMapState = tagsMapState,
+                scrollState = scrollState,
+                bucketsMap = bucketsMap,
+            )
+        }
+    }
+}

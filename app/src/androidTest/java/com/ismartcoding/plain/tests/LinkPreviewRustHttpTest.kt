@@ -1,18 +1,18 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.chat.ChatCacher
-import com.ismartcoding.plain.chat.RustChatStore
-import com.ismartcoding.plain.chat.models.LinkPreview
-import com.ismartcoding.plain.chat.models.MessageContent
-import com.ismartcoding.plain.chat.models.MessageText
-import com.ismartcoding.plain.chat.models.MessageType
-import com.ismartcoding.plain.chat.models.toJSONString
+import com.ismartcoding.plain.features.chat.ChatCacher
+import com.ismartcoding.plain.features.chat.RustChatStore
+import com.ismartcoding.plain.features.chat.models.LinkPreview
+import com.ismartcoding.plain.features.chat.models.MessageContent
+import com.ismartcoding.plain.features.chat.models.MessageText
+import com.ismartcoding.plain.features.chat.models.MessageType
+import com.ismartcoding.plain.features.chat.models.toJSONString
 import com.ismartcoding.plain.db.*
-import com.ismartcoding.plain.enums.ChatStatus
-import com.ismartcoding.plain.features.ChatMessageEditor
-import com.ismartcoding.plain.graphql.models.ChatItem
-import com.ismartcoding.plain.helpers.AppFileStore
+import com.ismartcoding.plain.features.chat.ChatStatus
+import com.ismartcoding.plain.features.chat.ChatMessageEditor
+import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.features.files.stored.AppFileStore
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -47,7 +47,7 @@ class LinkPreviewRustHttpTest {
             assertFalse(ChatMessageEditor.updateTextAsync(stale, "edited $id"))
             assertEquals(stale.content, RustChatStore.getById(id)!!.content)
         } finally {
-            com.ismartcoding.plain.chat.ChatManager.deleteOne(id)
+            com.ismartcoding.plain.features.chat.ChatClient.deleteOne(id)
             hash?.let { if (AppFileFixtures.exists(it)) AppFileStore.release(it) }
             ChatCacher.load()
         }

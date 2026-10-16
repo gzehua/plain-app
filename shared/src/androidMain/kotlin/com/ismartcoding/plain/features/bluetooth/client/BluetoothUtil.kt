@@ -6,7 +6,7 @@ import android.content.Context
 import android.location.LocationManager
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.ismartcoding.plain.ble.client.AndroidBleScanner
+import com.ismartcoding.plain.platform.network.ble.client.AndroidBleScanner
 import com.ismartcoding.plain.lib.extensions.hasPermission
 import com.ismartcoding.plain.platform.isSPlus
 import com.ismartcoding.plain.lib.logcat.LogCat

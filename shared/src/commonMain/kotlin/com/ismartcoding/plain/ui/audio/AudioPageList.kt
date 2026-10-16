@@ -1,0 +1,95 @@
+package com.ismartcoding.plain.ui.audio
+
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import com.ismartcoding.plain.ui.base.BottomSpace
+
+import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.api.graphql.models.Audio
+import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.ui.base.NoDataColumn
+import com.ismartcoding.plain.ui.base.TopSpace
+import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
+import com.ismartcoding.plain.ui.base.dragselect.listDragSelect
+import com.ismartcoding.plain.ui.base.fastscroll.LazyColumnScrollbar
+import com.ismartcoding.plain.ui.base.pullrefresh.LoadMoreRefreshContent
+import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
+import com.ismartcoding.plain.ui.base.pullrefresh.RefreshLayoutState
+import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
+import com.ismartcoding.plain.ui.audio.AudioViewModel
+import com.ismartcoding.plain.ui.casting.CastViewModel
+import com.ismartcoding.plain.ui.tags.TagsViewModel
+import com.ismartcoding.plain.ui.audio.components.AudioListItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+internal fun ColumnScope.AudioPageList(
+    scrollBehavior: TopAppBarScrollBehavior,
+    dragSelectState: DragSelectState, itemsState: List<AudioTrack>,
+    audioVM: AudioViewModel, audioQueueVM: AudioQueueViewModel,
+    tagsVM: TagsViewModel, castVM: CastViewModel,
+    audioTagsMap: Map<String, List<TagHostRecord>>, isAudioPlaying: Boolean,
+    topRefreshLayoutState: RefreshLayoutState, paddingValues: PaddingValues,
+    extraBottomPadding: Dp = 0.dp,
+) {
+    val scope = rememberCoroutineScope()
+
+    PullToRefresh(refreshLayoutState = topRefreshLayoutState, userEnable = !dragSelectState.selectMode, modifier = Modifier.weight(1f)) {
+        AnimatedVisibility(visible = true, enter = fadeIn(), exit = fadeOut()) {
+            if (itemsState.isNotEmpty()) {
+                val scrollState = audioVM.scrollStateMap[0] ?: rememberLazyListState()
+                LazyColumnScrollbar(state = scrollState) {
+                    LazyColumn(Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection)
+                        .listDragSelect(items = itemsState, state = dragSelectState, itemIndexOffset = 1), state = scrollState) {
+                        item { TopSpace() }
+                        items(items = itemsState, key = { it.id }) { item ->
+                            val tags = audioTagsMap[item.id] ?: emptyList()
+                            AudioListItem(item = item, audioVM = audioVM, audioQueueVM, tagsVM = tagsVM,
+                                castVM = castVM, tags = tags, dragSelectState = dragSelectState,
+                                isCurrentlyPlaying = isAudioPlaying && audioQueueVM.selectedMediaId.value == item.id,
+                                isInQueue = audioQueueVM.isInQueue(item.id))
+                            VerticalSpace(dp = 8.dp)
+                        }
+                        item(key = "loadMore") {
+                            if (itemsState.isNotEmpty() && !audioVM.noMore.value) {
+                                LaunchedEffect(Unit) {
+                                    scope.launch(Dispatchers.Default) { audioVM.moreAsync(tagsVM) }
+                                }
+                            }
+                            LoadMoreRefreshContent(audioVM.noMore.value)
+                        }
+                        item(key = "bottomSpace") {
+                            // Floating player bar clearance when playing; plain
+                            // nav-inset spacing otherwise — never both stacked.
+                            VerticalSpace(dp = maxOf(extraBottomPadding, 40.dp + paddingValues.calculateBottomPadding()))
+                        }
+                    }
+                }
+            } else {
+                NoDataColumn(loading = audioVM.showLoading.value, search = audioVM.showSearchBar.value)
+            }
+        }
+    }
+}

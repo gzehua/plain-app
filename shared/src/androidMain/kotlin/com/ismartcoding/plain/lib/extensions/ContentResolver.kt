@@ -10,8 +10,8 @@ import android.provider.OpenableColumns
 import android.provider.Settings
 import androidx.annotation.CheckResult
 import com.ismartcoding.plain.helpers.ContentWhere
-import com.ismartcoding.plain.data.OpenableFile
-import com.ismartcoding.plain.data.SortBy
+import com.ismartcoding.plain.platform.files.OpenableFile
+import com.ismartcoding.plain.features.files.SortBy
 import com.ismartcoding.plain.platform.isQPlus
 import com.ismartcoding.plain.platform.isRPlus
 import com.ismartcoding.plain.lib.logcat.LogCat

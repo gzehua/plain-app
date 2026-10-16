@@ -9,13 +9,34 @@ import android.os.Environment
 import android.provider.MediaStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.data.TagRelationStub
+import com.ismartcoding.plain.features.tags.TagRelationStub
 import com.ismartcoding.plain.tests.fixtures.imageEmbedding
-import com.ismartcoding.plain.enums.DataType
+import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.*
-import com.ismartcoding.plain.features.file.*
-import com.ismartcoding.plain.platform.queryFileTaskMedia
-import com.ismartcoding.plain.platform.scanFileTaskPaths
+import com.ismartcoding.plain.ui.permissions.*
+import com.ismartcoding.plain.features.bookmarks.*
+import com.ismartcoding.plain.features.chat.*
+import com.ismartcoding.plain.ui.chat.*
+import com.ismartcoding.plain.features.clipboard.*
+import com.ismartcoding.plain.ui.clipboard.*
+import com.ismartcoding.plain.features.files.*
+import com.ismartcoding.plain.ui.files.*
+import com.ismartcoding.plain.features.images.editor.*
+import com.ismartcoding.plain.ui.images.editor.*
+import com.ismartcoding.plain.features.notes.*
+import com.ismartcoding.plain.ui.notes.*
+import com.ismartcoding.plain.features.permissions.*
+import com.ismartcoding.plain.ui.permissions.*
+import com.ismartcoding.plain.features.pomodoro.*
+import com.ismartcoding.plain.ui.pomodoro.*
+import com.ismartcoding.plain.features.tags.*
+import com.ismartcoding.plain.ui.tags.*
+import com.ismartcoding.plain.features.videos.*
+import com.ismartcoding.plain.ui.videos.*
+import com.ismartcoding.plain.features.files.*
+import com.ismartcoding.plain.ui.files.*
+import com.ismartcoding.plain.platform.files.queryFileTaskMedia
+import com.ismartcoding.plain.platform.files.scanFileTaskPaths
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.*
@@ -59,10 +80,10 @@ class FileMoveMediaRustHttpTest {
                 check(it.moveToFirst()); checkNotNull(it.getString(0))
             }
             destinationPath = File(target, File(sourcePath).name).path
-            val imageTag = TagHelper.addOrUpdate("") { name = prefix; type = DataType.IMAGE.value }.also { tags.add(it) }
-            val fileTag = TagHelper.addOrUpdate("") { name = prefix; type = DataType.FILE.value }.also { tags.add(it) }
-            TagHelper.editTagRelations(DataType.IMAGE, TagRelationStub(oldId, prefix, 1), listOf(imageTag), emptyList())
-            TagHelper.editTagRelations(DataType.FILE, TagRelationStub(sourcePath, prefix, 1), listOf(fileTag), emptyList())
+            val imageTag = TagsClient.addOrUpdate("") { name = prefix; type = DataType.IMAGE.value }.also { tags.add(it) }
+            val fileTag = TagsClient.addOrUpdate("") { name = prefix; type = DataType.FILE.value }.also { tags.add(it) }
+            TagsClient.editTagRelations(DataType.IMAGE, TagRelationStub(oldId, prefix, 1), listOf(imageTag), emptyList())
+            TagsClient.editTagRelations(DataType.FILE, TagRelationStub(sourcePath, prefix, 1), listOf(fileTag), emptyList())
             ImageEmbeddings.insertAll(listOf(imageEmbedding(oldId, sourcePath, ByteBuffer.allocate(4).putFloat(1f).array())))
             val task = FileTaskHelper.create(FileTaskType.MOVE, listOf(FileTaskOp(sourcePath, target.path))).also { tasks.add(it.id) }
             val done = withTimeout(30_000) { FileTaskHelper.wait(task.id) }
@@ -73,14 +94,14 @@ class FileMoveMediaRustHttpTest {
             val moved = queryFileTaskMedia(listOf(destinationPath)).single()
             assertEquals(DataType.IMAGE, moved.type)
             ids.add(moved.id)
-            assertEquals(listOf(imageTag), TagHelper.getTagRelationsByKey(moved.id, DataType.IMAGE).map { it.tagId })
-            if (oldId != moved.id) assertTrue(TagHelper.getTagRelationsByKey(oldId, DataType.IMAGE).isEmpty())
-            assertTrue(TagHelper.getTagRelationsByKey(sourcePath, DataType.FILE).isEmpty())
-            assertEquals(listOf(fileTag), TagHelper.getTagRelationsByKey(destinationPath, DataType.FILE).map { it.tagId })
+            assertEquals(listOf(imageTag), TagsClient.getTagRelationsByKey(moved.id, DataType.IMAGE).map { it.tagId })
+            if (oldId != moved.id) assertTrue(TagsClient.getTagRelationsByKey(oldId, DataType.IMAGE).isEmpty())
+            assertTrue(TagsClient.getTagRelationsByKey(sourcePath, DataType.FILE).isEmpty())
+            assertEquals(listOf(fileTag), TagsClient.getTagRelationsByKey(destinationPath, DataType.FILE).map { it.tagId })
             assertFalse(ImageEmbeddings.getAllIds().any { it in ids })
         } finally {
             tasks.forEach { id -> withTimeout(30_000) { FileTaskHelper.wait(id) }; FileTaskHelper.remove(id) }
-            tags.forEach { TagHelper.delete(it) }
+            tags.forEach { TagsClient.delete(it) }
             ImageEmbeddings.deleteByIds(ids.toList())
             uri?.let { resolver.delete(it, null, null) }
             ids.forEach { id -> resolver.delete(Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id), null, null) }

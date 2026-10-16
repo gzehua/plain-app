@@ -1,0 +1,25 @@
+package com.ismartcoding.plain.app
+
+import com.ismartcoding.plain.appContext
+
+object AppIntents {
+    val AUTHORITY: String get() = "${appContext.packageName}.provider"
+    val ACTION_ENABLE_DESKTOP_ACCESS: String get() = "${appContext.packageName}.action.ENABLE_DESKTOP_ACCESS"
+    val ACTION_DISABLE_DESKTOP_ACCESS: String get() = "${appContext.packageName}.action.DISABLE_DESKTOP_ACCESS"
+    val ACTION_DISABLE_BACKGROUND_MODE: String get() = "${appContext.packageName}.action.DISABLE_BACKGROUND_MODE"
+    val ACTION_STOP_SCREEN_MIRROR: String get() = "${appContext.packageName}.action.STOP_SCREEN_MIRROR"
+    val ACTION_PEER_CHAT_REPLY: String get() = "${appContext.packageName}.action.PEER_CHAT_REPLY"
+    val ACTION_REPOST_BACKGROUND_NOTIFICATION: String get() = "${appContext.packageName}.action.REPOST_BACKGROUND_NOTIFICATION"
+    val ACTION_PLAY_MEDIA: String get() = "${appContext.packageName}.action.PLAY_MEDIA"
+
+    // Action of the launcher dynamic shortcuts; derived from AppFeatureType.name so the
+    // publisher (LauncherShortcuts.android.kt) and the intent dispatcher share one naming source.
+    fun actionOpenShortcut(type: com.ismartcoding.plain.platform.system.AppFeatureType): String =
+        "${appContext.packageName}.action.OPEN_${type.name}"
+}
+
+object IntentExtras {
+    const val CHAT_TARGET_ID = "chat_target_id"
+    const val SHARE_IMAGE_PATH = "share_image_path"
+    const val SHARE_IMAGE_NAME = "share_image_name"
+}

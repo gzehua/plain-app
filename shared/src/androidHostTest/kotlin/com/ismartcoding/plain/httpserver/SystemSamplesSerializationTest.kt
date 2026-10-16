@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.httpserver
 
-import com.ismartcoding.plain.platform.BatterySample
+import com.ismartcoding.plain.platform.system.BatterySample
 import com.ismartcoding.plain.lib.JsonHelper.jsonEncode
 import kotlin.test.Test
 import kotlin.test.assertTrue

@@ -8,7 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.ui.base.TextFieldDialog
+import com.ismartcoding.plain.ui.components.TextFieldDialog
 import kotlinx.coroutines.launch
 
 @Composable

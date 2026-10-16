@@ -8,17 +8,39 @@ import android.net.Uri
 import android.provider.MediaStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.data.TagRelationStub
+import com.ismartcoding.plain.features.tags.TagRelationStub
 import com.ismartcoding.plain.tests.fixtures.imageEmbedding
-import com.ismartcoding.plain.enums.DataType
+import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.*
+import com.ismartcoding.plain.ui.permissions.*
+import com.ismartcoding.plain.features.bookmarks.*
+import com.ismartcoding.plain.features.chat.*
+import com.ismartcoding.plain.ui.chat.*
+import com.ismartcoding.plain.features.clipboard.*
+import com.ismartcoding.plain.ui.clipboard.*
+import com.ismartcoding.plain.features.files.*
+import com.ismartcoding.plain.ui.files.*
+import com.ismartcoding.plain.features.images.editor.*
+import com.ismartcoding.plain.ui.images.editor.*
+import com.ismartcoding.plain.features.notes.*
+import com.ismartcoding.plain.ui.notes.*
+import com.ismartcoding.plain.features.permissions.*
+import com.ismartcoding.plain.ui.permissions.*
+import com.ismartcoding.plain.features.pomodoro.*
+import com.ismartcoding.plain.ui.pomodoro.*
+import com.ismartcoding.plain.features.tags.*
+import com.ismartcoding.plain.ui.tags.*
+import com.ismartcoding.plain.features.videos.*
+import com.ismartcoding.plain.ui.videos.*
 import com.ismartcoding.plain.features.audio.*
-import com.ismartcoding.plain.features.mediaactions.*
-import com.ismartcoding.plain.graphql.models.AudioItem
-import com.ismartcoding.plain.platform.deleteMedia
-import com.ismartcoding.plain.platform.getMediaItemUriString
-import com.ismartcoding.plain.platform.restoreMedia
-import com.ismartcoding.plain.platform.trashMedia
+import com.ismartcoding.plain.ui.audio.*
+import com.ismartcoding.plain.features.media.actions.*
+import com.ismartcoding.plain.ui.media.actions.*
+import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.platform.media.deleteMedia
+import com.ismartcoding.plain.platform.media.getMediaItemUriString
+import com.ismartcoding.plain.platform.media.restoreMedia
+import com.ismartcoding.plain.platform.media.trashMedia
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -32,8 +54,8 @@ import org.junit.runner.RunWith
 class MediaActionsRustHttpTest {
     @Test
     fun physicalActionsCleanOnlyConfirmedAssetsAndPreserveFailedReferences() = runBlocking {
-        assertTrue(AudioQueueManager.queuedMediaIds().isEmpty())
-        assertTrue(AudioQueueManager.playback().path.isNullOrEmpty())
+        assertTrue(AudioQueueClient.queuedMediaIds().isEmpty())
+        assertTrue(AudioQueueClient.playback().path.isNullOrEmpty())
         val prefix = "media-actions-${UUID.randomUUID()}"
         val missingId = "9223372036854775806"
         val uris = mutableListOf<Uri>()
@@ -78,30 +100,30 @@ class MediaActionsRustHttpTest {
             paths.add(path)
             return id to path
         }
-        suspend fun tag(type: DataType): String = TagHelper.addOrUpdate("") { name = prefix; this.type = type.value }.also { tagIds.add(it) }
+        suspend fun tag(type: DataType): String = TagsClient.addOrUpdate("") { name = prefix; this.type = type.value }.also { tagIds.add(it) }
         try {
             val (id,path) = create(DataType.AUDIO)
             val audioTag = tag(DataType.AUDIO)
             val videoTag = tag(DataType.VIDEO)
-            TagHelper.editTagRelations(DataType.AUDIO,TagRelationStub(id,"Synthetic",1),listOf(audioTag),emptyList())
-            TagHelper.editTagRelations(DataType.AUDIO,TagRelationStub(missingId,"Synthetic missing",1),listOf(audioTag),emptyList())
-            TagHelper.editTagRelations(DataType.VIDEO,TagRelationStub(id,"Other domain",1),listOf(videoTag),emptyList())
+            TagsClient.editTagRelations(DataType.AUDIO,TagRelationStub(id,"Synthetic",1),listOf(audioTag),emptyList())
+            TagsClient.editTagRelations(DataType.AUDIO,TagRelationStub(missingId,"Synthetic missing",1),listOf(audioTag),emptyList())
+            TagsClient.editTagRelations(DataType.VIDEO,TagRelationStub(id,"Other domain",1),listOf(videoTag),emptyList())
             val track = AudioItem(title = "Synthetic", artist = prefix, path = path, durationMs = 1000, mediaId = id)
-            playlistId = AudioPlaylistManager.createPlaylist(prefix).id
-            AudioPlaylistManager.addPlaylistItems(playlistId,listOf(track))
-            AudioQueueManager.enqueue(listOf(track))
-            AudioQueueManager.setCurrent(id)
+            playlistId = AudioPlaylistsClient.createPlaylist(prefix).id
+            AudioPlaylistsClient.addPlaylistItems(playlistId,listOf(track))
+            AudioQueueClient.enqueue(listOf(track))
+            AudioQueueClient.setCurrent(id)
             var failed = false
             try { MediaActionHelper.run(DataType.AUDIO,MediaAction.TRASH,listOf(id,missingId)) }
             catch (error: Exception) { failed = error.message?.contains("1 media actions failed (1 completed)") == true }
             assertTrue("Partial failure must be visible",failed)
-            assertTrue(TagHelper.getTagRelationsByKey(id,DataType.AUDIO).isEmpty())
-            assertEquals(1,TagHelper.getTagRelationsByKey(missingId,DataType.AUDIO).size)
-            assertEquals(1,TagHelper.getTagRelationsByKey(id,DataType.VIDEO).size)
-            assertFalse(AudioQueueManager.queuedMediaIds().contains(id))
-            assertTrue(AudioQueueManager.playback().path.isNullOrEmpty())
-            assertEquals(0,AudioPlaylistManager.playlistItemCount(playlistId))
-            assertTrue(AudioPlayHistoryManager.recentPageFiltered(prefix,20,0).isEmpty())
+            assertTrue(TagsClient.getTagRelationsByKey(id,DataType.AUDIO).isEmpty())
+            assertEquals(1,TagsClient.getTagRelationsByKey(missingId,DataType.AUDIO).size)
+            assertEquals(1,TagsClient.getTagRelationsByKey(id,DataType.VIDEO).size)
+            assertFalse(AudioQueueClient.queuedMediaIds().contains(id))
+            assertTrue(AudioQueueClient.playback().path.isNullOrEmpty())
+            assertEquals(0,AudioPlaylistsClient.playlistItemCount(playlistId))
+            assertTrue(AudioHistoryClient.recentPageFiltered(prefix,20,0).isEmpty())
             restoreMedia(DataType.AUDIO,setOf(id))
             assertTrue(File(path).isFile)
             deleteMedia(DataType.AUDIO,setOf(id),false)
@@ -109,34 +131,34 @@ class MediaActionsRustHttpTest {
             val (videoId,videoPath) = create(DataType.VIDEO)
             videoIds.add(videoId)
             VideoProgressHelper.saveAsync(videoId,5_000_000_001L)
-            TagHelper.editTagRelations(DataType.VIDEO,TagRelationStub(videoId,"Synthetic video",1),listOf(videoTag),emptyList())
+            TagsClient.editTagRelations(DataType.VIDEO,TagRelationStub(videoId,"Synthetic video",1),listOf(videoTag),emptyList())
             trashMedia(DataType.VIDEO,setOf(videoId))
             assertNull(VideoProgressHelper.getAsync(videoId))
-            assertTrue(TagHelper.getTagRelationsByKey(videoId,DataType.VIDEO).isEmpty())
+            assertTrue(TagsClient.getTagRelationsByKey(videoId,DataType.VIDEO).isEmpty())
             deleteMedia(DataType.VIDEO,setOf(videoId),true)
             assertFalse(File(videoPath).exists())
             val (imageId,imagePath) = create(DataType.IMAGE)
             val imageTag = tag(DataType.IMAGE)
-            TagHelper.editTagRelations(DataType.IMAGE,TagRelationStub(imageId,"Synthetic image",1),listOf(imageTag),emptyList())
+            TagsClient.editTagRelations(DataType.IMAGE,TagRelationStub(imageId,"Synthetic image",1),listOf(imageTag),emptyList())
             ImageEmbeddings.insertAll(listOf(imageEmbedding(imageId,imagePath,ByteBuffer.allocate(512*4).apply { putFloat(1f) }.array())))
             moveDir = File(File(imagePath).parentFile,"$prefix-moved")
             assertEquals(1,MediaActionHelper.run(DataType.IMAGE,MediaAction.MOVE,listOf(imageId),destDir=checkNotNull(moveDir).path))
             val movedPath = File(moveDir,File(imagePath).name).path
             assertFalse(File(imagePath).exists())
             assertTrue(File(movedPath).isFile)
-            assertEquals(1,TagHelper.getTagRelationsByKey(imageId,DataType.IMAGE).size)
+            assertEquals(1,TagsClient.getTagRelationsByKey(imageId,DataType.IMAGE).size)
             assertFalse(ImageEmbeddings.getAllIds().contains(imageId))
             trashMedia(DataType.IMAGE,setOf(imageId))
             assertFalse(ImageEmbeddings.getAllIds().contains(imageId))
-            assertTrue(TagHelper.getTagRelationsByKey(imageId,DataType.IMAGE).isEmpty())
+            assertTrue(TagsClient.getTagRelationsByKey(imageId,DataType.IMAGE).isEmpty())
             restoreMedia(DataType.IMAGE,setOf(imageId))
             deleteMedia(DataType.IMAGE,setOf(imageId),false)
             assertFalse(File(movedPath).exists())
         } finally {
             try {
-                AudioQueueManager.clearQueue()
-                if (playlistId.isNotEmpty()) AudioPlaylistManager.deletePlaylist(playlistId)
-                tagIds.forEach { TagHelper.delete(it) }
+                AudioQueueClient.clearQueue()
+                if (playlistId.isNotEmpty()) AudioPlaylistsClient.deletePlaylist(playlistId)
+                tagIds.forEach { TagsClient.delete(it) }
                 videoIds.forEach { VideoProgressHelper.deleteAsync(it) }
                 ImageEmbeddings.deleteByIds(touchedIds)
             } finally {

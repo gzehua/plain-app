@@ -3,8 +3,8 @@ package com.ismartcoding.plain.receivers
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.ismartcoding.plain.AppIntents
-import com.ismartcoding.plain.platform.setDesktopAccessEnabled
+import com.ismartcoding.plain.app.AppIntents
+import com.ismartcoding.plain.platform.system.setDesktopAccessEnabled
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.CancellationException

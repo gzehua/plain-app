@@ -5,7 +5,7 @@ import android.accessibilityservice.GestureDescription
 import android.graphics.Path
 import android.os.Handler
 import android.os.Looper
-import com.ismartcoding.plain.data.TouchPointInput
+import com.ismartcoding.plain.features.screenmirror.TouchPointInput
 import com.ismartcoding.plain.lib.logcat.LogCat
 
 /**

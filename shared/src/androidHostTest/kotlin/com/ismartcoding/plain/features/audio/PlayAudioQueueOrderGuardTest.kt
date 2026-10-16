@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.features.audio
 
+import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
+
 import com.ismartcoding.plain.preferences.*
 import java.io.File
 import kotlin.test.Test
@@ -21,9 +23,9 @@ import kotlin.test.fail
 class PlayAudioQueueOrderGuardTest {
 
     private val vmPath =
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/models/AudioQueueViewModel.kt"
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/audio/AudioQueueViewModel.kt"
     private val searchPath =
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/search/GlobalSearchPage.kt"
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/search/GlobalSearchPage.kt"
 
     private fun source(relPath: String): String {
         var dir = File(System.getProperty("user.dir")!!).absoluteFile
@@ -73,7 +75,7 @@ class PlayAudioQueueOrderGuardTest {
         val combiner = functionBody(vm, "enqueueAndPlayAsync")
             ?: fail("enqueueAndPlayAsync not found in $vmPath")
         assertTrue(
-            "AudioQueueManager.enqueue(" in combiner && "audioJustPlay(" in combiner,
+            "AudioQueueClient.enqueue(" in combiner && "audioJustPlay(" in combiner,
             "enqueueAndPlayAsync is the sanctioned enqueue+play combiner for tracks outside the queue",
         )
         val search = source(searchPath)

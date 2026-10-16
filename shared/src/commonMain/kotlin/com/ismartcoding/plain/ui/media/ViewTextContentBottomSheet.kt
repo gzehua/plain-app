@@ -1,0 +1,83 @@
+package com.ismartcoding.plain.ui.media
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import com.ismartcoding.plain.ui.theme.PlainTheme
+
+import com.ismartcoding.plain.i18n.*
+
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.Composable
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.platform.system.shareText
+import com.ismartcoding.plain.ui.base.BottomSpace
+import com.ismartcoding.plain.ui.base.PCard
+import com.ismartcoding.plain.ui.base.PSheetPrimaryAction
+import com.ismartcoding.plain.ui.base.PSheetPrimaryActionsCard
+import com.ismartcoding.plain.ui.base.PListItem
+import com.ismartcoding.plain.ui.base.PModalBottomSheet
+import androidx.compose.material3.Switch
+import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.files.text.TextFileViewModel
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.arrow_down_to_line as ui_drawable_arrow_down_to_line
+import com.ismartcoding.plain.ui.resources.arrow_up_to_line as ui_drawable_arrow_up_to_line
+import com.ismartcoding.plain.ui.resources.share_2 as ui_drawable_share_2
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun ViewTextContentBottomSheet(
+    textFileVM: TextFileViewModel,
+    content: String,
+) {
+    val onDismiss = {
+        textFileVM.showMoreActions.value = false
+    }
+
+    PModalBottomSheet(
+        onDismissRequest = {
+            onDismiss()
+        },
+    ) {
+        LazyColumn {
+            item {
+                VerticalSpace(16.dp)
+            }
+            item {
+                PSheetPrimaryActionsCard {
+                    PSheetPrimaryAction(UiRes.drawable.ui_drawable_share_2, stringResource(Res.string.share)) {
+                        shareText(content)
+                        onDismiss()
+                    }
+                    PSheetPrimaryAction(UiRes.drawable.ui_drawable_arrow_up_to_line, stringResource(Res.string.jump_to_top)) {
+                        textFileVM.gotoTop()
+                        onDismiss()
+                    }
+                    PSheetPrimaryAction(UiRes.drawable.ui_drawable_arrow_down_to_line, stringResource(Res.string.jump_to_bottom)) {
+                        textFileVM.gotoEnd()
+                        onDismiss()
+                    }
+                }
+            }
+            item {
+                VerticalSpace(dp = 24.dp)
+                PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
+                    PListItem(title = stringResource(Res.string.wrap_content), action = {
+                        Switch(
+                            checked = textFileVM.controller.wrapContent.value,
+                            onCheckedChange = {
+                                textFileVM.toggleWrapContent()
+                            },
+                        )
+                    })
+                }
+            }
+
+            item {
+                BottomSpace()
+            }
+        }
+    }
+}

@@ -3,7 +3,7 @@ package com.ismartcoding.plain.workers
 import com.ismartcoding.plain.preferences.*
 
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.features.feed.FeedFetcher
+import com.ismartcoding.plain.features.feeds.FeedFetcher
 import android.content.Context
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -45,7 +45,7 @@ class FeedFetchWorker(
 
         fun cancelRepeatWorker() {
             WorkManager.getInstance(appContext).cancelAllWorkByTag(REPEAT_WORK_NAME)
-            com.ismartcoding.plain.features.feed.FeedWorkerState.clearAll()
+            com.ismartcoding.plain.ui.feeds.FeedWorkerState.clearAll()
         }
 
         suspend fun startRepeatWorkerAsync(context: Context) = withIO {

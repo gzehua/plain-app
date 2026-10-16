@@ -8,11 +8,11 @@ import android.os.PowerManager
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.events.KeepAwakeChangedEvent
-import com.ismartcoding.plain.events.PowerConnectedEvent
-import com.ismartcoding.plain.events.PowerDisconnectedEvent
-import com.ismartcoding.plain.events.HWebRequestReceivedEvent
-import com.ismartcoding.plain.events.WindowFocusChangedEvent
+import com.ismartcoding.plain.app.events.KeepAwakeChangedEvent
+import com.ismartcoding.plain.app.events.PowerConnectedEvent
+import com.ismartcoding.plain.app.events.PowerDisconnectedEvent
+import com.ismartcoding.plain.app.events.HWebRequestReceivedEvent
+import com.ismartcoding.plain.app.events.WindowFocusChangedEvent
 import com.ismartcoding.plain.powerManager
 import com.ismartcoding.plain.receivers.PlugInControlReceiver
 import kotlinx.coroutines.Job

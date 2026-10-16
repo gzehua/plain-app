@@ -1,0 +1,122 @@
+package com.ismartcoding.plain.ui.scan.components
+import com.ismartcoding.plain.ui.theme.PlainTheme
+
+import org.jetbrains.compose.resources.DrawableResource
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
+import com.ismartcoding.plain.i18n.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.platform.setClipboardText
+import com.ismartcoding.plain.ui.base.PCard
+import com.ismartcoding.plain.ui.base.PClickableText
+import com.ismartcoding.plain.ui.base.PDivider
+import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.base.linkify
+import com.ismartcoding.plain.ui.components.urlAt
+import com.ismartcoding.plain.ui.components.DialogHelper
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.copy as ui_drawable_copy
+import com.ismartcoding.plain.ui.resources.delete_forever as ui_drawable_delete_forever
+import com.ismartcoding.plain.i18n.copy
+
+@Composable
+private fun ActionButton(
+    icon: DrawableResource,
+    text: String,
+    tint: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = text,
+            tint = tint,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = tint
+        )
+    }
+}
+
+@Composable
+fun ScanHistoryItem(
+    text: String,
+    onDelete: () -> Unit,
+) {
+    PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            val newText = text.linkify()
+            SelectionContainer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            ) {
+                PClickableText(
+                    text = newText,
+                    style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                    onClick = { position -> newText.urlAt(position) },
+                )
+            }
+
+            VerticalSpace(dp = 8.dp)
+
+            PDivider()
+
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                ActionButton(
+                    icon = UiRes.drawable.ui_drawable_copy,
+                    text = stringResource(Res.string.copy),
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    onClick = {
+                        setClipboardText(LocaleHelper.getString(Res.string.scan_result), text)
+                        DialogHelper.showTextCopiedMessage(text)
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                ActionButton(
+                    icon = UiRes.drawable.ui_drawable_delete_forever,
+                    text = stringResource(Res.string.delete),
+                    tint = MaterialTheme.colorScheme.error,
+                    onClick = onDelete,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}

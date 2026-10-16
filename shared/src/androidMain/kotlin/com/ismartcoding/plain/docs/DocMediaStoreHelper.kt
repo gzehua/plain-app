@@ -4,7 +4,7 @@ import com.ismartcoding.plain.helpers.escapeLike
 import com.ismartcoding.plain.lib.extensions.forEach
 import com.ismartcoding.plain.lib.extensions.queryCursor
 
-import com.ismartcoding.plain.graphql.models.Doc as Document
+import com.ismartcoding.plain.api.graphql.models.Doc as Document
 import com.ismartcoding.plain.helpers.ContentWhere
 import android.content.Context
 import android.net.Uri
@@ -15,13 +15,13 @@ import com.ismartcoding.plain.lib.extensions.getTimeSecondsValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.isQPlus
-import com.ismartcoding.plain.features.system.MediaBucketItemFacts
-import com.ismartcoding.plain.data.TagRelationStub
-import com.ismartcoding.plain.enums.MediaType
-import com.ismartcoding.plain.enums.DataType
-import com.ismartcoding.plain.features.file.FileSortBy
-import com.ismartcoding.plain.features.file.toSortBy
-import com.ismartcoding.plain.features.media.BaseMediaContentHelper
+import com.ismartcoding.plain.rust.host.provider.MediaBucketItemFacts
+import com.ismartcoding.plain.features.tags.TagRelationStub
+import com.ismartcoding.plain.features.media.MediaType
+import com.ismartcoding.plain.platform.system.DataType
+import com.ismartcoding.plain.features.files.FileSortBy
+import com.ismartcoding.plain.features.files.toSortBy
+import com.ismartcoding.plain.platform.media.provider.BaseMediaContentHelper
 
 object DocMediaStoreHelper : BaseMediaContentHelper() {
     override val providerType: DataType = DataType.DOC
@@ -61,7 +61,7 @@ object DocMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
-    ): List<Document> = com.ismartcoding.plain.features.system.RustMediaQuery.rows(com.ismartcoding.plain.enums.DataType.DOC, query, limit, offset, sortBy).map { it as Document }
+    ): List<Document> = com.ismartcoding.plain.rust.host.provider.RustMediaQuery.rows(com.ismartcoding.plain.platform.system.DataType.DOC, query, limit, offset, sortBy).map { it as Document }
 
     suspend fun searchAsync(
         context: Context,
@@ -85,11 +85,11 @@ object DocMediaStoreHelper : BaseMediaContentHelper() {
     }
 
     suspend fun getTagRelationStubsAsync(context: Context, query: String): List<TagRelationStub> =
-        com.ismartcoding.plain.features.system.RustMediaQuery.tagStubs(com.ismartcoding.plain.enums.DataType.DOC, query)
+        com.ismartcoding.plain.rust.host.provider.RustMediaQuery.tagStubs(com.ismartcoding.plain.platform.system.DataType.DOC, query)
 
 
     suspend fun getDocExtGroupsAsync(context: Context, query: String = ""): List<Pair<String, Int>> =
-        com.ismartcoding.plain.features.system.RustMediaQuery.docExtGroups(query)
+        com.ismartcoding.plain.rust.host.provider.RustMediaQuery.docExtGroups(query)
 
     fun getDocBucketItemFactsAsync(context: Context): List<MediaBucketItemFacts> {
         if (!isQPlus()) return emptyList()

@@ -9,7 +9,7 @@ import android.view.WindowManager
 import android.widget.Toast
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.copied
-import com.ismartcoding.plain.platform.LocaleHelper
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
 
 /**
  * Invisible activity that briefly takes window focus so the clipboard can be

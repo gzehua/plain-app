@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.extensions
 
-import com.ismartcoding.plain.graphql.models.Notification as AppNotification
+import com.ismartcoding.plain.api.graphql.models.Notification as AppNotification
 import android.app.Notification
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat

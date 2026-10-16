@@ -1,0 +1,30 @@
+package com.ismartcoding.plain.ui.media
+
+import com.ismartcoding.plain.platform.system.formatDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
+
+data class MediaDateGroup<T>(
+    val dateKey: String,
+    val dateLabel: String,
+    val items: List<T>
+)
+
+fun <T> groupMediaByDate(
+    items: List<T>,
+    getDate: (T) -> Instant,
+    timeZone: TimeZone = TimeZone.currentSystemDefault(),
+): List<MediaDateGroup<T>> {
+    return items.groupBy { item ->
+        val localDateTime = getDate(item).toLocalDateTime(timeZone)
+        "${localDateTime.year.toString().padStart(4, '0')}-${localDateTime.month.number.toString().padStart(2, '0')}-${localDateTime.day.toString().padStart(2, '0')}"
+    }.map { (dateKey, groupItems) ->
+        MediaDateGroup(
+            dateKey = dateKey,
+            dateLabel = getDate(groupItems.first()).formatDate(),
+            items = groupItems
+        )
+    }.sortedByDescending { it.dateKey }
+}

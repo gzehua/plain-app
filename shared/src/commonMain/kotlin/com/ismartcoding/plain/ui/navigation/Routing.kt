@@ -1,0 +1,231 @@
+package com.ismartcoding.plain.ui.navigation
+
+import kotlinx.serialization.Serializable
+
+class Routing {
+    @Serializable
+    object Home
+
+    @Serializable
+    object Settings
+
+    @Serializable
+    object Language
+
+    @Serializable
+    object DarkTheme
+
+    @Serializable
+    object AutoCheckUpdate
+
+    @Serializable
+    object BackupRestore
+
+    @Serializable
+    object DesktopAccessSettings
+
+    @Serializable
+    object CustomFeatures
+
+    @Serializable
+    object LauncherShortcuts
+
+    @Serializable
+    object NotificationSettings
+
+    @Serializable
+    object ClipboardHistory
+
+    @Serializable
+    object WebSecurity
+
+    @Serializable
+    object ReplaceSslCertificate
+
+    @Serializable
+    object HowToUse
+
+    @Serializable
+    object Onboarding
+
+    @Serializable
+    data class Text(val title: String, val content: String, val language: String)
+
+    @Serializable
+    object Connections
+
+    @Serializable
+    data class ApiTokenTips(val clientId: String, val token: String)
+
+    @Serializable
+    object WebDev
+
+    @Serializable
+    object ExchangeRate
+
+    @Serializable
+    object SoundMeter
+
+    @Serializable
+    object PomodoroTimer
+
+    @Serializable
+    data class Chat(val id: String = "")
+
+    @Serializable
+    data class ChatInfo(val chatId: String)
+
+    @Serializable
+    data class ChatText(val content: String)
+
+    @Serializable
+    data class ChatEditText(val id: String, val content: String)
+
+    @Serializable
+    object Scan
+
+    @Serializable
+    object ScanHistory
+
+    @Serializable
+    object Apps
+
+    @Serializable
+    object Images
+
+    @Serializable
+    object Videos
+
+    @Serializable
+    object Audio
+
+    /** Flat "all items" list, reached from the audio home page. */
+    @Serializable
+    object AudioAll
+
+    @Serializable
+    object Artists
+
+    @Serializable
+    data class ArtistDetail(val name: String)
+
+    @Serializable
+    data class PlaylistDetail(val id: String)
+
+    @Serializable
+    data class PlaylistAddItems(val id: String)
+
+    @Serializable
+    object ChatList
+
+    @Serializable
+    data class OtherFile(val path: String, val title: String)
+
+    @Serializable
+    data class ZipFile(val path: String, val title: String = "")
+
+    @Serializable
+    object Docs
+
+    @Serializable
+    object Notes
+
+    @Serializable
+    data class NotesCreate(val tagId: String)
+
+    @Serializable
+    data class NoteDetail(val id: String)
+
+    @Serializable
+    object ImageEditor
+
+    @Serializable
+    data class ImageEditorDetail(val id: String = "")
+
+    @Serializable
+    data class PdfViewer(val uri: String, val fileName: String = "")
+
+    @Serializable
+    data class FeedEntries(val feedId: String)
+
+    @Serializable
+    data class FeedEntry(val id: String)
+
+    @Serializable
+    object FeedSettings
+
+    @Serializable
+    object FeedCatalog
+
+    @Serializable
+    object AudioPlayer
+
+    @Serializable
+    data class TextFile(val path: String, val title: String = "", val mediaId: String = "", val type: String = "")
+
+    @Serializable
+    data class AppDetails(val id: String)
+
+    @Serializable
+    data class Files(val folderPath: String = "")
+
+    @Serializable
+    object AppFiles
+
+    @Serializable
+    data class EditShare(val id: String)
+
+    /** Native browser for the share card message with [SharedFolder.messageId]. */
+    @Serializable
+    data class SharedFolder(val messageId: String)
+
+    @Serializable
+    object Nearby
+
+    @Serializable
+    object WifiAwareDebug
+
+    @Serializable
+    object BleDebug
+
+    @Serializable
+    object ServiceDebug
+
+    @Serializable
+    object MdnsDebug
+
+    @Serializable
+    object ComponentShowcase
+
+    @Serializable
+    object DlnaReceiver
+
+    @Serializable
+    object DlnaCastHistory
+
+    @Serializable
+    object MarkdownThemePreview
+
+    @Serializable
+    object CastSession
+
+    @Serializable
+    data class PlayMedia(val path: String)
+
+    @Serializable
+    data class ShareImage(val path: String, val name: String = "")
+
+    @Serializable
+    object PairingRequest
+
+    @Serializable
+    object LoginRequest
+
+    @Serializable
+    data class ChannelInviteRequest(
+        val channelId: String,
+        val channelName: String,
+        val ownerPeerId: String,
+        val ownerPeerName: String,
+    )
+}

@@ -6,11 +6,11 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.platform.LocaleHelper
-import com.ismartcoding.plain.ui.helpers.DialogHelper
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
+import com.ismartcoding.plain.ui.components.DialogHelper
 
 internal fun MainActivity.sendScreenMirrorAudioStatus(granted: Boolean) {
     sendEvent(HostEvent(EventType.SCREEN_MIRROR_AUDIO_GRANTED, JsonHelper.jsonEncode(granted)))

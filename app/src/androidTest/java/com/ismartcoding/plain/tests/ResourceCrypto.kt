@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.TempData
+import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.testing.CryptoFixtures
 import kotlin.io.encoding.Base64
 

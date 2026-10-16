@@ -2,10 +2,10 @@ package com.ismartcoding.plain.rust.event
 
 import com.ismartcoding.plain.rust.request.*
 
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HEvent
-import com.ismartcoding.plain.events.HostEvent
-import com.ismartcoding.plain.events.HostEventData
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.HEvent
+import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.app.events.HostEventData
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive

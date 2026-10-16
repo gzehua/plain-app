@@ -49,7 +49,7 @@ class WebBundleAssetsTest {
 
     @Test
     fun unpackingProducesAReadableRoot() {
-        val root = com.ismartcoding.plain.platform.RustWebAssets.ensure()
+        val root = com.ismartcoding.plain.rust.http.RustWebAssets.ensure()
         assertTrue("RustWebAssets.ensure() returned an empty root", root.isNotEmpty())
         val index = java.io.File(root, "index.html")
         assertTrue("unpacked bundle has no index.html at $index", index.isFile)

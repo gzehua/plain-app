@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.features.VideoProgressHelper
+import com.ismartcoding.plain.features.videos.VideoProgressHelper
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test

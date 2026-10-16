@@ -1,0 +1,58 @@
+package com.ismartcoding.plain.features.telephony.sms
+
+import com.ismartcoding.plain.app.events.SendResultCodes
+
+object SmsProviderContract {
+    const val SEND_RESULT_TIMEOUT = SendResultCodes.TIMEOUT
+    const val MMS_PDU_SEND_REQ = 128
+    const val MMS_PDU_RETRIEVE_CONF = 132
+    const val MMS_CONTENT_FILTER = "m_type IN ($MMS_PDU_SEND_REQ, $MMS_PDU_RETRIEVE_CONF)"
+
+    data class MessageIds(
+        val sms: List<String>,
+        val mms: List<String>,
+    )
+
+    data class SmsSentIntentIdentity(
+        val action: String,
+        val data: String,
+    )
+
+    fun partitionMessageIds(value: String): MessageIds {
+        val ids = value.split(',').map(String::trim).filter(String::isNotEmpty)
+        return MessageIds(
+            sms = ids.filterNot { it.startsWith("mms_") },
+            mms = ids.filter { it.startsWith("mms_") }.map { it.removePrefix("mms_") },
+        )
+    }
+
+    fun parseRecipientIds(value: String): List<String> {
+        return value.trim()
+            .split(Regex("\\s+"))
+            .filter(String::isNotEmpty)
+            .distinct()
+    }
+
+    fun smsSentIntentIdentity(packageName: String, requestId: String, partIndex: Int): SmsSentIntentIdentity {
+        return SmsSentIntentIdentity(
+            action = "$packageName.SMS_SENT.$requestId.$partIndex",
+            data = "plainapp://sms/sent/$requestId/$partIndex",
+        )
+    }
+
+    fun numericIdPredicate(
+        field: String,
+        values: Collection<String>,
+        chunkSize: Int = 500,
+    ): String? {
+        require(chunkSize > 0)
+        val ids = values.distinct()
+        if (ids.isEmpty() || ids.any { id -> id.isEmpty() || id.any { !it.isDigit() } }) return null
+        return ids.chunked(chunkSize).joinToString(
+            separator = " OR ",
+            prefix = "(",
+            postfix = ")",
+        ) { chunk -> "$field IN (${chunk.joinToString(",")})" }
+    }
+
+}

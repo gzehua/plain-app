@@ -29,12 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.enums.ButtonSize
-import com.ismartcoding.plain.ui.base.ClipboardTextField
+import com.ismartcoding.plain.ui.components.ButtonSize
+import com.ismartcoding.plain.ui.components.ClipboardTextField
 import com.ismartcoding.plain.ui.base.PFilledButton
-import com.ismartcoding.plain.ui.base.colorpicker.ColorEnvelope
-import com.ismartcoding.plain.ui.base.colorpicker.HsvColorPicker
-import com.ismartcoding.plain.ui.base.colorpicker.rememberColorPickerController
+import com.ismartcoding.plain.ui.editor.colorpicker.ColorEnvelope
+import com.ismartcoding.plain.ui.editor.colorpicker.HsvColorPicker
+import com.ismartcoding.plain.ui.editor.colorpicker.rememberColorPickerController
 import com.ismartcoding.plain.ui.theme.safeHexToColor
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 

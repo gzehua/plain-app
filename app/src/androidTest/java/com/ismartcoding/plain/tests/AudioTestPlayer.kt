@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.graphql.models.AudioItem
-import com.ismartcoding.plain.platform.AudioPlayer
+import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.platform.media.AudioPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
 
 internal class AudioTestPlayer : AudioPlayer {

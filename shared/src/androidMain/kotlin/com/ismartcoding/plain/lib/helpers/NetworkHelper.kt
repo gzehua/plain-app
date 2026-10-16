@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.lib.helpers
 
-import com.ismartcoding.plain.platform.bestLanIp
+import com.ismartcoding.plain.platform.network.bestLanIp
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities

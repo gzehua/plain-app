@@ -6,8 +6,8 @@ import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 import com.ismartcoding.plain.lib.coIO
-import com.ismartcoding.plain.chat.ChatManager
-import com.ismartcoding.plain.chat.data.ChatTarget
+import com.ismartcoding.plain.features.chat.ChatClient
+import com.ismartcoding.plain.features.chat.data.ChatTarget
 
 class PeerChatReplyReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -20,7 +20,7 @@ class PeerChatReplyReceiver : BroadcastReceiver() {
         val target = ChatTarget.parseId(targetId)
 
         coIO {
-            ChatManager.sendText(target, replyText)
+            ChatClient.sendText(target, replyText)
             NotificationManagerCompat.from(context).cancel(notificationId)
         }
     }

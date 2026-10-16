@@ -2,7 +2,7 @@
 
 package com.ismartcoding.plain.ui.components
 
-import com.ismartcoding.plain.graphql.models.File as FileEntry
+import com.ismartcoding.plain.api.graphql.models.File as FileEntry
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,11 +21,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.features.file.FileSortBy
+import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.platform.getInternalStoragePath
-import com.ismartcoding.plain.platform.listFilesInDir
+import com.ismartcoding.plain.platform.files.getInternalStoragePath
+import com.ismartcoding.plain.platform.files.listFilesInDir
 import com.ismartcoding.plain.ui.base.BottomActionButtons
 import com.ismartcoding.plain.ui.base.PBottomSheetTopAppBar
 import com.ismartcoding.plain.ui.base.PFilledButton

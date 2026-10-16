@@ -7,15 +7,15 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
-import com.ismartcoding.plain.AppIntents
-import com.ismartcoding.plain.enums.HttpServerState
-import com.ismartcoding.plain.helpers.NotificationHelper
+import com.ismartcoding.plain.app.AppIntents
+import com.ismartcoding.plain.features.settings.HttpServerState
+import com.ismartcoding.plain.ui.platform.notifications.NotificationHelper
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.keep_online_in_background
 import com.ismartcoding.plain.i18n.background_online_failed
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.platform.LocaleHelper
-import com.ismartcoding.plain.platform.HttpServerManager
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
+import com.ismartcoding.plain.app.HttpServerManager
 
 class HttpServerService : LifecycleService() {
     private var lockManager: HttpServerLockManager? = null

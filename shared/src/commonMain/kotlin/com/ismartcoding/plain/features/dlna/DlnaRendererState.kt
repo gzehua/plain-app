@@ -26,7 +26,7 @@ object DlnaRendererState {
     /** Non-empty when the receiver failed to start on all attempted ports. */
     val startError = MutableStateFlow("")
 
-    private val projectionLock = com.ismartcoding.plain.platform.PlatformLock()
+    private val projectionLock = com.ismartcoding.plain.platform.system.PlatformLock()
     private var version = -1L
 
     private suspend fun command(command: ReceiverCommand) {

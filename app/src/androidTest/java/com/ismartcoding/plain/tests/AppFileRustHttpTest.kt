@@ -2,8 +2,8 @@ package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.ismartcoding.plain.extensions.getFinalPath
-import com.ismartcoding.plain.helpers.AppFileStore
+import com.ismartcoding.plain.ui.extensions.getFinalPath
+import com.ismartcoding.plain.features.files.stored.AppFileStore
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test

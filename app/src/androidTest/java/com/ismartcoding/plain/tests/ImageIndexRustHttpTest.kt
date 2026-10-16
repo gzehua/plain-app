@@ -4,7 +4,7 @@ import android.content.ContentValues
 import android.graphics.Bitmap
 import android.provider.MediaStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.ai.ImageIndexCatalog
+import com.ismartcoding.plain.features.images.search.ImageIndexCatalog
 import com.ismartcoding.plain.appContext
 import kotlinx.serialization.json.*
 import org.junit.Assert.*

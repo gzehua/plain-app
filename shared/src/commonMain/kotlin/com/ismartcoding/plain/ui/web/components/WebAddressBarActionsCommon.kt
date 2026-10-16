@@ -1,0 +1,35 @@
+package com.ismartcoding.plain.ui.web.components
+
+import com.ismartcoding.plain.preferences.*
+
+import com.ismartcoding.plain.platform.IODispatcher
+import com.ismartcoding.plain.lib.coIO
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
+import com.ismartcoding.plain.platform.system.relaunchApp
+import com.ismartcoding.plain.ui.components.DialogHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+
+fun persistMdnsHostname(
+    scope: CoroutineScope,
+    hostname: String,
+) {
+    scope.launch {
+        RustSystemState.setMdnsHostname(hostname)
+    }
+}
+
+fun persistPort(
+    scope: CoroutineScope,
+    isHttps: Boolean,
+    port: Int,
+) {
+    scope.launch(IODispatcher) {
+        if (isHttps) {
+            UserPrefs.httpsPort.value = port
+        } else {
+            UserPrefs.httpPort.value = port
+        }
+    }
+}

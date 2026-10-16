@@ -1,0 +1,115 @@
+package com.ismartcoding.plain.app
+
+import com.ismartcoding.plain.preferences.*
+import android.app.ActivityManager
+import android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+import android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import com.ismartcoding.plain.app.Constants
+import com.ismartcoding.plain.appContext
+import com.ismartcoding.plain.features.settings.LatestRelease
+import com.ismartcoding.plain.data.Version
+import com.ismartcoding.plain.platform.system.getAppVersionName
+import com.ismartcoding.plain.lib.JsonHelper.jsonDecode
+import com.ismartcoding.plain.i18n.Res
+import com.ismartcoding.plain.i18n.check_failure
+import com.ismartcoding.plain.i18n.rate_limit
+import com.ismartcoding.plain.rust.http.HttpStatusCode
+import com.ismartcoding.plain.rust.http.createHttpClient
+import com.ismartcoding.plain.rust.http.get
+import com.ismartcoding.plain.ui.components.DialogHelper
+import java.io.File
+
+object AppHelper {
+    private val fileIcons = mutableSetOf<String>()
+
+    fun relaunch(context: Context) {
+        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+        val componentName = intent!!.component
+        val mainIntent = Intent.makeRestartActivityTask(componentName)
+        context.startActivity(mainIntent)
+        Runtime.getRuntime().exit(0)
+    }
+
+    fun foregrounded(): Boolean {
+        val appProcessInfo = ActivityManager.RunningAppProcessInfo()
+        ActivityManager.getMyMemoryState(appProcessInfo)
+        return (appProcessInfo.importance == IMPORTANCE_FOREGROUND || appProcessInfo.importance == IMPORTANCE_VISIBLE)
+    }
+
+    suspend fun checkUpdateAsync(context: Context, showToast: Boolean): Boolean? {
+        return try {
+            val r = createHttpClient().get(Constants.LATEST_RELEASE_URL)
+            r.use {
+                RustSystemState.patchUpdate(UpdateInfoPatch(checkUpdateTime = System.currentTimeMillis()))
+                if (it.status == HttpStatusCode.Forbidden) {
+                    if (showToast) {
+                        DialogHelper.showMessage(Res.string.rate_limit)
+                    }
+                    return false
+                }
+
+                val latestJSON = it.bodyAsText()
+                if (latestJSON.isEmpty()) {
+                    if (showToast) {
+                        DialogHelper.showMessage(Res.string.check_failure)
+                    }
+                    return null
+                }
+
+                val latest = jsonDecode<LatestRelease>(latestJSON)
+                val current = RustSystemState.state.value.updateInfo
+                val skipVersion = Version(current.skipVersion)
+                val currentVersion = Version(getAppVersionName())
+                val latestVersion = Version(latest.tagName.substring(1))
+                if (latestVersion.whetherNeedUpdate(currentVersion, skipVersion)) {
+                    val only32BitDevice = Build.SUPPORTED_64_BIT_ABIS.isEmpty()
+                    val apk = if (only32BitDevice) {
+                        latest.assets.firstOrNull {
+                            it.name.endsWith("-Old-32bit.apk")
+                        }
+                    } else {
+                        latest.assets.firstOrNull {
+                            it.name.contains("Recommended")
+                        }
+                    }
+                    RustSystemState.patchUpdate(UpdateInfoPatch(
+                            newVersion = latestVersion.toString(),
+                            log = latest.body,
+                            publishDate = latest.publishedAt.ifEmpty { latest.createdAt },
+                            size = apk?.size ?: 0,
+                            downloadUrl = apk?.browserDownloadUrl ?: "",
+                        ))
+                    true
+                } else {
+                    false
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            if (showToast) {
+                DialogHelper.showMessage(Res.string.check_failure)
+            }
+            null
+        }
+    }
+
+    fun getFileIconPath(extension: String): String {
+        if (fileIcons.isEmpty()) {
+            cacheIconKeys(appContext)
+        }
+        if (!fileIcons.contains(extension)) {
+            return "file:///android_asset/ficons/default.svg"
+        }
+
+        return "file:///android_asset/ficons/$extension.svg"
+    }
+
+    private fun cacheIconKeys(context: Context) {
+        context.assets.list("ficons")?.forEach {
+            fileIcons.add(it.substringBefore("."))
+        }
+    }
+}

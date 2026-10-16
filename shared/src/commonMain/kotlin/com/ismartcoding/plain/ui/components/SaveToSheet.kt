@@ -27,7 +27,7 @@ import org.jetbrains.compose.resources.DrawableResource
 import com.ismartcoding.plain.i18n.download_to_downloads
 import com.ismartcoding.plain.i18n.download_zip
 import com.ismartcoding.plain.i18n.pick_directory
-import com.ismartcoding.plain.platform.getDownloadsDirPath
+import com.ismartcoding.plain.platform.media.getDownloadsDirPath
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PBottomSheetTopAppBar
 import com.ismartcoding.plain.ui.base.PListItem

@@ -4,9 +4,18 @@ import android.os.Environment
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ismartcoding.plain.rust.request.*
-import com.ismartcoding.plain.rust.content.*
+import com.ismartcoding.plain.features.feeds.*
+import com.ismartcoding.plain.ui.feeds.*
+import com.ismartcoding.plain.features.files.*
+import com.ismartcoding.plain.ui.files.*
+import com.ismartcoding.plain.features.notes.*
+import com.ismartcoding.plain.ui.notes.*
+import com.ismartcoding.plain.features.tags.*
+import com.ismartcoding.plain.ui.tags.*
+import com.ismartcoding.plain.rust.request.*
 import com.ismartcoding.plain.rust.http.*
-import com.ismartcoding.plain.features.file.*
+import com.ismartcoding.plain.features.files.*
+import com.ismartcoding.plain.ui.files.*
 import com.ismartcoding.plain.preferences.RustSystemState
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
@@ -78,7 +87,7 @@ class FileTaskRustHttpTest {
             FileTaskHelper.list(0,1000,"").filter { task -> task.completedOps.any { it.src.startsWith(root.path+"/") } || task.id in ids }.forEach { FileTaskHelper.remove(it.id) }
             root.deleteRecursively()
             external.deleteRecursively()
-            com.ismartcoding.plain.platform.scanFileTaskPaths(listOf(File(external,"source.txt").path,File(external,"moved.txt").path))
+            com.ismartcoding.plain.platform.files.scanFileTaskPaths(listOf(File(external,"source.txt").path,File(external,"moved.txt").path))
         }
     }
 }

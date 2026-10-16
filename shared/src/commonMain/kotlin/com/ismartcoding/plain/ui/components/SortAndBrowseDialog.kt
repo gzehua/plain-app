@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.components
 
+import com.ismartcoding.plain.ui.files.getTextId
+
 import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.layout.Arrangement
@@ -17,11 +19,11 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.enums.ButtonSize
-import com.ismartcoding.plain.features.file.FileSortBy
+import com.ismartcoding.plain.ui.components.ButtonSize
+import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.ui.base.PDialogRadioRow
 import com.ismartcoding.plain.ui.base.PTextButton
-import com.ismartcoding.plain.ui.models.BaseMediaViewModel
+import com.ismartcoding.plain.ui.media.BaseMediaViewModel
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 
 @OptIn(ExperimentalMaterial3Api::class)

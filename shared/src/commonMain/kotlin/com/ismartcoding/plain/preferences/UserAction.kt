@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.rust.content.gql
-import com.ismartcoding.plain.rust.content.gqlIds
+import com.ismartcoding.plain.rust.request.gql
+import com.ismartcoding.plain.rust.request.gqlIds
 
 internal sealed class UserAction {
     data class RecordSearch(val value: String) : UserAction()

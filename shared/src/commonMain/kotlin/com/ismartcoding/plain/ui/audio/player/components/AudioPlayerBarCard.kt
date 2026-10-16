@@ -1,0 +1,109 @@
+package com.ismartcoding.plain.ui.audio.player.components
+
+import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
+
+import com.ismartcoding.plain.preferences.*
+
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.ui.theme.DarkTheme
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.ui.base.HorizontalSpace
+import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.theme.listItemSubtitle
+import com.ismartcoding.plain.ui.theme.listItemTitle
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.list_music as ui_drawable_list_music
+import com.ismartcoding.plain.ui.resources.pause as ui_drawable_pause
+import com.ismartcoding.plain.ui.resources.play_arrow as ui_drawable_play_arrow
+import com.ismartcoding.plain.i18n.pause
+
+@Composable
+fun AudioPlayerBarCard(
+    title: String,
+    artist: String,
+    progress: Float,
+    durationMs: Float,
+    isPlaying: Boolean,
+    onClickContent: () -> Unit,
+    onClickQueue: () -> Unit,
+    onPlayPause: () -> Unit,
+) {
+    // Dark list items use cardBackgroundNormal (#2C2C2E) which equals surfaceVariant,
+    // so lift the bar to surfaceContainerHighest to keep it visually apart.
+    val isDark = DarkTheme.isDarkTheme(UserPrefs.darkTheme.collectAsStateValue())
+    val containerColor =
+        if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surfaceVariant
+    ElevatedCard(
+        modifier = Modifier
+            .navigationBarsPadding()
+            .padding(start = 12.dp, end = 12.dp, bottom = 8.dp)
+            .fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = containerColor)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            LinearProgressIndicator(
+                progress = { if (durationMs == 0f) 0f else progress / durationMs },
+                modifier = Modifier.fillMaxWidth().height(4.dp),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = containerColor
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.clip(MaterialTheme.shapes.small).weight(1f).clickable { onClickContent() }.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                    Text(text = title, style = MaterialTheme.typography.listItemTitle(), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE))
+                    VerticalSpace(4.dp)
+                    Text(text = artist, style = MaterialTheme.typography.listItemSubtitle(), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                IconButton(
+                    onClick = onPlayPause,
+                    modifier = Modifier.size(48.dp).shadow(2.dp, CircleShape).clip(CircleShape)
+                        .background(if (isPlaying) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.primary)
+                ) {
+                    Icon(
+                        painter = painterResource(if (isPlaying) UiRes.drawable.ui_drawable_pause else UiRes.drawable.ui_drawable_play_arrow),
+                        contentDescription = if (isPlaying) stringResource(Res.string.pause) else stringResource(Res.string.play),
+                        tint = if (isPlaying) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                HorizontalSpace(8.dp)
+                IconButton(onClick = onClickQueue, modifier = Modifier.size(42.dp).clip(CircleShape)) {
+                    Icon(painter = painterResource(UiRes.drawable.ui_drawable_list_music), contentDescription = "Queue", tint = MaterialTheme.colorScheme.primary)
+                }
+            }
+        }
+    }
+}

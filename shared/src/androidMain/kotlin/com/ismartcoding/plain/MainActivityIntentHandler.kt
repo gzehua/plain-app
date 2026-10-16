@@ -1,18 +1,22 @@
 package com.ismartcoding.plain
 
+import com.ismartcoding.plain.app.AppIntents
+import com.ismartcoding.plain.app.Constants
+import com.ismartcoding.plain.app.IntentExtras
+
 import android.content.Intent
 import androidx.navigation.NavDestination.Companion.hasRoute
-import com.ismartcoding.plain.TempData
-import com.ismartcoding.plain.enums.AppFeatureType
-import com.ismartcoding.plain.platform.LocaleHelper
+import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.platform.system.AppFeatureType
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.not_supported_error
 import com.ismartcoding.plain.lib.extensions.isAudioFast
-import com.ismartcoding.plain.ui.helpers.DialogHelper
-import com.ismartcoding.plain.ui.nav.Routing
-import com.ismartcoding.plain.ui.nav.navigatePdf
-import com.ismartcoding.plain.ui.nav.navigateShareImage
-import com.ismartcoding.plain.ui.nav.navigateTextFile
+import com.ismartcoding.plain.ui.components.DialogHelper
+import com.ismartcoding.plain.ui.navigation.Routing
+import com.ismartcoding.plain.ui.navigation.navigatePdf
+import com.ismartcoding.plain.ui.navigation.navigateShareImage
+import com.ismartcoding.plain.ui.navigation.navigateTextFile
 
 internal fun MainActivity.handleIntent(intent: Intent) {
     // Launcher shortcuts (long-press app icon): open the tool page directly.

@@ -1,0 +1,177 @@
+package com.ismartcoding.plain.ui.notes
+
+import com.ismartcoding.plain.i18n.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.ismartcoding.plain.platform.system.shareText
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
+import com.ismartcoding.plain.ui.components.ActionButtonTags
+import com.ismartcoding.plain.ui.base.BottomActionButtons
+import com.ismartcoding.plain.ui.base.BottomSpace
+import com.ismartcoding.plain.ui.components.IconTextSmallButtonCopy
+import com.ismartcoding.plain.ui.components.IconTextSmallButtonCut
+import com.ismartcoding.plain.ui.components.IconTextSmallButtonDelete
+import com.ismartcoding.plain.ui.components.NavigationCloseIcon
+import com.ismartcoding.plain.ui.base.PBottomAppBar
+import com.ismartcoding.plain.ui.base.PCard
+import com.ismartcoding.plain.ui.components.PIconButton
+import com.ismartcoding.plain.ui.base.PScaffold
+import com.ismartcoding.plain.ui.base.PTopAppBar
+import com.ismartcoding.plain.ui.base.PTopRightButton
+import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.editor.markdown.MarkdownText
+import com.ismartcoding.plain.ui.editor.markdown.MdEditor
+import com.ismartcoding.plain.ui.editor.markdown.MdEditorBottomAppBar
+import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
+import com.ismartcoding.plain.ui.media.viewer.previewer.rememberPreviewerState
+import com.ismartcoding.plain.ui.editor.markdown.MdEditorViewModel
+import com.ismartcoding.plain.ui.notes.NoteViewModel
+import com.ismartcoding.plain.ui.tags.TagsViewModel
+import com.ismartcoding.plain.ui.tags.SelectTagsDialog
+import com.ismartcoding.plain.ui.theme.PlainTheme
+import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.markdown as ui_drawable_markdown
+import com.ismartcoding.plain.ui.resources.redo as ui_drawable_redo
+import com.ismartcoding.plain.ui.resources.share_2 as ui_drawable_share_2
+import com.ismartcoding.plain.ui.resources.square_pen as ui_drawable_square_pen
+import com.ismartcoding.plain.ui.resources.undo as ui_drawable_undo
+import com.ismartcoding.plain.i18n.undo
+import com.ismartcoding.plain.i18n.redo
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+@Composable
+fun NotePage(
+    navController: NavHostController, initId: String, tagId: String,
+    tagsVM: TagsViewModel,
+    noteVM: NoteViewModel = viewModel { NoteViewModel() }, mdEditorVM: MdEditorViewModel = viewModel { MdEditorViewModel() },
+) {
+    val id = remember { mutableStateOf(initId) }
+    val previewerState = rememberPreviewerState()
+    val tagsState by tagsVM.itemsFlow.collectAsState()
+    val tagsMapState by tagsVM.tagsMapFlow.collectAsState()
+    val mdListState = rememberLazyListState()
+    val editorScrollState = rememberScrollState()
+    val shouldRequestFocus = remember { mutableStateOf(true) }
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(canScroll = { !noteVM.editMode.value })
+    val tagIds = tagsMapState[id.value]?.map { it.tagId } ?: emptyList()
+
+    NotePageEffects(id, tagId, noteVM, tagsVM, mdEditorVM, previewerState)
+
+    if (noteVM.showSelectTagsDialog.value) {
+        val m = noteVM.item.value
+        if (m != null) SelectTagsDialog(tagsVM, tagsState, tagsMapState, data = m) { noteVM.showSelectTagsDialog.value = false }
+    }
+
+    PScaffold(topBar = {
+        if (mdEditorVM.blocks.selectionMode) {
+            PTopAppBar(navigationIcon = {
+                NavigationCloseIcon { mdEditorVM.exitSelectionMode() }
+            }, title = LocaleHelper.getStringF(Res.string.x_selected, mdEditorVM.blocks.selectedBlockCount()), actions = {
+                PTopRightButton(
+                    label = stringResource(if (mdEditorVM.blocks.isAllSelected()) Res.string.unselect_all else Res.string.select_all),
+                    click = { if (mdEditorVM.blocks.isAllSelected()) mdEditorVM.exitSelectionMode() else mdEditorVM.selectAllBlocks() },
+                )
+            })
+        } else {
+            PTopAppBar(onNavigateBack = { navController.navigateUp() }, title = "", scrollBehavior = scrollBehavior, actions = {
+                if (noteVM.editMode.value) {
+                    PIconButton(icon = UiRes.drawable.ui_drawable_undo, contentDescription = stringResource(Res.string.undo), enabled = mdEditorVM.canUndo.value,
+                        tint = MaterialTheme.colorScheme.onSurface) { mdEditorVM.undo() }
+                    PIconButton(icon = UiRes.drawable.ui_drawable_redo, contentDescription = stringResource(Res.string.redo), enabled = mdEditorVM.canRedo.value,
+                        tint = MaterialTheme.colorScheme.onSurface) { mdEditorVM.redo() }
+                } else if (id.value.isNotEmpty()) {
+                    ActionButtonTags { noteVM.showSelectTagsDialog.value = true }
+                    PIconButton(
+                        icon = UiRes.drawable.ui_drawable_share_2,
+                        contentDescription = stringResource(Res.string.share),
+                        tint = MaterialTheme.colorScheme.onSurface,
+                    ) {
+                        shareText(noteVM.content.value)
+                    }
+                }
+                PIconButton(icon = if (noteVM.editMode.value) UiRes.drawable.ui_drawable_markdown else UiRes.drawable.ui_drawable_square_pen,
+                    contentDescription = stringResource(if (noteVM.editMode.value) Res.string.view else Res.string.edit),
+                    tint = MaterialTheme.colorScheme.onSurface) { noteVM.editMode.value = !noteVM.editMode.value }
+            })
+        }
+    }, modifier = Modifier.imePadding(), bottomBar = {
+        if (mdEditorVM.blocks.selectionMode) {
+            PBottomAppBar {
+                BottomActionButtons {
+                    IconTextSmallButtonCopy { mdEditorVM.copySelected() }
+                    IconTextSmallButtonCut { mdEditorVM.cutSelected() }
+                    IconTextSmallButtonDelete {
+                        mdEditorVM.deleteSelected()
+                        mdEditorVM.exitSelectionMode()
+                    }
+                }
+            }
+        } else {
+            AnimatedVisibility(visible = noteVM.editMode.value, enter = slideInVertically { it }, exit = slideOutVertically { it }) {
+                MdEditorBottomAppBar(mdEditorVM)
+            }
+        }
+    }, content = { paddingValues ->
+        if (noteVM.editMode.value) {
+            MdEditor(modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding(), top = paddingValues.calculateTopPadding()),
+                mdEditorVM = mdEditorVM, scrollState = editorScrollState,
+                shouldRequestFocus = shouldRequestFocus.value, onFocusRequested = { shouldRequestFocus.value = false })
+        } else {
+            LazyColumn(modifier = Modifier.padding(top = paddingValues.calculateTopPadding()).nestedScroll(scrollBehavior.nestedScrollConnection), state = mdListState) {
+                item {
+                    val tags = tagsState.filter { tagIds.contains(it.id) }
+                    if (tags.isNotEmpty()) {
+                        PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
+                            FlowRow(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                tags.forEach { tag ->
+                                    Text(text = AnnotatedString("#" + tag.name), modifier = Modifier.wrapContentHeight().align(Alignment.Bottom),
+                                        style = MaterialTheme.typography.labelLarge.copy(fontSize = 16.sp, color = MaterialTheme.colorScheme.primary))
+                                }
+                            }
+                        }
+                        VerticalSpace(dp = 16.dp)
+                    }
+                }
+                item { SelectionContainer { MarkdownText(text = noteVM.content.value, modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN), previewerState = previewerState) } }
+                item { BottomSpace(paddingValues) }
+            }
+        }
+    })
+    MediaPreviewer(state = previewerState)
+}

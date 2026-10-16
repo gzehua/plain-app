@@ -1,0 +1,167 @@
+package com.ismartcoding.plain.ui.sessions
+import com.ismartcoding.plain.ui.theme.PlainTheme
+
+import com.ismartcoding.plain.i18n.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.ismartcoding.plain.ui.components.ButtonSize
+import com.ismartcoding.plain.ui.components.ButtonType
+import com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent
+import com.ismartcoding.plain.lib.extensions.capitalize
+import com.ismartcoding.plain.ui.base.PCard
+import com.ismartcoding.plain.ui.base.PFilledButton
+import com.ismartcoding.plain.ui.base.PListItem
+import com.ismartcoding.plain.ui.base.POutlinedButton
+import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.state.launchSafe
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.chrome as ui_drawable_chrome
+import com.ismartcoding.plain.ui.resources.laptop as ui_drawable_laptop
+
+@Composable
+fun LoginRequestPage(
+    event: HConfirmToAcceptLoginEvent,
+    clientIp: String,
+    navController: NavHostController,
+) {
+    val request = event.request
+    val isWeb = request.browserName != "PlainApp"
+    val titleRes = Res.string.allow_desktop_access
+    val descRes = when {
+        request.peer != null -> Res.string.allow_desktop_chat_access_desc
+        isWeb -> Res.string.allow_web_access_desc
+        else -> Res.string.allow_desktop_access_desc
+    }
+    val iconRes = if (isWeb) UiRes.drawable.ui_drawable_chrome else UiRes.drawable.ui_drawable_laptop
+
+    var allowing by remember { mutableStateOf(false) }
+    var denying by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .safeDrawingPadding(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = PaddingValues(vertical = 48.dp),
+    ) {
+        item {
+            VerticalSpace(40.dp)
+            Box(
+                modifier = Modifier
+                    .size(88.dp)
+                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(iconRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(44.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+            VerticalSpace(dp = 24.dp)
+        }
+        item {
+            Text(
+                text = stringResource(titleRes),
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                ),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            )
+            VerticalSpace(dp = 8.dp)
+            Text(
+                text = stringResource(descRes),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            )
+            VerticalSpace(dp = 40.dp)
+        }
+        item {
+            PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
+                PListItem(
+                    title = stringResource(Res.string.os),
+                    value = "${request.osName.capitalize()} ${request.osVersion}".trim(),
+                )
+                PListItem(
+                    title = stringResource(Res.string.browser),
+                    value = "${request.browserName.capitalize()} ${request.browserVersion}".trim(),
+                )
+                PListItem(
+                    title = stringResource(Res.string.ip_address),
+                    value = clientIp,
+                )
+            }
+        }
+        item {
+            VerticalSpace(dp = 40.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+            ) {
+                PFilledButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(Res.string.allow),
+                    buttonSize = ButtonSize.LARGE,
+                    isLoading = allowing,
+                    enabled = !allowing && !denying,
+                    onClick = {
+                        allowing = true
+                        scope.launchSafe(onDone = { allowing = false }) {
+                            com.ismartcoding.plain.features.sessions.RustWebLogin.complete(event)
+                            navController.popBackStack()
+                        }
+                    },
+                )
+                VerticalSpace(32.dp)
+                POutlinedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(Res.string.deny),
+                    buttonSize = ButtonSize.LARGE,
+                    type = ButtonType.DANGER,
+                    isLoading = denying,
+                    enabled = !allowing && !denying,
+                    onClick = {
+                        denying = true
+                        scope.launchSafe(onDone = { denying = false }) {
+                            com.ismartcoding.plain.features.sessions.RustWebLogin.cancel(event.requestId)
+                            navController.popBackStack()
+                        }
+                    },
+                )
+            }
+        }
+    }
+}

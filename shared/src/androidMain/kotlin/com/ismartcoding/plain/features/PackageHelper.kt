@@ -1,10 +1,10 @@
 package com.ismartcoding.plain.features
 
-import com.ismartcoding.plain.graphql.models.Package as AppPackage
-import com.ismartcoding.plain.platform.PackageDetails
+import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
+import com.ismartcoding.plain.platform.system.PackageDetails
 import androidx.core.content.pm.PackageInfoCompat
 
-import com.ismartcoding.plain.graphql.models.Certificate
+import com.ismartcoding.plain.api.graphql.models.Certificate
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
@@ -15,9 +15,9 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import com.ismartcoding.plain.AppIntents
+import com.ismartcoding.plain.app.AppIntents
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.enums.PackageType
+import com.ismartcoding.plain.platform.system.PackageType
 import com.ismartcoding.plain.extensions.isSystemApp
 import com.ismartcoding.plain.packageManager
 import kotlin.time.Instant

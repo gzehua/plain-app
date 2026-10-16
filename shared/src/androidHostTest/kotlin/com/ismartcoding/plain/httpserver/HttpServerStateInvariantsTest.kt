@@ -1,11 +1,11 @@
 package com.ismartcoding.plain.httpserver
 
-import com.ismartcoding.plain.platform.HttpServerManager
+import com.ismartcoding.plain.app.HttpServerManager
 
-import com.ismartcoding.plain.enums.HttpServerState
-import com.ismartcoding.plain.platform.startHttpServerAsync
-import com.ismartcoding.plain.platform.onRustHttpServerFailed
-import com.ismartcoding.plain.platform.stopHttpServerCoreAsync
+import com.ismartcoding.plain.features.settings.HttpServerState
+import com.ismartcoding.plain.app.startHttpServerAsync
+import com.ismartcoding.plain.app.onRustHttpServerFailed
+import com.ismartcoding.plain.app.stopHttpServerCoreAsync
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking

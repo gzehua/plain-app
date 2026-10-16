@@ -1,7 +1,7 @@
 package com.ismartcoding.plain
 
 import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.platform.LocaleHelper
+import com.ismartcoding.plain.ui.i18n.LocaleHelper
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -10,12 +10,12 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import com.ismartcoding.plain.platform.isQPlus
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.enums.ExportFileType
-import com.ismartcoding.plain.enums.PickFileType
-import com.ismartcoding.plain.events.ExportFileEvent
-import com.ismartcoding.plain.events.PickFileEvent
-import com.ismartcoding.plain.ui.helpers.DialogHelper
-import com.ismartcoding.plain.platform.FilePickHelper
+import com.ismartcoding.plain.features.files.ExportFileType
+import com.ismartcoding.plain.features.files.PickFileType
+import com.ismartcoding.plain.app.events.ExportFileEvent
+import com.ismartcoding.plain.app.events.PickFileEvent
+import com.ismartcoding.plain.ui.components.DialogHelper
+import com.ismartcoding.plain.platform.system.FilePickHelper
 import com.ismartcoding.plain.platform.isRPlus
 
 internal fun MainActivity.handlePickFileEvent(event: PickFileEvent) {
@@ -59,7 +59,7 @@ internal fun MainActivity.handlePickFileEvent(event: PickFileEvent) {
 
 internal fun MainActivity.handleExportFileEvent(event: ExportFileEvent) {
     if (event.type == ExportFileType.BACKUP && Build.VERSION.SDK_INT == Build.VERSION_CODES.P) {
-        com.ismartcoding.plain.platform.backupToFile(event.fileName)
+        com.ismartcoding.plain.platform.files.backupToFile(event.fileName)
         return
     }
     try {

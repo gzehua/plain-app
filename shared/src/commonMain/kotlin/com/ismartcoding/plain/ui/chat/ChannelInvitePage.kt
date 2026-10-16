@@ -1,0 +1,147 @@
+package com.ismartcoding.plain.ui.chat
+import com.ismartcoding.plain.ui.theme.PlainTheme
+
+import com.ismartcoding.plain.i18n.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.ui.components.ButtonSize
+import com.ismartcoding.plain.ui.components.ButtonType
+import com.ismartcoding.plain.ui.base.PCard
+import com.ismartcoding.plain.ui.base.PFilledButton
+import com.ismartcoding.plain.ui.base.PListItem
+import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.chat.ChannelViewModel
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.hash as ui_drawable_hash
+
+@Composable
+fun ChannelInvitePage(
+    channelId: String,
+    channelName: String,
+    ownerPeerName: String,
+    channelVM: ChannelViewModel,
+    navController: NavHostController,
+) {
+    var accepting by remember { mutableStateOf(false) }
+    var declining by remember { mutableStateOf(false) }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .safeDrawingPadding(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = PaddingValues(vertical = 48.dp),
+    ) {
+        item {
+            VerticalSpace(40.dp)
+            Box(
+                modifier = Modifier
+                    .size(88.dp)
+                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(UiRes.drawable.ui_drawable_hash),
+                    contentDescription = null,
+                    modifier = Modifier.size(44.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+            VerticalSpace(dp = 24.dp)
+        }
+        item {
+            Text(
+                text = stringResource(Res.string.channel_invite),
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                ),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            )
+            VerticalSpace(dp = 8.dp)
+            Text(
+                text = stringResource(Res.string.channel_invite_message, ownerPeerName, channelName),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                ),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            )
+            VerticalSpace(dp = 40.dp)
+        }
+        item {
+            PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
+                PListItem(title = stringResource(Res.string.channel_name), value = channelName)
+                PListItem(title = stringResource(Res.string.inviter), value = ownerPeerName)
+            }
+        }
+        item {
+            VerticalSpace(dp = 56.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+            ) {
+                PFilledButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(Res.string.accept),
+                    buttonSize = ButtonSize.LARGE,
+                    isLoading = accepting,
+                    enabled = !accepting && !declining,
+                    onClick = {
+                        accepting = true
+                        channelVM.acceptInvite(
+                            channelId = channelId,
+                            onSuccess = { navController.popBackStack() },
+                            onDone = { accepting = false },
+                        )
+                    },
+                )
+                VerticalSpace(24.dp)
+                PFilledButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(Res.string.decline),
+                    buttonSize = ButtonSize.LARGE,
+                    type = ButtonType.DANGER,
+                    isLoading = declining,
+                    enabled = !accepting && !declining,
+                    onClick = {
+                        declining = true
+                        channelVM.declineInvite(
+                            channelId = channelId,
+                            onDone = {
+                                declining = false
+                                navController.popBackStack()
+                            },
+                        )
+                    },
+                )
+            }
+        }
+    }
+}

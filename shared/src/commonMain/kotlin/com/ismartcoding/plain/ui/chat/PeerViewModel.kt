@@ -1,0 +1,28 @@
+package com.ismartcoding.plain.ui.chat
+
+import com.ismartcoding.plain.ui.state.launchSafe
+
+import com.ismartcoding.plain.preferences.*
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.features.chat.peer.PeerManager
+
+class PeerViewModel : ViewModel() {
+    fun updateDiscoverable(discoverable: Boolean) {
+        viewModelScope.launchSafe {
+            UserPrefs.nearbyDiscoverable.value = discoverable
+        }
+    }
+
+    fun removePeer(peerId: String) {
+        viewModelScope.launchSafe {
+            PeerManager.deletePeer(peerId)
+        }
+    }
+
+    fun load() {
+        viewModelScope.launchSafe { PeerManager.load() }
+    }
+}

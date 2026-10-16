@@ -1,0 +1,91 @@
+package com.ismartcoding.plain.ui.files.components
+
+import com.ismartcoding.plain.i18n.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import org.jetbrains.compose.resources.painterResource
+import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.lib.extensions.formatDurationMs
+import com.ismartcoding.plain.ui.base.HorizontalSpace
+import com.ismartcoding.plain.ui.base.PlayerSlider
+import com.ismartcoding.plain.ui.base.PlayerSliderDefaults
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.music2 as ui_drawable_music2
+import com.ismartcoding.plain.ui.resources.pause as ui_drawable_pause
+import com.ismartcoding.plain.ui.resources.play_arrow as ui_drawable_play_arrow
+import com.ismartcoding.plain.i18n.pause
+
+@Composable
+internal fun FileListItemPlayer(
+    isSelected: Boolean, isPlaying: Boolean, progress: Float, durationMs: Float,
+    onProgressChange: (Float) -> Unit, onShowFullPlayer: () -> Unit,
+    onSeekTo: (Long) -> Unit, onTogglePlay: () -> Unit,
+) {
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 4.dp)
+            .clip(RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
+            .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+    ) {
+        Column {
+            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)))
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    PlayerSlider(
+                        progress = if (durationMs == 0f) 0f else progress / durationMs, bufferedProgress = 0f,
+                        modifier = Modifier.fillMaxWidth().height(20.dp),
+                        onProgressChange = onProgressChange,
+                        onValueChangeFinished = { normalizedProgress -> onSeekTo((normalizedProgress * durationMs).toLong()) },
+                        colors = PlayerSliderDefaults.lightColors(),
+                    )
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(text = progress.toLong().formatDurationMs(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(text = durationMs.toLong().formatDurationMs(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                HorizontalSpace(16.dp)
+                Row {
+                    IconButton(
+                        onClick = onTogglePlay,
+                        modifier = Modifier.size(40.dp).shadow(2.dp, CircleShape).clip(CircleShape)
+                            .background(if (isPlaying) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(
+                            painter = painterResource(if (isPlaying) UiRes.drawable.ui_drawable_pause else UiRes.drawable.ui_drawable_play_arrow),
+                            contentDescription = if (isPlaying) "Pause" else "Play",
+                            tint = if (isPlaying) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    HorizontalSpace(8.dp)
+                    IconButton(
+                        onClick = onShowFullPlayer,
+                        modifier = Modifier.size(36.dp).shadow(2.dp, CircleShape).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Icon(
+                            painter = painterResource(UiRes.drawable.ui_drawable_music2), contentDescription = "Full player",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

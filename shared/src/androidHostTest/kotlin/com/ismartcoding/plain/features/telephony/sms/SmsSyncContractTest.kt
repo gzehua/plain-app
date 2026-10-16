@@ -1,0 +1,111 @@
+package com.ismartcoding.plain.features.telephony.sms
+
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.MmsSendResultData
+import com.ismartcoding.plain.app.events.SendResultCodes
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class SmsSyncContractTest {
+    @Test
+    fun `SMS synchronization event names are explicit and unique`() {
+        assertEquals("SMS_PROVIDER_CHANGED", EventType.SMS_PROVIDER_CHANGED.name)
+        assertEquals("SMS_SEND_RESULT", EventType.SMS_SEND_RESULT.name)
+        assertEquals("MMS_SEND_RESULT", EventType.MMS_SEND_RESULT.name)
+        assertEquals(EventType.entries.size, EventType.entries.map { it.name }.toSet().size)
+    }
+
+    @Test
+    fun `content MMS predicate includes sent and retrieved PDUs`() {
+        assertEquals("m_type IN (128, 132)", SmsProviderContract.MMS_CONTENT_FILTER)
+    }
+
+    @Test
+    fun `provider change bursts coalesce distinct URIs and clear after delivery`() {
+        val changes = SmsProviderChangeBuffer()
+        changes.start()
+
+        assertEquals(true, changes.add("content://sms/1"))
+        assertEquals(true, changes.add("content://mms/2"))
+        assertEquals(true, changes.add("content://sms/1"))
+        assertEquals(listOf("content://sms/1", "content://mms/2"), changes.drain())
+        assertEquals(emptyList<String>(), changes.drain())
+    }
+
+    @Test
+    fun `stopping provider changes clears queued work and rejects later changes`() {
+        val changes = SmsProviderChangeBuffer()
+        changes.start()
+        changes.add("content://sms/1")
+
+        changes.stop()
+
+        assertEquals(emptyList<String>(), changes.drain())
+        assertEquals(false, changes.add("content://mms/2"))
+    }
+
+    @Test
+    fun `message IDs are partitioned between SMS and MMS providers`() {
+        val ids = SmsProviderContract.partitionMessageIds("12,mms_34,56,mms_78")
+
+        assertEquals(listOf("12", "56"), ids.sms)
+        assertEquals(listOf("34", "78"), ids.mms)
+    }
+
+    @Test
+    fun `recipient IDs retain every distinct participant`() {
+        assertEquals(
+            listOf("7", "8", "9"),
+            SmsProviderContract.parseRecipientIds(" 7  8 9 8 "),
+        )
+    }
+
+    @Test
+    fun `SMS PendingIntent identities are unique per request and part`() {
+        val first = SmsProviderContract.smsSentIntentIdentity("com.example", "request-a", 0)
+        val secondPart = SmsProviderContract.smsSentIntentIdentity("com.example", "request-a", 1)
+        val secondRequest = SmsProviderContract.smsSentIntentIdentity("com.example", "request-b", 0)
+
+        assertNotEquals(first, secondPart)
+        assertNotEquals(first, secondRequest)
+        assertTrue(first.action.contains("request-a.0"))
+        assertTrue(first.data.endsWith("/request-a/0"))
+    }
+
+    @Test
+    fun `MMS send timeout is a terminal correlated failure`() {
+        assertEquals(
+            MmsSendResultData("pending", true, 0),
+            MmsSendResultData.success("pending"),
+        )
+        assertEquals(
+            MmsSendResultData(
+                pendingId = "pending",
+                success = false,
+                resultCode = SmsProviderContract.SEND_RESULT_TIMEOUT,
+            ),
+            MmsSendResultData.timeout("pending"),
+        )
+        assertEquals(
+            MmsSendResultData("pending", false, SendResultCodes.CANCELLED),
+            MmsSendResultData.cancelled("pending"),
+        )
+    }
+
+    @Test
+    fun `large MMS ID selections are numeric literal chunks without bind arguments`() {
+        val predicate = SmsProviderContract.numericIdPredicate(
+            "_id",
+            (1..1001).map(Int::toString),
+        ).orEmpty()
+
+        assertEquals(3, Regex("_id IN").findAll(predicate).count())
+        assertFalse(predicate.contains('?'))
+        assertTrue(predicate.contains("1001"))
+        assertEquals(null, SmsProviderContract.numericIdPredicate("_id", listOf("1", "not-an-id")))
+    }
+
+}

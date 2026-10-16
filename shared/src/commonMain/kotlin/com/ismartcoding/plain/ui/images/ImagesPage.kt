@@ -1,0 +1,331 @@
+package com.ismartcoding.plain.ui.images
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.ismartcoding.plain.platform.system.AppFeatureType
+import com.ismartcoding.plain.platform.system.hasPermission
+import com.ismartcoding.plain.app.events.PermissionsResultEvent
+import com.ismartcoding.plain.features.files.FileSortBy
+import com.ismartcoding.plain.lib.Channel
+import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
+import com.ismartcoding.plain.ui.navigation.PBackHandler
+import com.ismartcoding.plain.platform.media.getMediaItemUriString
+import com.ismartcoding.plain.ui.platform.system.isGestureInteractionMode
+import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.ui.base.AnimatedBottomAction
+import com.ismartcoding.plain.ui.base.BottomSpace
+import com.ismartcoding.plain.ui.components.NeedPermissionColumn
+import com.ismartcoding.plain.ui.base.NoDataColumn
+import com.ismartcoding.plain.ui.components.StoragePermissionResumeEffect
+import com.ismartcoding.plain.ui.base.dragselect.gridDragSelect
+import com.ismartcoding.plain.ui.base.dragselect.rememberDragSelectState
+import com.ismartcoding.plain.ui.base.fastscroll.LazyVerticalGridScrollbar
+import com.ismartcoding.plain.ui.components.pinchZoomGrid
+import com.ismartcoding.plain.ui.base.pullrefresh.LoadMoreRefreshContent
+import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
+import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
+import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
+import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
+import com.ismartcoding.plain.ui.components.refreshStoragePermission
+import com.ismartcoding.plain.ui.components.rememberBoostFlingBehavior
+import com.ismartcoding.plain.ui.media.ImageGridItem
+import com.ismartcoding.plain.ui.media.MediaDateGroupHeader
+import com.ismartcoding.plain.ui.components.MediaFilesSelectModeBottomActions
+import com.ismartcoding.plain.ui.media.MediaTopBar
+import com.ismartcoding.plain.ui.media.viewer.previewer.rememberPreviewerState
+import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
+import com.ismartcoding.plain.ui.media.extensions.reset
+import com.ismartcoding.plain.ui.media.groupMediaByDate
+import com.ismartcoding.plain.ui.casting.CastViewModel
+import com.ismartcoding.plain.ui.images.ImagesViewModel
+import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
+import com.ismartcoding.plain.ui.tags.TagsViewModel
+import com.ismartcoding.plain.ui.state.exitSearchMode
+import com.ismartcoding.plain.ui.navigation.NavLoadGate
+import com.ismartcoding.plain.ui.casting.CastDialog
+import com.ismartcoding.plain.ui.tags.TagsBottomSheet
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.image as ui_drawable_image
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ImagesPage(
+    navController: NavHostController,
+    initialLoadGate: NavLoadGate? = null,
+    imagesVM: ImagesViewModel = viewModel(key = "imagesVM") { ImagesViewModel() },
+    tagsVM: TagsViewModel = viewModel(key = "imageTagsVM") { TagsViewModel() },
+    mediaFoldersVM: MediaFoldersViewModel = viewModel(key = "imageFoldersVM") { MediaFoldersViewModel() },
+    castVM: CastViewModel = viewModel(key = "imageCastVM") { CastViewModel() },
+) {
+    val scope = rememberCoroutineScope()
+    tagsVM.dataType.value = imagesVM.dataType
+    mediaFoldersVM.dataType.value = imagesVM.dataType
+    val tagsState by tagsVM.itemsFlow.collectAsState()
+    val hapticFeedback = LocalHapticFeedback.current
+    val itemsState by imagesVM.itemsFlow.collectAsState()
+    val scrollState = rememberLazyGridState()
+    imagesVM.scrollStateMap[0] = scrollState
+    val dragSelectState = rememberDragSelectState({ scrollState })
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(canScroll = {
+        scrollState.firstVisibleItemIndex > 0 && !dragSelectState.selectMode
+    })
+    val previewerState = rememberPreviewerState()
+    val tagsMapState by tagsVM.tagsMapFlow.collectAsState()
+    val bucketsMap by mediaFoldersVM.bucketsMapFlow.collectAsState()
+    val cellsPerRow = remember { mutableIntStateOf(UserPrefs.imageGridCellsPerRow.value) }
+    val density = LocalDensity.current
+    val windowInfo = LocalWindowInfo.current
+    val imageWidthPx = remember(cellsPerRow.value, windowInfo.containerSize.width) {
+        with(density) {
+            ((windowInfo.containerSize.width.toDp() - ((cellsPerRow.value - 1) * 2).dp) / cellsPerRow.value).toPx().toInt()
+        }
+    }
+    val topRefreshLayoutState = rememberRefreshLayoutState {
+        scope.launch {
+            imagesVM.loadWithAiSearchAsync(tagsVM)
+            mediaFoldersVM.loadAsync()
+            setRefreshState(RefreshContentState.Finished)
+        }
+    }
+
+    PBackHandler(enabled = previewerState.visible || dragSelectState.selectMode || castVM.castMode.value || imagesVM.showSearchBar.value) {
+        when {
+            previewerState.visible -> scope.launch { previewerState.closeTransform() }
+            dragSelectState.selectMode -> dragSelectState.exitSelectMode()
+            castVM.castMode.value -> castVM.exitCastMode()
+            imagesVM.showSearchBar.value && (!imagesVM.searchActive.value || imagesVM.queryText.value.isEmpty()) -> {
+                imagesVM.exitSearchMode()
+                imagesVM.showLoading.value = true
+                scope.launch {
+                    imagesVM.loadAsync(tagsVM)
+                }
+            }
+        }
+    }
+
+    val reloadAfterGrant: () -> Unit = {
+        scope.launch {
+            cellsPerRow.value = UserPrefs.imageGridCellsPerRow.value
+            imagesVM.sortBy.value = UserPrefs.imageSortBy.value
+            imagesVM.loadAsync(tagsVM)
+            mediaFoldersVM.loadAsync()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        imagesVM.hasPermission.value = AppFeatureType.FILES.hasPermission()
+        if (imagesVM.hasPermission.value) {
+            initialLoadGate?.await()
+            reloadAfterGrant()
+        }
+    }
+    LaunchedEffect(Channel.sharedFlow) {
+        Channel.sharedFlow.collect { event ->
+            when (event) {
+                is PermissionsResultEvent -> refreshStoragePermission(imagesVM.hasPermission, reloadAfterGrant)
+            }
+        }
+    }
+    StoragePermissionResumeEffect(imagesVM.hasPermission, reloadAfterGrant)
+    LaunchedEffect(dragSelectState.selectMode, (previewerState.visible && !isGestureInteractionMode())) {
+        if (dragSelectState.selectMode || (previewerState.visible && !isGestureInteractionMode())) {
+            scrollBehavior.reset()
+        }
+    }
+
+    ViewImageBottomSheet(imagesVM, tagsVM, tagsMapState, tagsState, dragSelectState)
+
+    if (imagesVM.showTagsDialog.value) {
+        TagsBottomSheet(tagsVM) {
+            imagesVM.showTagsDialog.value = false
+        }
+    }
+
+    CastDialog(castVM)
+
+    // Date grouping is computed outside the grid DSL: the DSL block re-executes
+    // on every recomposition (tags/buckets landing right after items), which
+    // would re-run the O(n) grouping each time.
+    val isGroupMode = imagesVM.sortBy.value == FileSortBy.TAKEN_AT_DESC
+            && imagesVM.queryText.value.isEmpty()
+            && !imagesVM.useAiSearch.value
+    val groupedItems = remember(itemsState, isGroupMode) {
+        if (isGroupMode) groupMediaByDate(itemsState, { it.takenAt ?: it.createdAt }) else emptyList()
+    }
+
+    MediaTopBar(
+        navController = navController,
+        mediaVM = imagesVM,
+        tagsVM = tagsVM,
+        castVM = castVM,
+        mediaFoldersVM = mediaFoldersVM,
+        dragSelectState = dragSelectState,
+                scrollBehavior = scrollBehavior,
+                bucketsMap = bucketsMap,
+                itemsState = itemsState,
+                scrollToTop = {
+                    scope.launch {
+                        scrollState.scrollToItem(0)
+                    }
+                },
+                onSortSelected = { sortBy ->
+                    scope.launch {
+                        UserPrefs.imageSortBy.value = sortBy
+                        imagesVM.sortBy.value = sortBy
+                        imagesVM.loadAsync(tagsVM)
+                    }
+                },
+                onSearchAction = { tv ->
+                    scope.launch {
+                        imagesVM.loadWithAiSearchAsync(tv)
+                    }
+                },
+        bottomBar = {
+            AnimatedBottomAction(visible = dragSelectState.showBottomActions()) {
+                MediaFilesSelectModeBottomActions(
+                    vm = imagesVM,
+                    tagsVM = tagsVM,
+                    tagsState = tagsState,
+                    dragSelectState = dragSelectState,
+                    getItemUri = { getMediaItemUriString(imagesVM.dataType, it) },
+                    getCollectableItems = { imagesVM.itemsFlow.collectAsStateValue() },
+                    isInTrashMode = imagesVM.trash.value
+                )
+            }
+        },
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = paddingValues.calculateTopPadding())
+        ) {
+            if (!imagesVM.hasPermission.value) {
+                NeedPermissionColumn(UiRes.drawable.ui_drawable_image, AppFeatureType.FILES.getPermission()!!); return@Column
+            }
+
+            PullToRefresh(refreshLayoutState = topRefreshLayoutState) {
+                AnimatedVisibility(visible = true, enter = fadeIn(), exit = fadeOut()) {
+                    if (itemsState.isNotEmpty()) {
+                        val flingBehavior = rememberBoostFlingBehavior(cellsPerRow.value / 3f)
+                        LazyVerticalGridScrollbar(state = scrollState) {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(cellsPerRow.value), state = scrollState, flingBehavior = flingBehavior,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                                    .gridDragSelect(items = itemsState, state = dragSelectState)
+                                    .pinchZoomGrid(cellsPerRow = cellsPerRow, hapticFeedback = hapticFeedback, scope = scope) {
+                                        UserPrefs.imageGridCellsPerRow.value = it
+                                    },
+                                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                if (isGroupMode) {
+                                    groupedItems.forEach { group ->
+                                        item(span = { GridItemSpan(maxLineSpan) }, key = "header_${group.dateKey}", contentType = "header") {
+                                            val ids = group.items.map { it.id }
+                                            val allSelected = ids.isNotEmpty() && ids.all { dragSelectState.isSelected(it) }
+                                            MediaDateGroupHeader(
+                                                dateLabel = group.dateLabel,
+                                                allSelected = allSelected,
+                                                partialSelected = !allSelected && ids.any { dragSelectState.isSelected(it) },
+                                                showCheckbox = dragSelectState.selectMode,
+                                            ) {
+                                                if (!dragSelectState.selectMode) dragSelectState.enterSelectMode()
+                                                if (allSelected) dragSelectState.removeSelectedIds(ids) else dragSelectState.addSelectedIds(ids)
+                                            }
+                                        }
+                                        items(group.items, key = { it.id }, contentType = { "image" }, span = { GridItemSpan(1) }) { m ->
+                                            ImageGridItem(
+                                                scope,
+                                                modifier = Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
+                                                imagesVM,
+                                                castVM,
+                                                m,
+                                                showSize = cellsPerRow.value < 6,
+                                                previewerState,
+                                                dragSelectState,
+                                                imageWidthPx
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    items(itemsState, key = { it.id }, contentType = { "image" }, span = { GridItemSpan(1) }) { m ->
+                                        ImageGridItem(
+                                            scope,
+                                            modifier = Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
+                                            imagesVM,
+                                            castVM,
+                                            m,
+                                            showSize = cellsPerRow.value < 6,
+                                            previewerState,
+                                            dragSelectState,
+                                            imageWidthPx
+                                        )
+                                    }
+                                }
+                                item(span = { GridItemSpan(maxLineSpan) }, key = "loadMore") {
+                                    if (itemsState.isNotEmpty() && !imagesVM.noMore.value) {
+                                        LaunchedEffect(Unit) { scope.launch(Dispatchers.Default) { imagesVM.moreAsync(tagsVM) } }
+                                    }
+                                    LoadMoreRefreshContent(imagesVM.noMore.value)
+                                }
+                                item(span = { GridItemSpan(maxLineSpan) }, key = "bottomSpace") { BottomSpace(paddingValues) }
+                            }
+                        }
+                    } else {
+                        NoDataColumn(loading = imagesVM.showLoading.value, search = imagesVM.showSearchBar.value)
+                    }
+                }
+            }
+        }
+    }
+
+    MediaPreviewer(
+        state = previewerState,
+        tagsVM = tagsVM,
+        tagsMap = tagsMapState,
+        tagsState = tagsState,
+        onRenamed = {
+            scope.launch {
+                imagesVM.loadAsync(tagsVM)
+            }
+        },
+        deleteAction = { item ->
+            scope.launch {
+                imagesVM.delete(tagsVM, setOf(item.mediaId))
+                previewerState.closeTransform()
+            }
+        },
+        onTagsChanged = {},
+    )
+}

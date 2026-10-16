@@ -1,16 +1,16 @@
 package com.ismartcoding.plain.ui.components
 
-import com.ismartcoding.plain.features.FavoriteFolderHelper
-import com.ismartcoding.plain.enums.FilesType
+import com.ismartcoding.plain.features.files.FavoriteFoldersClient
+import com.ismartcoding.plain.features.files.FilesType
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
-import com.ismartcoding.plain.platform.appDir
-import com.ismartcoding.plain.platform.fileExists
-import com.ismartcoding.plain.platform.getInternalStorageName
-import com.ismartcoding.plain.platform.getInternalStoragePath
-import com.ismartcoding.plain.platform.getSDCardPath
-import com.ismartcoding.plain.platform.getUsbDiskPaths
-import com.ismartcoding.plain.ui.models.FilesViewModel
-import com.ismartcoding.plain.ui.models.FolderOption
+import com.ismartcoding.plain.platform.system.appDir
+import com.ismartcoding.plain.platform.files.fileExists
+import com.ismartcoding.plain.platform.files.getInternalStorageName
+import com.ismartcoding.plain.platform.files.getInternalStoragePath
+import com.ismartcoding.plain.platform.files.getSDCardPath
+import com.ismartcoding.plain.platform.files.getUsbDiskPaths
+import com.ismartcoding.plain.ui.files.FilesViewModel
+import com.ismartcoding.plain.features.files.FolderOption
 import com.ismartcoding.plain.lib.withIO
 
 suspend fun buildFolderOptions(
@@ -25,7 +25,7 @@ suspend fun buildFolderOptions(
     val externalFilesDirPath = appDir()
     val sdCardPath = getSDCardPath()
     val usbPaths = getUsbDiskPaths()
-    val favoriteFolders = FavoriteFolderHelper.refresh()
+    val favoriteFolders = FavoriteFoldersClient.refresh()
 
     val allPaths = mutableListOf(internalStoragePath, externalFilesDirPath)
     if (sdCardPath.isNotEmpty()) allPaths.add(sdCardPath)

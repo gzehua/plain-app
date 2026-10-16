@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.data.DUpdateInfo
+import com.ismartcoding.plain.features.settings.DUpdateInfo
 import kotlinx.serialization.Serializable
 
 @Serializable

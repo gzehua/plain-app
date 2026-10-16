@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.helpers.AppFileStore
-import com.ismartcoding.plain.graphql.models.AppFile
+import com.ismartcoding.plain.features.files.stored.AppFileStore
+import com.ismartcoding.plain.api.graphql.models.AppFile
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 

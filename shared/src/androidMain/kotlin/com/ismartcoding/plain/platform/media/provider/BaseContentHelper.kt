@@ -1,0 +1,35 @@
+package com.ismartcoding.plain.platform.media.provider
+
+import android.content.Context
+import android.net.Uri
+import android.provider.BaseColumns
+import com.ismartcoding.plain.helpers.ContentWhere
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.lib.extensions.count
+import com.ismartcoding.plain.lib.extensions.getSearchCursor
+import com.ismartcoding.plain.lib.extensions.getStringValue
+import com.ismartcoding.plain.lib.extensions.map
+import com.ismartcoding.plain.helpers.StringHelper
+
+abstract class BaseContentHelper {
+    protected abstract val uriExternal: Uri
+    protected abstract fun getProjection(): Array<String>
+
+    suspend fun countAsync(context: Context, where: ContentWhere): Int = withIO {
+        context.contentResolver.count(uriExternal, where)
+    }
+
+    suspend fun getIdsAsync(context: Context, where: ContentWhere): Set<String> = withIO {
+        context.contentResolver.getSearchCursor(uriExternal, getProjection(), where)?.map { cursor, cache ->
+            cursor.getStringValue(BaseColumns._ID, cache)
+        }?.toSet() ?: emptySet()
+    }
+
+    fun deleteByIdsAsync(context: Context, ids: Set<String>) {
+        ids.chunked(500).forEach { chunk ->
+            val selection = "${BaseColumns._ID} IN (${StringHelper.getQuestionMarks(chunk.size)})"
+            val selectionArgs = chunk.map { it }.toTypedArray()
+            context.contentResolver.delete(uriExternal, selection, selectionArgs)
+        }
+    }
+}

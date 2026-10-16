@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.rust.event
 
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEventData
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.HostEventData
 import kotlinx.serialization.Serializable
 
 @Serializable

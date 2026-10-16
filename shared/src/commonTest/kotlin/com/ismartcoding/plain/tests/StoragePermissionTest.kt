@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.tests
 
 import androidx.compose.runtime.mutableStateOf
-import com.ismartcoding.plain.ui.base.refreshStoragePermission
+import com.ismartcoding.plain.ui.components.refreshStoragePermission
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

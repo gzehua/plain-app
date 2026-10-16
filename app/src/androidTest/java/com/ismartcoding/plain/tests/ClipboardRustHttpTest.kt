@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.features.ClipboardHelper
+import com.ismartcoding.plain.features.clipboard.ClipboardClient
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -16,21 +16,21 @@ class ClipboardRustHttpTest {
         val text = "$marker 🌍 100%_ \\ \"quoted\""
         val ids = mutableListOf<String>()
         try {
-            val entry = checkNotNull(ClipboardHelper.record(text, source = marker, label = "label-$marker", sensitive = true))
+            val entry = checkNotNull(ClipboardClient.record(text, source = marker, label = "label-$marker", sensitive = true))
             ids += entry.id
             assertEquals(text, entry.text)
             assertEquals(marker, entry.source)
             assertEquals("label-$marker", entry.label)
             assertTrue(entry.sensitive)
-            assertNull(ClipboardHelper.record(text))
-            assertEquals(1, ClipboardHelper.count(marker))
-            assertEquals(entry, ClipboardHelper.getPage(50, 0, marker).single())
-            assertTrue(ClipboardHelper.getPage(50, 1, marker).isEmpty())
-            assertEquals(0, ClipboardHelper.deleteByIds(emptyList()))
-            assertEquals(1, ClipboardHelper.deleteByIds(ids))
-            assertEquals(0, ClipboardHelper.count(marker))
+            assertNull(ClipboardClient.record(text))
+            assertEquals(1, ClipboardClient.count(marker))
+            assertEquals(entry, ClipboardClient.getPage(50, 0, marker).single())
+            assertTrue(ClipboardClient.getPage(50, 1, marker).isEmpty())
+            assertEquals(0, ClipboardClient.deleteByIds(emptyList()))
+            assertEquals(1, ClipboardClient.deleteByIds(ids))
+            assertEquals(0, ClipboardClient.count(marker))
         } finally {
-            ClipboardHelper.deleteByIds(ids)
+            ClipboardClient.deleteByIds(ids)
         }
     }
 }

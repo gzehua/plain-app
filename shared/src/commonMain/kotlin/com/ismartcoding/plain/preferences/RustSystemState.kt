@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.enums.PasswordType
-import com.ismartcoding.plain.platform.Permission
+import com.ismartcoding.plain.features.settings.PasswordType
+import com.ismartcoding.plain.platform.permissions.Permission
 import kotlinx.coroutines.flow.StateFlow
 
 object RustSystemState {

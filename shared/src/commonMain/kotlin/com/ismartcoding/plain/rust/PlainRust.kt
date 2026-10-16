@@ -9,12 +9,12 @@ import com.ismartcoding.plain.rust.event.RustEventProjection
 import com.ismartcoding.plain.rust.host.RustHostApi
 import com.ismartcoding.plain.rust.request.ContentApiSession
 import com.ismartcoding.plain.rust.request.GraphqlRequest
-import com.ismartcoding.plain.events.*
+import com.ismartcoding.plain.app.events.*
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.platform.PlainHttpClientSpec
-import com.ismartcoding.plain.platform.createPlainHttpClient
-import com.ismartcoding.plain.platform.postText
+import com.ismartcoding.plain.rust.http.PlainHttpClientSpec
+import com.ismartcoding.plain.rust.http.createPlainHttpClient
+import com.ismartcoding.plain.rust.http.postText
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -128,6 +128,6 @@ object PlainRust {
             }
         }
         require(error.isEmpty()) { error }
-        return com.ismartcoding.plain.features.session.onlineClientIds.value.size
+        return com.ismartcoding.plain.features.sessions.onlineClientIds.value.size
     }
 }

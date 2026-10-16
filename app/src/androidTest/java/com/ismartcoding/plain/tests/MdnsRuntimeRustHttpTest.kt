@@ -2,7 +2,7 @@ package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.rust.request.RustContentApi
-import com.ismartcoding.plain.discover.RustMdnsRuntime
+import com.ismartcoding.plain.features.nearby.RustMdnsRuntime
 import kotlin.uuid.Uuid
 import kotlin.uuid.ExperimentalUuidApi
 import kotlinx.coroutines.runBlocking
@@ -18,7 +18,7 @@ class MdnsRuntimeRustHttpTest {
     fun closedPhysicalLeaseCannotAcquireAfterReleaseOrReplaceTheCurrentOwner() = runBlocking {
         RustMdnsRuntime.control("receiver")
         val closed = Uuid.random().toString()
-        fun physical(acquire: Boolean, lease: String) = com.ismartcoding.plain.discover.MdnsMulticastHost.handle(buildJsonObject {
+        fun physical(acquire: Boolean, lease: String) = com.ismartcoding.plain.features.nearby.MdnsMulticastHost.handle(buildJsonObject {
             put("acquire", acquire); put("lease", lease)
         }).boolean
         assertTrue(physical(false, closed))
@@ -55,7 +55,7 @@ class MdnsRuntimeRustHttpTest {
             val captured = RustMdnsRuntime.snapshot()
             val packets = RustMdnsRuntime.packets(captured, false)
             assertEquals(captured.getValue("running").jsonPrimitive.boolean, RustMdnsRuntime.running)
-            if (com.ismartcoding.plain.platform.getDeviceIP4s().isEmpty()) {
+            if (com.ismartcoding.plain.platform.system.getDeviceIP4s().isEmpty()) {
                 assertTrue(packets.all { it.srcPort > 0 && it.size > 0 })
             } else assertTrue(packets.any { it.summary.contains("PTR") && it.detail.contains("_plainapp._tcp.local") && it.srcPort > 0 && it.size > 0 })
             assertTrue(RustMdnsRuntime.services(captured).all { it.serviceType == "_plainapp._tcp.local" })

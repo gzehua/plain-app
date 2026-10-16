@@ -14,11 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.graphql.models.TagHostRecord
-import com.ismartcoding.plain.graphql.models.TagHostRelation
-import com.ismartcoding.plain.ui.base.PSelectionChip
-import com.ismartcoding.plain.ui.models.TagsViewModel
-import com.ismartcoding.plain.ui.models.launchSafe
+import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.TagHostRelation
+import com.ismartcoding.plain.ui.components.PSelectionChip
+import com.ismartcoding.plain.ui.tags.TagsViewModel
+import com.ismartcoding.plain.ui.state.launchSafe
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

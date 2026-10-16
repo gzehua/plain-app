@@ -1,6 +1,9 @@
 package com.ismartcoding.plain
 
-import com.ismartcoding.plain.ui.extensions.collectAsStateValue
+import com.ismartcoding.plain.ui.app.installComposeUi
+import com.ismartcoding.plain.ui.app.pendingCrashReport
+
+import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
 import com.ismartcoding.plain.preferences.*
 
@@ -12,52 +15,48 @@ import android.content.res.Configuration
 import android.database.CursorWindow
 import android.net.wifi.WifiManager
 import android.os.Bundle
-import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.platform.HttpServerManager
+import com.ismartcoding.plain.app.HttpServerManager
 import com.ismartcoding.plain.platform.isTPlus
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.enums.ExportFileType
-import com.ismartcoding.plain.enums.Language
-import com.ismartcoding.plain.enums.PickFileTag
-import com.ismartcoding.plain.enums.PickFileType
-import com.ismartcoding.plain.events.ExportFileResultEvent
-import com.ismartcoding.plain.events.IgnoreBatteryOptimizationResultEvent
-import com.ismartcoding.plain.events.PickFileResultEvent
-import com.ismartcoding.plain.events.WindowFocusChangedEvent
-import com.ismartcoding.plain.audio.AudioPlayer
-import com.ismartcoding.plain.platform.Permission
-import com.ismartcoding.plain.features.Permissions
+import com.ismartcoding.plain.features.files.ExportFileType
+import com.ismartcoding.plain.features.settings.Language
+import com.ismartcoding.plain.features.files.PickFileTag
+import com.ismartcoding.plain.features.files.PickFileType
+import com.ismartcoding.plain.app.events.ExportFileResultEvent
+import com.ismartcoding.plain.app.events.IgnoreBatteryOptimizationResultEvent
+import com.ismartcoding.plain.app.events.PickFileResultEvent
+import com.ismartcoding.plain.app.events.WindowFocusChangedEvent
+import com.ismartcoding.plain.features.audio.AudioPlayer
+import com.ismartcoding.plain.platform.permissions.Permission
+import com.ismartcoding.plain.ui.permissions.Permissions
 import com.ismartcoding.plain.features.bluetooth.client.BluetoothPermission
-import com.ismartcoding.plain.platform.isGranted
-import com.ismartcoding.plain.platform.publishLauncherShortcuts
+import com.ismartcoding.plain.platform.permissions.isGranted
+import com.ismartcoding.plain.platform.system.publishLauncherShortcuts
 import com.ismartcoding.plain.receivers.NetworkStateReceiver
 import com.ismartcoding.plain.receivers.PlugInControlReceiver
 import com.ismartcoding.plain.services.PlainAccessibilityService
 import com.ismartcoding.plain.services.ScreenMirrorService
-import com.ismartcoding.plain.platform.FilePickHelper
-import com.ismartcoding.plain.ui.models.AudioQueueViewModel
-import com.ismartcoding.plain.ui.models.ChannelViewModel
-import com.ismartcoding.plain.ui.models.MainViewModel
-import com.ismartcoding.plain.ui.models.PeerViewModel
-import com.ismartcoding.plain.ui.models.PomodoroViewModel
-import com.ismartcoding.plain.enums.DarkTheme
+import com.ismartcoding.plain.platform.system.FilePickHelper
+import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
+import com.ismartcoding.plain.ui.chat.ChannelViewModel
+import com.ismartcoding.plain.ui.app.MainViewModel
+import com.ismartcoding.plain.ui.chat.PeerViewModel
+import com.ismartcoding.plain.ui.pomodoro.PomodoroViewModel
+import com.ismartcoding.plain.ui.theme.DarkTheme
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.ui.page.CrashReportDialog
-import com.ismartcoding.plain.ui.nav.Routing
-import com.ismartcoding.plain.ui.page.Main
+import com.ismartcoding.plain.ui.settings.CrashReportDialog
+import com.ismartcoding.plain.ui.navigation.Routing
+import com.ismartcoding.plain.ui.navigation.Main
 import com.ismartcoding.plain.ui.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -72,8 +71,7 @@ class MainActivity : AppCompatActivity() {
     val pomodoroVM: PomodoroViewModel by viewModels()
     internal val peerVM: PeerViewModel by viewModels()
     internal val channelVM: ChannelViewModel by viewModels()
-    internal val navControllerState = mutableStateOf<NavHostController?>(null)
-    internal var pendingCrashReport by mutableStateOf<String?>(null)
+    internal val uiState = com.ismartcoding.plain.ui.app.ActivityUiState()
 
     internal val screenCapture = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null && ScreenMirrorService.instance == null) {
@@ -167,22 +165,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             registerReceiver(plugInReceiver, powerFilter); registerReceiver(networkStateReceiver, IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION))
         }
-        setContent {
-            AppTheme(
-                useDarkTheme = DarkTheme.isDarkTheme(UserPrefs.darkTheme.collectAsStateValue()),
-                amoledDarkTheme = UserPrefs.amoledDarkTheme.collectAsStateValue(),
-            ) {
-                Main(
-                    navControllerState, onLaunched = { handleIntent(intent) },
-                    mainVM, audioQueueVM, pomodoroVM,
-                    peerVM = peerVM,
-                    channelVM = channelVM
-                )
-                pendingCrashReport?.let { report ->
-                    CrashReportDialog(crashReport = report, navController = navControllerState.value, onDismiss = { pendingCrashReport = null })
-                }
-            }
-        }
+        installComposeUi()
         AudioPlayer.ensurePlayer(this)
         HttpServerManager.ensureStarted()
         lifecycleScope.launch(Dispatchers.Default) {

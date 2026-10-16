@@ -4,7 +4,7 @@ import android.content.ContentResolver
 import android.os.Bundle
 import android.os.Parcelable
 import android.text.SpannableString
-import com.ismartcoding.plain.data.SortBy
+import com.ismartcoding.plain.features.files.SortBy
 import com.ismartcoding.plain.platform.isTPlus
 
 fun Bundle.sort(sortBy: SortBy) {

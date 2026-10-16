@@ -1,0 +1,33 @@
+package com.ismartcoding.plain.platform.system
+
+import com.ismartcoding.plain.app.events.RequestPermissionsEvent
+import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.lib.receiveEventHandler
+import kotlinx.coroutines.Job
+
+/**
+ * Registers a handler for [RequestPermissionsEvent] on iOS. When the UI
+ * (e.g. [com.ismartcoding.plain.ui.components.NeedPermissionColumn]) requests a
+ * permission, this handler delegates to Swift via
+ * [IosPlatformRegistry.requestPermission].
+ *
+ * Swift's implementation is asynchronous — the system permission dialog
+ * may take seconds before the user responds. When it does, Swift calls
+ * [IosPermissionCallback.onPermissionResult], which sends
+ * [com.ismartcoding.plain.app.events.PermissionsResultEvent] and optionally
+ * shows a "go to Settings" dialog if the permission was denied.
+ *
+ * Call [register] once at app startup (from [com.ismartcoding.plain.ui.app.initIosApp]).
+ */
+object IosPermissionEvents {
+    private var eventJob: Job? = null
+
+    fun register() {
+        if (eventJob?.isActive == true) return
+        eventJob = receiveEventHandler<RequestPermissionsEvent> { event ->
+            val permission = event.permissions.first()
+            LogCat.d("IosPermissionEvents: requesting ${permission.name}")
+            IosPlatformRegistry.requestPermission(permission.name)
+        }
+    }
+}

@@ -1,9 +1,9 @@
 package com.ismartcoding.plain.crypto
 
-import com.ismartcoding.plain.platform.chaCha20Decrypt
-import com.ismartcoding.plain.platform.computeECDHSharedKey
-import com.ismartcoding.plain.platform.verifyEd25519
-import com.ismartcoding.plain.platform.verifyEd25519Signature
+import com.ismartcoding.plain.platform.system.chaCha20Decrypt
+import com.ismartcoding.plain.platform.system.computeECDHSharedKey
+import com.ismartcoding.plain.platform.system.verifyEd25519
+import com.ismartcoding.plain.platform.system.verifyEd25519Signature
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

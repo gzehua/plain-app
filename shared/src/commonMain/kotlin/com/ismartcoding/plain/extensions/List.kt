@@ -1,10 +1,10 @@
 package com.ismartcoding.plain.extensions
 
-import com.ismartcoding.plain.features.file.extension
+import com.ismartcoding.plain.features.files.extension
 
-import com.ismartcoding.plain.graphql.models.File as FileEntry
+import com.ismartcoding.plain.api.graphql.models.File as FileEntry
 
-import com.ismartcoding.plain.features.file.FileSortBy
+import com.ismartcoding.plain.features.files.FileSortBy
 
 fun List<FileEntry>.sorted(sortBy: FileSortBy): List<FileEntry> {
     val comparator = compareBy<FileEntry> { if (it.isDir) 0 else 1 }

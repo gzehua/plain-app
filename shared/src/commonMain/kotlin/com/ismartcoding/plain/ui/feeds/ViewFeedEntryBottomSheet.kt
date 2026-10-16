@@ -1,0 +1,140 @@
+package com.ismartcoding.plain.ui.feeds
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.ui.extensions.rememberFilePath
+import com.ismartcoding.plain.features.feeds.displayImage
+import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.TagHostRelation
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.platform.system.formatDateTime
+import com.ismartcoding.plain.platform.system.launchUrl
+import com.ismartcoding.plain.ui.base.BottomSpace
+import com.ismartcoding.plain.ui.base.CopyIconButton
+import com.ismartcoding.plain.ui.base.PCard
+import com.ismartcoding.plain.ui.base.PListItem
+import com.ismartcoding.plain.ui.base.PModalBottomSheet
+import com.ismartcoding.plain.ui.base.PSheetHeader
+import com.ismartcoding.plain.ui.base.PSheetHeaderThumb
+import com.ismartcoding.plain.ui.base.PSheetPrimaryAction
+import com.ismartcoding.plain.ui.base.PSheetPrimaryActionsRow
+import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
+import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.components.TagSelector
+import com.ismartcoding.plain.ui.components.DialogHelper
+import com.ismartcoding.plain.ui.feeds.FeedEntriesViewModel
+import com.ismartcoding.plain.ui.feeds.FeedsViewModel
+import com.ismartcoding.plain.ui.tags.TagsViewModel
+import com.ismartcoding.plain.ui.state.enterSelectMode
+import com.ismartcoding.plain.ui.state.select
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.circle_check as ui_drawable_circle_check
+import com.ismartcoding.plain.ui.resources.circle_dot as ui_drawable_circle_dot
+import com.ismartcoding.plain.ui.resources.list_checks as ui_drawable_list_checks
+import com.ismartcoding.plain.ui.resources.rss as ui_drawable_rss
+import com.ismartcoding.plain.ui.theme.PlainTheme
+import org.jetbrains.compose.resources.stringResource
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun ViewFeedEntryBottomSheet(
+    feedEntriesVM: FeedEntriesViewModel,
+    feedsVM: FeedsViewModel,
+    tagsVM: TagsViewModel,
+    tagsMap: Map<String, List<TagHostRelation>>,
+    tagsState: List<TagHostRecord>,
+) {
+    val m = feedEntriesVM.selectedItem.value ?: return
+    val feeds by feedsVM.itemsFlow.collectAsState()
+    val feedLogo = feeds.find { it.id == m.feedId }?.logo?.takeIf { it.isNotEmpty() }
+    val onDismiss = {
+        feedEntriesVM.selectedItem.value = null
+    }
+
+    PModalBottomSheet(
+        onDismissRequest = {
+            onDismiss()
+        },
+    ) {
+        LazyColumn {
+            item {
+                VerticalSpace(16.dp)
+            }
+            item {
+                PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
+                    PSheetHeader(
+                        thumbnail = {
+                            PSheetHeaderThumb(
+                                model = rememberFilePath(m.displayImage).ifEmpty { feedLogo },
+                                fallbackIcon = UiRes.drawable.ui_drawable_rss,
+                                contentScale = ContentScale.Crop,
+                            )
+                        },
+                        title = m.title.ifEmpty { m.url },
+                        subtitle = (if (m.author.isNotEmpty()) m.author + " · " else "") + m.publishedAt.formatDateTime(),
+                    )
+                    PSheetPrimaryActionsRow {
+                        if (!feedEntriesVM.showSearchBar.value) {
+                            PSheetPrimaryAction(UiRes.drawable.ui_drawable_list_checks, stringResource(Res.string.select)) {
+                                feedEntriesVM.enterSelectMode()
+                                feedEntriesVM.select(m.id)
+                                onDismiss()
+                            }
+                        }
+                        // Toggle in place: the sheet stays open and the action flips
+                        // to the opposite state via the updated selected copy.
+                        PSheetPrimaryAction(
+                            if (m.read) UiRes.drawable.ui_drawable_circle_dot else UiRes.drawable.ui_drawable_circle_check,
+                            stringResource(if (m.read) Res.string.mark_as_unread else Res.string.mark_as_read),
+                        ) {
+                            feedEntriesVM.selectedItem.value = m.copy(read = !m.read)
+                            feedEntriesVM.markRead(setOf(m.id), !m.read)
+                        }
+                        PSheetPrimaryDeleteAction(stringResource(Res.string.delete)) {
+                            feedEntriesVM.delete(tagsVM, setOf(m.id))
+                            onDismiss()
+                        }
+                    }
+                }
+                VerticalSpace(dp = 16.dp)
+                Subtitle(text = stringResource(Res.string.tags))
+                TagSelector(
+                    data = m,
+                    tagsVM = tagsVM,
+                    tagsMap = tagsMap,
+                    tagsState = tagsState,
+                    onChangedAsync = {
+                        feedEntriesVM.loadAsync(tagsVM)
+                    }
+                )
+                VerticalSpace(dp = 16.dp)
+                PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
+                    PListItem(modifier = Modifier.clickable {
+                        try { launchUrl(m.url) } catch (_: Exception) { DialogHelper.showMessage(Res.string.no_browser_error) }
+                    }, title = m.url, separatedActions = true, action = {
+                        CopyIconButton(text = m.url, clipLabel = stringResource(Res.string.link))
+                    })
+                }
+                VerticalSpace(dp = 16.dp)
+                PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
+                    PListItem(title = stringResource(Res.string.published_at), value = m.publishedAt.formatDateTime())
+                    PListItem(title = stringResource(Res.string.created_at), value = m.createdAt.formatDateTime())
+                    PListItem(title = stringResource(Res.string.updated_at), value = m.updatedAt.formatDateTime())
+                }
+                BottomSpace()
+            }
+        }
+    }
+}

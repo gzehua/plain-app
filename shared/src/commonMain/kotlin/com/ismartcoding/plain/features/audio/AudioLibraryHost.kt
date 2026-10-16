@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.audio
 
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.platform.PlatformLock
+import com.ismartcoding.plain.platform.system.PlatformLock
 import kotlinx.serialization.json.*
 
 object AudioLibraryHost {

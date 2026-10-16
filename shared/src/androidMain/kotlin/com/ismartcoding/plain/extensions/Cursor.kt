@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.extensions
 
 
-import com.ismartcoding.plain.graphql.models.File as FileEntry
+import com.ismartcoding.plain.api.graphql.models.File as FileEntry
 
 import android.database.Cursor
 import android.provider.MediaStore

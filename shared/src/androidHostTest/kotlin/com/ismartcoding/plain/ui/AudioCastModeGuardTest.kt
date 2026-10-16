@@ -25,23 +25,23 @@ import kotlin.test.fail
 class AudioCastModeGuardTest {
 
     private val topBarPath =
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/components/MediaTopBar.kt"
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/media/MediaTopBar.kt"
     private val homePath =
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/audio/AudioHomePage.kt"
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/audio/AudioHomePage.kt"
     private val allPath =
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/audio/AudioAllPage.kt"
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/audio/AudioAllPage.kt"
     private val artistPath =
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/audio/AudioArtistPage.kt"
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/audio/AudioArtistPage.kt"
     private val playlistPath =
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/playlist/PlaylistDetailPage.kt"
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/audio/playlists/PlaylistDetailPage.kt"
     private val itemPath =
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/audio/components/AudioListItem.kt"
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/audio/components/AudioListItem.kt"
     private val actionsPath =
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/audio/components/AudioListItemActions.kt"
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/audio/components/AudioListItemActions.kt"
     private val castVmPath =
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/models/CastViewModel.kt"
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/casting/CastViewModel.kt"
     private val fabPath =
-        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/page/cast/CastQueueFab.kt"
+        "shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/casting/CastQueueFab.kt"
 
     private fun source(relPath: String): String {
         var dir = File(System.getProperty("user.dir")!!).absoluteFile

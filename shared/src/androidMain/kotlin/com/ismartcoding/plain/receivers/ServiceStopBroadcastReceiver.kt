@@ -4,8 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
-import com.ismartcoding.plain.AppIntents
-import com.ismartcoding.plain.platform.HttpServerManager
+import com.ismartcoding.plain.app.AppIntents
+import com.ismartcoding.plain.app.HttpServerManager
 import com.ismartcoding.plain.services.HttpServerService
 import com.ismartcoding.plain.services.ScreenMirrorService
 

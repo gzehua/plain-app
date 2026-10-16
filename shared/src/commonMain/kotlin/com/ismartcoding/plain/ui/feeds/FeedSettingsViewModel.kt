@@ -1,0 +1,79 @@
+package com.ismartcoding.plain.ui.feeds
+
+import com.ismartcoding.plain.ui.state.launchSafe
+
+import com.ismartcoding.plain.preferences.*
+
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.app.Constants
+import com.ismartcoding.plain.platform.system.DataType
+import com.ismartcoding.plain.features.tags.TagsClient
+import com.ismartcoding.plain.features.feeds.FeedEntriesClient
+import com.ismartcoding.plain.lib.TimeHelper
+import com.ismartcoding.plain.features.feeds.feedWorkerCancelRepeat
+import com.ismartcoding.plain.features.feeds.feedWorkerStartRepeat
+import kotlinx.coroutines.launch
+import kotlin.time.Instant
+
+class FeedSettingsViewModel : ViewModel() {
+    var showIntervalDialog = mutableStateOf(false)
+    var autoRefresh = mutableStateOf(true)
+    var autoRefreshInterval = mutableIntStateOf(7200)
+    var autoRefreshOnlyWifi = mutableStateOf(false)
+    var showClearFeedsDialog = mutableStateOf(false)
+    var clearFeedItemsTs = mutableLongStateOf(Constants.ONE_DAY * 7)
+
+    fun loadSettings() {
+        viewModelScope.launch {
+            autoRefresh.value = UserPrefs.feedAutoRefresh.value
+            autoRefreshInterval.intValue = UserPrefs.feedAutoRefreshInterval.value
+            autoRefreshOnlyWifi.value = UserPrefs.feedAutoRefreshOnlyWifi.value
+        }
+    }
+
+    fun setAutoRefresh(value: Boolean) {
+        autoRefresh.value = value
+        viewModelScope.launchSafe {
+            UserPrefs.feedAutoRefresh.value = value
+        }
+    }
+
+    fun setAutoRefreshInterval(value: Int) {
+        autoRefreshInterval.value = value
+        viewModelScope.launchSafe {
+            UserPrefs.feedAutoRefreshInterval.value = value
+        }
+    }
+
+    fun setAutoRefreshOnlyWifi(value: Boolean) {
+        autoRefreshOnlyWifi.value = value
+        viewModelScope.launchSafe {
+            UserPrefs.feedAutoRefreshOnlyWifi.value = value
+        }
+    }
+
+    suspend fun clearByFeedIdAsync(feedId: String) = withIO {
+        val ids = FeedEntriesClient.getIdsAsync("feed_id:$feedId")
+        TagsClient.deleteTagRelationByKeys(ids, DataType.FEED_ENTRY)
+        FeedEntriesClient.deleteAsync(ids)
+    }
+
+    fun clearAllAsync() {
+        viewModelScope.launchSafe {
+            TagsClient.deleteByTypeAsync(DataType.FEED_ENTRY)
+            FeedEntriesClient.deleteAllAsync()
+        }
+    }
+
+    suspend fun clearByTimeAsync(ts: Long) = withIO {
+        val time = TimeHelper.now().epochSeconds - ts
+        val ids = FeedEntriesClient.getIdsAsync("created_at:<${Instant.fromEpochSeconds(time)}")
+        TagsClient.deleteTagRelationByKeys(ids, DataType.FEED_ENTRY)
+        FeedEntriesClient.deleteAsync(ids)
+    }
+}

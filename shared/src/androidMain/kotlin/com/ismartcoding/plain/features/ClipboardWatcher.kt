@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.features
 
+import com.ismartcoding.plain.features.clipboard.ClipboardClient
+
 import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
@@ -7,18 +9,18 @@ import android.content.Intent
 import android.os.Build
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.clipboardManager
-import com.ismartcoding.plain.events.ClipboardChangedData
-import com.ismartcoding.plain.events.ClipboardSyncChangedEvent
-import com.ismartcoding.plain.events.WindowFocusChangedEvent
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
+import com.ismartcoding.plain.app.events.ClipboardChangedData
+import com.ismartcoding.plain.app.events.ClipboardSyncChangedEvent
+import com.ismartcoding.plain.app.events.WindowFocusChangedEvent
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.platform.Permission
-import com.ismartcoding.plain.platform.isEnabledAsync
+import com.ismartcoding.plain.platform.permissions.Permission
+import com.ismartcoding.plain.platform.permissions.isEnabledAsync
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -166,7 +168,7 @@ object ClipboardWatcher {
         }
         val sensitive = Build.VERSION.SDK_INT >= 33 &&
             clip.description.extras?.getBoolean(ClipDescription.EXTRA_IS_SENSITIVE, false) == true
-        val entry = ClipboardHelper.record(text, sensitive = sensitive) ?: return
+        val entry = ClipboardClient.record(text, sensitive = sensitive) ?: return
         if (sensitive) return
         sendEvent(
             HostEvent(

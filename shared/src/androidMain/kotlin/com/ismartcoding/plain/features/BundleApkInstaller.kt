@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features
 
-import com.ismartcoding.plain.platform.appCacheDir
+import com.ismartcoding.plain.platform.system.appCacheDir
 
 import android.app.PendingIntent
 import android.content.Intent
@@ -11,7 +11,7 @@ import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.lib.apk.ApkParsers
 import com.ismartcoding.plain.lib.apk.bean.ApkMeta
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.platform.PackageInstallResult
+import com.ismartcoding.plain.platform.system.PackageInstallResult
 import java.io.File
 import java.util.zip.ZipFile
 

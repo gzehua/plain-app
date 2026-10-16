@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.components
 
-import com.ismartcoding.plain.graphql.models.MediaBucket
+import com.ismartcoding.plain.api.graphql.models.MediaBucket
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
@@ -17,7 +17,7 @@ import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import com.ismartcoding.plain.lib.extensions.formatBytes
-import com.ismartcoding.plain.platform.combineBitmapGrid
+import com.ismartcoding.plain.platform.media.combineBitmapGrid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.ismartcoding.plain.ui.resources.Res as UiRes

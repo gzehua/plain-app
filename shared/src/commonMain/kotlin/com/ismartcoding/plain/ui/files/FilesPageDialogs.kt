@@ -1,0 +1,80 @@
+package com.ismartcoding.plain.ui.files
+
+import com.ismartcoding.plain.preferences.*
+import com.ismartcoding.plain.i18n.*
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import org.jetbrains.compose.resources.stringResource
+import com.ismartcoding.plain.platform.files.createDirectory
+import com.ismartcoding.plain.platform.files.createFile
+import com.ismartcoding.plain.ui.components.TextFieldDialog
+import com.ismartcoding.plain.ui.components.FileSortDialog
+import com.ismartcoding.plain.ui.components.DialogHelper
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.ui.files.FilesViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+@Composable
+internal fun FilesPageDialogs(
+    filesVM: FilesViewModel, scope: CoroutineScope,
+) {
+    if (filesVM.showSortDialog.value) {
+        FileSortDialog(filesVM.sortBy, onSelected = {
+            scope.launch(Dispatchers.Default) { UserPrefs.fileSortBy.value = it; filesVM.sortBy.value = it; filesVM.loadAsync() }
+        }, onDismiss = { filesVM.showSortDialog.value = false })
+    }
+
+    if (filesVM.showCreateFolderDialog.value) {
+        val folderNameValue = remember { mutableStateOf("") }
+        TextFieldDialog(
+            title = stringResource(Res.string.create_folder), value = folderNameValue.value,
+            placeholder = stringResource(Res.string.name),
+            onValueChange = { folderNameValue.value = it },
+            onDismissRequest = { filesVM.showCreateFolderDialog.value = false },
+            onConfirm = { name ->
+                scope.launch {
+                    DialogHelper.showLoading()
+                        val error = withIO { runCatching { createDirectory(filesVM.selectedPath + "/" + name) }.exceptionOrNull() }
+                        DialogHelper.hideLoading()
+                        if (error != null) { DialogHelper.showMessage(error); return@launch }
+                        filesVM.loadAsync()
+                    filesVM.showCreateFolderDialog.value = false
+                }
+            }
+        )
+    }
+
+    if (filesVM.showCreateFileDialog.value) {
+        val fileNameValue = remember { mutableStateOf("") }
+        TextFieldDialog(
+            title = stringResource(Res.string.create_file), value = fileNameValue.value,
+            placeholder = stringResource(Res.string.name),
+            onValueChange = { fileNameValue.value = it },
+            onDismissRequest = { filesVM.showCreateFileDialog.value = false },
+            onConfirm = { name ->
+                scope.launch {
+                    DialogHelper.showLoading()
+                        val error = withIO { runCatching { createFile(filesVM.selectedPath + "/" + name) }.exceptionOrNull() }
+                        DialogHelper.hideLoading()
+                        if (error != null) { DialogHelper.showMessage(error); return@launch }
+                        filesVM.loadAsync()
+                    filesVM.showCreateFileDialog.value = false
+                }
+            }
+        )
+    }
+
+    if (filesVM.showCreateShareDialog.value) {
+        CreateShareDialog(
+            paths = filesVM.sharePaths.toList(),
+            onDismiss = { filesVM.showCreateShareDialog.value = false },
+            onCreated = { filesVM.sharesVersion.value++ },
+        )
+    }
+
+    FileInfoBottomSheet(filesVM = filesVM)
+}

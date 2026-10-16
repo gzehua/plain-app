@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.features.session.RustSessionStore
-import com.ismartcoding.plain.platform.getDeviceCapabilities
+import com.ismartcoding.plain.features.sessions.RustSessionStore
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.preferences.UserPrefs
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.ContentApiSession

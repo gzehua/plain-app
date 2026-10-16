@@ -3,12 +3,12 @@ package com.ismartcoding.plain.rust.host
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.bridge.RustCoreBridge
 import com.ismartcoding.plain.rust.request.ContentApiSession
-import com.ismartcoding.plain.features.imageindex.ImageIndexHost
+import com.ismartcoding.plain.features.images.index.ImageIndexHost
 import com.ismartcoding.plain.features.audio.AudioLibraryHost
 import com.ismartcoding.plain.features.audio.AudioEngineHost
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.platform.handleMediaProvider
+import com.ismartcoding.plain.platform.files.handleMediaProvider
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.serialization.json.*
@@ -33,18 +33,18 @@ internal object RustHostApi {
                                 val params = request.params
                                 val reply = try {
                                     val result = when {
-                                        method == "fileResourceStream" -> { com.ismartcoding.plain.platform.FileResourceStreamHost.start(exchangeScope, session, params); JsonNull }
-                                        method.startsWith("thumbnail") -> com.ismartcoding.plain.thumbnail.ThumbnailHost.handle(session, method, params)
-                                        method.startsWith("blePair") -> com.ismartcoding.plain.discover.BlePairingHost.handle(method, params)
-                                        method == "bleScanRead" -> com.ismartcoding.plain.discover.BleScanDriver.read(params)
-                                        method == "mdnsMulticast" -> com.ismartcoding.plain.discover.MdnsMulticastHost.handle(params)
-                                        method == "nearbyScanFacts" -> com.ismartcoding.plain.discover.NearbyScanHost.facts()
-                                        method == "pairingNotification" -> com.ismartcoding.plain.discover.PairingNotificationHost.handle(params)
-                                        method == "peerStartAware" -> com.ismartcoding.plain.chat.peer.PeerAwareHost.handle(method, params)
-                                        method.startsWith("peerTransport") -> com.ismartcoding.plain.chat.peer.transport.PeerTransportHost.handle(method, params)
-                                        com.ismartcoding.plain.features.system.SystemProviderHost.accepts(method) -> com.ismartcoding.plain.features.system.SystemProviderHost.handle(method, params)
+                                        method == "fileResourceStream" -> { com.ismartcoding.plain.platform.files.FileResourceStreamHost.start(exchangeScope, session, params); JsonNull }
+                                        method.startsWith("thumbnail") -> com.ismartcoding.plain.ui.media.thumbnail.ThumbnailHost.handle(session, method, params)
+                                        method.startsWith("blePair") -> com.ismartcoding.plain.features.nearby.BlePairingHost.handle(method, params)
+                                        method == "bleScanRead" -> com.ismartcoding.plain.features.nearby.BleScanDriver.read(params)
+                                        method == "mdnsMulticast" -> com.ismartcoding.plain.features.nearby.MdnsMulticastHost.handle(params)
+                                        method == "nearbyScanFacts" -> com.ismartcoding.plain.features.nearby.NearbyScanHost.facts()
+                                        method == "pairingNotification" -> com.ismartcoding.plain.features.nearby.PairingNotificationHost.handle(params)
+                                        method == "peerStartAware" -> com.ismartcoding.plain.features.chat.peer.PeerAwareHost.handle(method, params)
+                                        method.startsWith("peerTransport") -> com.ismartcoding.plain.features.chat.peer.transport.PeerTransportHost.handle(method, params)
+                                        com.ismartcoding.plain.rust.host.provider.SystemProviderHost.accepts(method) -> com.ismartcoding.plain.rust.host.provider.SystemProviderHost.handle(method, params)
                                         method == "audioEngineCommand" -> AudioEngineHost.handle(method, params)
-                                        method.startsWith("fileTask") -> com.ismartcoding.plain.features.file.FileTaskHost.handle(method,params)
+                                        method.startsWith("fileTask") -> com.ismartcoding.plain.features.files.FileTaskHost.handle(method,params)
                                         (method == "mediaProviderRows" || method == "mediaProviderWrite") -> handleMediaProvider(method, params)
                                         method.startsWith("imageIndex") -> ImageIndexHost.handle(method, params)
                                         method == "audioLibraryResolve" -> AudioLibraryHost.handle(method, params)
@@ -66,9 +66,9 @@ internal object RustHostApi {
     }
 
     private suspend fun disconnect() {
-        cleanup("Peer socket") { com.ismartcoding.plain.chat.peer.transport.PeerSocketHost.disconnect() }
-        cleanup("Multicast permission") { com.ismartcoding.plain.discover.MdnsMulticastHost.disconnect() }
-        cleanup("BLE handle") { com.ismartcoding.plain.discover.BlePairingHost.disconnect() }
+        cleanup("Peer socket") { com.ismartcoding.plain.features.chat.peer.transport.PeerSocketHost.disconnect() }
+        cleanup("Multicast permission") { com.ismartcoding.plain.features.nearby.MdnsMulticastHost.disconnect() }
+        cleanup("BLE handle") { com.ismartcoding.plain.features.nearby.BlePairingHost.disconnect() }
         cleanup("Image index") { ImageIndexHost.disconnect() }
     }
 

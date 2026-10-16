@@ -4,10 +4,10 @@ import android.os.Environment
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.rust.request.RustContentApi
 import androidx.test.platform.app.InstrumentationRegistry
-import com.ismartcoding.plain.platform.createDirectory
-import com.ismartcoding.plain.platform.createFile
-import com.ismartcoding.plain.platform.writeFileText
-import com.ismartcoding.plain.platform.scanFileTaskPaths
+import com.ismartcoding.plain.platform.files.createDirectory
+import com.ismartcoding.plain.platform.files.createFile
+import com.ismartcoding.plain.platform.files.writeFileText
+import com.ismartcoding.plain.platform.files.scanFileTaskPaths
 import com.ismartcoding.plain.preferences.RustSystemState
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*

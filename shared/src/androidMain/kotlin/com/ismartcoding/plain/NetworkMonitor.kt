@@ -1,12 +1,16 @@
 package com.ismartcoding.plain
 
+import com.ismartcoding.plain.ui.app.AppUiState
+
+import com.ismartcoding.plain.app.TempData
+
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.LinkProperties
 import android.net.Network
 import android.net.NetworkCapabilities
-import com.ismartcoding.plain.discover.MdnsDiscoverManager
-import com.ismartcoding.plain.platform.getDeviceIP4s
+import com.ismartcoding.plain.features.nearby.MdnsDiscoverManager
+import com.ismartcoding.plain.platform.system.getDeviceIP4s
 import com.ismartcoding.plain.services.HttpServerService
 
 object NetworkMonitor {
@@ -49,8 +53,8 @@ object NetworkMonitor {
         MdnsDiscoverManager.scheduleRestart(reason)
 
         // Keep the home page WebAddressBar in sync with the current local IP(s).
-        // TempData.ip4s is a Compose MutableState, so writing it here triggers
+        // AppUiState.ip4s is a Compose MutableState, so writing it here triggers
         // recomposition of the address bar.
-        TempData.ip4s.value = getDeviceIP4s().filter { it.isNotEmpty() }
+        AppUiState.ip4s.value = getDeviceIP4s().filter { it.isNotEmpty() }
     }
 }
