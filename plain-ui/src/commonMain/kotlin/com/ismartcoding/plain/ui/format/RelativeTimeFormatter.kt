@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.ui.format
 
 import androidx.compose.runtime.Composable
-import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.lib.TimeHelper
+import com.ismartcoding.plain.ui.resources.*
+import kotlin.time.Clock
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -37,7 +37,7 @@ object RelativeTimeFormatter {
     @Composable
     fun format(
         timestamp: Long,
-        now: Long = TimeHelper.nowMillis(),
+        now: Long = Clock.System.now().toEpochMilliseconds(),
         style: Style = Style.SHORT,
     ): String {
         val f = select(timestamp, now, style)

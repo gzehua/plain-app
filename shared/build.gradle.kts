@@ -86,7 +86,12 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":shared-lib"))
+            api(project(":plain-common"))
+            api(libs.atomicfu)
+            api(libs.kotlinx.serialization.json)
+            api(libs.ktor.http)
+            api(libs.coil)
+
             api(project(":plain-ui"))
             implementation(libs.runtime)
             implementation(libs.foundation)
@@ -112,7 +117,10 @@ kotlin {
             api(libs.latex.renderer)
         }
         androidMain.dependencies {
-            api(project(":shared-lib"))
+            api(libs.androidx.core.ktx)
+            api(libs.kotlin.reflect)
+            implementation(libs.zxing.core)
+
             implementation(libs.okhttp)
 
             // Offline phone number metadata: region, number type, carrier, geo description
@@ -263,3 +271,36 @@ tasks.matching { it.name.contains("ComposeResources", ignoreCase = true) }.confi
     dependsOn(checkStringResourceDuplicates)
 }
 tasks.named("check").configure { dependsOn(checkStringResourceDuplicates) }
+
+val checkJava21Collisions by tasks.registering {
+    group = "verification"
+    description = "Rejects Java 21 collection member calls in androidMain (unavailable below API 35)"
+    val srcRoot = layout.projectDirectory.dir("src/androidMain")
+    inputs.dir(srcRoot)
+    doLast {
+        val forbidden = Regex(
+            """\.(removeLast|removeFirst|getFirst|getLast|addFirst|addLast|reversed|putFirst|putLast|firstEntry|lastEntry|pollFirstEntry|pollLastEntry|sequencedKeySet|sequencedValues|sequencedEntry)\("""
+        )
+        val offenders = mutableListOf<String>()
+        srcRoot.asFile.walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .forEach { f ->
+                f.readLines().forEachIndexed { i, line ->
+                // LockFreeLinkedListHead is a kotlinx-coroutines class with its own addLast member
+                if (line.contains("LockFreeLinkedListHead")) return@forEachIndexed
+                if (forbidden.containsMatchIn(line)) offenders += "${f.relativeTo(srcRoot.asFile)}:${i + 1}: ${line.trim()}"
+                }
+            }
+        if (offenders.isNotEmpty()) {
+            throw GradleException(
+                "Java 21-only collection calls found (API 35+, minSdk is 28):\n" +
+                    offenders.joinToString("\n") +
+                    "\nUse removeAt(index) / first() / last() / add(0, e) / asReversed() instead."
+            )
+        }
+    }
+}
+
+tasks.matching {
+    it.name.startsWith("compile") && it.name.contains("Android", ignoreCase = true)
+}.configureEach { dependsOn(checkJava21Collisions) }

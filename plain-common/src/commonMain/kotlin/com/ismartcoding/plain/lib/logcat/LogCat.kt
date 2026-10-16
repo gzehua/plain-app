@@ -54,10 +54,7 @@ object LogCat {
         printer.clearLogAdapters()
     }
 
-    /**
-     * Absolute path of the log folder. Must be injected by the host app
-     * (shared-lib has no access to platform app directories).
-     */
+    /** Absolute log folder supplied by the host app. */
     var logFolderPath: String = ""
 
     fun logLevel(value: Int): String {

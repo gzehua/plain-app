@@ -5,7 +5,7 @@ kept unchanged under `com.ismartcoding.plain`.
 
 The module includes common helpers, crypto, extensions, logcat,
 and XML/RSS support. Supporting sources are included here so this module
-has no dependency on `shared-lib`.
+has no dependency on the host application.
 
 BLE protocol and native codec adapters belong to [plain-rs features](../../plain-desktop/plain-rs/README.md). Platform GATT adapters stay in the host shared module. This Kotlin library contains no BLE source.
 
