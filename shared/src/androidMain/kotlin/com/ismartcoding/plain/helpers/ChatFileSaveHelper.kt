@@ -1,8 +1,9 @@
 package com.ismartcoding.plain.helpers
 
+import com.ismartcoding.plain.platform.appCacheDir
+
 import android.content.Context
 import android.net.Uri
-import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.lib.extensions.queryOpenableFileName
 import java.io.File
 
@@ -18,7 +19,7 @@ object ChatFileSaveHelper {
         uri: Uri,
         mimeType: String = "",
     ): String {
-        val tempFile = File(context.cacheDir, "chat_import_${System.currentTimeMillis()}_${Thread.currentThread().id}")
+        val tempFile = File(File(appCacheDir()), "chat_import_${System.currentTimeMillis()}_${Thread.currentThread().id}")
         tempFile.parentFile?.mkdirs()
         try {
             FileHelper.copyFile(context, uri, tempFile.absolutePath)
@@ -29,21 +30,5 @@ object ChatFileSaveHelper {
             // Guard: if importFile did not consume (due to error path), clean up
             if (tempFile.exists()) tempFile.delete()
         }
-    }
-
-    /**
-     * Import an already-downloaded / on-disk [srcFile] into the content-addressable
-     * chat file store.
-     *
-     * [srcFile] is deleted on success (move semantics via [deleteSrc]).
-     * Returns a `fid:{sha256}` URI to embed in [com.ismartcoding.plain.chat.models.MessageFile.uri].
-     */
-    suspend fun importDownloadedFile(
-        srcFile: File,
-        fileName: String,
-        mimeType: String,
-    ): String {
-        val dFile = AppFileStore.importFile(srcFile.absolutePath, fileName, mimeType, deleteSrc = true)
-        return AppFileStore.toFidUri(dFile)
     }
 }

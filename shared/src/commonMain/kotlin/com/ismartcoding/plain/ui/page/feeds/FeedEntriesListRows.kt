@@ -30,7 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.ismartcoding.plain.extensions.getFinalPath
+import com.ismartcoding.plain.extensions.rememberFilePath
 import com.ismartcoding.plain.extensions.timeAgo
 import com.ismartcoding.plain.features.feed.displayImage
 import com.ismartcoding.plain.graphql.models.TagHostRecord
@@ -140,7 +140,7 @@ internal fun FeedClusterHeaderRow(
         val logo = row.feed?.logo
         if (!logo.isNullOrEmpty()) {
             AsyncImage(
-                model = logo.getFinalPath(),
+                model = rememberFilePath(logo),
                 modifier = Modifier
                     .size(32.dp)
                     .clip(RoundedCornerShape(8.dp)),
@@ -276,7 +276,7 @@ internal fun FeedClusterEntryRow(
         if (m.displayImage.isNotEmpty()) {
             HorizontalSpace(dp = 12.dp)
             AsyncImage(
-                model = m.displayImage.getFinalPath(),
+                model = rememberFilePath(m.displayImage),
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(8.dp)),

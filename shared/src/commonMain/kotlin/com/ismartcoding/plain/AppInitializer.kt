@@ -20,7 +20,6 @@ import com.ismartcoding.plain.preferences.*
  * or after this function as needed.
  */
 suspend fun initCommonPreferences() {
-    com.ismartcoding.plain.features.MediaDurationHelper.restore()
     com.ismartcoding.plain.features.VideoProgressHost.restore()
     com.ismartcoding.plain.features.audio.AudioEngineHost.start()
     TempData.deviceName.value = UserPrefs.deviceName.value

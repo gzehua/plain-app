@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity() {
         WindowCompat.getInsetsController(window, window.decorView).systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         instance = WeakReference(this)
         com.ismartcoding.plain.mainActivity = this
-        pendingCrashReport = CrashHandler.getPendingReport(this)
+        pendingCrashReport = CrashHandler.getPendingReport()
         try {
             val f = CursorWindow::class.java.getDeclaredField("sCursorWindowSize"); f.isAccessible = true; f.set(null, 100 * 1024 * 1024)
         } catch (_: Exception) {

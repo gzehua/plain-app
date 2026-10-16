@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.system
 
-import com.ismartcoding.plain.data.DCall
+import com.ismartcoding.plain.graphql.models.Call as PhoneCall
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
 
@@ -17,7 +17,7 @@ internal object SystemCallsHost {
                 com.ismartcoding.plain.platform.searchMedia(
                     com.ismartcoding.plain.enums.DataType.CALL, plan, limit, offset,
                     com.ismartcoding.plain.features.file.FileSortBy.DATE_DESC,
-                ).filterIsInstance<DCall>().map(::callFacts)
+                ).filterIsInstance<PhoneCall>().map(::callFacts)
             )
         }
         "systemCallCount" -> JsonHelper.jsonEncodeToElement(
@@ -42,8 +42,8 @@ internal object SystemCallsHost {
         else -> error("Unsupported provider operation")
     }
 
-    private fun callFacts(call: DCall) = CallFacts(
+    private fun callFacts(call: PhoneCall) = CallFacts(
         id = call.id, number = call.number, name = call.name, photoUri = call.photoUri,
-        startedAt = call.startedAt.toString(), durationSec = call.durationSec, type = call.type, accountId = call.accountId,
+        startedAt = call.startedAt.toString(), durationSec = call.durationSec, type = call.typeCode, accountId = call.accountId,
     )
 }

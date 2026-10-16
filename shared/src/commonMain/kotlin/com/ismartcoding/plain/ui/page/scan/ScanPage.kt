@@ -17,7 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.discover.PairingInitiator
-import com.ismartcoding.plain.discover.QrPairPayload
+import com.ismartcoding.plain.discover.RustPairingCode
 import com.ismartcoding.plain.enums.PickFileTag
 import com.ismartcoding.plain.enums.PickFileType
 import com.ismartcoding.plain.events.PermissionsResultEvent
@@ -132,8 +132,13 @@ fun ScanPage(navController: NavHostController) {
                 resumeScannerAfterResult = onDismiss
                 showScanResultSheet = true
             },
-            handleSpecialCode = { text, onFinished ->
-                val payload = QrPairPayload.parse(text)
+            handleSpecialCode = specialCode@ { text, onFinished ->
+                val payload = try { RustPairingCode.parse(text) }
+                catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+                catch (error: Exception) {
+                    DialogHelper.showErrorDialog(error.message ?: LocaleHelper.getStringAsync(Res.string.error), onFinished)
+                    return@specialCode true
+                }
                 if (payload == null) {
                     false
                 } else {
@@ -146,7 +151,7 @@ fun ScanPage(navController: NavHostController) {
                             confirmButton = Pair(LocaleHelper.getStringAsync(Res.string.confirm)) {
                                 onFinished()
                                 coIO {
-                                    PairingInitiator.start(payload.toDevice())
+                                    PairingInitiator.start(payload)
                                     DialogHelper.showSuccess(Res.string.qr_pair_request_sent)
                                 }
                             },

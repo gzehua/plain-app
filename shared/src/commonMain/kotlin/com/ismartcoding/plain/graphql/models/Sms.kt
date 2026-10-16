@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Sms(
-    var id: String,
+    override var id: String,
     var body: String,
     var address: String,
     var sentAt: Instant,
@@ -18,4 +18,4 @@ data class Sms(
     var isMms: Boolean,
     var attachments: List<SmsAttachment>,
     var typeCode: Int = 0,
-)
+) : com.ismartcoding.plain.db.IData

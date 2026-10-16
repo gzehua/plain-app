@@ -3,4 +3,4 @@ package com.ismartcoding.plain.platform
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class ResourceStreamRequest(val path: String)
+internal data class ResourceStreamRequest(val path: String, val file: Boolean = false)

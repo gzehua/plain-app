@@ -1,18 +1,19 @@
 package com.ismartcoding.plain.ui.page.audio.components
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.material3.MaterialTheme
-import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.db.IMedia
 import com.ismartcoding.plain.ui.base.PIconButton
 import kotlinx.coroutines.Dispatchers
@@ -29,12 +30,12 @@ import com.ismartcoding.plain.ui.resources.playlist_remove as ui_drawable_playli
  */
 @Composable
 fun AudioListItemActions(
-    item: DAudio,
+    item: AudioTrack,
     castMode: Boolean,
     castItems: List<IMedia>,
     isInQueue: Boolean,
-    onCastToggle: suspend (DAudio, Boolean) -> Unit,
-    onQueueToggle: suspend (DAudio, Boolean) -> Unit,
+    onCastToggle: suspend (AudioTrack, Boolean) -> Unit,
+    onQueueToggle: suspend (AudioTrack, Boolean) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     var animating by remember { mutableStateOf(false) }
@@ -45,7 +46,7 @@ fun AudioListItemActions(
 
     val active: Boolean
     val description: String
-    val toggle: suspend (DAudio, Boolean) -> Unit
+    val toggle: suspend (AudioTrack, Boolean) -> Unit
     if (castMode) {
         active = castItems.any { it.path == item.path }
         description = if (active) stringResource(Res.string.remove_from_cast_queue) else stringResource(Res.string.add_to_cast_queue)

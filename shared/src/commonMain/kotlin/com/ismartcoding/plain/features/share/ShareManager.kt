@@ -46,10 +46,6 @@ object ShareManager {
         return row.getValue("share").share() to row.getValue("entries").jsonArray.map { it.root() }
     }
     private fun JsonElement.root(): Root = JsonHelper.jsonDecodeFromElement<Root>(this)
-    suspend fun zipEntries(id: String, fileId: String): List<com.ismartcoding.plain.platform.ZipStreamEntry> =
-        RustContentApi.query("shareZipEntries(id: ${gql(id)}, fileId: ${gql(fileId)}) { virtualPath realPath }").getValue("shareZipEntries").jsonArray.map {
-            it.jsonObject.let { row -> com.ismartcoding.plain.platform.ZipStreamEntry(row.string("realPath"), row.string("virtualPath")) }
-        }
     private fun expiry(value: Instant?): String = value?.let { gql(it.toString()) } ?: "null"
     private fun JsonElement.share(): ShareRecord = JsonHelper.jsonDecodeFromElement<ShareRecord>(this)
 }

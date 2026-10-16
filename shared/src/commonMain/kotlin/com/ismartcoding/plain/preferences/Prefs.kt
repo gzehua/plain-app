@@ -2,7 +2,6 @@ package com.ismartcoding.plain.preferences
 
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.IODispatcher
-import com.ismartcoding.plain.platform.prefsFilePath
 import com.ismartcoding.plain.rust.bridge.RustPrefsBridge
 import com.ismartcoding.plain.rust.request.RustContentApi
 import kotlinx.coroutines.runBlocking
@@ -11,8 +10,7 @@ import kotlinx.serialization.json.jsonObject
 
 object Prefs {
     fun load() {
-        val directory = prefsFilePath().substringBeforeLast('/')
-        RustPrefsBridge.open("$directory/system_prefs.json", "$directory/user_prefs.json")
+        RustPrefsBridge.open(RustContentApi.directory, RustContentApi.cacheDirectory)
         PrefStore.load()
     }
 

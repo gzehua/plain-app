@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.components
 
+import com.ismartcoding.plain.graphql.models.Doc as Document
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -18,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
-import com.ismartcoding.plain.data.DDoc
 import com.ismartcoding.plain.graphql.models.Doc
 import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.lib.extensions.formatBytes
@@ -46,7 +46,7 @@ fun DocItem(
     navController: NavHostController,
     docsVM: DocsViewModel,
     dragSelectState: DragSelectState,
-    m: DDoc,
+    m: Document,
     tags: List<TagHostRecord>,
     onTagClick: (TagHostRecord) -> Unit,
 ) {

@@ -2,7 +2,6 @@ package com.ismartcoding.plain.platform
 
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.rust.http.OkHttpClientFactory
-import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.events.UpdateDownloadCompleteEvent
 import com.ismartcoding.plain.events.UpdateDownloadFailedEvent
 import com.ismartcoding.plain.events.UpdateDownloadProgressEvent
@@ -21,13 +20,12 @@ private val downloadHttpClient by lazy { OkHttpClientFactory.downloadClient() }
 actual fun downloadUpdateAsync() {
     downloadJob?.cancel()
     downloadJob = coIO {
-        val context = appContext
         val url = RustSystemState.state.value.updateInfo.downloadUrl
         if (url.isEmpty()) {
             sendEvent(UpdateDownloadFailedEvent())
             return@coIO
         }
-        val outputFile = File(context.cacheDir, "plain-update.apk")
+        val outputFile = File(File(appCacheDir()), "plain-update.apk")
         val call = downloadHttpClient.newCall(Request.Builder().url(url).build())
         try {
             val response = call.execute()

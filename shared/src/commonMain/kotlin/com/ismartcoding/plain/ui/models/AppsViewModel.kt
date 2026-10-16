@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.models
 
+import com.ismartcoding.plain.graphql.models.Package as AppPackage
+
 import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.runtime.mutableIntStateOf
@@ -16,9 +18,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
-class AppsViewModel : ISearchableViewModel<VPackage>, ViewModel() {
-    private val _itemsFlow = MutableStateFlow<List<VPackage>>(emptyList())
-    val itemsFlow: StateFlow<List<VPackage>> = _itemsFlow
+class AppsViewModel : ISearchableViewModel<AppPackage>, ViewModel() {
+    private val _itemsFlow = MutableStateFlow<List<AppPackage>>(emptyList())
+    val itemsFlow: StateFlow<List<AppPackage>> = _itemsFlow
     var showLoading = mutableStateOf(true)
     var offset = mutableIntStateOf(0)
     var limit = mutableIntStateOf(50)
@@ -36,7 +38,7 @@ class AppsViewModel : ISearchableViewModel<VPackage>, ViewModel() {
 
     suspend fun moreAsync() = withIO {
         offset.value += limit.intValue
-        val items = searchPackages(getQuery(), limit.intValue, offset.intValue, sortBy.value).map { VPackage.from(it) }
+        val items = searchPackages(getQuery(), limit.intValue, offset.intValue, sortBy.value)
         _itemsFlow.update { it + items }
         showLoading.value = false
         noMore.value = items.size < limit.intValue
@@ -44,7 +46,7 @@ class AppsViewModel : ISearchableViewModel<VPackage>, ViewModel() {
 
     suspend fun loadAsync() = withIO {
         offset.intValue = 0
-        _itemsFlow.value = searchPackages(getQuery(), limit.intValue, 0, sortBy.value).map { VPackage.from(it) }
+        _itemsFlow.value = searchPackages(getQuery(), limit.intValue, 0, sortBy.value)
         total.intValue = countPackages(SearchHelper.buildTextFilter(queryText.value))
         totalSystem.intValue = countPackages("${SearchHelper.buildTextFilter(queryText.value)} type:${PackageType.SYSTEM.name}")
         noMore.value = _itemsFlow.value.size < limit.intValue

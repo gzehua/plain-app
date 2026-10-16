@@ -1,15 +1,15 @@
 package com.ismartcoding.plain.ui.models
 
+import com.ismartcoding.plain.graphql.models.Image as MediaImage
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.data.DImage
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.platform.isImageSearchModelReady
 import com.ismartcoding.plain.platform.searchImagesCombined
 
-class ImagesViewModel : BaseMediaViewModel<DImage>() {
+class ImagesViewModel : BaseMediaViewModel<MediaImage>() {
     override val dataType = DataType.IMAGE
     val scrollStateMap = mutableStateMapOf<Int, LazyGridState>()
     val useAiSearch = mutableStateOf(false)

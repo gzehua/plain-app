@@ -9,7 +9,7 @@ object ThumbnailHost {
     suspend fun handle(session: ContentApiSession, method: String, params: JsonObject): JsonElement {
         if (method == "thumbnailAuthorize") {
             check(readFileRange(params.getValue("paths").jsonArray.single().jsonPrimitive.content, 0, 1) != null) { "Thumbnail source access denied" }
-            return JsonPrimitive(cacheDirPath())
+            return JsonPrimitive(true)
         }
         check(method == "thumbnailDecode")
         val path = params.getValue("path").jsonPrimitive.content

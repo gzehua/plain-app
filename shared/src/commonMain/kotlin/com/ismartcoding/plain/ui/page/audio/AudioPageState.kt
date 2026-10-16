@@ -1,20 +1,20 @@
 package com.ismartcoding.plain.ui.page.audio
 
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.getValue
+import com.ismartcoding.plain.enums.AppFeatureType
+import com.ismartcoding.plain.enums.has
+
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import com.ismartcoding.plain.audio.DAudio
-import com.ismartcoding.plain.data.DMediaBucket
-import com.ismartcoding.plain.enums.AppFeatureType
-import com.ismartcoding.plain.enums.has
 import com.ismartcoding.plain.graphql.models.Audio
 import com.ismartcoding.plain.graphql.models.MediaBucket
 import com.ismartcoding.plain.graphql.models.TagHostRecord
@@ -27,13 +27,13 @@ import com.ismartcoding.plain.ui.models.TagsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 data class AudioPageState(
-    val itemsState: List<DAudio>,
+    val itemsState: List<AudioTrack>,
     val dragSelectState: DragSelectState,
     val scrollBehavior: TopAppBarScrollBehavior,
     val tagsState: List<TagHostRecord>,
     val tagsMapState: Map<String, List<TagHostRelation>>,
     val scrollState: LazyListState,
-    val bucketsMap: Map<String, DMediaBucket>
+    val bucketsMap: Map<String, MediaBucket>
 ) {
     companion object {
         @OptIn(ExperimentalMaterial3Api::class)

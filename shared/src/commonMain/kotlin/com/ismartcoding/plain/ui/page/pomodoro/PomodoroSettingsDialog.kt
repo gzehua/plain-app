@@ -1,7 +1,9 @@
 package com.ismartcoding.plain.ui.page.pomodoro
 
-import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.ui.base.HorizontalSpace
 
+import com.ismartcoding.plain.graphql.models.PomodoroSettings
+import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
@@ -11,12 +13,14 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.data.DPomodoroSettings
 import com.ismartcoding.plain.enums.ButtonSize
 import com.ismartcoding.plain.enums.PickFileTag
 import com.ismartcoding.plain.events.PickFileResultEvent
-import com.ismartcoding.plain.platform.copyPickedFileToAppStorage
-import com.ismartcoding.plain.ui.base.HorizontalSpace
+import com.ismartcoding.plain.platform.queryPickedFileInfo
+import com.ismartcoding.plain.rust.content.gql
+import com.ismartcoding.plain.rust.request.RustContentApi
+import kotlinx.coroutines.CancellationException
+import kotlinx.serialization.json.jsonPrimitive
 import com.ismartcoding.plain.ui.base.PFilledButton
 import androidx.compose.material3.Switch
 import com.ismartcoding.plain.ui.base.PTextButton
@@ -28,7 +32,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PomodoroSettingsDialog(
-    settings: DPomodoroSettings, onSettingsChange: (DPomodoroSettings) -> Unit, onDismiss: () -> Unit,
+    settings: PomodoroSettings, onSettingsChange: (PomodoroSettings) -> Unit, onDismiss: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     var workDurationMin by remember { mutableStateOf(settings.workDurationMin.toString()) }
@@ -45,12 +49,15 @@ fun PomodoroSettingsDialog(
             if (event is PickFileResultEvent && event.tag == PickFileTag.POMODORO && event.uris.isNotEmpty()) {
                 scope.launch {
                     try {
-                        val displayName = copyPickedFileToAppStorage(event.uris.first(), "audio/pomodoro_sound.mp3")
-                        if (displayName != null) {
-                            originalFileName = displayName
-                            soundPath = "app://audio/pomodoro_sound.mp3"
-                        }
-                    } catch (e: Exception) { LogCat.e("Failed to copy pomodoro sound file: ${e.message}") }
+                        val source = event.uris.first()
+                        val info = checkNotNull(queryPickedFileInfo(source)) { "Unable to read selected sound" }
+                        val imported = RustContentApi.mutate("importPomodoroSound(source: ${gql(source)})", longRunning = true)
+                            .getValue("importPomodoroSound").jsonPrimitive.content
+                        originalFileName = info.displayName
+                        soundPath = imported
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) { LogCat.e("Failed to import pomodoro sound: ${e.message}") }
                 }
             }
         }
@@ -97,7 +104,7 @@ fun PomodoroSettingsDialog(
                 text = stringResource(Res.string.save),
                 buttonSize = ButtonSize.MEDIUM,
                 onClick = {
-                    onSettingsChange(DPomodoroSettings(
+                    onSettingsChange(PomodoroSettings(
                         workDurationMin = workDurationMin.toIntOrNull() ?: 25, shortBreakDurationMin = shortBreakDurationMin.toIntOrNull() ?: 5,
                         longBreakDurationMin = longBreakDurationMin.toIntOrNull() ?: 15, pomodorosBeforeLongBreak = pomodorosBeforeLongBreak.toIntOrNull() ?: 4,
                         showNotification = showNotification, playSoundOnComplete = playSoundOnComplete,

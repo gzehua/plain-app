@@ -3,9 +3,9 @@ package com.ismartcoding.plain.tests
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ismartcoding.plain.features.share.ShareManager
-import com.ismartcoding.plain.helpers.UrlHelper
-import com.ismartcoding.plain.platform.streamZipToSink
-import com.ismartcoding.plain.platform.StreamSink
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.content.gql
+import kotlinx.serialization.json.*
 import com.ismartcoding.plain.preferences.UserPrefs
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -36,25 +36,14 @@ class ShareRustHttpTest {
             id = share.id
             assertTrue(ShareManager.buildLink(share, "127.0.0.1").contains("/s/${share.id}#"))
             assertNotNull(ShareManager.loadAuth(share.id))
-            val encrypted = UrlHelper.encrypt("{\"sharedId\":\"${share.id}\",\"virtualPath\":\"photos/a.txt\"}",Base64.decode(share.urlToken))
+            val encrypted = ResourceCrypto.encrypt("{\"sharedId\":\"${share.id}\",\"virtualPath\":\"photos/a.txt\"}",Base64.decode(share.urlToken))
             assertEquals(File(folder,"a.txt").canonicalPath,ShareManager.resolveSharedPath(share.id,encrypted))
             assertEquals("photos/a.txt",ShareManager.browse(share.id,"photos").second.filter { !it.isDir }.single().virtualPath)
-            val folderId = UrlHelper.encrypt("{\"sharedId\":\"${share.id}\",\"virtualPath\":\"photos\"}",Base64.decode(share.urlToken))
-            val entries = ShareManager.zipEntries(share.id, folderId)
-            assertEquals(listOf("a.txt", "empty/"), entries.map { it.entryName })
-            val output = java.io.ByteArrayOutputStream()
-            val sink = object : StreamSink {
-                override suspend fun write(bytes: ByteArray) { output.write(bytes) }
-                override suspend fun write(bytes: ByteArray, offset: Int, length: Int) { output.write(bytes, offset, length) }
-                override suspend fun flush() {}
-                override suspend fun close() {}
-            }
-            assertTrue(streamZipToSink(entries, sink, recursive = false))
-            val names = mutableListOf<String>()
-            java.util.zip.ZipInputStream(output.toByteArray().inputStream()).use { zip ->
-                while (true) { val entry = zip.nextEntry ?: break; names += entry.name; zip.closeEntry() }
-            }
-            assertEquals(listOf("a.txt", "empty/"), names)
+            val folderId = ResourceCrypto.encrypt("{\"sharedId\":\"${share.id}\",\"virtualPath\":\"photos\"}",Base64.decode(share.urlToken))
+            val entries = PlainRust.mainQuery("shareZipEntries(id: ${gql(share.id)}, fileId: ${gql(folderId)}) { virtualPath realPath isDir }")
+                .getValue("shareZipEntries").jsonArray
+            assertEquals(listOf("a.txt", "empty/"), entries.map { it.jsonObject.getValue("virtualPath").jsonPrimitive.content })
+            assertTrue(entries.single { it.jsonObject.getValue("isDir").jsonPrimitive.boolean }.jsonObject.getValue("realPath").jsonPrimitive.content.endsWith("/empty"))
             assertNull(ShareManager.resolveVirtualPath(share,"photos/../other"))
             UserPrefs.service.value = false
             assertNull(ShareManager.loadAuth(share.id))

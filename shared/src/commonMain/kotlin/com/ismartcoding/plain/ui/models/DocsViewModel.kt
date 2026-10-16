@@ -1,19 +1,18 @@
 package com.ismartcoding.plain.ui.models
 
+import com.ismartcoding.plain.graphql.models.Doc as Document
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.LocaleHelper
-
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.data.DDoc
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.enums.has
 import com.ismartcoding.plain.platform.getDocExtGroups
 
-class DocsViewModel : BaseMediaViewModel<DDoc>() {
+class DocsViewModel : BaseMediaViewModel<Document>() {
     override val dataType = DataType.DOC
     override val showFoldersAsList = true
     val scrollStateMap = mutableStateMapOf<Int, LazyListState>()

@@ -1,8 +1,9 @@
 package com.ismartcoding.plain.ui.page.files
 
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.zipFiles
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.ui.helpers.DialogHelper
 import com.ismartcoding.plain.ui.models.FilesViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -10,7 +11,7 @@ import kotlinx.coroutines.launch
 
 internal fun performCutFiles(
     filesVM: FilesViewModel,
-    files: List<DFile>,
+    files: List<FileEntry>,
     onShowPasteBar: (Boolean) -> Unit,
     onDone: () -> Unit,
 ) {
@@ -23,7 +24,7 @@ internal fun performCutFiles(
 
 internal fun performCopyFiles(
     filesVM: FilesViewModel,
-    files: List<DFile>,
+    files: List<FileEntry>,
     onShowPasteBar: (Boolean) -> Unit,
     onDone: () -> Unit,
 ) {
@@ -37,7 +38,7 @@ internal fun performCopyFiles(
 internal fun performZipFiles(
     scope: CoroutineScope,
     filesVM: FilesViewModel,
-    files: List<DFile>,
+    files: List<FileEntry>,
     onDone: () -> Unit,
 ) {
     if (files.isEmpty()) return

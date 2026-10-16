@@ -11,13 +11,8 @@ internal object FileResourceHost {
         val operation = request.operation
         return when (operation) {
             "mime" -> JsonHelper.jsonEncodeToElement(getContentTypeForPath(path))
-            "appDir" -> JsonPrimitive(appDir())
-            "probe" -> JsonPrimitive(probeVideoCodec(path))
-            "transcode" -> transcodeMp4ForBrowser(path)?.let(::JsonPrimitive) ?: JsonNull
-            "remux" -> remuxMp4ForBrowser(path)?.let(::JsonPrimitive) ?: JsonNull
-            "convert3gp", "packageIcon", "decodePng" -> {
+            "packageIcon", "decodePng" -> {
                 val bytes = when (operation) {
-                    "convert3gp" -> convert3gpToMp4(path)
                     "packageIcon" -> getPackageIconBytes(path)
                     else -> decodeImageFileToPng(path)
                 }

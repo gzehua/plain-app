@@ -5,29 +5,11 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.IntSize
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.audio.fromPath
-import com.ismartcoding.plain.data.DImageMeta
-import com.ismartcoding.plain.data.DVideoMeta
-import com.ismartcoding.plain.extensions.getDurationMs
-import com.ismartcoding.plain.graphql.models.AudioItem
-import com.ismartcoding.plain.helpers.ImageHelper
 import com.ismartcoding.plain.helpers.MediaShortcutHelper
-import com.ismartcoding.plain.helpers.Mp4Helper
 import com.ismartcoding.plain.helpers.QrCodeGenerateHelper
 import com.ismartcoding.plain.helpers.SvgHelper
-import com.ismartcoding.plain.helpers.VideoHelper
 import com.ismartcoding.plain.ui.scanner.QrCodeScanHelper
 import java.io.File
-
-actual fun getImageRotation(path: String): Int = ImageHelper.getRotation(path)
-
-actual fun getImageIntrinsicSize(path: String, rotation: Int): IntSize = ImageHelper.getIntrinsicSize(path, rotation)
-
-actual fun getVideoIntrinsicSize(path: String): IntSize = VideoHelper.getIntrinsicSize(path)
-
-actual fun getVideoMeta(path: String): DVideoMeta? = VideoHelper.getMeta(path)
-
-actual fun getImageMeta(path: String): DImageMeta? = ImageHelper.getMeta(path)
 
 actual fun tryDecodeQrCode(path: String): String? {
     return try {
@@ -42,15 +24,6 @@ actual fun fileLength(path: String): Long {
     return runCatching { File(path).takeIf { it.exists() }?.length() ?: 0L }.getOrDefault(0L)
 }
 
-
-actual fun getMediaDurationMs(path: String): Long {
-    val durationMs = File(path).getDurationMs(appContext)
-    if (durationMs > 0) return durationMs
-    return Mp4Helper.getMp4DurationMs(path)
-}
-
-actual fun getAudioDurationMs(path: String): Long =
-    AudioItem.fromPath(appContext, path).durationMs
 
 actual fun generateQrCode(text: String, width: Int, height: Int): ImageBitmap {
     return QrCodeGenerateHelper.generate(text, width, height).asImageBitmap()

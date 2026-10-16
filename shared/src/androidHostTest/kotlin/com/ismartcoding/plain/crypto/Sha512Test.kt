@@ -6,15 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertContentEquals
 import kotlin.test.assertTrue
 
-/**
- * Unit tests for the pure-Kotlin [com.ismartcoding.plain.lib.crypto.sha512] implementation.
- *
- * Test vectors are the official NIST FIPS 180-4 SHA-512 examples plus a few
- * edge cases. The pure-Kotlin implementation exists because iOS does not
- * expose CommonCrypto through the default Kotlin/Native cinterop bindings,
- * so [com.ismartcoding.plain.platform.sha512] (commonMain) delegates to
- * this implementation on every platform.
- */
 class Sha512Test {
 
     private fun hex(bytes: ByteArray): String =

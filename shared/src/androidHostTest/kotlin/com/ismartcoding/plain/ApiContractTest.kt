@@ -49,10 +49,6 @@ class ApiContractTest {
         "restoreMediaItems", "moveMediaItems",
     )
 
-    // Query-addressed bulk mutations: the server rejects a blank query
-    // (QueryHelper.requireExplicitBulkQuery); whole-table intent is the explicit
-    // `all:true` sentinel (API_SPEC §5). deleteChatItems is guarded by its own
-    // empty-parse → empty-ids precedent (ChatDbHelper).
     private val bulkQueryMutations = setOf(
         "deleteMediaItems", "trashMediaItems", "restoreMediaItems", "moveMediaItems",
         "trashNotes", "restoreNotes", "deleteNotes", "saveFeedEntriesToNotes",
@@ -68,10 +64,10 @@ class ApiContractTest {
         // Counted over all operation fields, not just the ones taking arguments.
         val queries = operationFieldNamesIn("Query")
         val mutations = operationFieldNamesIn("Mutation")
-        if (queries.size != 174 || mutations.size != 261) {
+        if (queries.size != 189 || mutations.size != 282) {
             fail(
                 "shared/apitest/schema.graphqls declares ${queries.size} Query / ${mutations.size} " +
-                    "Mutation operations — the contract has 174 / 261. The snapshot looks truncated or " +
+                    "Mutation operations — the contract has 189 / 282. The snapshot looks truncated or " +
                     "drifted; every check in this class reads it, so they would pass on an empty file.",
             )
         }

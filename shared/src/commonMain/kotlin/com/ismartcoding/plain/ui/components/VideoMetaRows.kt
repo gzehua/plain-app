@@ -12,7 +12,7 @@ import androidx.compose.runtime.setValue
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.lib.extensions.formatBitrate
 import com.ismartcoding.plain.lib.extensions.formatDurationMs
-import com.ismartcoding.plain.data.DVideoMeta
+import com.ismartcoding.plain.graphql.models.VideoFileInfo
 import com.ismartcoding.plain.platform.formatDateTime
 import com.ismartcoding.plain.ui.base.PListItem
 import kotlinx.coroutines.Dispatchers
@@ -21,10 +21,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun VideoMetaRows(
     path: String,
-    loadMeta: suspend (String) -> DVideoMeta?,
+    loadMeta: suspend (String) -> VideoFileInfo?,
 ) {
     var meta by remember {
-        mutableStateOf<DVideoMeta?>(null)
+        mutableStateOf<VideoFileInfo?>(null)
     }
 
     val scope = rememberCoroutineScope()

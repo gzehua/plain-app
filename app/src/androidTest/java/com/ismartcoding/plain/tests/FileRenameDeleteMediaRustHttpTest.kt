@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.tests.fixtures.ImageEmbeddings
+
 import android.content.ContentValues
 import android.graphics.Bitmap
 import android.net.Uri
@@ -8,7 +10,7 @@ import android.provider.MediaStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.data.TagRelationStub
-import com.ismartcoding.plain.db.DImageEmbedding
+import com.ismartcoding.plain.tests.fixtures.imageEmbedding
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.*
 import com.ismartcoding.plain.features.file.*
@@ -62,7 +64,7 @@ class FileRenameDeleteMediaRustHttpTest {
             val fileTag = TagHelper.addOrUpdate("") { name = prefix; type = DataType.FILE.value }.also { tags.add(it) }
             TagHelper.editTagRelations(DataType.IMAGE, TagRelationStub(oldId, prefix, 1), listOf(imageTag), emptyList())
             TagHelper.editTagRelations(DataType.FILE, TagRelationStub(sourcePath, prefix, 1), listOf(fileTag), emptyList())
-            ImageEmbeddingHelper.insertAll(listOf(DImageEmbedding(oldId, sourcePath, ByteBuffer.allocate(4).putFloat(1f).array())))
+            ImageEmbeddings.insertAll(listOf(imageEmbedding(oldId, sourcePath, ByteBuffer.allocate(4).putFloat(1f).array())))
             assertNull(renameAndScanFile(sourcePath, "../escape.png"))
             val collision = File(File(sourcePath).parentFile, "existing.png").apply { writeText("existing") }
             assertNull(renameAndScanFile(sourcePath, collision.name))
@@ -81,18 +83,18 @@ class FileRenameDeleteMediaRustHttpTest {
             if (oldId != moved.id) assertTrue(TagHelper.getTagRelationsByKey(oldId, DataType.IMAGE).isEmpty())
             assertTrue(TagHelper.getTagRelationsByKey(sourcePath, DataType.FILE).isEmpty())
             assertEquals(listOf(fileTag), TagHelper.getTagRelationsByKey(destinationPath, DataType.FILE).map { it.tagId })
-            assertFalse(ImageEmbeddingHelper.getAllIds().any { it in ids })
-            ImageEmbeddingHelper.insertAll(listOf(DImageEmbedding(moved.id, destinationPath, ByteBuffer.allocate(4).putFloat(1f).array())))
+            assertFalse(ImageEmbeddings.getAllIds().any { it in ids })
+            ImageEmbeddings.insertAll(listOf(imageEmbedding(moved.id, destinationPath, ByteBuffer.allocate(4).putFloat(1f).array())))
             assertTrue(deleteFileOrDir(destinationPath))
             assertFalse(File(destinationPath).exists())
             assertTrue(TagHelper.getTagRelationsByKey(moved.id, DataType.IMAGE).isEmpty())
             assertTrue(TagHelper.getTagRelationsByKey(destinationPath, DataType.FILE).isEmpty())
-            assertFalse(ImageEmbeddingHelper.getAllIds().any { it in ids })
+            assertFalse(ImageEmbeddings.getAllIds().any { it in ids })
             assertFalse(deleteFileOrDir(destinationPath))
         } finally {
             FileTaskHelper.list(0, 1000, "").filter { task -> task.completedOps.any { it.src.startsWith(root.path + "/") } }.forEach { FileTaskHelper.remove(it.id) }
             tags.forEach { TagHelper.delete(it) }
-            ImageEmbeddingHelper.deleteByIds(ids.toList())
+            ImageEmbeddings.deleteByIds(ids.toList())
             uri?.let { resolver.delete(it, null, null) }
             ids.forEach { id -> resolver.delete(Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id), null, null) }
             root.deleteRecursively()

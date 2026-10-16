@@ -12,7 +12,6 @@ internal object MediaActionProjection {
         val action = MediaAction.valueOf(result.action)
         Snapshot.withMutableSnapshot {
             result.ids.forEach { id ->
-                TempData.mediaDurationMap.remove("${type.name.lowercase()}:$id")
                 if (type == DataType.VIDEO && (action == MediaAction.TRASH || action == MediaAction.DELETE)) TempData.videoPlayProgressMap.remove(id)
             }
         }

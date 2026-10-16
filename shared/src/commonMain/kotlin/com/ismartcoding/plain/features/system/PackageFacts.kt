@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class PackageFacts(
-    val item: com.ismartcoding.plain.platform.DPackageInfo,
+    val item: com.ismartcoding.plain.graphql.models.Package,
     val nameSortKey: String,
 )

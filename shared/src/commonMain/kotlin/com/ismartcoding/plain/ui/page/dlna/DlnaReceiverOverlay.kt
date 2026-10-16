@@ -31,16 +31,16 @@ import com.ismartcoding.plain.lib.dlna.DlnaMediaType
 import com.ismartcoding.plain.features.dlna.DlnaPlaybackState
 import com.ismartcoding.plain.features.dlna.DlnaRendererState
 import com.ismartcoding.plain.lib.TimeHelper
+import com.ismartcoding.plain.rust.content.RemoteFiles
+import com.ismartcoding.plain.platform.copyFileToDir
+import com.ismartcoding.plain.platform.saveFileToDownloads
+import com.ismartcoding.plain.platform.deleteFileAt
+import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.PBackHandler
-import com.ismartcoding.plain.platform.createDownloadTempFile
-import com.ismartcoding.plain.platform.fetchUrlToStream
-import com.ismartcoding.plain.platform.createFileWriteHandle
-import com.ismartcoding.plain.platform.saveTempFileToDownloads
 import com.ismartcoding.plain.ui.components.CheckCircle
 import com.ismartcoding.plain.ui.components.SaveToSheet
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.helpers.DialogHelper
-import com.ismartcoding.plain.platform.StreamSink
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 import kotlinx.coroutines.delay
@@ -134,7 +134,7 @@ private enum class DlnaDownloadState { IDLE, DOWNLOADING, SUCCESS, FAILED }
 /**
  * Download icon button for the DLNA receiver playback UI. Downloads the
  * currently playing media ([DlnaRendererState.mediaUri]) directly to the
- * system Downloads directory via [fetchUrlToStream] + [saveTempFileToDownloads].
+ * system Downloads directory.
  *
  * Shows a [CircularProgressIndicator] while downloading, a check icon on
  * success, and reverts to the download icon after a brief delay. A toast
@@ -207,55 +207,26 @@ fun DlnaDownloadIconButton(
     }
 }
 
-/** Adapts [DownloadTempFileHandle] to the [StreamSink] interface for [fetchUrlToStream]. */
-private class DownloadTempFileSink(private val handle: com.ismartcoding.plain.platform.DownloadTempFileHandle) : StreamSink {
-    override suspend fun write(bytes: ByteArray) { handle.write(bytes, 0, bytes.size) }
-    override suspend fun write(bytes: ByteArray, offset: Int, length: Int) { handle.write(bytes, offset, length) }
-    override suspend fun flush() {}
-    override suspend fun close() { handle.close() }
-}
-
-/**
- * Downloads [url] to a temp file via [fetchUrlToStream], then moves it to the
- * system Downloads directory via [saveTempFileToDownloads]. Shows a toast
- * notification with the saved path on success, or an error message on failure.
- */
 private suspend fun downloadDlnaMedia(url: String, mediaType: DlnaMediaType, title: String, dir: String? = null): Boolean {
     if (url.isEmpty()) return false
-    val ext = defaultExtensionFor(mediaType)
-    val baseName = title.ifEmpty { "dlna_${TimeHelper.nowMillis()}" }
-    val filename = "$baseName.$ext"
-    val handle = if (dir == null) {
-        createDownloadTempFile("dlna_${TimeHelper.nowMillis()}")
-    } else {
-        createFileWriteHandle("$dir/$filename")
-    }
-    val sink = DownloadTempFileSink(handle)
-    try {
-        val (status, _) = fetchUrlToStream(url, sink)
-        if (status !in 200..299) {
-            handle.delete()
+    val filename = "${title.ifEmpty { "dlna_${TimeHelper.nowMillis()}" }}.${defaultExtensionFor(mediaType)}"
+    var temporary: String? = null
+    return try {
+        val path = RemoteFiles.cache(url, filename)
+        temporary = path
+        val saved = withIO { if (dir == null) saveFileToDownloads(path, filename) else copyFileToDir(path, dir, filename) }
+        if (saved.isEmpty()) {
             DialogHelper.showMessage(getString(Res.string.dlna_download_failed))
-            return false
-        }
-        if (dir != null) {
-            handle.close()
-            DialogHelper.showMessage(getString(Res.string.dlna_download_success, "$dir/$filename"))
-            return true
-        }
-        val savedPath = saveTempFileToDownloads(handle, filename)
-        if (savedPath.isNotEmpty()) {
-            DialogHelper.showMessage(getString(Res.string.dlna_download_success, savedPath))
-            return true
+            false
         } else {
-            DialogHelper.showMessage(getString(Res.string.dlna_download_failed))
-            return false
+            DialogHelper.showMessage(getString(Res.string.dlna_download_success, saved))
+            true
         }
-    } catch (_: Exception) {
-        handle.delete()
+    } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+    catch (_: Exception) {
         DialogHelper.showMessage(getString(Res.string.dlna_download_failed))
-        return false
-    }
+        false
+    } finally { temporary?.let { withIO { deleteFileAt(it) } } }
 }
 
 private fun defaultExtensionFor(mediaType: DlnaMediaType): String = when (mediaType) {

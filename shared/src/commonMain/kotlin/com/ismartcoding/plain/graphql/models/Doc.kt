@@ -8,10 +8,10 @@ data class Doc(
     override var id: String,
     override var title: String,
     override var path: String,
-    var extension: String,
+    var extension: String = "",
     override var size: Long,
     override var bucketId: String,
     override var createdAt: Instant,
     override var updatedAt: Instant,
-    var durationMs: Long = 0,
-) : MediaItem
+    override var durationMs: Long = 0,
+) : MediaItem, com.ismartcoding.plain.db.IMedia

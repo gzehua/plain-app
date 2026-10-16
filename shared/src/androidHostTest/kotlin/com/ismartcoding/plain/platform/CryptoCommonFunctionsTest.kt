@@ -5,15 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
-/**
- * Unit tests for the commonMain [sha512] and [randomPassword] helpers.
- *
- * These functions were previously `expect` declarations with platform-specific
- * implementations (Android used `java.security.MessageDigest`, iOS returned
- * empty strings). They now live in `commonMain` and delegate to the pure-Kotlin
- * `crypto.sha512` implementations, so the contract is identical
- * on every platform and worth pinning down with regression tests.
- */
 class CryptoCommonFunctionsTest {
 
     @Test

@@ -1,8 +1,6 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.data.DPomodoroSettings
-import com.ismartcoding.plain.data.DScreenMirrorQuality
-import com.ismartcoding.plain.data.DVideo
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
 import com.ismartcoding.plain.data.FilePathData
 import com.ismartcoding.plain.data.NotificationFilterData
 import com.ismartcoding.plain.enums.AppFeatureType
@@ -44,7 +42,7 @@ object UserPrefs {
     val deviceName = userPref("deviceName", "")
     val https = userPref("https", false)
     val webAddressBarExpanded = userPref("webAddressBarExpanded", false)
-    val screenMirrorQuality = userPref("screenMirrorQuality", DScreenMirrorQuality(ScreenMirrorMode.HD, 1080))
+    val screenMirrorQuality = userPref("screenMirrorQuality", ScreenMirrorQuality(ScreenMirrorMode.HD, 1080))
     val audioPlayMode = userEnumPref("audioPlayMode", MediaPlayMode.REPEAT)
     val audioPlaybackSpeed = userPref("audioPlaybackSpeed", 1.0f)
     val imageGridCellsPerRow = userPref("imageGridCellsPerRow", 3)
@@ -64,8 +62,8 @@ object UserPrefs {
     val nearbyDiscoverable = userPref("nearbyDiscoverable", true)
     val aiImageSearchEnabled = userPref("aiImageSearchEnabled", false)
     val notificationFilter = userPref("notificationFilter", NotificationFilterData("blacklist", emptySet()))
-    val pomodoroSettings = userPref("pomodoroSettings", DPomodoroSettings(25, 5, 15, 4, true, true, "", ""))
-    val videoPlaylist = userPref("videoPlaylist", emptyList<DVideo>())
+    val pomodoroSettings = userPref("pomodoroSettings", PomodoroSettings(25, 5, 15, 4, true, true, "", ""))
+    val videoPlaylist = userPref("videoPlaylist", emptyList<MediaVideo>())
     val homeFeatures = userPref("homeFeatures", "IMAGES|VIDEOS|AUDIO|DOCS|FILES|NOTES|FEEDS")
     val quickNoteDraft = userPref("quickNoteDraft", "")
     val launcherShortcuts = userPref("launcherShortcuts", "NOTES|DOCS|FEEDS|POMODORO_TIMER")

@@ -6,193 +6,52 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.yield
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/**
- * Deterministic queue-semantics tests for [DownloadCenter] using gated fake
- * engines — assertions are on states and call counts, never on wall-clock
- * timing (timeouts only guard against a hung test).
- */
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+
 class DownloadCenterTest {
-
-    private class GatedEngine : DownloadEngine {
-        val started = java.util.concurrent.CopyOnWriteArrayList<String>()
-        val finished = java.util.concurrent.CopyOnWriteArrayList<String>()
-
-        // Test thread completes gates / mutates failThese while Dispatchers.Default
-        // workers await/read them — both must carry a happens-before (plain
-        // HashMap/Set lets a worker miss the completed gate and hang forever).
-        val gates = java.util.concurrent.ConcurrentHashMap<String, CompletableDeferred<Unit>>()
-        val failThese: MutableSet<String> = java.util.concurrent.ConcurrentHashMap.newKeySet()
-
-        fun gate(id: String) = gates.getOrPut(id) { CompletableDeferred() }
-
-        override suspend fun execute(task: DownloadTaskHandle) {
-            task.status = DownloadStatus.DOWNLOADING
-            started.add(task.id)
-            DownloadCenter.notifyProgressUpdate()
-            if (task.id in failThese) throw RuntimeException("boom")
-            gate(task.id).await()
-            task.status = DownloadStatus.COMPLETED
-        }
-
-        override fun onFinished(task: DownloadTaskHandle) {
-            finished.add(task.id)
-            if (task.status == DownloadStatus.COMPLETED) {
-                DownloadCenter.remove(task.id)
-            }
-        }
-    }
-
-    private class Task(
+    private data class Task(
         override val id: String,
         override val kind: String,
+        override var status: DownloadStatus = DownloadStatus.PENDING,
+        override var error: String = "",
     ) : DownloadTaskHandle {
-        override var status = DownloadStatus.PENDING
-        override var error = ""
-        override var aborted = false
-        override var job: kotlinx.coroutines.Job? = null
-        override fun flowSnapshot(): DownloadTaskHandle = this
+        override fun flowSnapshot(): DownloadTaskHandle = copy()
     }
 
-    /** Drops every task (aborting gated ones) so tests can't poison each other. */
-    private fun resetCenter() {
-        DownloadCenter.all().forEach { DownloadCenter.remove(it.id) }
-        until { DownloadCenter.all().isEmpty() }
-    }
-
-    private fun until(timeoutMs: Long = 5000, cond: () -> Boolean) {
-        runBlocking {
-            withTimeoutOrNull(timeoutMs) {
-                while (!cond()) delay(1)
-            } ?: error("condition not met in time: " + DownloadCenter.all().joinToString { it.id + ":" + it.status + " err=" + it.error })
+    @Test
+    fun replacingOneQueuePreservesOtherQueueAndCopiesMutableProjections() {
+        try {
+            val chat = Task("chat-task", DOWNLOAD_KIND_CHAT)
+            val share = Task("share-task", DOWNLOAD_KIND_SHARE)
+            DownloadCenter.replaceExternal(DOWNLOAD_KIND_CHAT, listOf(chat))
+            DownloadCenter.replaceExternal(DOWNLOAD_KIND_SHARE, listOf(share))
+            chat.status = DownloadStatus.COMPLETED
+            assertEquals(DownloadStatus.PENDING, DownloadCenter.progress.value[chat.id]?.status)
+            DownloadCenter.replaceExternal(DOWNLOAD_KIND_CHAT, listOf(chat))
+            assertEquals(DownloadStatus.COMPLETED, DownloadCenter.progress.value[chat.id]?.status)
+            assertEquals(DownloadStatus.PENDING, DownloadCenter.progress.value[share.id]?.status)
+            DownloadCenter.replaceExternal(DOWNLOAD_KIND_CHAT, emptyList())
+            assertEquals(setOf(share.id), DownloadCenter.progress.value.keys)
+            assertFailsWith<IllegalArgumentException> {
+                DownloadCenter.replaceExternal(DOWNLOAD_KIND_SHARE, listOf(chat))
+            }
+            assertEquals(setOf(share.id), DownloadCenter.progress.value.keys)
+        } finally {
+            DownloadCenter.replaceExternal(DOWNLOAD_KIND_CHAT, emptyList())
+            DownloadCenter.replaceExternal(DOWNLOAD_KIND_SHARE, emptyList())
         }
     }
 
-    /**
-     * Poll the progress StateFlow, NOT the registry handle: flow writes give a
-     * happens-before with the worker's status write, plain field reads don't
-     * (arm64 can loop on a stale value until the timeout).
-     */
-    private fun statusOf(id: String): DownloadStatus? = DownloadCenter.progress.value[id]?.status
-
     @Test
-    fun addDeduplicatesById() {
-        resetCenter()
-        val engine = GatedEngine()
-        DownloadCenter.registerEngine("test-dedupe", engine)
-        val a = Task("dedupe-1", "test-dedupe")
-        assertTrue(DownloadCenter.add(a))
-        assertFalse(DownloadCenter.add(Task("dedupe-1", "test-dedupe")), "same id must be rejected")
-        engine.gate("dedupe-1").complete(Unit)
-        until { engine.finished.contains("dedupe-1") && DownloadCenter.get("dedupe-1") == null }
-    }
-
-    @Test
-    fun runsAtMostThreeConcurrentlyAndKeepsFifoWaiting() {
-        resetCenter()
-        val engine = GatedEngine()
-        DownloadCenter.registerEngine("test-cap", engine)
-        val ids = (1..5).map { "cap-$it" }
-        ids.forEach { DownloadCenter.add(Task(it, "test-cap")) }
-
-        until {
-            statusOf("cap-1") == DownloadStatus.DOWNLOADING &&
-                statusOf("cap-2") == DownloadStatus.DOWNLOADING &&
-                statusOf("cap-3") == DownloadStatus.DOWNLOADING
-        }
-        // The two extra tasks stay queued in the registry.
-        val snapshot = DownloadCenter.progress.value.values.filter { it.id.startsWith("cap-") }
-        assertEquals(5, snapshot.size)
-        assertEquals(
-            2,
-            snapshot.count { it.status == DownloadStatus.PENDING },
-            "tasks beyond the concurrency cap must wait as PENDING",
-        )
-
-        engine.gate("cap-1").complete(Unit)
-        until { engine.started.contains("cap-4") }
-        (ids - "cap-1").forEach { engine.gate(it).complete(Unit) }
-        until { engine.finished.containsAll(ids) }
-    }
-
-    @Test
-    fun cancelMarksCanceledAndKeepsTaskForTheFinishedList() {
-        resetCenter()
-        val engine = GatedEngine()
-        DownloadCenter.registerEngine("test-cancel", engine)
-        DownloadCenter.add(Task("cancel-1", "test-cancel"))
-        until { engine.started.contains("cancel-1") }
-
-        assertTrue(DownloadCenter.cancel("cancel-1"))
-        until { statusOf("cancel-1") == DownloadStatus.CANCELED }
-        assertNotNull(DownloadCenter.get("cancel-1"), "canceled task stays visible until removed")
-        assertFalse(DownloadCenter.cancel("cancel-1"), "cancel of a terminal task is a no-op")
-
-        DownloadCenter.remove("cancel-1")
-        until { DownloadCenter.get("cancel-1") == null }
-    }
-
-    @Test
-    fun pauseThenResumeRunsTheTaskAgain() {
-        resetCenter()
-        val engine = GatedEngine()
-        DownloadCenter.registerEngine("test-pause", engine)
-        DownloadCenter.add(Task("pause-1", "test-pause"))
-        until { engine.started.contains("pause-1") }
-
-        assertTrue(DownloadCenter.pause("pause-1"))
-        until { statusOf("pause-1") == DownloadStatus.PAUSED }
-
-        assertTrue(DownloadCenter.resume("pause-1"))
-        until { engine.started.count { it == "pause-1" } == 2 }
-        engine.gate("pause-1").complete(Unit)
-        until { engine.finished.contains("pause-1") }
-    }
-
-    @Test
-    fun engineFailureMarksTaskFailedAndStillNotifiesFinished() {
-        resetCenter()
-        val engine = GatedEngine()
-        DownloadCenter.registerEngine("test-fail", engine)
-        engine.failThese.add("fail-1")
-        DownloadCenter.add(Task("fail-1", "test-fail"))
-        until { statusOf("fail-1") == DownloadStatus.FAILED }
-        until { engine.finished.contains("fail-1") }
-        engine.failThese.remove("fail-1")
-        assertTrue(DownloadCenter.retry("fail-1"), "retry accepts FAILED tasks")
-        engine.gate("fail-1").complete(Unit)
-        until { engine.finished.count { it == "fail-1" } == 2 && DownloadCenter.get("fail-1") == null }
-    }
-
-    @Test
-    fun updatesFlowEmitsSnapshots() = runBlocking {
-        resetCenter()
-        val engine = GatedEngine()
-        DownloadCenter.registerEngine("test-updates", engine)
-        val seen = java.util.concurrent.ConcurrentLinkedQueue<Int>()
-        val job = launch(kotlinx.coroutines.Dispatchers.Unconfined) {
-            DownloadCenter.updates.collect { seen.add(it.size) }
-        }
-        DownloadCenter.add(Task("updates-1", "test-updates"))
-        until { seen.isNotEmpty() }
-        engine.gate("updates-1").complete(Unit)
-        until { DownloadCenter.get("updates-1") == null }
-        job.cancel()
-        assertTrue(seen.isNotEmpty())
-    }
-
-    @Test
-    fun missingEngineFailsTheTask() {
-        resetCenter()
-        DownloadCenter.add(Task("noengine-1", "test-missing"))
-        until { statusOf("noengine-1") == DownloadStatus.FAILED }
-        DownloadCenter.remove("noengine-1")
-        until { DownloadCenter.get("noengine-1") == null }
+    fun unknownControlsDoNotDispatchRequests() {
+        assertFalse(DownloadCenter.cancel("unknown-download"))
+        assertFalse(DownloadCenter.remove("unknown-download"))
     }
 }

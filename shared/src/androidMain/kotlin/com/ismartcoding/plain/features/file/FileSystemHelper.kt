@@ -1,30 +1,27 @@
 package com.ismartcoding.plain.features.file
 
-import com.ismartcoding.plain.platform.LocaleHelper
-
-import com.ismartcoding.plain.i18n.*
-
-import android.content.Context
-import android.os.Environment
-import android.os.StatFs
-import android.os.storage.StorageManager
 import android.provider.MediaStore
-import android.text.TextUtils
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.helpers.FilterField
 import com.ismartcoding.plain.extensions.getDirectChildrenCount
 import com.ismartcoding.plain.extensions.normalizeComparison
-import com.ismartcoding.plain.platform.isRPlus
 import com.ismartcoding.plain.platform.listZipEntries
 import com.ismartcoding.plain.extensions.sorted
-import com.ismartcoding.plain.helpers.QueryHelper
+import kotlin.time.Instant
+import java.util.Locale
+
+import com.ismartcoding.plain.platform.LocaleHelper
+import com.ismartcoding.plain.i18n.*
+import android.content.Context
+import android.os.Environment
+import android.os.StatFs
+import android.os.storage.StorageManager
+import android.text.TextUtils
+import com.ismartcoding.plain.platform.isRPlus
 import com.ismartcoding.plain.storageManager
 import com.ismartcoding.plain.storageStatsManager
-import kotlin.time.Instant
 import java.io.File
 import java.util.Collections
-import java.util.Locale
-import java.util.PriorityQueue
 import java.util.regex.Pattern
 
 object FileSystemHelper {
@@ -187,167 +184,4 @@ object FileSystemHelper {
         return paths.map { it.trimEnd('/') }.toTypedArray()
     }
 
-    private fun convertFile(
-        file: File,
-        showHidden: Boolean,
-    ): DFile {
-        var size: Long = 0
-        val isDir = file.isDirectory
-        if (!isDir) {
-            size = file.length()
-        }
-        return DFile(
-            file.name,
-            file.path,
-            "",
-            null,
-            Instant.fromEpochMilliseconds(file.lastModified()),
-            size,
-            isDir,
-            if (isDir) file.getDirectChildrenCount(showHidden) else 0,
-        )
-    }
-
-    fun getFilesList(
-        dir: String,
-        showHidden: Boolean,
-        sortBy: FileSortBy,
-    ): List<DFile> {
-        val pathFile = File(dir)
-        val files = ArrayList<DFile>()
-        if (pathFile.exists() && pathFile.isDirectory) {
-            val listFiles = pathFile.listFiles()
-            listFiles?.forEach { file ->
-                if (!showHidden && file.isHidden) {
-                    return@forEach
-                }
-                files.add(convertFile(file, showHidden))
-            }
-        }
-
-        return files.sorted(sortBy)
-    }
-
-    suspend fun search(
-        query: String,
-        root: String,
-        sortBy: FileSortBy,
-    ): List<DFile> = withIO {
-        val filterFields = QueryHelper.parseAsync(query)
-        val showHidden = filterFields.find { it.name == "show_hidden" }?.value?.toBoolean() ?: false
-        val text = filterFields.find { it.name == "text" }?.value ?: ""
-        val parent = filterFields.find { it.name == "parent" }?.value ?: ""
-        val fileSizeFields = filterFields.filter { it.name == "file_size" }
-        val dir = parent.ifEmpty { root }
-        val items = if (ZipBrowserHelper.isZipPath(dir)) {
-            listZipEntries(dir, sortBy)
-        } else if (text.isNotEmpty() || fileSizeFields.isNotEmpty()) {
-            search(text, dir, showHidden).sorted(sortBy)
-        } else {
-            getFilesList(dir, showHidden, sortBy)
-        }
-
-        if (fileSizeFields.isEmpty()) return@withIO items
-        return@withIO items.filter { !it.isDir && matchFileSizeFilters(it.size, fileSizeFields) }
-    }
-
-    private fun matchFileSizeFilters(size: Long, fileSizeFields: List<FilterField>): Boolean {
-        for (f in fileSizeFields) {
-            val (op, rawValue) = f.normalizeComparison(defaultOp = "=")
-            val bytes = rawValue.toLongOrNull() ?: return false
-            val ok = when (op) {
-                ">" -> size > bytes
-                ">=" -> size >= bytes
-                "<" -> size < bytes
-                "<=" -> size <= bytes
-                "!=" -> size != bytes
-                "=", "" -> size == bytes
-                else -> true
-            }
-            if (!ok) return false
-        }
-        return true
-    }
-
-    fun search(
-        q: String,
-        dir: String,
-        showHidden: Boolean,
-    ): ArrayList<DFile> {
-        val files = ArrayList<DFile>()
-        File(dir).listFiles()?.sortedBy { it.isDirectory }?.forEach {
-            if (!showHidden && it.isHidden) {
-                return@forEach
-            }
-
-            if (it.name.contains(q, true)) {
-                files.add(convertFile(it, showHidden))
-            }
-
-            if (it.isDirectory) {
-                files.addAll(search(q, it.absolutePath, showHidden))
-            }
-        }
-
-        return files
-    }
-
-    fun createDirectory(path: String): DFile {
-        val file = File(path)
-        file.mkdirs()
-        return convertFile(file, false)
-    }
-
-    fun createFile(path: String): DFile {
-        val file = File(path)
-        file.createNewFile()
-        return convertFile(file, false)
-    }
-
-
-    fun getAllVolumeNames(context: Context): List<String> {
-        val volumeNames = mutableListOf(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        context.getExternalFilesDirs(null)
-            .mapNotNull { storageManager.getStorageVolume(it) }
-            .filterNot { it.isPrimary }
-            .mapNotNull { it.uuid?.lowercase(Locale.US) }
-            .forEach {
-                volumeNames.add(it)
-            }
-        return volumeNames
-    }
-
-    fun getRecentFiles(): List<File> {
-        val externalStorageDir = Environment.getExternalStorageDirectory()
-
-        val recentFilesQueue = PriorityQueue<File>(100) { f1, f2 ->
-            f1.lastModified().compareTo(f2.lastModified())
-        }
-
-        gatherRecentFiles(externalStorageDir, recentFilesQueue)
-
-        return recentFilesQueue.sortedByDescending { it.lastModified() }
-    }
-
-    private fun gatherRecentFiles(directory: File, recentFilesQueue: PriorityQueue<File>) {
-        val files = directory.listFiles()
-        if (files != null) {
-            for (file in files) {
-                if (file.isDirectory) {
-                    gatherRecentFiles(file, recentFilesQueue)
-                } else {
-                    if (recentFilesQueue.size < 100) {
-                        recentFilesQueue.add(file)
-                    } else {
-                        if (file.lastModified() > (recentFilesQueue.peek()?.lastModified() ?: Long.MIN_VALUE)) {
-                            recentFilesQueue.poll()
-                            recentFilesQueue.add(file)
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
-
-

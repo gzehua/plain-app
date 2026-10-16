@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.ui.page.files.components
 
+import com.ismartcoding.plain.features.file.extension
+
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,7 +18,6 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.features.file.ZipBrowserHelper
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.components.NoDataView
@@ -28,8 +31,8 @@ import com.ismartcoding.plain.ui.models.select
 fun FileListContent(
     navController: NavHostController,
     filesVM: FilesViewModel,
-    files: List<DFile>,
-    loadFiles: (List<DFile>, Boolean) -> Unit,
+    files: List<FileEntry>,
+    loadFiles: (List<FileEntry>, Boolean) -> Unit,
     previewerState: MediaPreviewerState,
     audioQueueVM: AudioQueueViewModel
 ) {

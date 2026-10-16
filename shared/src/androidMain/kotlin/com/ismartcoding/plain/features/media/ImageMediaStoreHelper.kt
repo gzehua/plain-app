@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.features.media
 
+import com.ismartcoding.plain.graphql.models.Image as MediaImage
 import com.ismartcoding.plain.helpers.ContentWhere
 import android.content.Context
 import android.net.Uri
@@ -11,7 +12,6 @@ import com.ismartcoding.plain.lib.extensions.getTimeSecondsValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.isQPlus
-import com.ismartcoding.plain.data.DImage
 import com.ismartcoding.plain.data.TagRelationStub
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.MediaType
@@ -52,7 +52,7 @@ object ImageMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
-    ): List<DImage> = com.ismartcoding.plain.features.system.RustMediaQuery.rows(com.ismartcoding.plain.enums.DataType.IMAGE, query, limit, offset, sortBy).map { it as DImage }
+    ): List<MediaImage> = com.ismartcoding.plain.features.system.RustMediaQuery.rows(com.ismartcoding.plain.enums.DataType.IMAGE, query, limit, offset, sortBy).map { it as MediaImage }
 
     suspend fun searchAsync(
         context: Context,
@@ -60,7 +60,7 @@ object ImageMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
-    ): List<DImage> = withIO {
+    ): List<MediaImage> = withIO {
         getPagingCursorAsync(context, where, limit, offset, sortBy.toSortBy())?.map { cursor, cache ->
             val id = cursor.getStringValue(MediaStore.Images.Media._ID, cache)
             val title = cursor.getStringValue(MediaStore.Images.Media.TITLE, cache)
@@ -75,7 +75,7 @@ object ImageMediaStoreHelper : BaseMediaContentHelper() {
             val path = cursor.getStringValue(MediaStore.Images.Media.DATA, cache)
             val bucketId = cursor.getStringValue(MediaStore.Images.Media.BUCKET_ID, cache)
             val isFavorite = if (AppFeatureType.MEDIA_FAVORITE.has()) cursor.getIntValue(MediaStore.Images.Media.IS_FAVORITE, cache) == 1 else false
-            DImage(id, title, path, size, width, height, rotation, bucketId, createdAt, updatedAt, takenAt, isFavorite)
+            MediaImage(id = id, title = title, path = path, size = size, width = width, height = height, rotation = rotation, bucketId = bucketId, createdAt = createdAt, updatedAt = updatedAt, takenAt = takenAt, isFavorite = isFavorite)
         } ?: emptyList()
     }
 

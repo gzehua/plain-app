@@ -16,7 +16,7 @@ import com.ismartcoding.plain.chat.download.DownloadTask
 import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.models.getPreviewPath
-import com.ismartcoding.plain.extensions.getFinalPath
+import com.ismartcoding.plain.extensions.rememberFilePath
 import com.ismartcoding.plain.graphql.models.Peer
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.isAudioFast
@@ -54,11 +54,11 @@ fun ChatFileItem(
         catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { "" }
     }
-    val path = item.uri.getFinalPath()
+    val path = rememberFilePath(item.uri)
     val fileName = item.fileName.ifEmpty { path.getFilenameFromPath() }
     val isAudio = fileName.isAudioFast()
     val currentPlayingPath = audioQueueVM.selectedPath
-    val isCurrentlyPlaying = currentPlayingPath.value == path && isAudio
+    val isCurrentlyPlaying = path.isNotEmpty() && currentPlayingPath.value == path && isAudio
     val isPlaying by audioIsPlayingFlow().collectAsState()
 
     val showContextMenu = remember { mutableStateOf(false) }

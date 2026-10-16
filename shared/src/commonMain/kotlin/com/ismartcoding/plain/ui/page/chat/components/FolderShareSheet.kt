@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.ui.page.chat.components
 
+import com.ismartcoding.plain.features.file.extension
+
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -20,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.features.share.ShareExpiry
 import com.ismartcoding.plain.i18n.*
@@ -57,7 +60,7 @@ fun FolderShareSheet(
 ) {
     val rootPath = remember { getInternalStoragePath() }
     var currentPath by remember { mutableStateOf(rootPath) }
-    var dirs by remember { mutableStateOf<List<DFile>>(emptyList()) }
+    var dirs by remember { mutableStateOf<List<FileEntry>>(emptyList()) }
     var itemCount by remember { mutableStateOf(0) }
     var totalSize by remember { mutableStateOf(0L) }
     var expiry by remember { mutableStateOf(ShareExpiry.DAY_7) }

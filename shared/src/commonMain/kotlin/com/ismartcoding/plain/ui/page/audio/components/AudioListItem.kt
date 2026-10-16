@@ -1,5 +1,10 @@
 package com.ismartcoding.plain.ui.page.audio.components
 
+import com.ismartcoding.plain.enums.AppFeatureType
+import com.ismartcoding.plain.enums.has
+
+import com.ismartcoding.plain.audio.getSubtitle
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -13,9 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.TempData
-import com.ismartcoding.plain.audio.DAudio
-import com.ismartcoding.plain.enums.AppFeatureType
-import com.ismartcoding.plain.enums.has
 import com.ismartcoding.plain.features.dlna.sender.RustDlnaSender
 import com.ismartcoding.plain.graphql.models.Audio
 import com.ismartcoding.plain.graphql.models.TagHostRecord
@@ -38,7 +40,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AudioListItem(
-    item: DAudio, audioVM: AudioViewModel, audioQueueVM: AudioQueueViewModel,
+    item: AudioTrack, audioVM: AudioViewModel, audioQueueVM: AudioQueueViewModel,
     tagsVM: TagsViewModel, castVM: CastViewModel, tags: List<TagHostRecord>,
     dragSelectState: DragSelectState,
     isCurrentlyPlaying: Boolean = false, isInQueue: Boolean = false,

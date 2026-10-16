@@ -3,7 +3,6 @@ package com.ismartcoding.plain.features.sms
 import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.events.MmsSendResultData
 import com.ismartcoding.plain.events.SendResultCodes
-import com.ismartcoding.plain.events.SmsSendResultData
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -57,122 +56,11 @@ class SmsSyncContractTest {
     }
 
     @Test
-    fun `all non-self group participants are preserved in provider order`() {
-        val addresses = SmsProviderContract.selectConversationAddresses(
-            addresses = listOf("+1 (602) 555-0100", "+1 480 555 0101", "+1 623 555 0102"),
-            ownNumbers = setOf("6025550100"),
-        )
-
-        assertEquals(listOf("+1 480 555 0101", "+1 623 555 0102"), addresses)
-    }
-
-    @Test
-    fun `participant filtering falls back when every resolved address is self`() {
-        val addresses = SmsProviderContract.selectConversationAddresses(
-            addresses = listOf("+1 602 555 0100"),
-            ownNumbers = setOf("6025550100"),
-        )
-
-        assertEquals(listOf("+1 602 555 0100"), addresses)
-    }
-
-    @Test
     fun `recipient IDs retain every distinct participant`() {
         assertEquals(
             listOf("7", "8", "9"),
             SmsProviderContract.parseRecipientIds(" 7  8 9 8 "),
         )
-    }
-
-    @Test
-    fun `multipart SMS emits success only after every part succeeds`() {
-        val tracker = newSmsTracker()
-        tracker.register("request", "client", "pending-a", 2, 100L)
-
-        assertEquals(null, tracker.record("request", 0, 2, -1, -1, 200L))
-        assertEquals(
-            SmsSendResultData("pending-a", true, -1),
-            tracker.record("request", 1, 2, -1, -1, 300L),
-        )
-    }
-
-    @Test
-    fun `multipart SMS emits one terminal failure`() {
-        val tracker = newSmsTracker()
-        tracker.register("request", "client", "pending-a", 2, 100L)
-
-        assertEquals(
-            SmsSendResultData("pending-a", false, 4),
-            tracker.record("request", 0, 2, 4, -1, 200L),
-        )
-        assertEquals(null, tracker.record("request", 1, 2, -1, -1, 300L))
-    }
-
-    @Test
-    fun `one client can correlate concurrent SMS sends independently`() {
-        val tracker = newSmsTracker()
-        tracker.register("send-a", "client", "pending-a", 1, 100L)
-        tracker.register("send-b", "client", "pending-b", 1, 110L)
-
-        assertEquals(
-            SmsSendResultData("pending-b", false, 4),
-            tracker.record("send-b", 0, 1, 4, -1, 200L),
-        )
-        assertEquals(
-            SmsSendResultData("pending-a", true, -1),
-            tracker.record("send-a", 0, 1, -1, -1, 210L),
-        )
-    }
-
-    @Test
-    fun `SMS send timeout removes pending correlation exactly once`() {
-        val tracker = newSmsTracker()
-        tracker.register("request", "client", "pending-a", 1, 100L)
-
-        assertEquals(
-            SmsSendResultData("pending-a", false, SmsProviderContract.SEND_RESULT_TIMEOUT),
-            tracker.expire("request", 500L),
-        )
-        assertEquals(null, tracker.expire("request", 600L))
-        tracker.acknowledge("request")
-        assertEquals(emptyList<SmsPendingSendState>(), tracker.pending())
-    }
-
-    @Test
-    fun `terminal SMS result remains replayable until bounded outbox cleanup`() {
-        val store = FakeSmsSendStateStore()
-        SmsSendStateTracker(store).apply {
-            register("request", "client", "pending-a", 1, 100L)
-            assertEquals(
-                SmsSendResultData("pending-a", true, -1),
-                record("request", 0, 1, -1, -1, 500L),
-            )
-        }
-
-        val restored = SmsSendStateTracker(store)
-        assertEquals(listOf(SmsSendResultData("pending-a", true, -1)), restored.terminalResults())
-        assertEquals(listOf(SmsSendResultData("pending-a", true, -1)), restored.terminalResults())
-        assertEquals(500L, restored.pending().single().terminalAtMillis)
-        restored.acknowledge("request")
-        assertTrue(restored.terminalResults().isEmpty())
-    }
-
-    @Test
-    fun `multipart SMS state survives tracker recreation`() {
-        val store = FakeSmsSendStateStore()
-        SmsSendStateTracker(store).apply {
-            register("request", "client", "pending-a", 2, 100L)
-            assertEquals(null, record("request", 0, 2, -1, -1, 200L))
-        }
-
-        val restored = SmsSendStateTracker(store)
-        assertEquals(
-            SmsSendResultData("pending-a", true, -1),
-            restored.record("request", 1, 2, -1, -1, 300L),
-        )
-        assertEquals(setOf(0, 1), restored.pending().single().completedParts)
-        restored.acknowledge("request")
-        assertTrue(restored.pending().isEmpty())
     }
 
     @Test
@@ -185,31 +73,6 @@ class SmsSyncContractTest {
         assertNotEquals(first, secondRequest)
         assertTrue(first.action.contains("request-a.0"))
         assertTrue(first.data.endsWith("/request-a/0"))
-    }
-
-    @Test
-    fun `phone normalization preserves country codes and normalizes punctuation`() {
-        assertFalse(SmsProviderContract.addressesMatch("+44 20 1234 5678", "+1 20 1234 5678"))
-        assertTrue(SmsProviderContract.addressesMatch("12-345", "12345"))
-        assertTrue(SmsProviderContract.addressesMatch("Alice@Example.com", "alice@example.com"))
-    }
-
-    @Test
-    fun `suffix phone matching requires unambiguous candidate context`() {
-        val local = "6025550100"
-        val us = "+1 602 555 0100"
-        val uk = "+44 602 555 0100"
-
-        assertTrue(SmsProviderContract.addressesMatch(us, local, listOf(us)))
-        assertFalse(SmsProviderContract.addressesMatch(us, local, listOf(us, uk)))
-    }
-
-    @Test
-    fun `MMS text matching spans parts and applies every filter`() {
-        val parts = listOf("First line", "Second Line")
-
-        assertTrue(SmsProviderContract.mmsTextMatches(parts, listOf("first", "LINE")))
-        assertFalse(SmsProviderContract.mmsTextMatches(parts, listOf("first", "missing")))
     }
 
     @Test
@@ -243,24 +106,6 @@ class SmsSyncContractTest {
         assertFalse(predicate.contains('?'))
         assertTrue(predicate.contains("1001"))
         assertEquals(null, SmsProviderContract.numericIdPredicate("_id", listOf("1", "not-an-id")))
-    }
-
-    private fun newSmsTracker() = SmsSendStateTracker(FakeSmsSendStateStore())
-
-    private class FakeSmsSendStateStore : SmsSendStateStore {
-        private val states = mutableMapOf<String, SmsPendingSendState>()
-
-        override fun read(requestId: String): SmsPendingSendState? = states[requestId]
-
-        override fun readAll(): List<SmsPendingSendState> = states.values.toList()
-
-        override fun write(state: SmsPendingSendState) {
-            states[state.requestId] = state
-        }
-
-        override fun remove(requestId: String) {
-            states.remove(requestId)
-        }
     }
 
 }

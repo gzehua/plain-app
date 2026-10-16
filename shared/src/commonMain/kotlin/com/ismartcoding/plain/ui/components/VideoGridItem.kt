@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.components
 
+import androidx.compose.runtime.getValue
+
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -9,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +22,6 @@ import com.ismartcoding.plain.lib.extensions.formatDurationMs
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.data.DVideo
 import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.platform.getMediaItemUriString
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
@@ -37,7 +38,7 @@ fun VideoGridItem(
     modifier: Modifier = Modifier,
     videosVM: VideosViewModel,
     castVM: CastViewModel,
-    m: DVideo,
+    m: MediaVideo,
     showSize: Boolean,
     previewerState: MediaPreviewerState,
     dragSelectState: DragSelectState,

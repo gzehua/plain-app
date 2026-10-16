@@ -1,12 +1,13 @@
 package com.ismartcoding.plain.chat.peer
 
 import androidx.compose.runtime.mutableStateMapOf
+import com.ismartcoding.plain.graphql.models.Peer
+
 import com.ismartcoding.plain.chat.ChatCacher
 import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.transport.PeerTransportType
 import com.ismartcoding.plain.enums.PeerStatus
 import com.ismartcoding.plain.graphql.models.ChatItem
-import com.ismartcoding.plain.graphql.models.Peer
 import com.ismartcoding.plain.lib.withIO
 import kotlin.time.Instant
 import kotlinx.coroutines.CoroutineScope
@@ -25,25 +26,7 @@ object PeerCacher {
     val peersMap = MutableStateFlow<Map<String, PeerRecord>>(emptyMap())
     val onlineMap = MutableStateFlow<Map<String, Boolean>>(emptyMap())
 
-    // Transport currently being attempted for a peer, or absent when idle. Set
-    // by PeerTransportHost right before each transport attempt and
-    // cleared in finally. Observed by ChatPage to show the transport badge
-    // only while a send is in flight.
     val currentTransportMap = MutableStateFlow<Map<String, PeerTransportType>>(emptyMap())
-
-    // In-memory Aware running flag per peer. Set from two sources:
-    //  1. BLE scan response serviceData (byte[0]) — cheap hint, no GATT needed
-    //     (used by PeerTransportPrewarmer.refreshAwareFlagFromScan)
-    //  2. GATT DISCOVER reply (NearbyDeviceInfo.awareRunning) — authoritative
-    //     (used by BleScanDriver.read, overwrites the scan hint)
-    // When false, WifiAwareTransport skips itself immediately instead of
-    // waiting 10s+ for buildLink to time out.
-    private val awareRunningMap = mutableStateMapOf<String, Boolean>()
-    // In-memory Aware supported flag per peer. Same two sources as above.
-    // This is the source of truth for whether the peer CURRENTLY supports
-    // Aware — formerly mirrored on the PeerRecord row, now in-memory only since
-    // the aware_supported column has been removed.
-    private val awareSupportedMap = mutableStateMapOf<String, Boolean>()
 
     val pairedPeers: StateFlow<List<PeerRecord>> = combine(peersMap, ChatCacher.latestChatMap, onlineMap) { p, c, o ->
         sortPeers(p.values.filter { it.isPaired() }, c, o)
@@ -73,34 +56,7 @@ object PeerCacher {
 
     fun getOnlinePeerIds(): Set<String> = onlineMap.value.filterValues { it }.keys.toSet()
 
-    fun setCurrentTransport(peerId: String, transportType: PeerTransportType?) {
-        val current = currentTransportMap.value
-        if (transportType == null) {
-            if (current.containsKey(peerId)) {
-                currentTransportMap.value = current - peerId
-            }
-        } else if (current[peerId] != transportType) {
-            currentTransportMap.value = current + (peerId to transportType)
-        }
-    }
-
     fun getPeer(peerId: String): PeerRecord? = peersMap.value[peerId]
-
-    /** Returns whether the peer's Wi-Fi Aware service is currently running (from DISCOVER reply). */
-    fun isAwareRunning(peerId: String): Boolean = awareRunningMap[peerId] == true
-
-    /** Stores the peer's Aware running flag in memory, refreshed from the GATT DISCOVER reply. */
-    fun setAwareRunning(peerId: String, running: Boolean) {
-        awareRunningMap[peerId] = running
-    }
-
-    /** Returns whether the peer currently supports Wi-Fi Aware (from DISCOVER reply). */
-    fun isAwareSupported(peerId: String): Boolean = awareSupportedMap[peerId] == true
-
-    /** Stores the peer's Aware supported flag in memory, refreshed from the GATT DISCOVER reply. */
-    fun setAwareSupported(peerId: String, supported: Boolean) {
-        awareSupportedMap[peerId] = supported
-    }
 
     fun removePeer(peerId: String) {
         val currentPeers = peersMap.value
@@ -112,8 +68,6 @@ object PeerCacher {
         if (currentTransportMap.value.containsKey(peerId)) {
             currentTransportMap.value = currentTransportMap.value - peerId
         }
-        awareRunningMap.remove(peerId)
-        awareSupportedMap.remove(peerId)
     }
 
     suspend fun load() = withIO {

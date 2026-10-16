@@ -2,11 +2,11 @@ package com.ismartcoding.plain.graphql.models
 
 import kotlin.time.Instant
 
-interface MediaItem {
-    val id: String
-    val title: String
+interface MediaItem : com.ismartcoding.plain.db.IData, com.ismartcoding.plain.data.IItemMetadata {
+    override var id: String
+    override val title: String
     val path: String
-    val size: Long
+    override val size: Long
     val bucketId: String
     val createdAt: Instant
     val updatedAt: Instant

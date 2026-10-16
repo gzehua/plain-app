@@ -2,7 +2,6 @@ package com.ismartcoding.plain.rust.request
 
 import com.ismartcoding.plain.TempData
 import com.ismartcoding.plain.platform.getAppVersion
-import com.ismartcoding.plain.platform.getDeviceName
 import com.ismartcoding.plain.platform.getPlatformName
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi

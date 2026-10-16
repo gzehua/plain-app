@@ -1,0 +1,64 @@
+package com.ismartcoding.plain.platform
+
+import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.lib.coMain
+import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.ui.helpers.DialogHelper
+import kotlinx.coroutines.CancellationException
+import kotlinx.serialization.json.jsonPrimitive
+
+fun backup(uriStr: String) = exportBackup { path ->
+    check(copyFileToUri(path, uriStr)) { "Unable to write selected backup file" }
+    getFileNameFromUri(uriStr) ?: uriStr
+}
+
+fun backupToFile(fileName: String) = exportBackup { path ->
+    saveFileToDownloads(path, fileName).also { check(it.isNotEmpty()) { "Unable to save backup" } }
+}
+
+private fun exportBackup(save: suspend (String) -> String) {
+    coMain {
+        DialogHelper.showLoading()
+        var archive: String? = null
+        try {
+            val path = PlainRust.mainMutate("exportAppBackup", longRunning = true).getValue("exportAppBackup").jsonPrimitive.content
+            archive = path
+            val destination = save(path)
+            DialogHelper.showConfirmDialog("", LocaleHelper.getStringFAsync(Res.string.exported_to, destination))
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            DialogHelper.showMessage(error.message ?: LocaleHelper.getStringAsync(Res.string.error))
+        } finally {
+            archive?.let { deleteFileAt(it) }
+            DialogHelper.hideLoading()
+        }
+    }
+}
+
+fun restore(uriStr: String) {
+    coMain {
+        DialogHelper.showLoading()
+        try {
+            PlainRust.mainGraphql(
+                "mutation(\$path:String!){stageAppRestore(path:\$path)}",
+                mapOf("path" to kotlinx.serialization.json.JsonPrimitive(uriStr)),
+                longRunning = true,
+            )
+            val message = LocaleHelper.getStringAsync(Res.string.app_restore_ready)
+            if (Capability.APP_RELAUNCH in getDeviceCapabilities()) {
+                DialogHelper.showConfirmDialog("", message) {
+                    com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.events.RestartAppEvent())
+                }
+            } else {
+                DialogHelper.showConfirmDialog("", message)
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            DialogHelper.showMessage(error.message ?: LocaleHelper.getStringAsync(Res.string.error))
+        } finally {
+            DialogHelper.hideLoading()
+        }
+    }
+}

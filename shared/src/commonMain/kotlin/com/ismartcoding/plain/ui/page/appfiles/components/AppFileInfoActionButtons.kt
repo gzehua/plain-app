@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import com.ismartcoding.plain.extensions.resolveAppFileRealPath
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.withIO
@@ -39,7 +38,7 @@ fun AppFileInfoActionButtons(
 ) {
     val scope = rememberCoroutineScope()
     var showSaveSheet by remember { mutableStateOf(false) }
-    val realPath = file.appFile.realPath.resolveAppFileRealPath()
+    val realPath = file.appFile.realPath
 
     PSheetPrimaryActionsCard {
         PSheetPrimaryAction(UiRes.drawable.ui_drawable_forward, stringResource(Res.string.forward)) {

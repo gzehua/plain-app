@@ -1,17 +1,18 @@
 package com.ismartcoding.plain.ui.components.mediaviewer
 
 import androidx.compose.foundation.layout.Column
+import com.ismartcoding.plain.chat.models.MessageFile
+
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
+import com.ismartcoding.plain.graphql.models.Image as MediaImage
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.has
-import com.ismartcoding.plain.data.DImage
-import com.ismartcoding.plain.data.DVideo
 import com.ismartcoding.plain.graphql.models.Image
 import com.ismartcoding.plain.graphql.models.Video
 import com.ismartcoding.plain.i18n.*
@@ -47,7 +48,7 @@ internal fun ViewMediaActionButtons(
     onCast: (() -> Unit)? = null,
 ) {
     val scope = rememberCoroutineScope()
-    val isMediaFile = m.data is DImage || m.data is DVideo
+    val isMediaFile = m.data is MediaImage || m.data is MediaVideo
     // At most 4 disc actions per card: rename drops to a secondary row when
     // qr-result and cast discs would crowd delete off the row.
     val renameInPrimary = !(isMediaFile && qrScanResult.isNotEmpty() && onCast != null)

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.page.playlist.components
 
-import com.ismartcoding.plain.audio.DAudio
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.audio.AudioPlaylistManager
 import com.ismartcoding.plain.features.file.FileSortBy
@@ -13,7 +13,7 @@ private const val TRASHED_LOOKUP_LIMIT = 10_000
 /** Paths of audio files sitting in MediaStore trash; empty on platforms without trash. */
 private suspend fun trashedAudioPaths(): Set<String> = withIO {
     searchMedia(DataType.AUDIO, "trash:true", TRASHED_LOOKUP_LIMIT, 0, FileSortBy.DATE_DESC)
-        .filterIsInstance<DAudio>()
+        .filterIsInstance<AudioTrack>()
         .map { it.path }
         .toSet()
 }

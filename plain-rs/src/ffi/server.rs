@@ -5,7 +5,7 @@ use std::ffi::c_char;
 use std::{path::PathBuf, sync::Mutex};
 use tokio::runtime::Runtime;
 pub(crate) struct Core {
-    pub(crate) path: PathBuf,
+    pub(crate) directory: PathBuf,
     pub(crate) token: String,
     pub(crate) server: ContentServer,
     pub(crate) runtime: Runtime,
@@ -40,7 +40,6 @@ pub extern "C" fn plain_core_stop() {
         if let Some(core) = core.take() {
             crate::ffi::events::clear();
             crate::ffi::resources::clear();
-            crate::ffi::archives::clear();
             core.runtime.block_on(core.server.shutdown());
         }
     }

@@ -1,10 +1,17 @@
 package com.ismartcoding.plain.platform
 
 enum class Capability {
+    FILE_EXPORT,
+    FILE_REVEAL,
+    FILE_CLIPBOARD,
+    APP_RELAUNCH,
     MEDIA_TRASH,
     MEDIA_DELETE,
     MEDIA_MOVE,
     MEDIA_FAVORITE,
+    VIDEO_REMUX,
+    VIDEO_TRANSCODE,
+    VIDEO_3GP_CONVERT,
     APP_UPDATES,
     DONATION,
 

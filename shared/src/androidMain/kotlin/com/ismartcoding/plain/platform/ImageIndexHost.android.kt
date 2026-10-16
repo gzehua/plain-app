@@ -4,7 +4,6 @@ import com.ismartcoding.plain.ai.ImageIndexDecode
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.ai.ImageIndexManager
 import com.ismartcoding.plain.ai.ImageIndexCatalog
-import com.ismartcoding.plain.ai.ImageSearchIndexer
 import com.ismartcoding.plain.rust.content.string
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
@@ -22,5 +21,3 @@ actual suspend fun handleImageIndexHost(method: String, params: JsonObject): Jso
     }
 }
 actual suspend fun disconnectImageIndexHost() = withContext(NonCancellable + Dispatchers.IO) { ImageIndexManager.shutdown() }
-
-actual suspend fun applyImageIndexStatus(status: JsonObject) = withContext(Dispatchers.Main) { ImageSearchIndexer.applyStatus(status) }

@@ -1,13 +1,13 @@
 package com.ismartcoding.plain.ui.page.playlist.components
 
-import com.ismartcoding.plain.audio.DAudio
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
 import com.ismartcoding.plain.features.file.FileSortBy
 
 /**
- * In-memory [DAudio] ordering for lists that are not DB-driven (playlist
+ * In-memory [AudioTrack] ordering for lists that are not DB-driven (playlist
  * rows), matching the FileSortBy options the sort dialog offers.
  */
-fun List<DAudio>.sortedByAudio(sortBy: FileSortBy): List<DAudio> {
+fun List<AudioTrack>.sortedByAudio(sortBy: FileSortBy): List<AudioTrack> {
     val ascending = sortBy == FileSortBy.DATE_ASC || sortBy == FileSortBy.SIZE_ASC || sortBy == FileSortBy.NAME_ASC
     val base = when (sortBy) {
         FileSortBy.DATE_ASC, FileSortBy.DATE_DESC -> sortedBy { it.createdAt }

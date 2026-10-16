@@ -8,14 +8,10 @@ import kotlinx.serialization.json.*
 internal object SystemSmsHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
         "systemMmsTextFacts", "systemSmsCountFacts", "systemSmsRowsFacts", "systemSmsIdsFacts", "systemSmsConversationFacts", "systemSmsThreadFacts" -> com.ismartcoding.plain.platform.systemSmsFacts(method, params)
-        "systemSendSms" -> {
-            com.ismartcoding.plain.platform.sendSmsText(
-                params.getValue("number").jsonPrimitive.content,
-                params.getValue("body").jsonPrimitive.content,
-                params["subscriptionId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.int,
-                params["clientId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content,
-                params["clientRequestId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content,
-            )
+        "systemDivideSmsText" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.divideSmsText(
+            params.getValue("body").jsonPrimitive.content, params["subscriptionId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.int))
+        "systemSendSmsParts" -> {
+            com.ismartcoding.plain.platform.sendSmsParts(JsonHelper.jsonDecodeFromElement(params))
             JsonHelper.jsonEncodeToElement(true)
         }
         "systemDeleteSmsRows" -> {

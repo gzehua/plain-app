@@ -17,7 +17,6 @@ import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.chat.models.MessageFiles
 import com.ismartcoding.plain.chat.models.MessageImages
 import com.ismartcoding.plain.chat.models.MessageType
-import com.ismartcoding.plain.extensions.resolveAppFileRealPath
 import com.ismartcoding.plain.helpers.AppFileStore
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.formatBytes
@@ -85,8 +84,8 @@ fun AppFileInfoBottomSheet(
                 )
                 VerticalSpace(dp = 24.dp)
                 PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
-                    PListItem(title = file.appFile.realPath.resolveAppFileRealPath(), action = {
-                        CopyIconButton(text = file.appFile.realPath.resolveAppFileRealPath(), clipLabel = stringResource(Res.string.file_path))
+                    PListItem(title = file.appFile.realPath, action = {
+                        CopyIconButton(text = file.appFile.realPath, clipLabel = stringResource(Res.string.file_path))
                     })
                 }
                 VerticalSpace(dp = 16.dp)

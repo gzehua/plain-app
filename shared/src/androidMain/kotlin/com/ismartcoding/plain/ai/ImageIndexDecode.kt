@@ -1,8 +1,9 @@
 package com.ismartcoding.plain.ai
 
+import com.ismartcoding.plain.platform.appCacheDir
+
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
-import com.ismartcoding.plain.appContext
 import java.io.File
 
 internal object ImageIndexDecode {
@@ -16,7 +17,7 @@ internal object ImageIndexDecode {
                 decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
             }
             try {
-                val file = File.createTempFile("image-index-", ".png", appContext.cacheDir)
+                val file = File.createTempFile("image-index-", ".png", File(appCacheDir()))
                 staged = file
                 file.outputStream().use { check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
                 file.absolutePath
@@ -25,7 +26,7 @@ internal object ImageIndexDecode {
     }
     fun release(path: String): Boolean {
         val file = File(path)
-        require(file.parentFile?.canonicalFile == appContext.cacheDir.canonicalFile && file.name.startsWith("image-index-"))
+        require(file.parentFile?.canonicalFile == File(appCacheDir()).canonicalFile && file.name.startsWith("image-index-"))
         return !file.exists() || file.delete()
     }
 }

@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.data.DImage
-import com.ismartcoding.plain.data.DMediaBucket
+import com.ismartcoding.plain.graphql.models.Image as MediaImage
+import com.ismartcoding.plain.graphql.models.MediaBucket
 import com.ismartcoding.plain.db.IData
 import com.ismartcoding.plain.data.TagRelationStub
 import com.ismartcoding.plain.features.system.ProviderPlan
@@ -10,9 +10,8 @@ import com.ismartcoding.plain.features.file.FileSortBy
 
 /**
  * Returns all media buckets (folders) for the given [dataType].
- * Returns an empty list on platforms without a media store (iOS).
  */
-expect suspend fun getMediaBuckets(dataType: DataType): List<DMediaBucket>
+suspend fun getMediaBuckets(dataType: DataType): List<MediaBucket> = com.ismartcoding.plain.features.system.RustSystemProviders.mediaBuckets(dataType)
 
 /**
  * Search media items of [dataType] matching [query], paginated by [limit]/[offset]
@@ -70,23 +69,19 @@ suspend fun getDocExtGroups(query: String): List<Pair<String, Int>> = com.ismart
  * Combined image search: filename + optional AI semantic search.
  * If the AI model is not ready or [queryText] is blank, falls back to filename-only search.
  */
-expect suspend fun searchImagesCombined(
+suspend fun searchImagesCombined(
     queryText: String,
     extraQuery: String,
     limit: Int,
     offset: Int,
     sortBy: FileSortBy,
-): List<DImage>
+): List<MediaImage> = com.ismartcoding.plain.ai.RustImageSearch.rows(queryText, extraQuery, limit, offset, sortBy)
 
 /**
  * Whether the on-device AI image search model is loaded and ready.
  */
-expect fun isImageSearchModelReady(): Boolean
+fun isImageSearchModelReady(): Boolean = com.ismartcoding.plain.ai.ImageSearchManager.isModelReady()
 
-/**
- * Enqueue removal of the given image [ids] from the AI search index.
- */
-expect fun enqueueRemoveImageIndex(ids: Set<String>)
 
 /**
  * Returns a URI string for the media item identified by [id] of [dataType],
@@ -132,18 +127,18 @@ suspend fun getMediaTagRelationStubs(dataType: DataType, query: String): List<Ta
  * with the additional [extraQuery] filter. Returns 0 on unsupported platforms
  * or when the AI model is not ready.
  */
-expect suspend fun countImagesCombined(queryText: String, extraQuery: String): Int
+suspend fun countImagesCombined(queryText: String, extraQuery: String): Int = com.ismartcoding.plain.ai.RustImageSearch.count(queryText, extraQuery)
 
 /**
  * Start a full scan of all images to (re)build the AI search index.
  * If [force] is true, re-index even if already indexed.
  */
-expect fun startImageIndexFullScan(force: Boolean)
+fun startImageIndexFullScan(force: Boolean) = com.ismartcoding.plain.features.imageindex.ImageIndexHelper.startAsync(force)
 
 /**
  * Cancel any in-progress image indexing operation.
  */
-expect fun cancelImageIndex()
+fun cancelImageIndex() = com.ismartcoding.plain.features.imageindex.ImageIndexHelper.cancelAsync()
 
 /**
  * Build a snapshot of the current image-search status (model state, indexing progress).
@@ -155,50 +150,10 @@ expect fun cancelImageIndex()
  * Returns null if no match is found or the platform has no lookup capability.
  */
 
-/**
- * Search SMS conversations matching [query], paginated by [limit]/[offset].
- * Returns an empty list on unsupported platforms.
- */
-expect suspend fun searchSmsConversations(
-    query: String,
-    limit: Int,
-    offset: Int,
-): List<com.ismartcoding.plain.features.sms.DMessageConversation>
-
-/**
- * Count SMS conversations matching [query]. Returns 0 on unsupported platforms.
- */
-expect suspend fun countSmsConversations(query: String): Int
-
-/**
- * Returns archived SMS conversations. Empty list on unsupported platforms.
- */
-expect suspend fun getArchivedSmsConversations(): List<com.ismartcoding.plain.features.sms.DMessageConversation>
-
-/** Epoch-millis date of one SMS conversation (thread), or null if it no longer exists. */
-expect suspend fun getSmsConversationDate(threadId: String): Long?
-
-/**
- * Aggregate SMS counts (total, unread, sent, drafts) on supported platforms.
- * Returns zeroes on unsupported platforms.
- */
-expect suspend fun getSmsAllCounts(): DSmsCounts
-
 expect suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.features.sms.SmsDeletionReceipt
 
-/**
- * Send an SMS text message to [number] with body [body].
- * @param subscriptionId SIM subscription id, or null for default.
- * @param clientId web client identity derived from the authenticated request headers.
- * @param clientRequestId optional per-send correlation id returned in the asynchronous result event.
- */
-expect fun sendSmsText(
-    number: String,
-    body: String,
-    subscriptionId: Int?,
-    clientId: String?,
-    clientRequestId: String?,
-)
+expect fun divideSmsText(body: String, subscriptionId: Int?): List<String>
+expect fun sendSmsParts(request: com.ismartcoding.plain.features.sms.SmsDispatchRequest)
 
 /**
  * Initiate a phone call to [number].
@@ -206,12 +161,6 @@ expect fun sendSmsText(
  * Otherwise, directly places the call.
  */
 expect fun call(number: String, showDialer: Boolean)
-
-/**
- * Resolve a content URI (e.g. from app file store) to a real filesystem path.
- * Returns the input unchanged on platforms without content URIs.
- */
-expect fun resolveAppFileUri(uri: String): String
 
 /**
  * Returns the MIME type for a file extension (e.g. "image/png").
@@ -243,22 +192,13 @@ expect fun getScreenSize(): Pair<Int, Int>
  * Returns the absolute path of the platform's public Downloads directory.
  * Empty string on unsupported platforms.
  */
-expect fun getDownloadsDirPath(): String
+fun getDownloadsDirPath(): String = downloadsDirectory
 
-/**
- * Aggregate SMS counts returned by [getSmsAllCounts].
- */
-data class DSmsCounts(
-    val total: Int,
-    val inbox: Int,
-    val sent: Int,
-    val drafts: Int,
-)
+private val downloadsDirectory: String by lazy { platformDownloadsDirPath() }
 
-/**
- * Returns the contact identified by [id], or null if not found.
- */
-expect suspend fun getContactById(id: String): com.ismartcoding.plain.data.DContact?
+internal expect fun platformDownloadsDirPath(): String
+
+
 
 /**
  * Update the contact identified by [id] with the values in [input].
@@ -281,21 +221,18 @@ expect fun readSentMmsCandidates(minimumId: Long, launchTimeSec: Long): List<com
 
 /**
  * Enable the on-device AI image search model (downloads model if needed).
- * No-op on platforms without AI image search (iOS).
  */
-expect suspend fun enableImageSearchAsync()
+suspend fun enableImageSearchAsync() = com.ismartcoding.plain.ai.ImageSearchManager.enableAsync()
 
 /**
  * Disable the on-device AI image search model and release resources.
- * No-op on platforms without AI image search (iOS).
  */
-expect suspend fun disableImageSearchAsync()
+suspend fun disableImageSearchAsync() = com.ismartcoding.plain.ai.ImageSearchManager.disableAsync()
 
 /**
  * Cancel any in-progress download of the AI image search model.
- * No-op on platforms without AI image search (iOS).
  */
-expect fun cancelImageModelDownload()
+fun cancelImageModelDownload() = com.ismartcoding.plain.ai.ImageSearchManager.cancelDownload()
 
 expect suspend fun searchMedia(dataType: DataType, plan: ProviderPlan, limit: Int, offset: Int, sortBy: FileSortBy): List<IData>
 expect suspend fun countMedia(dataType: DataType, plan: ProviderPlan): Int

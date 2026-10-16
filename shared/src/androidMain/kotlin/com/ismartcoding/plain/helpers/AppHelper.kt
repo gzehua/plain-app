@@ -11,7 +11,7 @@ import com.ismartcoding.plain.Constants
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.data.LatestRelease
 import com.ismartcoding.plain.data.Version
-import com.ismartcoding.plain.getAppVersionName
+import com.ismartcoding.plain.platform.getAppVersionName
 import com.ismartcoding.plain.lib.JsonHelper.jsonDecode
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.check_failure
@@ -93,40 +93,6 @@ object AppHelper {
                 DialogHelper.showMessage(Res.string.check_failure)
             }
             null
-        }
-    }
-
-    fun getCacheSize(context: Context): Long {
-        return calculateDirectorySize(context.cacheDir) + calculateDirectorySize(
-            context.filesDir.resolve(
-                "image_cache"
-            )
-        )
-    }
-
-    private fun calculateDirectorySize(directory: File): Long {
-        var totalSize: Long = 0
-        val files = directory.listFiles() ?: return 0L
-        for (file in files) {
-            totalSize += if (file.isDirectory) {
-                calculateDirectorySize(file)
-            } else {
-                file.length()
-            }
-        }
-
-        return totalSize
-    }
-
-    fun clearCacheAsync(context: Context) {
-        context.cacheDir.listFiles()?.forEach {
-            it.deleteRecursively()
-        }
-        context.filesDir.resolve("image_cache").listFiles()?.forEach {
-            it.deleteRecursively()
-        }
-        context.filesDir.resolve("upload_tmp").listFiles()?.forEach {
-            it.deleteRecursively()
         }
     }
 

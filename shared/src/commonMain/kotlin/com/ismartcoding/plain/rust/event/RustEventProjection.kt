@@ -1,11 +1,12 @@
 package com.ismartcoding.plain.rust.event
 
+import com.ismartcoding.plain.rust.request.ContentApiSession
+
 import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.events.HWebRequestReceivedEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.rust.host.*
-import com.ismartcoding.plain.rust.request.ContentApiSession
 import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.ui.models.NotesViewModel
 import kotlinx.coroutines.CancellationException
@@ -13,7 +14,6 @@ import kotlinx.serialization.json.*
 
 internal object RustEventProjection {
     suspend fun reconcile() {
-        com.ismartcoding.plain.features.MediaDurationHelper.restore()
         com.ismartcoding.plain.features.VideoProgressHost.restore()
         com.ismartcoding.plain.preferences.Prefs.refresh()
         com.ismartcoding.plain.features.session.refreshOnlineClientIds()
@@ -26,7 +26,6 @@ internal object RustEventProjection {
         com.ismartcoding.plain.features.dlna.DlnaRendererState.refresh()
         com.ismartcoding.plain.features.dlna.sender.RustDlnaSender.refresh()
         com.ismartcoding.plain.ai.RustImageModels.refresh()
-        com.ismartcoding.plain.platform.applyImageIndexStatus(com.ismartcoding.plain.features.imageindex.ImageIndexHelper.status())
         com.ismartcoding.plain.chat.peer.PeerTransportProjection.refresh()
         com.ismartcoding.plain.chat.peer.PeerStatusManager.refresh()
         com.ismartcoding.plain.chat.peer.PeerCacher.load()
@@ -38,7 +37,7 @@ internal object RustEventProjection {
         val type = message.type
         val payload = message.payload
         when (type) {
-            EventType.IMAGE_INDEX_UPDATED.name -> com.ismartcoding.plain.platform.applyImageIndexStatus(JsonHelper.jsonDecode<JsonObject>(payload))
+            EventType.IMAGE_INDEX_UPDATED.name -> com.ismartcoding.plain.ai.RustImageModels.refresh()
             EventType.WEB_LOGIN_COMPLETED.name -> {
                 val facts = JsonHelper.jsonDecode<com.ismartcoding.plain.platform.WebLoginCompletedFacts>(payload)
                 if (facts.chatPaired) com.ismartcoding.plain.chat.peer.PeerManager.load()
@@ -48,6 +47,10 @@ internal object RustEventProjection {
             EventType.WEB_SOCKET_REGISTERED.name -> com.ismartcoding.plain.platform.onWebSocketSessionStarted()
 
             EventType.MEDIA_ACTION_FINISHED.name -> com.ismartcoding.plain.features.mediaactions.MediaActionProjection.apply(payload)
+            EventType.HTTP_SERVER_STARTED.name -> {
+                val started = JsonHelper.jsonDecode<com.ismartcoding.plain.platform.HttpServerStarted>(payload)
+                com.ismartcoding.plain.rust.request.RustContentApi.httpStarted(started.generation, started.httpPort)
+            }
             EventType.HTTP_SERVER_FAILED.name -> {
                 val failure = JsonHelper.jsonDecode<com.ismartcoding.plain.platform.HttpServerFailure>(payload)
                 com.ismartcoding.plain.platform.onRustHttpServerFailed(failure.generation, failure.message)

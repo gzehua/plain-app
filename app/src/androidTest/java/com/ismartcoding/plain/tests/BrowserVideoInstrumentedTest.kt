@@ -1,0 +1,64 @@
+package com.ismartcoding.plain.tests
+
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.ismartcoding.plain.appContext
+import com.ismartcoding.plain.platform.*
+import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.rust.PlainRust
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.*
+import org.junit.Assert.*
+import org.junit.Assume.assumeTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+import java.io.File
+import java.net.URLEncoder
+import java.util.UUID
+
+@RunWith(AndroidJUnit4::class)
+class BrowserVideoInstrumentedTest {
+    @Test
+    fun publicResourceTranscodesHevcWithTheRustOwnedPipeline() = runBlocking {
+        val source = File("/data/local/tmp/hevc_probe.mp4")
+        assumeTrue("HEVC fixture is missing", source.isFile)
+        val capabilities = PlainRust.mainQuery("app { capabilities }").getValue("app").jsonObject
+            .getValue("capabilities").jsonArray.map { it.jsonPrimitive.content }
+        assumeTrue("HEVC transcoding is unavailable", "VIDEO_TRANSCODE" in capabilities)
+        val service = UserPrefs.service.value
+        val desktop = UserPrefs.desktopAccess.value
+        val output = File(appContext.cacheDir, "browser-video-${UUID.randomUUID()}.mp4")
+        try {
+            UserPrefs.service.value = true
+            UserPrefs.desktopAccess.value = true
+            startHttpEngineAsync()
+            val base = "http://127.0.0.1:${UserPrefs.httpPort.value}"
+            fun resource(file: File) = "$base/fs?id=${URLEncoder.encode(ResourceCrypto.encrypt(file.absolutePath), "UTF-8")}"
+            createUnsafeHttpClient().use { client ->
+                client.get("${resource(source)}&probe=1").use { response ->
+                    assertEquals(200, response.status.value)
+                    val codec = Json.parseToJsonElement(response.bodyAsText()).jsonObject.getValue("codec").jsonPrimitive.content
+                    assertTrue(codec == "hvc1" || codec == "hev1")
+                }
+                client.get("${resource(source)}&tr=1").use { response ->
+                    assertEquals(200, response.status.value)
+                    output.writeBytes(response.bodyAsBytes())
+                }
+                assertTrue(output.length() > 0)
+                client.get("${resource(output)}&probe=1").use { response ->
+                    assertEquals(200, response.status.value)
+                    assertEquals("avc1", Json.parseToJsonElement(response.bodyAsText()).jsonObject.getValue("codec").jsonPrimitive.content)
+                }
+                val sourceDuration = getMediaDurationMs(source.absolutePath)
+                val outputDuration = getMediaDurationMs(output.absolutePath)
+                assertTrue(sourceDuration > 0)
+                assertTrue(kotlin.math.abs(sourceDuration-outputDuration) <= 2000)
+            }
+        } finally {
+            output.delete()
+            stopHttpEngineAsync()
+            UserPrefs.desktopAccess.value = desktop
+            UserPrefs.service.value = service
+            if (service) startHttpEngineAsync()
+        }
+    }
+}

@@ -9,6 +9,10 @@ import com.ismartcoding.plain.features.session.RustWebLogin
 import com.ismartcoding.plain.helpers.Base64Lenient
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.*
+import com.ismartcoding.plain.testing.CryptoFixtures.chaCha20Encrypt
+import com.ismartcoding.plain.testing.CryptoFixtures.chaCha20Decrypt
+import com.ismartcoding.plain.testing.CryptoFixtures.computeECDHSharedKey
+import com.ismartcoding.plain.testing.CryptoFixtures.generateECDHKeyPair
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.coroutines.*

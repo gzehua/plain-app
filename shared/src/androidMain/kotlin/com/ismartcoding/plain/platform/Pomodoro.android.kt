@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.platform
 
+import com.ismartcoding.plain.lib.withIO
+
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
@@ -12,17 +14,13 @@ import androidx.core.app.NotificationManagerCompat
 import com.ismartcoding.plain.Constants
 import com.ismartcoding.plain.MainActivity
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.audio.fromPath
-import com.ismartcoding.plain.data.DPomodoroSettings
 import com.ismartcoding.plain.extensions.getFinalPath
-import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.graphql.models.PomodoroSettings
 import com.ismartcoding.plain.helpers.NotificationHelper
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.extensions.isAudioFast
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.page.pomodoro.PomodoroState
 import com.ismartcoding.plain.ui.theme.BrandPrimary
@@ -90,8 +88,7 @@ actual suspend fun showPomodoroNotification(state: PomodoroState, nextState: Pom
     }
 }
 
-actual suspend fun playPomodoroCompletionSound(settings: DPomodoroSettings) {
-    val context = appContext
+actual suspend fun playPomodoroCompletionSound(settings: PomodoroSettings) {
     if (!settings.playSoundOnComplete) {
         return
     }
@@ -102,10 +99,10 @@ actual suspend fun playPomodoroCompletionSound(settings: DPomodoroSettings) {
             val file = File(actualPath)
 
             if (file.exists() && actualPath.isAudioFast()) {
-                playCustomSong(context, actualPath)
+                playCustomSong(actualPath)
                 return
             } else if (settings.soundPath.startsWith("content://")) {
-                playCustomSong(context, settings.soundPath)
+                playCustomSong(settings.soundPath)
                 return
             }
         } catch (e: Exception) {
@@ -118,9 +115,9 @@ actual suspend fun playPomodoroCompletionSound(settings: DPomodoroSettings) {
     }
 }
 
-private suspend fun playCustomSong(context: android.content.Context, songPath: String) {
+private suspend fun playCustomSong(songPath: String) {
     try {
-        val audio = AudioItem.fromPath(context, songPath)
+        val audio = playlistAudioFromPath(songPath)
         coIO {
             audioJustPlay(audio)
         }

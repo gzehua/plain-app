@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.extensions
 
+
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import android.database.Cursor
 import android.provider.MediaStore
 import com.ismartcoding.plain.lib.extensions.getIntValue
@@ -7,9 +10,7 @@ import com.ismartcoding.plain.lib.extensions.getLongValue
 import com.ismartcoding.plain.lib.extensions.getStringValue
 import com.ismartcoding.plain.lib.extensions.getTimeSecondsValue
 import com.ismartcoding.plain.platform.isQPlus
-import com.ismartcoding.plain.features.file.DFile
-
-fun Cursor.toFile(cache: MutableMap<String, Int>): DFile {
+fun Cursor.toFile(cache: MutableMap<String, Int>): FileEntry {
     val id = getStringValue(MediaStore.Files.FileColumns._ID, cache)
     val title = getStringValue(MediaStore.Files.FileColumns.DISPLAY_NAME, cache)
     val size = getLongValue(MediaStore.Files.FileColumns.SIZE, cache)
@@ -19,15 +20,5 @@ fun Cursor.toFile(cache: MutableMap<String, Int>): DFile {
     val mimeType =
         getString(getColumnIndexOrThrow(MediaStore.Files.FileColumns.MIME_TYPE))
     val mediaType = getIntValue(MediaStore.Files.FileColumns.MEDIA_TYPE, cache)
-    return DFile(
-        title,
-        path,
-        "",
-        createdAt,
-        updatedAt,
-        size,
-        mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_NONE && (mimeType == null || mimeType == "vnd.android.document/directory"),
-        0,
-        id,
-    )
+    return FileEntry(name = title, path = path, permission = "", createdAt = createdAt, updatedAt = updatedAt, size = size, isDir = mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_NONE && (mimeType == null || mimeType == "vnd.android.document/directory"), childCount = 0, mediaId = id)
 }

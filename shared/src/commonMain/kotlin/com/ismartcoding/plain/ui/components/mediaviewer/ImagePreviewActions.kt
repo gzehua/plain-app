@@ -1,23 +1,28 @@
 package com.ismartcoding.plain.ui.components.mediaviewer
 
+import com.ismartcoding.plain.features.file.extension
+
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import com.ismartcoding.plain.graphql.models.File
+import com.ismartcoding.plain.ui.resources.image as ui_drawable_image
+
+import com.ismartcoding.plain.graphql.models.Image as MediaImage
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.chat.models.MessageFile
-import com.ismartcoding.plain.data.DImage
-import com.ismartcoding.plain.features.file.DFile
-import com.ismartcoding.plain.graphql.models.File
 import com.ismartcoding.plain.graphql.models.Image
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.image
@@ -34,7 +39,6 @@ import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewer
 import com.ismartcoding.plain.ui.models.CastViewModel
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.ellipsis as ui_drawable_ellipsis
-import com.ismartcoding.plain.ui.resources.image as ui_drawable_image
 import com.ismartcoding.plain.ui.resources.rotate_cw_square as ui_drawable_rotate_cw_square
 import com.ismartcoding.plain.ui.resources.save as ui_drawable_save
 import kotlinx.coroutines.launch
@@ -66,7 +70,7 @@ fun ImagePreviewActions(
                     }
                 }
             }
-            if (canSavePreviewMedia && m.data !is DImage && m.data !is DFile) {
+            if (canSavePreviewMedia && m.data !is MediaImage && m.data !is FileEntry) {
                 HorizontalSpace(dp = 20.dp)
                 ControlChipIconButton(icon = UiRes.drawable.ui_drawable_save, contentDescription = stringResource(Res.string.save)) {
                     showSaveSheet = true

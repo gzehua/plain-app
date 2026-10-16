@@ -23,7 +23,6 @@ class RustApiException(message: String, cause: Throwable? = null) : Exception(me
 object RustContentApi {
     private val lock = PlatformLock()
     private val client by lazy { createPlainHttpClient(PlainHttpClientSpec.Local()) }
-    private val transferClient by lazy { createPlainHttpClient(PlainHttpClientSpec.Local(15 * 60)) }
     private val statusLock = Mutex()
 
     /** Endpoint description of this device's own Rust server, for the REST calls below. */
@@ -36,26 +35,38 @@ object RustContentApi {
         return checkNotNull(localSession) { "Rust HTTP server is not initialized" }
     }
 
-    val directory: String get() = "${prefsFilePath().substringBeforeLast('/')}/rust-content"
+    val directory: String by lazy { dataDirPath() }
+    @Volatile private var imageCachePath: String? = null
+    @Volatile private var videoCachePath: String? = null
+    val cacheDirectory: String by lazy { cacheDirPath() }
+    val videoCacheDirectory: String get() = checkNotNull(videoCachePath) { "Rust video cache is not initialized" }
+    val imageCacheDirectory: String get() = checkNotNull(imageCachePath) { "Rust image cache is not initialized" }
 
     @Volatile internal var httpGeneration: Long = 0L
         private set
+    private var lastHttpGeneration: Long = 0L
     private var sessionToken: String? = null
     private var collectorsStarted = false
+
+    private val startupConfig by lazy {
+        RustHttpServerConfig(isDebugBuild(), RustWebAssets.ensure(), startupSystemProperties())
+    }
 
     fun start() = lock.withLock {
         if (httpGeneration != 0L) return@withLock
         val token = sessionToken ?: generateChaCha20Key().also { sessionToken = it }
-        val config = RustHttpServerConfig(
-            isDebugBuild(), getDeviceName(), RustWebAssets.ensure(),
-        )
+        val config = startupConfig
         val ports = JsonHelper.jsonDecode<RustHttpServerResult>(PlainRust.initialize(
-            "$directory/plain-content.db", token, JsonHelper.jsonEncode(config)))
+            directory, token, JsonHelper.jsonEncode(config)))
         check(ports.errorCode.isEmpty()) { ports.error }
+        require(ports.cacheDir.startsWith('/') && ports.imageCacheDir.startsWith('/') && ports.videoCacheDir.startsWith('/')) { "Rust cache paths required" }
+        check(ports.cacheDir == cacheDirectory) { "Rust cache root differs from startup configuration" }
+        imageCachePath = ports.imageCacheDir
+        videoCachePath = ports.videoCacheDir
         localSession = ContentApiSession(
             "http://127.0.0.1:${ports.httpPort}",
             TempData.clientId,
-            SessionAuth.Bearer(token),
+            token,
         )
         if (!collectorsStarted) {
             PlainRust.start { checkNotNull(localSession) }
@@ -63,12 +74,23 @@ object RustContentApi {
         }
         kotlinx.coroutines.runBlocking(com.ismartcoding.plain.platform.IODispatcher) { com.ismartcoding.plain.preferences.RustSystemState.refresh() }
         httpGeneration = ports.generation
+        lastHttpGeneration = maxOf(lastHttpGeneration, ports.generation)
 
     }
 
     internal fun stopHttp() = lock.withLock {
         PlainRust.stopHttp()
         httpGeneration = 0L
+    }
+
+    internal fun httpStarted(generation: Long, httpPort: Int) = lock.withLock {
+        if (generation <= lastHttpGeneration || localSession == null) return@withLock
+        check(httpPort in 1..65535) { "Invalid HTTP port" }
+        localSession = ContentApiSession(
+            "http://127.0.0.1:$httpPort", TempData.clientId, checkNotNull(sessionToken),
+        )
+        lastHttpGeneration = generation
+        httpGeneration = generation
     }
 
     internal fun httpFailed(generation: Long): Boolean = lock.withLock {
@@ -87,43 +109,6 @@ object RustContentApi {
 
     suspend fun graphql(document: String, variables: Map<String, JsonElement> = emptyMap(), session: ContentApiSession? = null): JsonObject =
         PlainRust.mainGraphql(document, variables, session)
-
-    // ── Legacy JSON-RPC: local HTTP until these routes are migrated ──────
-
-    /**
-     * Posts a JSON-RPC style body to the local Rust core.
-     *
-     * Rust refusals (login rate limits, revoked sessions, failed ECDH, internal
-     * errors) are returned as [Result.failure] rather than thrown: several
-     * callers run on the UI path, where an [IllegalStateException] from `check`
-     * used to crash the app instead of surfacing the refusal. Callers that
-     * already expect a refusal should unwrap with a message.
-     */
-    suspend fun postJson(path: String, body: JsonObject, longRunning: Boolean = false, session: ContentApiSession? = null): Result<JsonObject> {
-        val target = session ?: checkNotNull(localSession)
-        return (if (longRunning) transferClient else client).postText("${target.baseUrl}/$path", body.toString(), "application/json", target.headers()).use {
-            val result = runCatching { JsonHelper.jsonDecode<JsonElement>(it.bodyAsText()).jsonObject }
-                .getOrElse { error -> return Result.failure(RustApiException("Rust API returned an unreadable body", error)) }
-            if (!it.isOk()) {
-                val message = result["error"]?.jsonPrimitive?.contentOrNull ?: "Rust API returned HTTP ${it.status}"
-                return Result.failure(RustApiException(message))
-            }
-            Result.success(result)
-        }
-    }
-
-    /**
-     * Convenience for callers that treat a Rust refusal as a programming error
-     * (background workers, tests). UI paths should use [postJson] and handle
-     * the failure, so a refusal cannot crash the app.
-     */
-    suspend fun postJsonOrThrow(path: String, body: JsonObject, longRunning: Boolean = false): JsonObject =
-        postJson(path, body, longRunning).getOrThrow()
-
-    suspend fun postStream(path: String, body: JsonObject): PlainResponse {
-        val target = checkNotNull(localSession)
-        return transferClient.postText("${target.baseUrl}/$path", body.toString(), "application/json", target.headers())
-    }
 
     suspend fun sync(feedId: String) {
         val key = feedId.ifEmpty { "all" }

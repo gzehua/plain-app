@@ -14,11 +14,9 @@ import com.ismartcoding.plain.chat.peer.transport.WifiAwareTransport
 import com.ismartcoding.plain.enums.HttpServerState
 import com.ismartcoding.plain.features.ClipboardWatcher
 import com.ismartcoding.plain.features.sms.SmsProviderObserver
-import com.ismartcoding.plain.features.sms.SmsHelper
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.mdns.NsdHelper
 import com.ismartcoding.plain.services.HttpServerService
 import com.ismartcoding.plain.services.PNotificationListenerService
 import com.ismartcoding.plain.platform.HttpServerManager
@@ -59,22 +57,16 @@ private fun readUriText(uriStr: String): String = readUriBytes(uriStr).toString(
 // connected web sessions — so they live exactly as long as the server:
 // - SmsProviderObserver pushes a debounced WS event when the phone's SMS
 //   database changes, so connected desktops refresh;
-// - SmsHelper.restoreSmsSendTracking re-arms the in-memory timeout/cleanup
-//   jobs for sends that were in flight before this (re)start; their terminal
-//   receipts are persisted in SmsSendResultTracker and replayed to a browser
-//   on reconnect (see onWebSocketSessionStarted).
 actual suspend fun onHttpServerStarted() {
     val service = appContext
     HttpServerResources.start()
     PNotificationListenerService.toggle(service, Permission.NOTIFICATION_LISTENER.isEnabledAsync())
     SmsProviderObserver.start(service)
     ClipboardWatcher.start()
-    SmsHelper.restoreSmsSendTracking()
     PeerStatusManager.start()
 }
 
 actual suspend fun onWebSocketSessionStarted() {
-    SmsHelper.replayTerminalSmsSendResults()
 }
 
 actual suspend fun onHttpServerStopped() {
@@ -82,7 +74,6 @@ actual suspend fun onHttpServerStopped() {
     PeerStatusManager.stop()
     SmsProviderObserver.stop()
     ClipboardWatcher.stop()
-    SmsHelper.stopSmsSendTracking()
     PNotificationListenerService.toggle(appContext, false)
 }
 

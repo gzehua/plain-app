@@ -24,7 +24,7 @@ import com.ismartcoding.plain.enums.PackageType
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.platform.formatDateTime
 import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.ui.models.VPackage
+import com.ismartcoding.plain.graphql.models.Package as AppPackage
 import com.ismartcoding.plain.ui.theme.listItemDescription
 import com.ismartcoding.plain.ui.theme.listItemSubtitle
 import com.ismartcoding.plain.ui.theme.listItemTitle
@@ -32,7 +32,7 @@ import com.ismartcoding.plain.ui.theme.listItemTitle
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PackageListItem(
-    item: VPackage,
+    item: AppPackage,
     iconProvider: (String) -> Any?,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = { },

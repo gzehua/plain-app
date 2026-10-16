@@ -1,8 +1,9 @@
 package com.ismartcoding.plain.ui.models
 
+import com.ismartcoding.plain.audio.toPlaylistAudio
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.events.ClearAudioQueueEvent
 import com.ismartcoding.plain.features.audio.AudioQueueManager
 import com.ismartcoding.plain.graphql.models.Audio
@@ -42,7 +43,7 @@ class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
         refreshWindow(queueItems.value.size + pageLimit)
     }
 
-    suspend fun addAsync(items: List<DAudio>) {
+    suspend fun addAsync(items: List<AudioTrack>) {
         val audio = items.map { it.toPlaylistAudio() }
         AudioQueueManager.enqueue(audio)
         if (selectedPath.value.isEmpty()) {
@@ -79,14 +80,14 @@ class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
         selectedMediaId.value = audio?.mediaId
     }
 
-    suspend fun playAsync(item: DAudio) {
+    suspend fun playAsync(item: AudioTrack) {
         val audio = item.toPlaylistAudio()
         audioJustPlay(audio)
         setCurrentPlaying(audio)
         refreshWindow()
     }
 
-    suspend fun enqueueAndPlayAsync(item: DAudio) {
+    suspend fun enqueueAndPlayAsync(item: AudioTrack) {
         val audio = item.toPlaylistAudio()
         AudioQueueManager.enqueue(listOf(audio))
         audioJustPlay(audio)

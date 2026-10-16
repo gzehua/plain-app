@@ -6,6 +6,8 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 static PREFS: Mutex<Option<Arc<Prefs>>> = Mutex::new(None);
+static DIRECTORY: Mutex<Option<Arc<plain_server::assembly::data_directory::DataDirectory>>> =
+    Mutex::new(None);
 
 pub(crate) fn prefs() -> Result<Arc<Prefs>, String> {
     PREFS
@@ -15,38 +17,51 @@ pub(crate) fn prefs() -> Result<Arc<Prefs>, String> {
         .ok_or_else(|| "Rust preferences are not initialized".to_string())
 }
 
-fn open(system_path: &str, user_path: &str) -> Result<(), String> {
+fn open(data_dir: &str, cache_dir: &str) -> Result<(), String> {
+    let directory = Path::new(data_dir);
+    if !directory.is_absolute() {
+        return Err("Absolute data directory required".into());
+    }
+    let paths = plain_rs::data_paths::DataPaths::new(directory);
+    let system_path = paths.system_prefs();
+    let user_path = paths.user_prefs();
     let mut guard = PREFS.lock().map_err(|e| e.to_string())?;
     if let Some(existing) = guard.as_ref() {
-        if existing.path() == Path::new(system_path) && existing.user_path() == Path::new(user_path)
-        {
+        if existing.path() == system_path.as_path() && existing.user_path() == user_path.as_path() {
+            DIRECTORY
+                .lock()
+                .map_err(|error| error.to_string())?
+                .as_ref()
+                .ok_or("Rust data directory is not initialized")?
+                .cache_paths()
+                .root()
+                .eq(Path::new(cache_dir))
+                .then_some(())
+                .ok_or("Rust cache directory cannot change after initialization")?;
             return Ok(());
         }
         return Err("Rust preferences were initialized with another path".to_string());
     }
-    let loaded = Prefs::load_pair(Path::new(system_path), Path::new(user_path))
-        .map_err(|e| e.to_string())?;
+    let data_directory = plain_server::assembly::data_directory::DataDirectory::open(
+        directory,
+        Path::new(cache_dir),
+    )?;
+    let loaded =
+        Prefs::load_pair(system_path.as_path(), user_path.as_path()).map_err(|e| e.to_string())?;
+    *DIRECTORY.lock().map_err(|error| error.to_string())? = Some(data_directory);
     *guard = Some(Arc::new(loaded));
     Ok(())
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn plain_prefs_open(
-    system_path: *const c_char,
-    user_path: *const c_char,
+    data_dir: *const c_char,
+    cache_dir: *const c_char,
 ) -> *mut c_char {
-    match input(system_path).and_then(|system_path| {
-        input(user_path).and_then(|user_path| open(&system_path, &user_path))
-    }) {
+    match input(data_dir)
+        .and_then(|directory| input(cache_dir).and_then(|cache| open(&directory, &cache)))
+    {
         Ok(()) => std::ptr::null_mut(),
-        Err(error) => c_string(error),
-    }
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn plain_prefs_user_action(action_json: *const c_char) -> *mut c_char {
-    match input(action_json).and_then(|action| run_user_action(&action)) {
-        Ok(_) => std::ptr::null_mut(),
         Err(error) => c_string(error),
     }
 }
@@ -71,49 +86,11 @@ fn user_snapshot() -> Result<String, String> {
     serde_json::to_string(&settings).map_err(|e| e.to_string())
 }
 
-/// Applies one user-settings patch supplied as `{"field":value}`.
-///
-/// Delegates to `ContentServer::update_user_prefs`, which runs the same
-/// `apply_user_patch` the GraphQL resolvers use: validation, persistence, the
-/// `PREFS_UPDATED` broadcast remote clients rely on, and the mDNS /
-/// desktop-access host effects. Requires the core to be started.
-fn update_user(patch_json: &str) -> Result<bool, String> {
-    let core = crate::ffi::server::CORE
-        .lock()
-        .map_err(|e| e.to_string())?;
-    let core = core
-        .as_ref()
-        .ok_or("Rust core is not initialized")?;
-    core.runtime
-        .block_on(core.server.update_user_prefs(patch_json))
-}
-
-/// Runs one user-settings action — the commands that are more than a field
-/// write, such as de-duplicating a recent search.
-fn run_user_action(action_json: &str) -> Result<bool, String> {
-    let core = crate::ffi::server::CORE
-        .lock()
-        .map_err(|e| e.to_string())?;
-    let core = core
-        .as_ref()
-        .ok_or("Rust core is not initialized")?;
-    core.runtime
-        .block_on(core.server.run_user_action(action_json))
-}
-
 #[unsafe(no_mangle)]
 pub extern "C" fn plain_prefs_user_snapshot() -> *mut c_char {
     match user_snapshot() {
         Ok(json) => c_string(json),
         Err(error) => c_string(format!("ERROR:{error}")),
-    }
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn plain_prefs_update_user(patch_json: *const c_char) -> *mut c_char {
-    match input(patch_json).and_then(|patch| update_user(&patch)) {
-        Ok(_) => std::ptr::null_mut(),
-        Err(error) => c_string(error),
     }
 }
 
@@ -154,11 +131,11 @@ mod android {
     pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustPrefsBridge_openNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
-        system_path: JString<'_>,
-        user_path: JString<'_>,
+        data_dir: JString<'_>,
+        cache_dir: JString<'_>,
     ) {
         env.with_env(|_| -> BridgeResult<()> {
-            open(&system_path.to_string(), &user_path.to_string()).map_err(BridgeError::Prefs)?;
+            open(&data_dir.to_string(), &cache_dir.to_string()).map_err(BridgeError::Prefs)?;
             Ok(())
         })
         .resolve::<ThrowRuntimeExAndDefault>();
@@ -175,31 +152,5 @@ mod android {
         })
         .resolve::<ThrowRuntimeExAndDefault>()
         .into_raw()
-    }
-
-    #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustPrefsBridge_updateUserNative(
-        mut env: EnvUnowned<'_>,
-        _: JObject<'_>,
-        patch_json: JString<'_>,
-    ) {
-        env.with_env(|_| -> BridgeResult<()> {
-            update_user(&patch_json.to_string()).map_err(BridgeError::Prefs)?;
-            Ok(())
-        })
-        .resolve::<ThrowRuntimeExAndDefault>();
-    }
-
-    #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustPrefsBridge_userActionNative(
-        mut env: EnvUnowned<'_>,
-        _: JObject<'_>,
-        action_json: JString<'_>,
-    ) {
-        env.with_env(|_| -> BridgeResult<()> {
-            run_user_action(&action_json.to_string()).map_err(BridgeError::Prefs)?;
-            Ok(())
-        })
-        .resolve::<ThrowRuntimeExAndDefault>();
     }
 }

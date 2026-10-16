@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.page.media
 
+import com.ismartcoding.plain.graphql.models.MediaBucket
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.data.DMediaBucket
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.components.MediaFolderGridItem
@@ -23,8 +23,8 @@ import com.ismartcoding.plain.ui.components.MediaFolderListItem
 @Composable
 internal fun MediaFolderListContent(
     listState: LazyListState,
-    totalBucket: DMediaBucket?,
-    items: List<DMediaBucket>,
+    totalBucket: MediaBucket?,
+    items: List<MediaBucket>,
     selectedBucketId: String,
     onSelect: (String) -> Unit,
 ) {
@@ -57,8 +57,8 @@ internal fun MediaFolderListContent(
 @Composable
 internal fun MediaFolderGridContent(
     gridState: LazyGridState,
-    totalBucket: DMediaBucket?,
-    items: List<DMediaBucket>,
+    totalBucket: MediaBucket?,
+    items: List<MediaBucket>,
     selectedBucketId: String,
     onSelect: (String) -> Unit,
 ) {

@@ -17,6 +17,11 @@ internal object FileResourceStreamHost {
             var completed = false
             try {
                 val metadata = JsonHelper.jsonDecode<ResourceStreamRequest>(RustBridgeReply.value(RustCoreBridge.resourceOpen(id)))
+                if (metadata.file) {
+                    provideResourceFile(id, metadata.path)
+                    completed = true
+                    return@launch
+                }
                 val sink = NativeResourceStreamSink(id)
                 try {
                     check(streamContentUri(metadata.path, sink) != null) { "Unable to open content URI" }

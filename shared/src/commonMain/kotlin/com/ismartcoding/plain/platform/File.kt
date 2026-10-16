@@ -1,31 +1,23 @@
 package com.ismartcoding.plain.platform
 
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.features.file.RustFileHelper
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.helpers.AppFileStore
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.StreamSink
 import kotlin.time.Instant
+import kotlinx.serialization.json.jsonPrimitive
 
 // ── Shared construction / detection helpers ────────────────────────────────
 // These hold the platform-independent business logic so each actual only keeps
 // the lowest-level file I/O. Android is the reference implementation.
 
 /**
- * Build the [DFile] record for a text file at [path] with [size] bytes and the
+ * Build the [FileEntry] record for a text file at [path] with [size] bytes and the
  * given (epoch-ms) modification time. Used by [writeFileText].
  */
-fun buildTextFile(path: String, size: Long, updatedAtMillis: Long): DFile = DFile(
-    name = path.substringAfterLast('/'),
-    path = path,
-    permission = "rw",
-    createdAt = null,
-    updatedAt = Instant.fromEpochMilliseconds(updatedAtMillis),
-    size = size,
-    isDir = false,
-    childCount = 0,
-    mediaId = "",
-)
+fun buildTextFile(path: String, size: Long, updatedAtMillis: Long): FileEntry = FileEntry(name = path.substringAfterLast('/'), path = path, permission = "rw", createdAt = null, updatedAt = Instant.fromEpochMilliseconds(updatedAtMillis), size = size, isDir = false, childCount = 0, mediaId = "")
 
 suspend fun releaseAppFile(fidSuffix: String) {
     AppFileStore.release(fidSuffix)
@@ -61,18 +53,19 @@ expect fun writeBytesToPath(path: String, bytes: ByteArray): Boolean
  * Copy a file into the system Downloads folder.
  * Returns the destination path on success, empty string on failure.
  */
-expect fun saveFileToDownloads(path: String, fileName: String): String
+expect suspend fun saveFileToDownloads(path: String, fileName: String): String
 
 /**
  * Copy [srcPath] into [dirPath] as [fileName], creating the directory when
  * missing. Returns the destination path on success, empty string on failure.
  */
 suspend fun copyFileToDir(srcPath: String, dirPath: String, fileName: String): String {
-    val dir = dirPath.trimEnd('/')
-    if (dir.isEmpty()) return ""
-    val dest = "$dir/$fileName"
-    ensureParentDir(dest)
-    return if (copyFile(srcPath, dest)) dest else ""
+    val result = com.ismartcoding.plain.rust.PlainRust.mainGraphql(
+        "mutation(\$src:String!,\$directory:String!,\$name:String!){copyFileToDirectory(src:\$src,directory:\$directory,name:\$name)}",
+        mapOf("src" to kotlinx.serialization.json.JsonPrimitive(srcPath), "directory" to kotlinx.serialization.json.JsonPrimitive(dirPath), "name" to kotlinx.serialization.json.JsonPrimitive(fileName)),
+        longRunning = true,
+    ).getValue("copyFileToDirectory")
+    return if (result is kotlinx.serialization.json.JsonNull) "" else result.jsonPrimitive.content
 }
 
 /**
@@ -91,29 +84,11 @@ expect fun getFileIconPath(extension: String): String
 expect fun fileExists(path: String): Boolean
 
 /**
- * Copy a picked file (identified by URI string) into app storage under [destRelativePath].
- * Returns the display name of the source file, or null on failure.
- */
-expect suspend fun copyPickedFileToAppStorage(uriStr: String, destRelativePath: String): String?
-
-/**
  * Write [content] to a text file at [path]. When [overwrite] is false and the file
  * already exists, the Rust request fails.
- * Returns the resulting DFile.
+ * Returns the resulting FileEntry.
  */
-suspend fun writeFileText(path: String, content: String, overwrite: Boolean): DFile = RustFileHelper.writeText(path, content, overwrite)
-
-/**
- * Returns the directory used to store chunked-upload temp files (one sub-directory
- * per [fileId]). The directory may not yet exist; callers should create it as needed.
- */
-expect fun getUploadTmpDirPath(): String
-
-/**
- * Returns the directory used to merge chunked uploads into a temp file before
- * the final move/copy to the destination path. The directory may not yet exist.
- */
-expect fun getUploadCacheMergeDirPath(): String
+suspend fun writeFileText(path: String, content: String, overwrite: Boolean): FileEntry = RustFileHelper.writeText(path, content, overwrite)
 
 /** Names of the files directly inside [path], empty if the directory does not exist. */
 expect fun listFilesInDir(path: String): List<String>
@@ -174,37 +149,8 @@ expect suspend fun importAppFile(tempFilePath: String, fileName: String, content
  */
 expect suspend fun streamContentUri(uri: String, sink: StreamSink): String?
 
-/**
- * Convert a 3gp content URI to MP4 bytes. Returns null on platforms without
- * media transcoding support.
- */
-expect suspend fun convert3gpToMp4(uri: String): ByteArray?
 
-/**
- * Returns a browser-playable variant of [path] for MP4 files that embed
- * metadata tracks Chromium cannot demux (e.g. the Pixel camera "mebx" motion
- * track): an audio+video-only stream-copy remux, cached on the platform side.
- * Returns null when no conversion is needed or the platform has no remux
- * support.
- */
-expect suspend fun remuxMp4ForBrowser(path: String): String?
 
-/**
- * fourcc of the first video track's stsd sample entry (e.g. "hvc1", "avc1"),
- * or "" when the file has no parsable video track. Cheap box-level probe used
- * by the `/fs` `probe=1` mode so the browser can decide whether it can decode
- * the file before committing to a playback URL.
- */
-expect suspend fun probeVideoCodec(path: String): String
-
-/**
- * Returns an H.264-transcoded variant of the HEVC video at [path] for
- * browsers without an HEVC decoder (audio stream-copied, cached on the
- * platform side). Returns null when the file is not HEVC, is too long, or
- * the pipeline fails. Only run when the client explicitly opted in (`tr=1`)
- * — transcoding is far more expensive than a remux.
- */
-expect suspend fun transcodeMp4ForBrowser(path: String): String?
 
 /**
  * Returns the package icon PNG bytes for the given [packageName], or null if
@@ -219,13 +165,6 @@ expect suspend fun getPackageIconBytes(packageName: String): ByteArray?
 expect suspend fun decodeImageFileToPng(path: String): ByteArray?
 
 /**
- * Whether the file at [path]/[fileName] is an animated image (GIF, animated
- * WebP, animated HEIF) or an SVG. Used by the `/fs` route to decide whether to
- * skip the HEIF-to-PNG conversion path and serve the file as-is.
- */
-expect fun isAnimatedImageOrSvg(path: String, fileName: String): Boolean
-
-/**
  * Generate a thumbnail for the file at [path] of the given [width]/[height].
  * When [centerCrop] is true the thumbnail is cropped to fit the aspect ratio.
  * Returns null when the platform cannot produce a thumbnail.
@@ -238,41 +177,6 @@ expect suspend fun decodeThumbnailBytes(
     mediaId: String,
     fileName: String,
 ): ByteArray?
-
-/**
- * Zip the given [items] into a streaming output sent to [sink]. Each item
- * is a pair of (sourcePath, entryName). Directories are included recursively.
- * Returns true on success.
- */
-expect suspend fun streamZipToSink(items: List<ZipStreamEntry>, sink: StreamSink, recursive: Boolean = true): Boolean
-
-/**
- * Recursively zip the folder at [folderPath] into [sink]. Returns true on success.
- */
-expect suspend fun streamZipFolderToSink(folderPath: String, sink: StreamSink): Boolean
-
-/**
- * Stream a directory inside a zip archive as a new zip to [sink].
- * [zipVirtualPath] is a virtual path like `/path/to/file.zip!zip!/internal/dir/`.
- * Returns true on success.
- */
-expect suspend fun streamZipInternalDirToSink(zipVirtualPath: String, sink: StreamSink): Boolean
-
-/**
- * Single entry for [streamZipToSink]. [entryName] is the name used inside the
- * archive (may include subdirectory components). When [entryName] is blank the
- * source file's name is used.
- */
-data class ZipStreamEntry(
-    val sourcePath: String,
-    val entryName: String,
-)
-
-/**
- * Fetch [url] over HTTP and stream the response body into [sink]. Returns a pair
- * of (statusCode, contentType) or (0, null) on failure.
- */
-expect suspend fun fetchUrlToStream(url: String, sink: StreamSink): Pair<Int, String?>
 
 /**
  * Whether [path] points to an Android content:// URI. Always false on iOS.
@@ -328,8 +232,12 @@ expect suspend fun importChatFile(uriStr: String, mimeType: String): String?
 
 /**
  * Look up a media-scanned file (e.g. from MediaStore.Files) by its [mediaId]
- * and return its [DFile] representation, or null if not found.
+ * and return its [FileEntry] representation, or null if not found.
  *
  * On iOS, always returns null (no MediaStore equivalent).
  */
-expect suspend fun getFileByMediaId(mediaId: String): DFile?
+expect suspend fun getFileByMediaId(mediaId: String): FileEntry?
+
+internal expect suspend fun provideResourceFile(id: String, uri: String)
+
+expect suspend fun copyFileToUri(path: String, uriStr: String): Boolean

@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.ui.page.files.components
 
+import com.ismartcoding.plain.features.file.extension
+
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.i18n.*
 
 import androidx.navigation.NavHostController
@@ -10,7 +14,6 @@ import com.ismartcoding.plain.lib.extensions.isTextFile
 import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.features.file.ZipBrowserHelper
 import com.ismartcoding.plain.platform.extractZipEntryToCache
 import com.ismartcoding.plain.platform.fileToUriString
@@ -27,8 +30,8 @@ import com.ismartcoding.plain.ui.nav.navigatePdf
 import com.ismartcoding.plain.ui.nav.navigateTextFile
 
 fun openFile(
-    files: List<DFile>,
-    file: DFile,
+    files: List<FileEntry>,
+    file: FileEntry,
     navController: NavHostController,
     previewerState: MediaPreviewerState,
     itemState: TransformItemState,
@@ -115,17 +118,20 @@ fun openLocalFileByType(
         path.isImageFast() || path.isVideoFast() || mediaHint -> onPreviewMedia()
 
         path.isAudioFast() -> {
-            try {
-                if (audioQueueVM != null) {
-                    val audio = playlistAudioFromPath(path)
-                    coMain { audioQueueVM.playSingleAsync(audio) }
+            coMain {
+                try {
+                    if (audioQueueVM != null) {
+                        val audio = playlistAudioFromPath(path)
+                        audioQueueVM.playSingleAsync(audio)
+                    }
+                    playAudioWithNotificationCheck(path)
+                } catch (ex: kotlinx.coroutines.CancellationException) {
+                    throw ex
+                } catch (ex: Exception) {
+                    DialogHelper.showMessage(Res.string.audio_play_error)
                 }
-                playAudioWithNotificationCheck(path)
-            } catch (ex: Exception) {
-                DialogHelper.showMessage(Res.string.audio_play_error)
             }
         }
-
         path.isTextFile() -> {
             navController.navigateTextFile(path)
         }

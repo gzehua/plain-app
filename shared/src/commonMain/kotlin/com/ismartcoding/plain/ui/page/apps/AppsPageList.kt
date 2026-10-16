@@ -23,7 +23,7 @@ import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshLayoutState
 import com.ismartcoding.plain.ui.components.PackageListItem
 import com.ismartcoding.plain.ui.models.AppsViewModel
-import com.ismartcoding.plain.ui.models.VPackage
+import com.ismartcoding.plain.graphql.models.Package as AppPackage
 import com.ismartcoding.plain.ui.nav.Routing
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import com.ismartcoding.plain.platform.getApplicationIcon
@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 fun AppsPageList(
     navController: NavHostController,
     appsVM: AppsViewModel,
-    items: List<VPackage>,
+    items: List<AppPackage>,
     scrollState: LazyListState,
     scrollBehavior: TopAppBarScrollBehavior,
     topRefreshLayoutState: RefreshLayoutState,

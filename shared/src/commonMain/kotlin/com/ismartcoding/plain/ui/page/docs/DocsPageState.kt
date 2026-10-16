@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.page.docs
 
+import androidx.compose.runtime.getValue
+
+import com.ismartcoding.plain.graphql.models.Doc as Document
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -8,9 +11,6 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import com.ismartcoding.plain.data.DDoc
-import com.ismartcoding.plain.data.DMediaBucket
 import com.ismartcoding.plain.graphql.models.Doc
 import com.ismartcoding.plain.graphql.models.MediaBucket
 import com.ismartcoding.plain.graphql.models.TagHostRecord
@@ -23,13 +23,13 @@ import com.ismartcoding.plain.ui.models.TagsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 data class DocsPageState(
-    val itemsState: List<DDoc>,
+    val itemsState: List<Document>,
     val dragSelectState: DragSelectState,
     val scrollBehavior: TopAppBarScrollBehavior,
     val tagsState: List<TagHostRecord>,
     val tagsMapState: Map<String, List<TagHostRelation>>,
     val scrollState: LazyListState,
-    val bucketsMap: Map<String, DMediaBucket>,
+    val bucketsMap: Map<String, MediaBucket>,
 ) {
     companion object {
         @OptIn(ExperimentalMaterial3Api::class)

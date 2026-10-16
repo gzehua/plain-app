@@ -23,7 +23,7 @@ import com.ismartcoding.plain.lib.extensions.isPdfFile
 import com.ismartcoding.plain.lib.extensions.isTextFile
 import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.platform.DownloadTempFileHandle
+import com.ismartcoding.plain.platform.deleteFileAt
 import com.ismartcoding.plain.platform.LocaleHelper
 import com.ismartcoding.plain.ui.components.mediaviewer.PreviewItem
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
@@ -69,7 +69,7 @@ internal class SharedFolderState(
     /** Per-directory content cache: entering a visited directory renders instantly from here. */
     private val dirCache = mutableStateMapOf<String, SharedInfoDto>()
 
-    private val previewHandles = mutableListOf<DownloadTempFileHandle>()
+    private val previewHandles = mutableListOf<String>()
 
     val currentPath: String get() = crumbs.lastOrNull()?.virtualPath ?: ""
     val currentInfo: SharedInfoDto? get() = dirCache[currentPath]
@@ -187,15 +187,14 @@ internal class SharedFolderState(
         if (previewLoading.contains(entry.virtualPath)) return
         previewLoading = previewLoading + entry.virtualPath
         scope.launch {
-            val handle = SharedFolderTransfer.downloadPreviewFile(link, urlToken, entry)
+            val path = SharedFolderTransfer.downloadPreviewFile(link, urlToken, entry)
             previewLoading = previewLoading - entry.virtualPath
-            if (handle == null) {
+            if (path == null) {
                 DialogHelper.showErrorDialog(LocaleHelper.getString(Res.string.cannot_load_share))
                 return@launch
             }
-            val path = handle.filePath
             val inPagePreview = !(path.isAudioFast() || path.isTextFile() || path.isPdfFile())
-            if (inPagePreview) previewHandles.add(handle)
+            if (inPagePreview) previewHandles.add(path)
             openLocalFileByType(
                 path = path,
                 navController = navController,
@@ -242,7 +241,7 @@ internal class SharedFolderState(
     }
 
     fun clearPreviewHandles() {
-        previewHandles.forEach { it.delete() }
+        previewHandles.forEach { deleteFileAt(it) }
         previewHandles.clear()
     }
 

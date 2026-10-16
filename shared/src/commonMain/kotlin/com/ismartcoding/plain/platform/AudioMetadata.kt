@@ -1,17 +1,37 @@
 package com.ismartcoding.plain.platform
 
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import androidx.compose.ui.graphics.ImageBitmap
-import com.ismartcoding.plain.audio.DAudio
-import com.ismartcoding.plain.graphql.models.Audio
 import com.ismartcoding.plain.graphql.models.AudioItem
 
-expect suspend fun getAudioMetadata(path: String): Pair<String, String>
+suspend fun getAudioMetadata(path: String): Pair<String, String> =
+    playlistAudioFromPath(path).let { it.title to it.artist }
 
 /** Lyrics embedded in the audio file metadata, empty when absent. */
-expect suspend fun getAudioLyrics(path: String): String
+suspend fun getAudioLyrics(path: String): String =
+    com.ismartcoding.plain.rust.PlainRust.mainQuery("embeddedAudioLyrics(path: ${com.ismartcoding.plain.rust.content.gql(path)})")
+        .getValue("embeddedAudioLyrics").jsonPrimitive.contentOrNull.orEmpty()
 
-expect fun playlistAudioFromPath(path: String): AudioItem
+suspend fun playlistAudioFromPath(path: String): AudioItem =
+    com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(
+        com.ismartcoding.plain.rust.PlainRust.mainGraphql(
+            "query AudioMetadata(\$path: String!) { audioMetadata(path: \$path) { title artist path durationMs } }",
+            mapOf("path" to kotlinx.serialization.json.JsonPrimitive(path)),
+        ).getValue("audioMetadata"),
+    )
 
-expect fun loadAudioCoverBitmap(path: String): ImageBitmap?
+suspend fun loadAudioCoverBitmap(path: String): ImageBitmap? = try {
+    val cached = com.ismartcoding.plain.rust.PlainRust.mainGraphql(
+        "mutation CacheAudioCover(\$path: String!) { cacheAudioCover(path: \$path) }",
+        mapOf("path" to kotlinx.serialization.json.JsonPrimitive(path)),
+    ).getValue("cacheAudioCover").jsonPrimitive.contentOrNull
+    cached?.let(::decodeImageFileBitmap)
+} catch (error: kotlinx.coroutines.CancellationException) {
+    throw error
+} catch (error: Exception) {
+    com.ismartcoding.plain.lib.logcat.LogCat.e("Audio cover load failed: ${error.message}")
+    null
+}
 
-expect fun getAudioAlbumArtFileId(audio: DAudio): String
+expect fun audioAlbumArtUri(albumId: String): String

@@ -1,24 +1,25 @@
 package com.ismartcoding.plain.ui.page.videos
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import coil3.compose.AsyncImage
+
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import com.ismartcoding.plain.ui.theme.PlainTheme
-
 import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
 import com.ismartcoding.plain.lib.extensions.isUrl
-import com.ismartcoding.plain.data.DVideo
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.has
 import com.ismartcoding.plain.platform.addMediaShortcut
@@ -42,7 +43,6 @@ import com.ismartcoding.plain.ui.components.AddToHomeHelpAction
 import com.ismartcoding.plain.ui.helpers.confirmActionAsync
 import com.ismartcoding.plain.ui.models.TagsViewModel
 import com.ismartcoding.plain.ui.models.VideosViewModel
-import coil3.compose.AsyncImage
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.layout.ContentScale
 import com.ismartcoding.plain.lib.extensions.formatBytes
@@ -60,7 +60,7 @@ import com.ismartcoding.plain.ui.resources.square_arrow_out_up_right as ui_drawa
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun VideoActionButtons(
-    m: DVideo,
+    m: MediaVideo,
     videosVM: VideosViewModel,
     tagsVM: TagsViewModel,
     dragSelectState: DragSelectState,
@@ -160,7 +160,7 @@ internal fun VideoActionButtons(
 }
 
 @Composable
-internal fun VideoPathCard(m: DVideo) {
+internal fun VideoPathCard(m: MediaVideo) {
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PListItem(title = m.path, action = {
             CopyIconButton(text = m.path, clipLabel = stringResource(Res.string.file_path))

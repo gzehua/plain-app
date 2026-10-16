@@ -33,36 +33,6 @@ object SmsProviderContract {
             .distinct()
     }
 
-    fun selectConversationAddresses(
-        addresses: List<String>,
-        ownNumbers: Set<String>,
-    ): List<String> {
-        val distinctAddresses = addresses.filter(String::isNotBlank).distinctBy(::normalizedAddress)
-        val nonSelfAddresses = distinctAddresses.filter { address ->
-            ownNumbers.none { ownNumber -> addressesMatch(address, ownNumber, distinctAddresses) }
-        }
-        return nonSelfAddresses.ifEmpty { distinctAddresses }
-    }
-
-    fun addressesMatch(
-        first: String,
-        second: String,
-        candidateContext: Collection<String> = listOf(first),
-    ): Boolean {
-        val firstAddress = normalizedAddress(first)
-        val secondAddress = normalizedAddress(second)
-        if (firstAddress == secondAddress) return true
-        if (!firstAddress.isPhone || !secondAddress.isPhone || !isPhoneSuffixMatch(firstAddress.value, secondAddress.value)) {
-            return false
-        }
-
-        val suffixMatches = candidateContext
-            .map(::normalizedAddress)
-            .filter { it.isPhone && isPhoneSuffixMatch(it.value, secondAddress.value) }
-            .distinct()
-        return suffixMatches.size == 1 && suffixMatches.single() == firstAddress
-    }
-
     fun smsSentIntentIdentity(packageName: String, requestId: String, partIndex: Int): SmsSentIntentIdentity {
         return SmsSentIntentIdentity(
             action = "$packageName.SMS_SENT.$requestId.$partIndex",
@@ -85,29 +55,4 @@ object SmsProviderContract {
         ) { chunk -> "$field IN (${chunk.joinToString(",")})" }
     }
 
-    fun mmsTextMatches(textParts: List<String>, filters: List<String>): Boolean {
-        if (filters.isEmpty()) return true
-        val body = textParts.joinToString("\n")
-        return filters.all { body.contains(it, ignoreCase = true) }
-    }
-
-    private data class NormalizedAddress(val value: String, val isPhone: Boolean)
-
-    private fun normalizedAddress(value: String): NormalizedAddress {
-        val trimmed = value.trim()
-        val isPhone = trimmed.isNotEmpty() && trimmed.any(Char::isDigit) && trimmed.all {
-            it.isDigit() || it.isWhitespace() || it in "+-()./"
-        }
-        return if (isPhone) {
-            NormalizedAddress(trimmed.filter(Char::isDigit), true)
-        } else {
-            NormalizedAddress(trimmed.lowercase(), false)
-        }
-    }
-
-    private fun isPhoneSuffixMatch(first: String, second: String): Boolean {
-        val shorterLength = minOf(first.length, second.length)
-        if (shorterLength < 7 || first.length == second.length) return false
-        return first.endsWith(second) || second.endsWith(first)
-    }
 }

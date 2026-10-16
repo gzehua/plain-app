@@ -1,18 +1,21 @@
 package com.ismartcoding.plain.ui.models
 
-import com.ismartcoding.plain.audio.DAudio
+import com.ismartcoding.plain.features.file.extension
+
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.graphql.models.Doc as Document
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
+import com.ismartcoding.plain.graphql.models.Image as MediaImage
 import com.ismartcoding.plain.chat.ChatDbHelper
 import com.ismartcoding.plain.chat.channel.ChannelCacher
 import com.ismartcoding.plain.chat.models.getMessagePreview
 import com.ismartcoding.plain.chat.peer.PeerCacher
-import com.ismartcoding.plain.data.DDoc
-import com.ismartcoding.plain.data.DImage
-import com.ismartcoding.plain.data.DVideo
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.enums.getIcon
 import com.ismartcoding.plain.features.NoteHelper
 import com.ismartcoding.plain.features.feed.FeedEntryHelper
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.graphql.models.Audio
 import com.ismartcoding.plain.graphql.models.ChatItem
@@ -27,7 +30,7 @@ import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.devices
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.formatDurationMs
-import com.ismartcoding.plain.platform.DPackageInfo
+import com.ismartcoding.plain.graphql.models.Package as AppPackage
 import com.ismartcoding.plain.platform.LocaleHelper
 import com.ismartcoding.plain.platform.countFiles
 import com.ismartcoding.plain.platform.countMedia
@@ -78,16 +81,16 @@ internal suspend fun GlobalSearchViewModel.queryDomain(
             NoteHelper.search("${SearchHelper.buildTextFilter(q)} trash:false", limit, offset).map { it.toHit(q) }
         GlobalSearchDomain.AUDIO ->
             searchMedia(DataType.AUDIO, "${SearchHelper.buildTextFilter(q)} trash:false", limit, offset, FileSortBy.DATE_DESC)
-                .filterIsInstance<DAudio>().map { it.toHit() }
+                .filterIsInstance<AudioTrack>().map { it.toHit() }
         GlobalSearchDomain.IMAGES ->
             searchMedia(DataType.IMAGE, "${SearchHelper.buildTextFilter(q)} trash:false", limit, offset, FileSortBy.DATE_DESC)
-                .filterIsInstance<DImage>().map { it.toHit() }
+                .filterIsInstance<MediaImage>().map { it.toHit() }
         GlobalSearchDomain.VIDEOS ->
             searchMedia(DataType.VIDEO, "${SearchHelper.buildTextFilter(q)} trash:false", limit, offset, FileSortBy.DATE_DESC)
-                .filterIsInstance<DVideo>().map { it.toHit() }
+                .filterIsInstance<MediaVideo>().map { it.toHit() }
         GlobalSearchDomain.DOCS ->
             searchMedia(DataType.DOC, "${SearchHelper.buildTextFilter(q)} trash:false", limit, offset, FileSortBy.DATE_DESC)
-                .filterIsInstance<DDoc>().map { it.toHit() }
+                .filterIsInstance<Document>().map { it.toHit() }
         GlobalSearchDomain.FILES ->
             searchFiles(SearchHelper.buildTextFilter(q), limit, offset, FileSortBy.DATE_DESC).map { it.toHit() }
         GlobalSearchDomain.FEEDS ->
@@ -117,10 +120,10 @@ internal suspend fun GlobalSearchViewModel.reloadDomainHits(
             val src = hit.source as? GlobalSearchSource.Feed ?: return@mapNotNull hit
             FeedEntryHelper.getAsync(src.entry.id)?.toHit(q)
         }
-        GlobalSearchDomain.AUDIO -> reloadMediaHits<DAudio>(hits, DataType.AUDIO) { it.toHit() }
-        GlobalSearchDomain.IMAGES -> reloadMediaHits<DImage>(hits, DataType.IMAGE) { it.toHit() }
-        GlobalSearchDomain.VIDEOS -> reloadMediaHits<DVideo>(hits, DataType.VIDEO) { it.toHit() }
-        GlobalSearchDomain.DOCS -> reloadMediaHits<DDoc>(hits, DataType.DOC) { it.toHit() }
+        GlobalSearchDomain.AUDIO -> reloadMediaHits<AudioTrack>(hits, DataType.AUDIO) { it.toHit() }
+        GlobalSearchDomain.IMAGES -> reloadMediaHits<MediaImage>(hits, DataType.IMAGE) { it.toHit() }
+        GlobalSearchDomain.VIDEOS -> reloadMediaHits<MediaVideo>(hits, DataType.VIDEO) { it.toHit() }
+        GlobalSearchDomain.DOCS -> reloadMediaHits<Document>(hits, DataType.DOC) { it.toHit() }
         else -> null
     }
 
@@ -152,7 +155,7 @@ private fun Note.toHit(q: String): GlobalSearchHit = GlobalSearchHit(
     action = GlobalSearchAction.Navigate(Routing.NoteDetail(id)),
 )
 
-private fun DAudio.toHit(): GlobalSearchHit = GlobalSearchHit(
+private fun AudioTrack.toHit(): GlobalSearchHit = GlobalSearchHit(
     key = "audio_$id",
     title = title,
     subtitle = artist,
@@ -160,7 +163,7 @@ private fun DAudio.toHit(): GlobalSearchHit = GlobalSearchHit(
     action = GlobalSearchAction.PlayAudio(this),
 )
 
-private fun DImage.toHit(): GlobalSearchHit = GlobalSearchHit(
+private fun MediaImage.toHit(): GlobalSearchHit = GlobalSearchHit(
     key = "image_$id",
     title = title,
     subtitle = (takenAt ?: createdAt).formatDateTime(),
@@ -168,7 +171,7 @@ private fun DImage.toHit(): GlobalSearchHit = GlobalSearchHit(
     action = GlobalSearchAction.Navigate(Routing.Images),
 )
 
-private fun DVideo.toHit(): GlobalSearchHit = GlobalSearchHit(
+private fun MediaVideo.toHit(): GlobalSearchHit = GlobalSearchHit(
     key = "video_$id",
     title = title,
     subtitle = durationMs.formatDurationMs() + " · " + (takenAt ?: createdAt).formatDateTime(),
@@ -176,7 +179,7 @@ private fun DVideo.toHit(): GlobalSearchHit = GlobalSearchHit(
     action = GlobalSearchAction.Navigate(Routing.Videos),
 )
 
-private fun DDoc.toHit(): GlobalSearchHit = GlobalSearchHit(
+private fun Document.toHit(): GlobalSearchHit = GlobalSearchHit(
     key = "doc_$id",
     title = title,
     subtitle = size.formatBytes(),
@@ -184,7 +187,7 @@ private fun DDoc.toHit(): GlobalSearchHit = GlobalSearchHit(
     action = GlobalSearchAction.Navigate(Routing.Docs),
 )
 
-private fun DFile.toHit(): GlobalSearchHit = GlobalSearchHit(
+private fun FileEntry.toHit(): GlobalSearchHit = GlobalSearchHit(
     key = "file_$path",
     title = name,
     subtitle = size.formatBytes(),
@@ -236,7 +239,7 @@ private fun ChatItem.toHit(q: String): GlobalSearchHit {
     )
 }
 
-private fun DPackageInfo.toHit(): GlobalSearchHit = GlobalSearchHit(
+private fun AppPackage.toHit(): GlobalSearchHit = GlobalSearchHit(
     key = "app_$id",
     title = name,
     subtitle = id,

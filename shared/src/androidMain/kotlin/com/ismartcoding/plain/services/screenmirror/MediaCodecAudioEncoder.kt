@@ -124,7 +124,7 @@ class MediaCodecAudioEncoder(
 
     /**
      * Sole owner of [ar] and [c]. Greedy non-blocking feed + drain in one
-     * thread (same shape as the Mp4Helper transcode loop). All blocking waits
+     * thread. All blocking waits
      * are bounded: [AudioRecord.READ_NON_BLOCKING] returns immediately, codec
      * dequeues use 0us timeouts, and idle backoff is [IDLE_POLL_MS] — so the
      * coroutine observes cancellation within one poll cycle and exits.

@@ -11,7 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.lib.extensions.getFilenameExtension
-import com.ismartcoding.plain.data.DImageMeta
+import com.ismartcoding.plain.graphql.models.ImageFileInfo
 import com.ismartcoding.plain.helpers.FormatHelper
 import com.ismartcoding.plain.ui.base.PListItem
 import kotlinx.coroutines.Dispatchers
@@ -24,18 +24,67 @@ data class ImageMetaTexts(
     val whiteBalance: String,
 )
 
-/**
- * Format EXIF integer enums into localized display strings.
- * Android: backed by androidx.exifinterface ExifInterface constants.
- * iOS: returns empty strings (stub until a native EXIF reader is available).
- */
-expect fun formatImageMetaTexts(mt: DImageMeta): ImageMetaTexts
+fun formatImageMetaTexts(mt: ImageFileInfo): ImageMetaTexts = ImageMetaTexts(
+    flash = getFlashText(mt.flash),
+    exposureProgram = getExposureProgramText(mt.exposureProgram),
+    meteringMode = getMeteringModeText(mt.meteringMode),
+    whiteBalance = getWhiteBalanceText(mt.whiteBalance),
+)
+
+private fun getExposureProgramText(exposureProgram: Int): String {
+    return when (exposureProgram) {
+        1 -> LocaleHelper.getString(Res.string.exposure_program_manual)
+        2 -> LocaleHelper.getString(Res.string.exposure_program_normal)
+        3 -> LocaleHelper.getString(Res.string.exposure_program_aperture_priority)
+        4 -> LocaleHelper.getString(Res.string.exposure_program_shutter_priority)
+        5 -> LocaleHelper.getString(Res.string.exposure_program_creative)
+        6 -> LocaleHelper.getString(Res.string.exposure_program_action)
+        7 -> LocaleHelper.getString(Res.string.exposure_program_portrait)
+        8 -> LocaleHelper.getString(Res.string.exposure_program_landscape)
+        else -> ""
+    }
+}
+
+private fun getMeteringModeText(meteringMode: Int): String {
+    return when (meteringMode) {
+        1 -> LocaleHelper.getString(Res.string.metering_mode_average)
+        2 -> LocaleHelper.getString(Res.string.metering_mode_center_weight_average)
+        4 -> LocaleHelper.getString(Res.string.metering_mode_multi_spot)
+        255 -> LocaleHelper.getString(Res.string.metering_mode_other)
+        6 -> LocaleHelper.getString(Res.string.metering_mode_partial)
+        5 -> LocaleHelper.getString(Res.string.metering_mode_pattern)
+        3 -> LocaleHelper.getString(Res.string.metering_mode_spot)
+        else -> ""
+    }
+}
+
+private fun getWhiteBalanceText(whiteBalance: Int): String {
+    return when (whiteBalance) {
+        0 -> LocaleHelper.getString(Res.string.white_balance_auto)
+        1 -> LocaleHelper.getString(Res.string.white_balance_manual)
+        else -> ""
+    }
+}
+
+private fun getFlashText(flash: Int): String {
+    return when (flash) {
+        1 -> LocaleHelper.getString(Res.string.flash_fired)
+        4 -> LocaleHelper.getString(Res.string.flash_return_light_not_detected)
+        6 -> LocaleHelper.getString(Res.string.flash_return_light_detected)
+        8 -> LocaleHelper.getString(Res.string.flash_mode_compulsory_firing)
+        16 -> LocaleHelper.getString(Res.string.flash_mode_compulsory_suppression)
+        24 -> LocaleHelper.getString(Res.string.flash_mode_auto)
+        32 -> LocaleHelper.getString(Res.string.flash_no_flash_function)
+        64 -> LocaleHelper.getString(Res.string.flash_red_eye_supported)
+        else -> ""
+    }
+}
 
 @Composable
 fun ImageMetaRows(
     path: String,
-    loadMeta: suspend (String) -> DImageMeta?,
-    formatTexts: (DImageMeta) -> ImageMetaTexts,
+    loadMeta: suspend (String) -> ImageFileInfo?,
+    formatTexts: (ImageFileInfo) -> ImageMetaTexts,
 ) {
     val extension = path.getFilenameExtension()
     if (setOf("gif", "svg").contains(extension)) {
@@ -43,7 +92,7 @@ fun ImageMetaRows(
     }
 
     var meta by remember {
-        mutableStateOf<DImageMeta?>(null)
+        mutableStateOf<ImageFileInfo?>(null)
     }
 
     val scope = rememberCoroutineScope()

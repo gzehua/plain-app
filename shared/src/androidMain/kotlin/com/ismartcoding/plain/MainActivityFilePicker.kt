@@ -58,6 +58,10 @@ internal fun MainActivity.handlePickFileEvent(event: PickFileEvent) {
 }
 
 internal fun MainActivity.handleExportFileEvent(event: ExportFileEvent) {
+    if (event.type == ExportFileType.BACKUP && Build.VERSION.SDK_INT == Build.VERSION_CODES.P) {
+        com.ismartcoding.plain.platform.backupToFile(event.fileName)
+        return
+    }
     try {
         exportFileType = event.type
         exportFileActivityLauncher.launch(

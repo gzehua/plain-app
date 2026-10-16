@@ -168,8 +168,11 @@ kotlin {
             implementation(libs.coil)
             implementation(libs.coil.network.core)
         }
+        getByName("commonTest").kotlin.srcDirs("src/testFixtures/kotlin", "../plain-common/src/testFixtures/kotlin")
+        getByName("androidHostTest").kotlin.srcDir("src/androidTestFixtures/kotlin")
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }

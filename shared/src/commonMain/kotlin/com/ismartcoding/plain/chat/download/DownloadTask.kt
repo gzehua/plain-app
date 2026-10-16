@@ -1,12 +1,13 @@
 package com.ismartcoding.plain.chat.download
 
+import com.ismartcoding.plain.graphql.models.Peer
+import kotlinx.coroutines.Job
+
 import com.ismartcoding.plain.chat.models.MessageFile
 import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.features.download.DOWNLOAD_KIND_CHAT
 import com.ismartcoding.plain.features.download.DownloadStatus
 import com.ismartcoding.plain.features.download.DownloadTaskHandle
-import com.ismartcoding.plain.graphql.models.Peer
-import kotlinx.coroutines.Job
 
 data class DownloadTask(
     val messageFile: MessageFile,
@@ -16,8 +17,6 @@ data class DownloadTask(
     override var error: String = "",
     var downloadedSize: Long = 0,
     var downloadSpeed: Long = 0,
-    override var job: Job? = null,
-    override var aborted: Boolean = false,
 ) : DownloadTaskHandle {
     override val id: String get() = messageFile.id
     override val kind: String get() = DOWNLOAD_KIND_CHAT

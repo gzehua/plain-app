@@ -1,10 +1,6 @@
-pub(crate) mod archives;
-pub(crate) mod dlna;
 pub(crate) mod events;
 pub(crate) mod graphql;
-pub(crate) mod peer_status;
 pub(crate) mod prefs;
 pub(crate) mod resources;
 pub mod server;
 pub(crate) mod values;
-pub(crate) mod web_login;

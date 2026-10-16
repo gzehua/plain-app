@@ -4,27 +4,13 @@ import com.ismartcoding.plain.enums.DeviceType
 import platform.Foundation.NSBundle
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
-import platform.Foundation.NSTemporaryDirectory
+import platform.Foundation.NSCachesDirectory
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.NSProcessInfo
 import platform.UIKit.UIDevice
 import platform.UIKit.UIUserInterfaceIdiomPad
 import platform.UIKit.UIUserInterfaceIdiomPhone
 import platform.UIKit.UIUserInterfaceIdiomTV
-
-actual fun getAppVersion(): String {
-    val bundle = NSBundle.mainBundle
-    val shortVersion = bundle.objectForInfoDictionaryKey("CFBundleShortVersionString") as? String ?: ""
-    val buildNumber = bundle.objectForInfoDictionaryKey("CFBundleVersion") as? String ?: ""
-    return if (buildNumber.isNotEmpty()) "$shortVersion ($buildNumber)" else shortVersion
-}
-
-actual fun getOSVersion(): String {
-    val device = UIDevice.currentDevice
-    return "${device.systemName()} ${device.systemVersion}"
-}
-
-actual fun getDeviceName(): String = UIDevice.currentDevice.name
 
 actual fun getBuildType(): String {
     val bundle = NSBundle.mainBundle
@@ -46,23 +32,15 @@ actual fun getDeviceType(): DeviceType {
 
 actual fun getDeviceIP4s(): List<String> = IosPlatformRegistry.getDeviceIP4s()
 
-actual fun appDir(): String =
-    NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)[0] as String
+actual fun cacheDirPath(): String =
+    NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true)[0] as String
 
-actual fun cacheDirPath(): String = NSTemporaryDirectory()
-
-actual fun databaseFilePath(name: String): String = appDir() + "/" + name
 
 actual fun getOwnPackageName(): String =
     NSBundle.mainBundle.bundleIdentifier ?: ""
 
-actual fun prefsFilePath(): String =
-    appDir() + "/prefs.json"
-
-actual fun getAppVersionCode(): Long {
-    val buildNumber = NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleVersion") as? String ?: ""
-    return buildNumber.toLongOrNull() ?: 0L
-}
+actual fun dataDirPath(): String =
+    NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)[0] as String
 
 actual fun isDebugBuild(): Boolean {
     val bundle = NSBundle.mainBundle

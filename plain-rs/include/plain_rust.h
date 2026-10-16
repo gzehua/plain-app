@@ -11,26 +11,19 @@ uint64_t plain_ble_info(uint64_t handle);
 PlainBleBuffer plain_ble_call(int32_t action, uint64_t handle, uint32_t id, uint32_t sequence, uint32_t limit, bool response, const uint8_t *data, size_t len);
 void plain_ble_buffer_free(PlainBleBuffer buffer);
 
-char *plain_prefs_open(const char *system_path, const char *user_path);
+char *plain_prefs_open(const char *data_dir, const char *cache_dir);
 char *plain_prefs_user_snapshot(void);
-char *plain_prefs_update_user(const char *patch_json);
-char *plain_prefs_user_action(const char *action_json);
 void plain_prefs_string_free(char *pointer);
 
-char *plain_peer_status_action(const char *command_json);
 
-char *plain_core_start(const char *database_path, const char *token, const char *config_json);
+char *plain_core_start(const char *data_dir, const char *token, const char *config_json);
 void plain_core_stop(void);
 char *plain_http_stop(void);
-char *plain_web_login_decide(const char *request_id, bool allowed);
-char *plain_dlna_receiver(const char *command);
 char *plain_graphql(const char *request);
 char *plain_resource_open(const char *id);
+char *plain_resource_file(const char *id, int32_t fd, int64_t offset, int64_t length);
 char *plain_resource_write(const char *id, const uint8_t *bytes, size_t len);
 char *plain_resource_close(const char *id, bool failed);
-char *plain_archive_open(const char *entries);
-char *plain_archive_read(uint64_t handle, uint8_t *buffer, size_t len);
-char *plain_archive_close(uint64_t handle);
 char *plain_events_next(const char *stream);
 char *plain_events_send(const char *action, const char *message, const uint8_t *bytes, size_t len);
 

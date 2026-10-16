@@ -53,7 +53,6 @@
     <string name="keywords">Anahtar kelimeler</string>
     <string name="name">İsim</string>
     <string name="sort_by_random">Rastgele sırala</string>
-    <string name="app_restored">Uygulama verileri geri yüklendi, uygulamayı zorla kapatmanız ve yeni olarak tekrar başlatmanız gerekiyor.</string>
     <string name="welcome_text">Hoş geldiniz! Bu sayfaya kolayca metin, resim ve video gönderebilir ve bunları bilgisayarınızda görüntüleyebilirsiniz.\nHerhangi bir sorunla karşılaşırsanız, lütfen yardım için support@plainapp.app adresine e-posta göndermekten veya Discord tartışmamıza katılmaktan çekinmeyin: https://discord.gg/RQWcS6DEEe.</string>
     <string name="donation">Bağış</string>
     <string name="logs">Günlükler</string>

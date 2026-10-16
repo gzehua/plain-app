@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class SmsConversationFacts(
-    val items: List<DMessageConversation>,
+    val items: List<SmsConversationRowFacts>,
+    val ownNumbers: List<String>,
     val snippets: Map<String, String>,
 )

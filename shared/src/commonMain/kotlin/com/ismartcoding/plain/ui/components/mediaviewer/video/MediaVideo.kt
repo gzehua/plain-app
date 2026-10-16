@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.ui.components.mediaviewer.video
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -12,11 +16,9 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -24,7 +26,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
-import com.ismartcoding.plain.data.DVideo
 import com.ismartcoding.plain.features.VideoProgressHost
 import com.ismartcoding.plain.platform.getVideoMeta
 import com.ismartcoding.plain.platform.rememberVideoPlayerController
@@ -72,7 +73,7 @@ fun MediaVideo(
     LaunchedEffect(model.path) {
         if (model.intrinsicSize == IntSize.Zero) {
             when (val data = model.data) {
-                is DVideo -> model.initAsync(data)
+                is MediaVideo -> model.initAsync(data)
                 else -> {
                     val meta = getVideoMeta(model.path)
                     if (meta != null) {
@@ -150,7 +151,7 @@ fun MediaVideo(
         if (isActive) {
             if (mediaId.isEmpty()) mediaId = com.ismartcoding.plain.platform.getVideoMediaId(model.path).orEmpty()
             videoState.initData(controller)
-            val expectedTotalMs = (model.data as? DVideo)?.durationMs ?: 0L
+            val expectedTotalMs = (model.data as? MediaVideo)?.durationMs ?: 0L
             if (expectedTotalMs > 0L) {
                 videoState.totalTime = expectedTotalMs
             }

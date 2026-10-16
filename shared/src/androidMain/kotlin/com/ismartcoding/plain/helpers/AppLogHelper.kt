@@ -6,62 +6,13 @@ import com.ismartcoding.plain.i18n.*
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
-import com.ismartcoding.plain.lib.coMain
-import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.platform.DiskLogFormatStrategy
 import com.ismartcoding.plain.Constants
 import com.ismartcoding.plain.AppIntents
 import com.ismartcoding.plain.platform.LocaleHelper
-import com.ismartcoding.plain.ui.helpers.DialogHelper
 import java.io.File
 
 object AppLogHelper {
-    fun getFileSize(context: Context): Long {
-        val dir = File(DiskLogFormatStrategy.getLogFolder())
-        if (!dir.exists()) {
-            return 0
-        }
-
-        var totalSize: Long = 0
-        val files = dir.listFiles() ?: arrayOf()
-        for (file in files) {
-            totalSize += file.length()
-        }
-        return totalSize
-    }
-
-    fun export(context: Context) {
-        coMain {
-            val logFolder = DiskLogFormatStrategy.getLogFolder()
-            val logFolderFile = File(logFolder)
-            val crashReportFile = File(context.filesDir, "crash_report.txt")
-            val crashLogFile = File(context.filesDir, "crash_log.txt")
-
-            if (!logFolderFile.exists() && !crashReportFile.exists() && !crashLogFile.exists()) {
-                DialogHelper.showMessage(Res.string.no_logs_error)
-                return@coMain
-            }
-
-            DialogHelper.showLoading()
-            val zipFile = File(context.cacheDir.absolutePath + "/logs.zip")
-            val sourcePaths = buildList {
-                if (logFolderFile.exists()) add(logFolder)
-                if (crashReportFile.exists()) add(crashReportFile.absolutePath)
-                if (crashLogFile.exists()) add(crashLogFile.absolutePath)
-            }
-            val success = withIO {
-                ZipHelper.zip(sourcePaths, zipFile.absolutePath)
-            }
-            DialogHelper.hideLoading()
-            if (!success) {
-                DialogHelper.showErrorMessage(LocaleHelper.getString(Res.string.error))
-                return@coMain
-            }
-            share(context, zipFile)
-        }
-    }
-
-    private fun share(
+    fun share(
         context: Context,
         file: File,
     ) {

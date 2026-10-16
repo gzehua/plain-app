@@ -1,14 +1,8 @@
 package com.ismartcoding.plain.platform
 
-import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 private val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern(DiskLogFormatStrategy.LOG_DATE_FORMAT)
 
 actual fun currentDateTimeString(): String = DATE_FORMATTER.format(LocalDateTime.now())
-
-actual fun clearLatestLogFile() {
-    val logFile = File(getLatestLogFilePath())
-    if (logFile.exists()) logFile.writeText("")
-}

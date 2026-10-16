@@ -6,15 +6,15 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Call(
-    var id: String,
+    override var id: String,
     var number: String,
     var name: String,
-    var photoId: String,
+    var photoId: String = "",
     var startedAt: Instant,
     var durationSec: Int,
     var type: CallType,
     var accountId: String,
-    var geo: PhoneGeo?,
+    var geo: PhoneGeo? = null,
     var typeCode: Int = 0,
     var photoUri: String = "",
-)
+) : com.ismartcoding.plain.db.IData

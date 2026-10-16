@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.ui.page.files.components
 
+import com.ismartcoding.plain.features.file.extension
+
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -37,7 +41,6 @@ import com.ismartcoding.plain.lib.extensions.isAudioFast
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.features.file.ZipBrowserHelper
 import org.jetbrains.compose.resources.pluralStringResource
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -66,7 +69,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileListItem(
-    file: DFile, isSelected: Boolean, isSelectMode: Boolean,
+    file: FileEntry, isSelected: Boolean, isSelectMode: Boolean,
     itemState: TransformItemState, previewerState: MediaPreviewerState,
     onClick: () -> Unit, onLongClick: () -> Unit, audioQueueVM: AudioQueueViewModel,
 ) {
@@ -140,7 +143,7 @@ fun FileListItem(
 
 @Composable
 private fun FileListItemThumbnail(
-    file: DFile, itemState: TransformItemState, previewerState: MediaPreviewerState, density: androidx.compose.ui.unit.Density,
+    file: FileEntry, itemState: TransformItemState, previewerState: MediaPreviewerState, density: androidx.compose.ui.unit.Density,
 ) {
     val isMedia = file.path.isImageFast() || file.path.isVideoFast()
     val isZipEntry = ZipBrowserHelper.isZipPath(file.path)

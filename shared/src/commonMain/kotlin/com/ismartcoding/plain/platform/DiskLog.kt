@@ -45,11 +45,6 @@ expect fun currentDateTimeString(): String
 fun getLatestLogFilePath(): String = "${DiskLogFormatStrategy.getLogFolder()}/latest.log"
 
 /**
- * Truncate the latest log file to zero length. No-op if the file does not exist.
- */
-expect fun clearLatestLogFile()
-
-/**
  * Initialize disk logging and HTTP request logging.
  * - Debug builds: all log levels (VERBOSE+) are written to disk
  * - Release builds: only WARN+ are written to disk

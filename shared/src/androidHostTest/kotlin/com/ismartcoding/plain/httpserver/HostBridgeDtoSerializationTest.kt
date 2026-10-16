@@ -1,8 +1,9 @@
 package com.ismartcoding.plain.httpserver
 
-import com.ismartcoding.plain.features.file.DFile
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.lib.JsonHelper.jsonEncode
-import com.ismartcoding.plain.platform.DPackageInfo
+import com.ismartcoding.plain.graphql.models.Package as AppPackage
 import com.ismartcoding.plain.enums.PackageType
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -15,16 +16,7 @@ class HostBridgeDtoSerializationTest {
     @Test
     fun fileFactsEncode() {
         val json = jsonEncode(
-            DFile(
-                name = "notes.txt",
-                path = "/sdcard/Download/notes.txt",
-                permission = "rwx",
-                createdAt = epoch,
-                updatedAt = epoch,
-                size = 12,
-                isDir = false,
-                childCount = 0,
-            )
+            FileEntry(name = "notes.txt", path = "/sdcard/Download/notes.txt", permission = "rwx", createdAt = epoch, updatedAt = epoch, size = 12, isDir = false, childCount = 0)
         )
         assertTrue(json.contains("notes.txt"), json)
         assertTrue(json.contains("/sdcard/Download/notes.txt"), json)
@@ -36,7 +28,7 @@ class HostBridgeDtoSerializationTest {
     fun packageFactsEncode() {
         val json = jsonEncode(
             listOf(
-                DPackageInfo(
+                AppPackage(
                     id = "com.example",
                     name = "Example",
                     type = PackageType.USER,

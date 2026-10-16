@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.components
 
+import com.ismartcoding.plain.graphql.models.MediaBucket
 import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
-import com.ismartcoding.plain.data.DMediaBucket
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.platform.combineBitmapGrid
 import kotlinx.coroutines.Dispatchers
@@ -31,19 +30,19 @@ import com.ismartcoding.plain.i18n.folder
  */
 @Composable
 fun MediaSidebarBucketItem(
-    m: DMediaBucket,
+    m: MediaBucket,
     isMedia: Boolean = false,
     isSelected: Boolean = false,
     onClick: () -> Unit,
 ) {
     val bitmapResult = remember { mutableStateOf<Any?>(null) }
-    LaunchedEffect(m.id, m.topItems) {
+    LaunchedEffect(m.id, m.topItemPaths) {
         bitmapResult.value = withContext(Dispatchers.Default) {
-            combineBitmapGrid(m.topItems, 150)
+            combineBitmapGrid(m.topItemPaths, 150)
         }
     }
 
-    val showThumbnail = isMedia && m.topItems.isNotEmpty()
+    val showThumbnail = isMedia && m.topItemPaths.isNotEmpty()
     SidebarItem(
         label = m.name,
         subtitle = m.size.formatBytes(),

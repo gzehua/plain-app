@@ -11,14 +11,19 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import com.ismartcoding.plain.ui.base.PTextButton
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.enums.ButtonSize
 import com.ismartcoding.plain.enums.TextFileType
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.platform.writeCrashReport
+import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.content.gql
+import com.ismartcoding.plain.ui.helpers.DialogHelper
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.jsonPrimitive
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.nav.navigateTextFile
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
@@ -29,6 +34,8 @@ fun CrashReportDialog(
     navController: NavHostController?,
     onDismiss: () -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
+    var saving by remember { mutableStateOf(false) }
     AlertDialog(
         containerColor = MaterialTheme.colorScheme.dialogSheetBackground,
         onDismissRequest = onDismiss,
@@ -39,19 +46,31 @@ fun CrashReportDialog(
                     text = stringResource(Res.string.crash_report_message),
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
         },
         confirmButton = {
             PFilledButton(
                 text = stringResource(Res.string.view),
                 buttonSize = ButtonSize.MEDIUM,
+                enabled = !saving,
+                isLoading = saving,
                 onClick = {
-                    val path = writeCrashReport(crashReport)
-                    if (path.isNotEmpty()) {
-                        navController?.navigateTextFile(path, type = TextFileType.CRASH_REPORT)
+                    scope.launch {
+                        saving = true
+                        try {
+                            val path = RustContentApi.mutate("createCrashReport(report: ${gql(crashReport)})")
+                                .getValue("createCrashReport").jsonPrimitive.content
+                            navController?.navigateTextFile(path, type = TextFileType.CRASH_REPORT)
+                            onDismiss()
+                        } catch (error: CancellationException) {
+                            throw error
+                        } catch (error: Exception) {
+                            DialogHelper.showMessage(error.message.orEmpty())
+                        } finally {
+                            saving = false
+                        }
                     }
-                    onDismiss()
                 })
         },
         dismissButton = {

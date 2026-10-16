@@ -1,14 +1,15 @@
 package com.ismartcoding.plain.ui.models
 
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.graphql.models.Doc as Document
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
+import com.ismartcoding.plain.graphql.models.Image as MediaImage
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import com.ismartcoding.plain.audio.DAudio
-import com.ismartcoding.plain.data.DDoc
-import com.ismartcoding.plain.data.DImage
-import com.ismartcoding.plain.data.DVideo
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.has
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.graphql.models.Audio
 import com.ismartcoding.plain.graphql.models.Doc
 import com.ismartcoding.plain.graphql.models.FeedEntry
@@ -20,7 +21,7 @@ import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.folder
 import com.ismartcoding.plain.i18n.image
 import com.ismartcoding.plain.i18n.video
-import com.ismartcoding.plain.platform.DPackageInfo
+import com.ismartcoding.plain.graphql.models.Package as AppPackage
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.file_text as ui_drawable_file_text
 import com.ismartcoding.plain.ui.resources.folder as ui_drawable_folder
@@ -57,19 +58,19 @@ fun globalSearchDomains(): List<GlobalSearchDomain> =
 /** What tapping a search result does. */
 sealed interface GlobalSearchAction {
     data class Navigate(val route: Any) : GlobalSearchAction
-    data class PlayAudio(val audio: DAudio) : GlobalSearchAction
+    data class PlayAudio(val audio: AudioTrack) : GlobalSearchAction
 }
 
 /** Source model for domains whose rows render with the source page's own list item component. */
 sealed interface GlobalSearchSource {
     data class Note(val note: com.ismartcoding.plain.graphql.models.Note) : GlobalSearchSource
-    data class Audio(val audio: DAudio) : GlobalSearchSource
-    data class Image(val image: DImage) : GlobalSearchSource
-    data class Video(val video: DVideo) : GlobalSearchSource
-    data class Doc(val doc: DDoc) : GlobalSearchSource
-    data class File(val file: DFile) : GlobalSearchSource
+    data class Audio(val audio: AudioTrack) : GlobalSearchSource
+    data class Image(val image: MediaImage) : GlobalSearchSource
+    data class Video(val video: MediaVideo) : GlobalSearchSource
+    data class Doc(val doc: Document) : GlobalSearchSource
+    data class File(val file: FileEntry) : GlobalSearchSource
     data class Feed(val entry: FeedEntry) : GlobalSearchSource
-    data class App(val info: DPackageInfo) : GlobalSearchSource
+    data class App(val info: AppPackage) : GlobalSearchSource
 }
 
 data class GlobalSearchHit(

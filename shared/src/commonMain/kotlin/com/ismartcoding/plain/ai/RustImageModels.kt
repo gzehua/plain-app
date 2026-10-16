@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.ai
 
 import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,18 +15,15 @@ internal object RustImageModels {
     val snapshot = state.asStateFlow()
     suspend fun call(command: ImageModelsCommand) {
         val mutation = when (command) {
-            ImageModelsCommand.Snapshot -> null
             ImageModelsCommand.Restore -> "restoreImageSearch"
             ImageModelsCommand.Enable -> "enableImageSearch"
             ImageModelsCommand.Disable -> "disableImageSearch"
             ImageModelsCommand.Cancel -> "cancelImageModelDownload"
             ImageModelsCommand.Release -> "releaseImageModelMemory"
         }
-        if (mutation != null) PlainRust.mainMutate(mutation)
+        PlainRust.mainMutate(mutation)
         refresh()
     }
-    suspend fun search(text: String, limit: Int): List<SemanticSearchResult> =
-        JsonHelper.jsonDecodeFromElement(PlainRust.mainQuery("semanticImageSearch(text: ${gql(text)}, maxResults: $limit) { imageId score }").getValue("semanticImageSearch"))
     suspend fun refresh() {
         apply(PlainRust.mainQuery("imageModelsState { version status downloadProgress errorMessage modelSize modelDir isIndexing totalImages indexedImages }").getValue("imageModelsState").jsonObject)
     }

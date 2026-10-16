@@ -2,8 +2,9 @@ package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.helpers.UrlHelper
 import com.ismartcoding.plain.platform.*
+import com.ismartcoding.plain.testing.CryptoFixtures.chaCha20Encrypt
+import com.ismartcoding.plain.testing.CryptoFixtures.chaCha20Decrypt
 import com.ismartcoding.plain.preferences.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
@@ -85,7 +86,7 @@ class PublicRustHttpTest {
                 }
                 val file = File(root, "sample.bin")
                 assertArrayEquals(payload, file.readBytes())
-                val id = java.net.URLEncoder.encode(UrlHelper.encrypt(file.absolutePath), "UTF-8")
+                val id = java.net.URLEncoder.encode(ResourceCrypto.encrypt(file.absolutePath), "UTF-8")
                 client.get("http://127.0.0.1:$port/fs?id=$id", mapOf("Range" to "bytes=19-39")).use {
                     assertEquals(206, it.status.value)
                     assertArrayEquals(payload.copyOfRange(19, 40), it.bodyAsBytes())

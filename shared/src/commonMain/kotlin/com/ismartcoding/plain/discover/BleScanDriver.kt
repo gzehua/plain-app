@@ -1,12 +1,13 @@
 package com.ismartcoding.plain.discover
 
+import com.ismartcoding.plain.chat.peer.PeerCacher
+
 import com.ismartcoding.plain.ble.RustBleWire
 import com.ismartcoding.plain.ble.BleServices
 import com.ismartcoding.plain.ble.BleUuids
 import com.ismartcoding.plain.ble.client.BleDeviceApi
 import com.ismartcoding.plain.ble.client.BleGattClient
 import com.ismartcoding.plain.ble.client.BleScanner
-import com.ismartcoding.plain.chat.peer.PeerCacher
 import com.ismartcoding.plain.enums.NearbyMessageType
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.bleTransport
@@ -99,25 +100,12 @@ object BleScanDriver {
      * Answers Rust's `bleScanRead`: performs one GATT DISCOVER read on the
      * device with [shortId] and returns its raw nearby payload, or an empty
      * object when the device is unknown / the read fails.
-     *
-     * The client is also cached by full id so a later BLE pairing
-     * (`blePairConnect`) can resolve it, and aware flags are mirrored into
-     * [PeerCacher] exactly as the previous inline scan loop did.
      */
     suspend fun read(params: JsonObject): JsonElement {
         val shortId = params.getValue("shortId").jsonPrimitive.content
         val scanner = bleTransport().createScanner()
         val device = scanner.createClient(shortId) ?: return JsonObject(emptyMap())
         val payload = readDiscoverReply(scanner, device)
-        if (payload != null) {
-            runCatching { RustNearbyWire.discoverReply(payload, shortId) }
-                .onSuccess { reply ->
-                    PeerCacher.setAwareSupported(reply.id, reply.awareSupported)
-                    PeerCacher.setAwareRunning(reply.id, reply.awareRunning)
-                    RustNearbyDevices.rememberClient(reply.id, device)
-                }
-                .onFailure { LogCat.d("[BLE] discoverReply $shortId: ${it.message}") }
-        }
         return buildJsonObject { put("payload", payload?.let(::JsonPrimitive) ?: JsonPrimitive(null as String?)) }
     }
 
@@ -131,7 +119,7 @@ object BleScanDriver {
             val api = BleDeviceApi(device, RustBleWire)
             api.ensureConnected()
             if (!api.isConnected()) return null
-            val message = RustBleWire.nearby(PairingCore.formatMessage(NearbyMessageType.DISCOVER, "").encodeToByteArray())
+            val message = RustBleWire.nearby(RustNearbyWire.encode(NearbyMessageType.DISCOVER, "").encodeToByteArray())
             val result = api.requestAsync(BleServices.nearby, message)
             api.disconnect()
             RustBleWire.nearbyBody(result).decodeToString(throwOnInvalidSequence = true).takeIf { it.isNotEmpty() }

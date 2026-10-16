@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.ui.page.nearby
 
+import androidx.compose.runtime.getValue
+import com.ismartcoding.plain.platform.getBestIp
+
+import com.ismartcoding.plain.graphql.models.NearbyDevice
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -26,13 +29,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.chat.models.PeerRecord
 import com.ismartcoding.plain.chat.peer.PeerCacher
-import com.ismartcoding.plain.data.DNearbyDevice
 import com.ismartcoding.plain.enums.ButtonSize
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.toSortName
 import com.ismartcoding.plain.platform.BleAvailability
 import com.ismartcoding.plain.platform.bleAvailabilityFlow
-import com.ismartcoding.plain.platform.getBestIp
 import com.ismartcoding.plain.platform.isIOS
 import com.ismartcoding.plain.platform.openAppSettings
 import com.ismartcoding.plain.ui.base.AlertType
@@ -163,7 +164,7 @@ fun NearbyPage(
 }
 
 internal fun LazyListScope.nearbyDeviceListItems(
-    nearbyDevices: List<DNearbyDevice>,
+    nearbyDevices: List<NearbyDevice>,
     peerVM: PeerViewModel,
     pairedPeers: List<com.ismartcoding.plain.chat.models.PeerRecord>,
 ) {

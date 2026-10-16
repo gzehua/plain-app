@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Contact(
-    var id: String,
+    override var id: String,
     var prefix: String,
     var firstName: String,
     var middleName: String,
@@ -28,4 +28,4 @@ data class Contact(
     var ims: List<ContactIm>,
     var ringtone: String,
     var updatedAt: Instant,
-)
+) : com.ismartcoding.plain.db.IData

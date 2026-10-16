@@ -1,5 +1,10 @@
 package com.ismartcoding.plain.features
 
+import com.ismartcoding.plain.graphql.models.Package as AppPackage
+import com.ismartcoding.plain.platform.PackageDetails
+import androidx.core.content.pm.PackageInfoCompat
+
+import com.ismartcoding.plain.graphql.models.Certificate
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
@@ -11,17 +16,9 @@ import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import com.ismartcoding.plain.AppIntents
-import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.lib.pinyin.Pinyin
-import com.ismartcoding.plain.data.DCertificate
-import com.ismartcoding.plain.data.DPackage
-import com.ismartcoding.plain.data.DPackageDetail
-import com.ismartcoding.plain.data.DPackageStub
 import com.ismartcoding.plain.enums.PackageType
 import com.ismartcoding.plain.extensions.isSystemApp
-import com.ismartcoding.plain.features.file.FileSortBy
-import com.ismartcoding.plain.helpers.QueryHelper
 import com.ismartcoding.plain.packageManager
 import kotlin.time.Instant
 import java.io.File
@@ -30,7 +27,7 @@ import javax.security.cert.X509Certificate
 object PackageHelper {
     private val appLabelCache: MutableMap<String, String> = HashMap()
     private val appTypeCache: MutableMap<String, PackageType> = HashMap()
-    private val appCertsCache: MutableMap<String, List<DCertificate>> = HashMap()
+    private val appCertsCache: MutableMap<String, List<Certificate>> = HashMap()
 
     fun getPackageInfoMap(ids: List<String>): Map<String, PackageInfo?> {
         val packages = packageManager.getInstalledPackages(0).associateBy { it.packageName }
@@ -46,16 +43,7 @@ object PackageHelper {
         return getPackageInfoMap(listOf(packageName))[packageName] != null
     }
 
-    fun isUninstalled(packageName: String): Boolean {
-        return !isInstalled(packageName)
-    }
-
-    suspend fun searchAsync(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<DPackage> =
-        com.ismartcoding.plain.platform.searchPackages(query, limit, offset, sortBy).mapNotNull { row ->
-            runCatching { getPackage(row.id) }.getOrNull()
-        }
-
-    fun installedFacts(): List<DPackage> = packageManager.getInstalledApplications(0).map { info ->
+    fun installedFacts(): List<AppPackage> = packageManager.getInstalledApplications(0).map { info ->
         val packageInfo = runCatching { packageManager.getPackageInfo(info.packageName, PackageManager.GET_SIGNING_CERTIFICATES) }
             .getOrElse { PackageInfo().apply { packageName = info.packageName } }
         getPackage(info, packageInfo)
@@ -71,7 +59,7 @@ object PackageHelper {
         return appType
     }
 
-    fun getCerts(packageInfo: PackageInfo): List<DCertificate> {
+    fun getCerts(packageInfo: PackageInfo): List<Certificate> {
         val packageName = packageInfo.packageName
         // why packageName could be null?
         if (packageName.isNullOrBlank()) {
@@ -83,7 +71,7 @@ object PackageHelper {
             for (signature in signatures) {
                 val cert = X509Certificate.getInstance(signature.toByteArray())
                 certs.add(
-                    DCertificate(
+                    Certificate(
                         cert.issuerDN.name,
                         cert.subjectDN.name,
                         cert.serialNumber.toString(),
@@ -98,52 +86,39 @@ object PackageHelper {
         return certs
     }
 
-    fun getPackage(packageName: String): DPackage {
+    fun getPackage(packageName: String): AppPackage {
         val flags = PackageManager.GET_SIGNING_CERTIFICATES
         val packageInfo = packageManager.getPackageInfo(packageName, flags)
         val appInfo = packageManager.getApplicationInfo(packageName, 0)
         return getPackage(appInfo, packageInfo)
     }
 
-    private fun getPackage(appInfo: ApplicationInfo, packageInfo: PackageInfo): DPackage {
-        return DPackage(
-            appInfo,
-            packageInfo,
-            appInfo.packageName,
-            getLabel(appInfo),
-            getAppType(appInfo),
-            packageInfo.versionName ?: "",
-            appInfo.sourceDir,
-            File(appInfo.publicSourceDir).length(),
-            Instant.fromEpochMilliseconds(packageInfo.firstInstallTime),
-            Instant.fromEpochMilliseconds(packageInfo.lastUpdateTime),
+    private fun getPackage(appInfo: ApplicationInfo, packageInfo: PackageInfo): AppPackage {
+        return AppPackage(
+            id = appInfo.packageName,
+            name = getLabel(appInfo),
+            type = getAppType(appInfo),
+            version = packageInfo.versionName ?: "",
+            path = appInfo.sourceDir,
+            size = File(appInfo.publicSourceDir).length(),
+            certs = getCerts(packageInfo),
+            installedAt = Instant.fromEpochMilliseconds(packageInfo.firstInstallTime),
+            updatedAt = Instant.fromEpochMilliseconds(packageInfo.lastUpdateTime),
         )
     }
 
-    fun getPackageDetail(packageName: String): DPackageDetail {
-        try {
-            val flags = PackageManager.GET_SIGNING_CERTIFICATES
-            val packageInfo = packageManager.getPackageInfo(packageName, flags)
-            val appInfo = packageManager.getApplicationInfo(packageName, 0)
-            return DPackageDetail(
-                appInfo,
-                packageInfo,
-                appInfo.packageName,
-                getLabel(appInfo),
-                getAppType(appInfo),
-                packageInfo.versionName ?: "",
-                appInfo.sourceDir,
-                File(appInfo.publicSourceDir).length(),
-                getCerts(packageInfo),
-                Instant.fromEpochMilliseconds(packageInfo.firstInstallTime),
-                Instant.fromEpochMilliseconds(packageInfo.lastUpdateTime),
-            )
-        } catch (ex: Exception) {
-            LogCat.d(ex.toString())
-            return DPackageDetail(ApplicationInfo(), PackageInfo().apply {
-                this.packageName = packageName
-            }, packageName, "", PackageType.USER, "", "", 0, emptyList(), Instant.DISTANT_PAST, Instant.DISTANT_PAST)
-        }
+    fun getPackageDetail(packageName: String): PackageDetails {
+        val packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+        val appInfo = packageManager.getApplicationInfo(packageName, 0)
+        return PackageDetails(
+            item = getPackage(appInfo, packageInfo),
+            sourceDir = appInfo.sourceDir.orEmpty(),
+            dataDir = appInfo.dataDir.orEmpty(),
+            targetSdkVersion = appInfo.targetSdkVersion,
+            minSdkVersion = appInfo.minSdkVersion,
+            versionCode = PackageInfoCompat.getLongVersionCode(packageInfo),
+            hasLargeHeap = appInfo.flags and ApplicationInfo.FLAG_LARGE_HEAP != 0,
+        )
     }
 
     fun cacheAppLabels() {
@@ -160,8 +135,6 @@ object PackageHelper {
             LogCat.d(ex.toString())
         }
     }
-
-    suspend fun count(query: String): Int = com.ismartcoding.plain.platform.countPackages(query)
 
     private fun getLabel(packageInfo: ApplicationInfo): String {
         val key = packageInfo.packageName

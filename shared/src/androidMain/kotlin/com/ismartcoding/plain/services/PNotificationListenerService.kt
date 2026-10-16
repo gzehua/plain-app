@@ -1,7 +1,11 @@
 package com.ismartcoding.plain.services
+
+import com.ismartcoding.plain.platform.Permission
+import com.ismartcoding.plain.platform.isGranted
+import com.ismartcoding.plain.platform.isEnabledAsync
+import com.ismartcoding.plain.lib.receiveEventHandler
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.isDebugBuild
-
 import android.app.Notification
 import android.content.ComponentName
 import android.content.Context
@@ -16,16 +20,12 @@ import com.ismartcoding.plain.AndroidTempData
 import com.ismartcoding.plain.activityManager
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.has
-import com.ismartcoding.plain.extensions.toDNotification
+import com.ismartcoding.plain.extensions.toAppNotification
 import com.ismartcoding.plain.features.getGrantedWebPermissionsAsync
-import com.ismartcoding.plain.platform.Permission
-import com.ismartcoding.plain.platform.isGranted
-import com.ismartcoding.plain.platform.isEnabledAsync
 import com.ismartcoding.plain.packageManager
 import com.ismartcoding.plain.features.notification.RustNotificationEvents
 import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.events.HostEvent
-import com.ismartcoding.plain.lib.receiveEventHandler
 import com.ismartcoding.plain.lib.sendEvent
 import kotlinx.coroutines.Job
 
@@ -62,7 +62,7 @@ class PNotificationListenerService : NotificationListenerService() {
 
     override fun onNotificationPosted(statusBarNotification: StatusBarNotification) {
         if (isValidNotification(statusBarNotification)) {
-            val n = statusBarNotification.toDNotification()
+            val n = statusBarNotification.toAppNotification()
             val old = AndroidTempData.notifications.find { it.id == n.id }
             if (old != null) {
                 AndroidTempData.notifications.remove(old)
@@ -103,7 +103,7 @@ class PNotificationListenerService : NotificationListenerService() {
                 AndroidTempData.notificationActions.clear()
                 for (notification in notifications) {
                     if (isValidNotification(notification)) {
-                        val n = notification.toDNotification()
+                        val n = notification.toAppNotification()
                         AndroidTempData.notifications.add(n)
                         val rawActions = notification.notification.actions
                         if (rawActions != null) {

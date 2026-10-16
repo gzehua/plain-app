@@ -7,5 +7,5 @@ data class Sim(
     var id: String,
     var label: String,
     var number: String,
-    var subscriptionId: Int,
+    var subscriptionId: Int = -1,
 )

@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class File(
-    var mediaId: String?,
+    var mediaId: String? = null,
     var name: String,
     var path: String,
     var createdAt: Instant?,
@@ -14,4 +14,8 @@ data class File(
     var isDir: Boolean,
     var childCount: Int,
     var permission: String = "",
-)
+) : com.ismartcoding.plain.db.IData {
+    override var id: String
+        get() = path
+        set(value) { path = value }
+}

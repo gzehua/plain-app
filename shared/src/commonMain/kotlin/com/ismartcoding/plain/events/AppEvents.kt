@@ -2,8 +2,9 @@ package com.ismartcoding.plain.events
 
 import com.ismartcoding.plain.ai.HImageIndexProgressEvent
 import com.ismartcoding.plain.ai.HImageSearchStatusChangedEvent
+
+import com.ismartcoding.plain.graphql.models.PairingRequestInput
 import com.ismartcoding.plain.ble.PairingTransport
-import com.ismartcoding.plain.data.DPairingRequest
 import com.ismartcoding.plain.discover.MdnsDiscoverManager
 import com.ismartcoding.plain.enums.ActionSourceType
 import com.ismartcoding.plain.enums.ActionType
@@ -32,7 +33,6 @@ import com.ismartcoding.plain.platform.setBluetoothCanContinue
 import com.ismartcoding.plain.platform.startHttpServerService
 import com.ismartcoding.plain.ui.models.FolderOption
 import com.ismartcoding.plain.features.session.AuthRequest
-import com.ismartcoding.plain.platform.MediaDurationFixQueue
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
@@ -46,7 +46,7 @@ class HConfirmToAcceptLoginEvent(
 ) : HEvent()
 
 // Pairing events
-data class HPairingRequestReceivedEvent(val request: DPairingRequest) : HEvent()
+data class HPairingRequestReceivedEvent(val request: PairingRequestInput) : HEvent()
 data class HPairingSuccessEvent(val deviceId: String, val deviceName: String, val deviceIp: String, val key: String) : HEvent()
 data class HPairingCanceledEvent(val fromId: String) : HEvent()
 
@@ -120,18 +120,6 @@ class SleepTimerEvent(val durationMs: Long) : ChannelEvent()
 
 class CancelSleepTimerEvent : ChannelEvent()
 
-data class MediaDurationZeroEvent(
-    val mediaType: String,
-    val items: List<MediaDurationZeroItem>,
-) : ChannelEvent()
-
-data class MediaDurationZeroItem(
-    val id: String,
-    val path: String,
-    val sizeBytes: Long,
-    val modifiedAt: kotlin.time.Instant,
-)
-
 class StartNearbyServiceEvent : ChannelEvent()
 
 data class ChatMessageNotificationEvent(
@@ -154,7 +142,6 @@ object AppEvents {
     private var sleepTimerJob: Job? = null
 
     fun register() {
-        com.ismartcoding.plain.platform.MediaDurationFixQueue.start()
         val sharedFlow = Channel.sharedFlow
         coMain {
             sharedFlow.collect { event ->
@@ -228,9 +215,6 @@ object AppEvents {
                         )
                     }
 
-                    is MediaDurationZeroEvent -> {
-                        MediaDurationFixQueue.enqueue(event)
-                    }
                 }
             }
         }

@@ -38,13 +38,13 @@ fun initIosApp() {
     if (initialized) return
     initialized = true
 
+    com.ismartcoding.plain.platform.setupIosImageLoader()
     Prefs.load()
     com.ismartcoding.plain.rust.request.RustContentApi.start()
 
     // Disk logging + HTTP request logging (debug=VERBOSE, release=WARN)
     initDiskLogging()
 
-    // Global event collectors (MediaDurationFixQueue, sleep timer, etc.)
     AppEvents.register()
     com.ismartcoding.plain.platform.HttpServerManager.ensureStarted()
 
@@ -62,7 +62,6 @@ fun initIosApp() {
 
     // Coil image loader: iOS has no ServiceLoader-discovered network fetcher,
     // so register our NSURLSession-backed one explicitly.
-    com.ismartcoding.plain.platform.setupIosImageLoader()
 
     // Initialize preferences and TempData (shared with Android via initCommonPreferences)
     coIO {

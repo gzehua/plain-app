@@ -1,5 +1,10 @@
 package com.ismartcoding.plain.ui.page.playlist
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import com.ismartcoding.plain.ui.page.playlist.components.sortedByAudio
+
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,12 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -26,7 +29,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.db.IDData
 import com.ismartcoding.plain.features.audio.AudioPlaylistManager
 import com.ismartcoding.plain.graphql.models.AudioItem
@@ -63,8 +65,7 @@ import com.ismartcoding.plain.ui.page.playlist.components.PlaylistMoreSheet
 import com.ismartcoding.plain.ui.page.playlist.components.playPlaylistFrom
 import com.ismartcoding.plain.ui.page.playlist.components.playPlaylistShuffled
 import com.ismartcoding.plain.ui.page.playlist.components.pruneTrashedRows
-import com.ismartcoding.plain.ui.page.playlist.components.sortedByAudio
-import com.ismartcoding.plain.ui.page.playlist.components.toDAudio
+import com.ismartcoding.plain.ui.page.playlist.components.toAudioTrack
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.cast as ui_drawable_cast
 import com.ismartcoding.plain.ui.resources.more_horiz as ui_drawable_more_horiz
@@ -135,7 +136,7 @@ fun PlaylistDetailPage(
     val sortBy = audioVM.sortBy.value
     val libraryByPath = remember(library) { library.associateBy { it.path } }
     val rowAudios = remember(items, library, sortBy) {
-        items.map { libraryByPath[it.path] ?: it.toDAudio() }
+        items.map { libraryByPath[it.path] ?: it.toAudioTrack() }
     }
     val selectItems = remember(rowAudios) { rowAudios.map { IDData(it.id) } }
     val pathById = remember(library) { library.associateBy { it.id } }

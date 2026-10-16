@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.lib.extensions.formatBytes
-import com.ismartcoding.plain.platform.DPackageInfo
+import com.ismartcoding.plain.platform.PackageDetails
 import com.ismartcoding.plain.platform.formatDateTime
 import com.ismartcoding.plain.platform.LocaleHelper
 import com.ismartcoding.plain.platform.getPackageDetail
@@ -31,7 +31,7 @@ import com.ismartcoding.plain.ui.resources.share_2 as ui_drawable_share_2
 @Composable
 fun AppPage(navController: NavHostController, id: String) {
     val scope = rememberCoroutineScope()
-    var item by remember { mutableStateOf<DPackageInfo?>(null) }
+    var item by remember { mutableStateOf<PackageDetails?>(null) }
     var isShareable by remember { mutableStateOf(true) }
     val lifecycleEvent = rememberLifecycleEvent()
 
@@ -41,18 +41,18 @@ fun AppPage(navController: NavHostController, id: String) {
     LaunchedEffect(Unit) {
         scope.launch(Dispatchers.Default) {
             item = getPackageDetail(id)
-            item?.let { isShareable = isFileShareable(it.path) }
+            item?.let { isShareable = isFileShareable(it.item.path) }
         }
     }
 
     PScaffold(
         topBar = {
-            PTopAppBar(onNavigateBack = { navController.navigateUp() }, title = item?.name ?: "", actions = {
+            PTopAppBar(onNavigateBack = { navController.navigateUp() }, title = item?.item?.name ?: "", actions = {
                 if (isShareable) {
                     PIconButton(icon = UiRes.drawable.ui_drawable_share_2, contentDescription = stringResource(Res.string.share),
                         tint = MaterialTheme.colorScheme.onSurface) {
                         item?.let { pkg ->
-                            shareFileAs(pkg.path, "${pkg.name.replace(" ", "")}-${pkg.id}.apk")
+                            shareFileAs(pkg.item.path, "${pkg.item.name.replace(" ", "")}-${pkg.item.id}.apk")
                         }
                     }
                 }
@@ -60,21 +60,22 @@ fun AppPage(navController: NavHostController, id: String) {
         },
         content = { paddingValues ->
             if (item == null) { NoDataColumn(loading = true); return@PScaffold }
-            val pkg = item!!
+            val details = item!!
+            val pkg = details.item
             LazyColumn(Modifier.padding(top = paddingValues.calculateTopPadding())) {
-                item { AppPageHeader(navController = navController, item = pkg) }
+                item { AppPageHeader(navController = navController, details = details) }
                 item {
                     VerticalSpace(dp = 16.dp)
                     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
-                        PListItem(title = stringResource(Res.string.source_directory), subtitle = pkg.sourceDir)
-                        PListItem(title = stringResource(Res.string.data_directory), subtitle = pkg.dataDir)
+                        PListItem(title = stringResource(Res.string.source_directory), subtitle = details.sourceDir)
+                        PListItem(title = stringResource(Res.string.data_directory), subtitle = details.dataDir)
                     }
                 }
                 item {
                     VerticalSpace(dp = 16.dp)
                     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                         PListItem(title = stringResource(Res.string.app_size), value = pkg.size.formatBytes())
-                        PListItem(title = "SDK", value = LocaleHelper.getStringF(Res.string.sdk, pkg.targetSdkVersion, pkg.minSdkVersion))
+                        PListItem(title = "SDK", value = LocaleHelper.getStringF(Res.string.sdk, details.targetSdkVersion, details.minSdkVersion))
                         PListItem(title = stringResource(Res.string.installed_at), value = pkg.installedAt.formatDateTime())
                         PListItem(title = stringResource(Res.string.updated_at), value = pkg.updatedAt.formatDateTime())
                     }

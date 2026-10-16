@@ -1,5 +1,10 @@
 package com.ismartcoding.plain.ui.page.audio.components
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import com.ismartcoding.plain.features.audio.AudioQueueManager
+
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
@@ -7,18 +12,14 @@ import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import com.ismartcoding.plain.lib.extensions.isUrl
 import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
-import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.has
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.audio.AudioPlaylistManager
-import com.ismartcoding.plain.features.audio.AudioQueueManager
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.addMediaShortcut
@@ -56,7 +57,7 @@ import com.ismartcoding.plain.ui.resources.square_arrow_out_up_right as ui_drawa
 
 @Composable
 internal fun AudioActionButtons(
-    m: DAudio,
+    m: AudioTrack,
     audioVM: AudioViewModel,
     tagsVM: TagsViewModel,
     dragSelectState: DragSelectState,

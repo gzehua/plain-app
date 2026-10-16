@@ -144,6 +144,48 @@ pub extern "C" fn plain_resource_close(id: *const c_char, failed: bool) -> *mut 
             .unwrap_or_default(),
     )
 }
+#[cfg(unix)]
+fn provide_file(id: &str, fd: i32, offset: i64, length: i64) -> Result<(), String> {
+    use std::os::fd::BorrowedFd;
+    if fd < 0 {
+        return Err("Invalid resource descriptor".into());
+    }
+    let file = unsafe { BorrowedFd::borrow_raw(fd) }
+        .try_clone_to_owned()
+        .map_err(|error| error.to_string())?;
+    let file = plain_server::native::resource_stream::NativeResourceFile::new(
+        std::fs::File::from(file),
+        offset,
+        length,
+    )?;
+    let (runtime, stream) = take_open(id)?;
+    runtime.block_on(async {
+        let result = tokio::time::timeout(STREAM_TIMEOUT, stream.file(file))
+            .await
+            .map_err(|_| "Resource file timed out".to_string())
+            .and_then(|result| result);
+        if result.is_err() {
+            let _ = stream.fail().await;
+        }
+        result
+    })
+}
+#[cfg(unix)]
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_resource_file(
+    id: *const c_char,
+    fd: i32,
+    offset: i64,
+    length: i64,
+) -> *mut c_char {
+    c_string(
+        input(id)
+            .and_then(|id| provide_file(&id, fd, offset, length))
+            .err()
+            .unwrap_or_default(),
+    )
+}
+
 #[cfg(target_os = "android")]
 mod android {
     use super::*;
@@ -153,6 +195,22 @@ mod android {
         objects::{JByteArray, JObject, JString},
         sys::{jboolean, jstring},
     };
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_resourceFileNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        id: JString<'_>,
+        fd: jni::sys::jint,
+        offset: jni::sys::jlong,
+        length: jni::sys::jlong,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = provide_file(&id.to_string(), fd, offset, length);
+            env.new_string(result.err().unwrap_or_default())
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
     #[unsafe(no_mangle)]
     pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_resourceOpenNative(
         mut env: EnvUnowned<'_>,

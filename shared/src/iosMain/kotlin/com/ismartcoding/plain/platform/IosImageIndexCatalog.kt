@@ -22,11 +22,7 @@ internal object IosImageIndexCatalog : NSObject(), PHPhotoLibraryChangeObserverP
     override fun photoLibraryDidChange(changeInstance: PHChange) {
         lock.lock()
         try { epoch++ } finally { lock.unlock() }
-        com.ismartcoding.plain.lib.coIO {
-            if (com.ismartcoding.plain.ai.RustImageModels.snapshot.value.status == com.ismartcoding.plain.ai.ImageSearchStatusType.READY) {
-                com.ismartcoding.plain.features.imageindex.ImageIndexHelper.start(false)
-            }
-        }
+        com.ismartcoding.plain.ai.reportImageCatalogChanged()
     }
     fun observe(enabled: Boolean) {
         lock.lock()
@@ -96,7 +92,7 @@ internal object IosImageIndexCatalog : NSObject(), PHPhotoLibraryChangeObserverP
                         image.drawInRect(CGRectMake(0.0, 0.0, width, height))
                         val normalized = UIGraphicsGetImageFromCurrentImageContext()
                         val png = normalized?.let { UIImagePNGRepresentation(it) }
-                        val file = NSTemporaryDirectory() + "image-index-${NSUUID().UUIDString}.png"
+                        val file = "${appCacheDir()}/image-index-${NSUUID().UUIDString}.png"
                         if (png?.writeToFile(file, true) == true) path = file
                     } finally { UIGraphicsEndImageContext() }
                 }
@@ -105,7 +101,7 @@ internal object IosImageIndexCatalog : NSObject(), PHPhotoLibraryChangeObserverP
         return path
     }
     fun release(path: String): Boolean {
-        val root = NSURL.fileURLWithPath(NSTemporaryDirectory()).URLByStandardizingPath!!.path!!.trimEnd('/')
+        val root = NSURL.fileURLWithPath(appCacheDir()).URLByStandardizingPath!!.path!!.trimEnd('/')
         val file = NSURL.fileURLWithPath(path).URLByStandardizingPath!!.path!!
         require(file.substringBeforeLast('/') == root && file.substringAfterLast('/').startsWith("image-index-"))
         return NSFileManager.defaultManager.removeItemAtPath(file, null)

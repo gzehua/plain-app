@@ -1,8 +1,11 @@
 package com.ismartcoding.plain.ui.page
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
+import com.ismartcoding.plain.graphql.models.PairingRequestInput
 import com.ismartcoding.plain.ui.theme.PlainTheme
-
 import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,12 +22,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.painterResource
@@ -32,7 +33,6 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.data.DPairingRequest
 import com.ismartcoding.plain.discover.PairingResponder
 import com.ismartcoding.plain.enums.ButtonSize
 import com.ismartcoding.plain.enums.ButtonType
@@ -48,7 +48,7 @@ private const val PAIRING_REQUEST_TIMEOUT_SECONDS = 90
 
 @Composable
 fun PairingRequestPage(
-    request: DPairingRequest,
+    request: PairingRequestInput,
     navController: NavHostController,
 ) {
     var remainingSeconds by remember { mutableIntStateOf(PAIRING_REQUEST_TIMEOUT_SECONDS) }

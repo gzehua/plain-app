@@ -28,11 +28,10 @@ import dalvik.system.ZipPathValidator
 object MainAppHelper {
 
     fun init(app: Application) {
+        CrashHandler.install(app)
+        SingletonImageLoader.setSafe { context -> newImageLoader(context) }
         Prefs.load()
         com.ismartcoding.plain.rust.request.RustContentApi.start()
-        CrashHandler.install(app)
-
-        SingletonImageLoader.setSafe { context -> newImageLoader(context) }
 
         // Disk logging + HTTP request logging (debug=VERBOSE, release=WARN)
         initDiskLogging()

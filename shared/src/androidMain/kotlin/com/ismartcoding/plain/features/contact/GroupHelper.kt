@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.features.contact
-import com.ismartcoding.plain.appContext
 
+import com.ismartcoding.plain.graphql.models.ContactGroup
+import com.ismartcoding.plain.appContext
 import android.content.ContentProviderOperation
 import android.content.ContentUris
 import android.provider.ContactsContract
@@ -9,13 +10,12 @@ import com.ismartcoding.plain.lib.extensions.getLongValue
 import com.ismartcoding.plain.lib.extensions.getStringValue
 import com.ismartcoding.plain.lib.extensions.queryCursor
 import com.ismartcoding.plain.contentResolver
-import com.ismartcoding.plain.data.DGroup
 import java.util.ArrayList
 
 object GroupHelper {
-    fun getAll(): List<DGroup> {
+    fun getAll(): List<ContactGroup> {
         val context = appContext
-        val groups = ArrayList<DGroup>()
+        val groups = ArrayList<ContactGroup>()
         val uri = ContactsContract.Groups.CONTENT_URI
         val projection =
             arrayOf(
@@ -35,7 +35,7 @@ object GroupHelper {
                 return@forEach
             }
 
-            groups.add(DGroup(id, title))
+            groups.add(ContactGroup(id.toString(), title))
         }
         return groups
     }
@@ -44,7 +44,7 @@ object GroupHelper {
         name: String,
         accountName: String,
         accountType: String,
-    ): DGroup {
+    ): ContactGroup {
         val operations = ArrayList<ContentProviderOperation>()
         ContentProviderOperation.newInsert(ContactsContract.Groups.CONTENT_URI).apply {
             withValue(ContactsContract.Groups.TITLE, name)
@@ -56,7 +56,7 @@ object GroupHelper {
 
         val results = contentResolver.applyBatch(ContactsContract.AUTHORITY, operations)
         val rawId = ContentUris.parseId(results[0].uri!!)
-        return DGroup(rawId, name)
+        return ContactGroup(rawId.toString(), name)
     }
 
     fun update(

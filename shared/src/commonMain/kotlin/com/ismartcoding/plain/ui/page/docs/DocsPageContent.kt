@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.page.docs
 
+import com.ismartcoding.plain.graphql.models.Doc as Document
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -18,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.data.DDoc
 import com.ismartcoding.plain.graphql.models.Doc
 import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.ui.base.BottomSpace
@@ -42,7 +42,7 @@ import kotlinx.coroutines.launch
 internal fun ColumnScope.DocsPageContent(
     navController: NavHostController, docsVM: DocsViewModel,
     tagsVM: TagsViewModel,
-    itemsState: List<DDoc>,
+    itemsState: List<Document>,
     dragSelectState: DragSelectState,
     docsTagsMap: Map<String, List<TagHostRecord>>,
     scrollBehavior: TopAppBarScrollBehavior,

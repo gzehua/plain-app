@@ -34,7 +34,7 @@ import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.size.Size as CoilSize
 import com.ismartcoding.plain.enums.MarkdownTheme
-import com.ismartcoding.plain.extensions.getFinalPath
+import com.ismartcoding.plain.extensions.rememberFilePath
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.ui.components.mediaviewer.PreviewItem
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.MediaPreviewerState
@@ -110,13 +110,7 @@ internal class AppImageTransformer(
     @Composable
     override fun transform(link: String): ImageData? {
         val context = LocalPlatformContext.current
-        val resolved = if (link.startsWith("app://", ignoreCase = true) ||
-            link.startsWith("fid:", ignoreCase = true)
-        ) {
-            link.getFinalPath()
-        } else {
-            link
-        }
+        val resolved = rememberFilePath(link)
         val painter = rememberAsyncImagePainter(
             model = ImageRequest.Builder(context)
                 .data(resolved)
@@ -263,13 +257,14 @@ internal fun rememberMarkdownImageTransformer(
     val scope = rememberCoroutineScope()
     return remember(text, previewerState) {
         AppImageTransformer(onImageClick = previewerState?.let { state -> { link ->
-            val imageLinks = extractImageLinksFromMarkdown(text)
-            val items = imageLinks.map { src ->
-                PreviewItem(src, src.getFinalPath())
+            scope.launch {
+                val imageLinks = extractImageLinksFromMarkdown(text)
+                val paths = com.ismartcoding.plain.rust.content.FilePaths.resolveAll(imageLinks)
+                val items = imageLinks.mapIndexed { index, src -> PreviewItem(src, paths[index]) }
+                MediaPreviewData.items = items
+                val index = items.indexOfFirst { it.id == link || it.path == link }
+                state.open(index = index.coerceAtLeast(0))
             }
-            MediaPreviewData.items = items
-            val index = items.indexOfFirst { it.id == link || it.path == link }
-            scope.launch { state.open(index = index.coerceAtLeast(0)) }
         } })
     }
 }

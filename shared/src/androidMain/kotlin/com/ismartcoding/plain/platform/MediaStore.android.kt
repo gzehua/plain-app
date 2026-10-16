@@ -1,12 +1,13 @@
 package com.ismartcoding.plain.platform
 
+import com.ismartcoding.plain.data.TagRelationStub
+
+
+
 import android.provider.Telephony
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.audio.AudioMediaStoreHelper
-import com.ismartcoding.plain.data.DImage
-import com.ismartcoding.plain.data.DMediaBucket
 import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.data.TagRelationStub
 import com.ismartcoding.plain.docs.DocMediaStoreHelper
 import com.ismartcoding.plain.features.system.ProviderPlan
 import com.ismartcoding.plain.enums.DataType
@@ -19,11 +20,6 @@ import com.ismartcoding.plain.features.sms.SmsProviderContract
 import com.ismartcoding.plain.features.file.FileSortBy
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.CancellationException
-
-actual suspend fun getMediaBuckets(dataType: DataType): List<DMediaBucket> {
-    return com.ismartcoding.plain.features.system.RustSystemProviders.mediaBuckets(dataType)
-}
-
 
 
 actual suspend fun trashMedia(dataType: DataType, ids: Set<String>) {
@@ -71,19 +67,8 @@ actual suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.feat
 }
 
 
-actual suspend fun searchImagesCombined(
-    queryText: String,
-    extraQuery: String,
-    limit: Int,
-    offset: Int,
-    sortBy: FileSortBy,
-): List<DImage> = com.ismartcoding.plain.ai.RustImageSearch.rows(queryText,extraQuery,limit,offset,sortBy)
 
-actual fun isImageSearchModelReady(): Boolean =
-    com.ismartcoding.plain.ai.ImageSearchManager.isModelReady()
 
-actual fun enqueueRemoveImageIndex(ids: Set<String>) =
-    com.ismartcoding.plain.ai.ImageIndexManager.enqueueRemove(ids)
 
 actual fun getMediaItemUriString(dataType: DataType, id: String): String = when (dataType) {
     DataType.IMAGE -> ImageMediaStoreHelper.getItemUri(id).toString()
@@ -104,51 +89,16 @@ actual suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set
 }
 
 
-actual suspend fun countImagesCombined(queryText: String, extraQuery: String): Int =
-    com.ismartcoding.plain.ai.RustImageSearch.count(queryText,extraQuery)
 
-actual fun startImageIndexFullScan(force: Boolean) =
-    com.ismartcoding.plain.ai.ImageIndexManager.fullScan(force)
 
-actual fun cancelImageIndex() =
-    com.ismartcoding.plain.ai.ImageSearchIndexer.cancel()
 
-actual suspend fun searchSmsConversations(query: String, limit: Int, offset: Int): List<com.ismartcoding.plain.features.sms.DMessageConversation> =
-    com.ismartcoding.plain.features.sms.RustSmsQuery.conversations(query,limit,offset)
+actual fun divideSmsText(body: String, subscriptionId: Int?): List<String> = SmsHelper.divideText(body, subscriptionId)
+actual fun sendSmsParts(request: com.ismartcoding.plain.features.sms.SmsDispatchRequest) = SmsHelper.sendParts(request)
 
-actual suspend fun countSmsConversations(query: String): Int =
-    com.ismartcoding.plain.features.sms.RustSmsQuery.conversationCount(query)
-
-actual suspend fun getArchivedSmsConversations(): List<com.ismartcoding.plain.features.sms.DMessageConversation> =
-    com.ismartcoding.plain.features.sms.RustSmsQuery.archivedConversations()
-
-actual suspend fun getSmsConversationDate(threadId: String): Long? =
-    com.ismartcoding.plain.features.sms.RustSmsQuery.conversationDate(threadId)?.toEpochMilliseconds()
-
-actual suspend fun getSmsAllCounts(): DSmsCounts =
-    com.ismartcoding.plain.features.sms.SmsHelper.countAllAsync(appContext).let {
-        DSmsCounts(it.total, it.inbox, it.sent, it.drafts)
-    }
-
-actual fun sendSmsText(
-    number: String,
-    body: String,
-    subscriptionId: Int?,
-    clientId: String?,
-    clientRequestId: String?,
-) = com.ismartcoding.plain.features.sms.SmsHelper.sendText(
-    number,
-    body,
-    subscriptionId,
-    clientId,
-    clientRequestId,
-)
 
 actual fun call(number: String, showDialer: Boolean) =
     com.ismartcoding.plain.features.media.CallMediaStoreHelper.call(appContext, number, showDialer)
 
-actual fun resolveAppFileUri(uri: String): String =
-    com.ismartcoding.plain.helpers.AppFileStore.resolveUri(uri)
 
 actual fun mimeTypeFromExtension(extension: String): String =
     android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
@@ -181,11 +131,9 @@ actual fun getScreenSize(): Pair<Int, Int> {
     return Pair(displayMetrics.widthPixels, displayMetrics.heightPixels)
 }
 
-actual fun getDownloadsDirPath(): String =
+internal actual fun platformDownloadsDirPath(): String =
     android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).absolutePath
 
-actual suspend fun getContactById(id: String): com.ismartcoding.plain.data.DContact? =
-    com.ismartcoding.plain.features.media.ContactMediaStoreHelper.getByIdAsync(appContext, id)
 
 actual fun updateContact(id: String, input: com.ismartcoding.plain.features.contact.ContactInput) =
     com.ismartcoding.plain.features.media.ContactMediaStoreHelper.updateAsync(id, input)
@@ -213,24 +161,15 @@ actual fun readSentMmsCandidates(minimumId: Long, launchTimeSec: Long): List<com
                 val id = cursor.getLong(idIndex)
                 val (body, attachments) = SmsHelper.readMmsBodyAndAttachments(context, id.toString())
                 add(com.ismartcoding.plain.features.sms.MmsCandidateFacts(id,
-                    SmsHelper.readMmsAddress(context, id.toString()), body,
+                    SmsHelper.readMmsAddresses(context, id.toString()), body,
                     cursor.getString(threadIndex).orEmpty(), attachments.map { it.contentType }))
             }
         }
     } ?: emptyList()
 }
 
-actual suspend fun enableImageSearchAsync() {
-    com.ismartcoding.plain.ai.ImageSearchManager.enableAsync()
-}
 
-actual suspend fun disableImageSearchAsync() {
-    com.ismartcoding.plain.ai.ImageSearchManager.disableAsync()
-}
 
-actual fun cancelImageModelDownload() {
-    com.ismartcoding.plain.ai.ImageSearchManager.cancelDownload()
-}
 
 actual suspend fun searchMedia(dataType: DataType, plan: ProviderPlan, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> {
     if (dataType == DataType.CALL && !Permission.READ_CALL_LOG.isGranted()) return emptyList()

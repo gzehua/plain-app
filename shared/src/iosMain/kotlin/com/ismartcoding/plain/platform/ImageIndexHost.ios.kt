@@ -15,5 +15,3 @@ actual suspend fun handleImageIndexHost(method: String, params: JsonObject): Jso
     else -> error("Unknown image index host operation: $method")
 }
 actual suspend fun disconnectImageIndexHost() = IosImageIndexCatalog.observe(false)
-
-actual suspend fun applyImageIndexStatus(status: JsonObject) = Unit

@@ -1,9 +1,10 @@
 package com.ismartcoding.plain.features.media
 
+import android.provider.BaseColumns
+
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.provider.BaseColumns
 import android.provider.CallLog
 import com.ismartcoding.plain.helpers.ContentWhere
 import com.ismartcoding.plain.lib.extensions.getIntValue
@@ -11,8 +12,7 @@ import com.ismartcoding.plain.lib.extensions.getStringValue
 import com.ismartcoding.plain.lib.extensions.getTimeValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.data.DCall
-import com.ismartcoding.plain.helpers.QueryHelper
+import com.ismartcoding.plain.graphql.models.Call as PhoneCall
 
 object CallMediaStoreHelper : BaseContentHelper() {
     override val uriExternal: Uri = CallLog.Calls.CONTENT_URI
@@ -38,14 +38,14 @@ object CallMediaStoreHelper : BaseContentHelper() {
         query: String,
         limit: Int,
         offset: Int,
-    ): List<DCall> = com.ismartcoding.plain.features.system.RustPhoneQuery.calls(query, limit, offset)
+    ): List<PhoneCall> = com.ismartcoding.plain.features.system.RustPhoneQuery.calls(query, limit, offset)
 
     suspend fun searchAsync(
         context: Context,
         where: ContentWhere,
         limit: Int,
         offset: Int,
-    ): List<DCall> = withIO {
+    ): List<PhoneCall> = withIO {
         if (limit <= 0) {
             return@withIO emptyList()
         }
@@ -65,7 +65,7 @@ object CallMediaStoreHelper : BaseContentHelper() {
             val durationSec = cursor.getIntValue(CallLog.Calls.DURATION, cache)
             val type = cursor.getIntValue(CallLog.Calls.TYPE, cache)
             val accountId = cursor.getStringValue(CallLog.Calls.PHONE_ACCOUNT_ID, cache)
-            DCall(id, number, name, photoUri, startTS, durationSec, type, accountId)
+            PhoneCall(id = id, number = number, name = name, photoUri = photoUri, startedAt = startTS, durationSec = durationSec, type = com.ismartcoding.plain.enums.CallType.fromInt(type), typeCode = type, accountId = accountId)
         } ?: emptyList()
     }
 

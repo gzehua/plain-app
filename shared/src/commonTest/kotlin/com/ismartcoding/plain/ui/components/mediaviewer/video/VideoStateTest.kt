@@ -1,9 +1,11 @@
 package com.ismartcoding.plain.ui.components.mediaviewer.video
 
+import kotlin.test.assertNull
+
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -315,11 +317,11 @@ class VideoStateTest {
     fun `updateTime preserves totalTime when controller duration is unknown`() {
         // fMP4 scenario: ExoPlayer returns C.TIME_UNSET (< 0) because it can't
         // extract duration from the moov box. The expectedTotalMs (set from
-        // DVideo.duration / cache) must be preserved, not overwritten with 0.
+        // MediaVideo.duration / cache) must be preserved, not overwritten with 0.
         val state = VideoState()
         val fake = FakeVideoPlayerController()
         state.initData(fake)
-        state.totalTime = 84000L // expectedTotalMs from DVideo.duration * 1000
+        state.totalTime = 84000L // expectedTotalMs from MediaVideo.duration * 1000
         fake.fakeCurrentPositionMs = 3000L
         fake.fakeDurationMs = 0L // ExoPlayer can't determine fMP4 duration
 

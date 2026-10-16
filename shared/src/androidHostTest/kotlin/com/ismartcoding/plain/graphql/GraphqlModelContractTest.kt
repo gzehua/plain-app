@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.graphql
 
+import com.ismartcoding.plain.graphql.models.SmsAttachment
+
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlin.test.Test
 import kotlin.test.assertEquals

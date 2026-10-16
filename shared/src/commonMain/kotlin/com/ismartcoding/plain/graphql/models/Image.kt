@@ -13,7 +13,7 @@ data class Image(
     override var createdAt: Instant,
     override var updatedAt: Instant,
     var takenAt: Instant?,
-    var isFavorite: Boolean,
+    var isFavorite: Boolean = false,
     var durationMs: Long = 0,
     var width: Int = 0,
     var height: Int = 0,

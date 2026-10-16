@@ -2,13 +2,15 @@
 
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.features.file.DFile
+import com.ismartcoding.plain.features.file.extension
+
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.helpers.AppFileStore
 import com.ismartcoding.plain.helpers.FileHashHelper
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.lib.extensions.isAnimatedImageOrSvgHeader
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.isHeifHeader
 import com.ismartcoding.plain.lib.toNSData
@@ -16,6 +18,7 @@ import com.ismartcoding.plain.thumbnail.DecodePolicy
 import com.ismartcoding.plain.lib.toByteArray
 import com.ismartcoding.plain.platform.StreamSink
 import kotlinx.cinterop.BetaInteropApi
+import kotlinx.coroutines.ensureActive
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.useContents
@@ -26,7 +29,6 @@ import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileSize
 import platform.Foundation.NSNumber
 import platform.Foundation.NSString
-import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
 import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.create
@@ -51,6 +53,7 @@ actual fun fileSize(path: String): Long =
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun copyFile(srcPath: String, destPath: String): Boolean {
+    if (getCanonicalPath(srcPath) == getCanonicalPath(destPath)) return false
     val mgr = NSFileManager.defaultManager
     if (mgr.fileExistsAtPath(destPath)) {
         mgr.removeItemAtPath(destPath, null)
@@ -79,25 +82,18 @@ actual fun writeBytesToPath(path: String, bytes: ByteArray): Boolean {
     }
 }
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
-actual fun saveFileToDownloads(path: String, fileName: String): String {
-    val destDir = appDir() + "/Downloads"
-    NSFileManager.defaultManager.createDirectoryAtPath(
-        destDir, withIntermediateDirectories = true, attributes = null, error = null,
-    )
-    val destPath = "$destDir/$fileName"
-    return try {
-        if (NSFileManager.defaultManager.fileExistsAtPath(destPath)) {
-            NSFileManager.defaultManager.removeItemAtPath(destPath, null)
-        }
-        if (NSFileManager.defaultManager.copyItemAtPath(path, destPath, error = null)) {
-            destPath
-        } else {
-            ""
-        }
-    } catch (e: Exception) {
-        LogCat.e("saveFileToDownloads: ${e.message}")
-        ""
+actual suspend fun saveFileToDownloads(path: String, fileName: String): String =
+    copyFileToDir(path, getDownloadsDirPath(), fileName)
+
+actual suspend fun copyFileToUri(path: String, uriStr: String): Boolean = withIO {
+    val destination = if (uriStr.startsWith("/")) NSURL.fileURLWithPath(uriStr)
+        else NSURL.URLWithString(uriStr)?.takeIf { it.scheme == "file" } ?: return@withIO false
+    val accessed = destination.startAccessingSecurityScopedResource()
+    try {
+        val destinationPath = destination.path ?: return@withIO false
+        copyFile(path, destinationPath)
+    } finally {
+        if (accessed) destination.stopAccessingSecurityScopedResource()
     }
 }
 
@@ -108,36 +104,6 @@ actual fun getFileIconPath(extension: String): String = ""
 @OptIn(ExperimentalForeignApi::class)
 actual fun fileExists(path: String): Boolean =
     NSFileManager.defaultManager.fileExistsAtPath(path)
-
-@OptIn(ExperimentalForeignApi::class)
-actual suspend fun copyPickedFileToAppStorage(uriStr: String, destRelativePath: String): String? = withIO {
-    val srcPath = NSURL.URLWithString(uriStr)?.path ?: uriStr
-    if (!NSFileManager.defaultManager.fileExistsAtPath(srcPath)) return@withIO null
-    val destPath = appDir() + "/" + destRelativePath
-    val parent = destPath.substringBeforeLast('/', "")
-    if (parent.isNotEmpty()) {
-        NSFileManager.defaultManager.createDirectoryAtPath(
-            parent, withIntermediateDirectories = true, attributes = null, error = null,
-        )
-    }
-    val displayName = srcPath.substringAfterLast('/')
-    try {
-        if (NSFileManager.defaultManager.copyItemAtPath(srcPath, destPath, error = null)) {
-            displayName
-        } else {
-            null
-        }
-    } catch (e: Exception) {
-        LogCat.e("copyPickedFileToAppStorage: ${e.message}")
-        null
-    }
-}
-
-actual fun getUploadTmpDirPath(): String =
-    appDir() + "/upload_tmp"
-
-actual fun getUploadCacheMergeDirPath(): String =
-    appDir() + "/upload_merge"
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun listFilesInDir(path: String): List<String> =
@@ -270,7 +236,7 @@ actual suspend fun ensureParentDir(path: String) {
 }
 
 actual suspend fun createTempFilePath(prefix: String): String = withIO {
-    NSTemporaryDirectory() + prefix + "_" + TimeHelper.nowMillis()
+    "${appCacheDir()}/${prefix}_${TimeHelper.nowMillis()}"
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -279,15 +245,18 @@ actual suspend fun importAppFile(tempFilePath: String, fileName: String, content
     dFile.realPath.substringAfterLast('/')
 }
 
-actual suspend fun streamContentUri(uri: String, sink: StreamSink): String? = null
-
-actual suspend fun convert3gpToMp4(uri: String): ByteArray? = null
-
-actual suspend fun remuxMp4ForBrowser(path: String): String? = null
-
-actual suspend fun probeVideoCodec(path: String): String = ""
-
-actual suspend fun transcodeMp4ForBrowser(path: String): String? = null
+@OptIn(ExperimentalForeignApi::class)
+actual suspend fun streamContentUri(uri: String, sink: StreamSink): String? = withResourceFile(uri) { descriptor, _ ->
+    val bytes = ByteArray(64 * 1024)
+    while (true) {
+        kotlinx.coroutines.currentCoroutineContext().ensureActive()
+        val count = bytes.usePinned { platform.posix.read(descriptor, it.addressOf(0), bytes.size.toULong()) }
+        check(count >= 0) { "Unable to read file resource" }
+        if (count == 0L) break
+        sink.write(bytes, 0, count.toInt())
+    }
+    uri.substringAfterLast('/').ifEmpty { "resource" }
+}
 
 actual suspend fun getPackageIconBytes(packageName: String): ByteArray? = null
 
@@ -337,20 +306,6 @@ actual suspend fun decodeImageFileToPng(path: String): ByteArray? = withIO {
     }
 }
 
-actual fun isAnimatedImageOrSvg(path: String, fileName: String): Boolean {
-    val fp = fopen(path, "rb") ?: return false
-    try {
-        val header = ByteArray(256)
-        val read = header.usePinned { pinned ->
-            fread(pinned.addressOf(0), 1UL, header.size.toULong(), fp)
-        }.toInt()
-        if (read <= 0) return false
-        return isAnimatedImageOrSvgHeader(fileName, header, fileSize(path))
-    } finally {
-        fclose(fp)
-    }
-}
-
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 actual suspend fun decodeThumbnailBytes(
     path: String,
@@ -392,30 +347,6 @@ actual suspend fun decodeThumbnailBytes(
     } catch (e: Exception) {
         LogCat.e("getThumbnailBytes: ${e.message}")
         null
-    }
-}
-
-actual suspend fun streamZipToSink(items: List<ZipStreamEntry>, sink: StreamSink, recursive: Boolean): Boolean = false
-
-actual suspend fun streamZipFolderToSink(folderPath: String, sink: StreamSink): Boolean = false
-
-actual suspend fun streamZipInternalDirToSink(zipVirtualPath: String, sink: StreamSink): Boolean = false
-
-actual suspend fun fetchUrlToStream(url: String, sink: StreamSink): Pair<Int, String?> = withIO {
-    val client = createDownloadClient()
-    try {
-        val response = client.get(url)
-        response.use {
-            val status = it.status.value
-            val contentType = it.header("Content-Type")
-            it.channel.copyTo { buffer, length -> sink.write(buffer, 0, length) }
-            status to contentType
-        }
-    } catch (e: Exception) {
-        LogCat.e("fetchUrlToStream: ${e.message}")
-        0 to null
-    } finally {
-        client.close()
     }
 }
 
@@ -469,4 +400,43 @@ actual suspend fun importChatFile(uriStr: String, mimeType: String): String? = w
     }
 }
 
-actual suspend fun getFileByMediaId(mediaId: String): DFile? = null
+actual suspend fun getFileByMediaId(mediaId: String): FileEntry? = null
+
+@OptIn(ExperimentalForeignApi::class)
+internal actual suspend fun provideResourceFile(id: String, uri: String): Unit = withResourceFile(uri) { descriptor, length ->
+    val error = com.ismartcoding.plain.rust.bridge.RustCoreBridge.resourceFile(id, descriptor, 0, length)
+    check(error.isEmpty()) { error }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private suspend fun <T> withResourceFile(uri: String, block: suspend (Int, Long) -> T): T = withIO {
+    if (uri.startsWith("ph://")) {
+        val assets = platform.Photos.PHAsset.fetchAssetsWithLocalIdentifiers(listOf(uri.removePrefix("ph://")), null)
+        check(assets.count > 0UL) { "Photo resource unavailable" }
+        val asset = assets.objectAtIndex(0UL) as platform.Photos.PHAsset
+        val options = platform.Photos.PHImageRequestOptions().apply { synchronous = true; networkAccessAllowed = false }
+        val file = checkNotNull(platform.posix.tmpfile()) { "Unable to prepare photo resource" }
+        try {
+            var length: Long? = null
+            var failure: Exception? = null
+            platform.Photos.PHImageManager.defaultManager().requestImageDataAndOrientationForAsset(asset, options) { data, _, _, _ ->
+                try {
+                    if (data != null) {
+                        check(platform.posix.fwrite(data.bytes, 1UL, data.length, file) == data.length) { "Unable to read photo resource" }
+                        length = data.length.toLong()
+                    }
+                } catch (error: Exception) { failure = error }
+            }
+            failure?.let { throw it }
+            val size = checkNotNull(length) { "Photo resource is not available locally" }
+            check(platform.posix.fflush(file) == 0) { "Unable to flush photo resource" }
+            check(platform.posix.fseek(file, 0, platform.posix.SEEK_SET) == 0) { "Unable to seek photo resource" }
+            block(platform.posix.fileno(file), size)
+        } finally { platform.posix.fclose(file) }
+    } else {
+        val path = NSURL.URLWithString(uri)?.path ?: uri
+        val descriptor = platform.posix.open(path, platform.posix.O_RDONLY)
+        check(descriptor >= 0) { "Unable to open file resource" }
+        try { block(descriptor, -1) } finally { platform.posix.close(descriptor) }
+    }
+}

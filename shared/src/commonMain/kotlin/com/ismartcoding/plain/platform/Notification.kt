@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.data.DNotification
+import com.ismartcoding.plain.graphql.models.Notification as AppNotification
 
 /**
  * Enable or disable the platform notification listener service used by the
@@ -25,9 +25,9 @@ expect suspend fun getAllNotificationApps(): List<DNotificationApp>
  * Filter cached notifications using the platform notification listener state.
  * Returns an empty list on platforms without a notification listener.
  */
-suspend fun filterNotificationsAsync(): List<DNotification> = com.ismartcoding.plain.features.system.RustSystemProviders.notifications("", 0, Int.MAX_VALUE)
+suspend fun filterNotificationsAsync(): List<AppNotification> = com.ismartcoding.plain.features.system.RustSystemProviders.notifications("", 0, Int.MAX_VALUE)
 
-expect suspend fun notificationFacts(): List<DNotification>
+expect suspend fun notificationFacts(): List<AppNotification>
 
 /**
  * Reply to a previously posted notification action identified by [id] and

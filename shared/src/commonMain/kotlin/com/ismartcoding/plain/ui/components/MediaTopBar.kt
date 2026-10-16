@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.components
 
+import com.ismartcoding.plain.graphql.models.MediaBucket
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.*
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -21,7 +22,6 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.data.DMediaBucket
 import com.ismartcoding.plain.db.IData
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.file.FileSortBy
@@ -57,7 +57,7 @@ fun <T : IData> MediaTopBar(
     mediaFoldersVM: MediaFoldersViewModel,
     dragSelectState: DragSelectState,
     scrollBehavior: TopAppBarScrollBehavior,
-    bucketsMap: Map<String, DMediaBucket>,
+    bucketsMap: Map<String, MediaBucket>,
     itemsState: List<T>,
     scrollToTop: () -> Unit,
     onSortSelected: (sortBy: FileSortBy) -> Unit = {},

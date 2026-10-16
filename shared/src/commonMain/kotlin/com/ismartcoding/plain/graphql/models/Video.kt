@@ -8,14 +8,14 @@ data class Video(
     override var id: String,
     override var title: String,
     override var path: String,
-    var durationMs: Long,
+    override var durationMs: Long,
     override var size: Long,
     override var bucketId: String,
     override var createdAt: Instant,
     override var updatedAt: Instant,
     var takenAt: Instant?,
-    var isFavorite: Boolean,
+    var isFavorite: Boolean = false,
     var width: Int = 0,
     var height: Int = 0,
     var rotation: Int = 0,
-) : MediaItem
+) : MediaItem, com.ismartcoding.plain.db.IMedia

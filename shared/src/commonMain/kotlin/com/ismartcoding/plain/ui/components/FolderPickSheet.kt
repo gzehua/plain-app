@@ -2,6 +2,8 @@
 
 package com.ismartcoding.plain.ui.components
 
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +21,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.withIO
@@ -43,7 +44,7 @@ fun FolderPickSheet(
 ) {
     val rootPath = remember { getInternalStoragePath() }
     var currentPath by remember { mutableStateOf(rootPath) }
-    var dirs by remember { mutableStateOf<List<DFile>>(emptyList()) }
+    var dirs by remember { mutableStateOf<List<FileEntry>>(emptyList()) }
 
     LaunchedEffect(currentPath) {
         withIO {

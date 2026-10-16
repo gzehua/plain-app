@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.features.system
 
 import com.ismartcoding.plain.enums.WebSettingsFeature
-import com.ismartcoding.plain.lib.extensions.parseEpochMillis
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.isGranted
@@ -13,10 +12,6 @@ internal object SystemAppHost {
             com.ismartcoding.plain.platform.setClipboardText("plain", params.getValue("text").jsonPrimitive.content)
             JsonHelper.jsonEncodeToElement(true)
         }
-        "systemEpochMillis" -> JsonHelper.jsonEncodeToElement(params.getValue("values").jsonArray.associate { value ->
-            val text = value.jsonPrimitive.content
-            text to text.parseEpochMillis()
-        })
         "systemPermissionFacts" -> run {
             val granted = params.getValue("permissions").jsonArray.associate { item ->
                 val name = item.jsonPrimitive.content
@@ -42,13 +37,16 @@ internal object SystemAppHost {
             JsonHelper.jsonEncodeToElement(true)
         }
         "systemIpv4Address" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.getDeviceIP4())
-        "systemProperties" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.readSystemProperties(
+        "systemProperties" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.sampleSystemProperties(
             params.getValue("names").jsonArray.map { it.jsonPrimitive.content },
         ))
         "systemMemoryAvailable" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.readMemoryAvailable())
         "systemBatterySample" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.readBatterySample())
         "systemCapabilities" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.getDeviceCapabilities().map { it.name })
-        "systemAppFacts" -> appFacts()
+        "systemClearMediaCache" -> {
+            com.ismartcoding.plain.platform.clearMediaCache()
+            JsonHelper.jsonEncodeToElement(true)
+        }
         "systemLogPath" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.getLatestLogFilePath())
         "systemRelaunchApp" -> {
             com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.events.RestartAppEvent())
@@ -57,16 +55,4 @@ internal object SystemAppHost {
         else -> error("Unsupported provider operation")
     }
 
-    /** The `App` contract row. Capabilities and permissions are named rather
-     * than encoded: both enums are the contract's own, so there is no mapping. */
-    private suspend fun appFacts(): JsonElement = JsonHelper.jsonEncodeToElement(AppFacts(
-        appDir = com.ismartcoding.plain.platform.appDir(),
-        deviceType = com.ismartcoding.plain.platform.getDeviceType().name,
-        capabilities = com.ismartcoding.plain.platform.getDeviceCapabilities().map { it.name },
-        buildChannel = com.ismartcoding.plain.enums.AppChannelType
-            .fromString(com.ismartcoding.plain.buildChannel).name,
-        permissions = com.ismartcoding.plain.platform.Permission.entries.filter { it.isGranted() }.map { it.name },
-        downloadsDir = com.ismartcoding.plain.platform.getDownloadsDirPath(),
-        debug = com.ismartcoding.plain.platform.isDebugBuild(),
-    ))
 }

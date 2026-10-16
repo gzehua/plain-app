@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.features.sms
 
+import com.ismartcoding.plain.graphql.models.SmsAttachment
+
 import android.Manifest
 import android.app.PendingIntent
 import android.content.pm.PackageManager
@@ -20,12 +22,9 @@ import com.ismartcoding.plain.lib.extensions.getTimeValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.extensions.queryCursor
 import com.ismartcoding.plain.platform.getSims
-import com.ismartcoding.plain.db.DArchivedConversation
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.helpers.FilterField
-import com.ismartcoding.plain.helpers.QueryHelper
 import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.SmsSendResultData
 import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
@@ -39,13 +38,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.Job
 import java.util.Locale
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 
 object SmsHelper {
-    private const val SMS_SEND_TIMEOUT_MILLIS = 5 * 60 * 1000L
     // Lazy so merely touching this object (e.g. from the server stop hooks or
     // JVM host tests) never initializes the Telephony provider classes.
     private val smsUri by lazy { Telephony.Sms.CONTENT_URI }
@@ -56,123 +51,32 @@ object SmsHelper {
     private const val MMS_ADDR_TYPE_TO = 151
     private const val MMS_INSERT_ADDRESS_TOKEN = "insert-address-token"
 
-    private val smsTimeoutJobs = ConcurrentHashMap<String, Job>()
-
-    fun sendText(
-        to: String,
-        message: String,
-        subscriptionId: Int? = null,
-        clientId: String? = null,
-        clientRequestId: String? = null,
-    ) {
-        val manager: SmsManager = if (subscriptionId != null && subscriptionId >= 0) {
+    private fun manager(subscriptionId: Int?): SmsManager =
+        if (subscriptionId != null && subscriptionId >= 0) {
             @Suppress("DEPRECATION")
             SmsManager.getSmsManagerForSubscriptionId(subscriptionId)
-        } else {
-            smsManager
-        }
-        val parts = manager.divideMessage(message)
-        val requestId = UUID.randomUUID().toString()
-        SmsSendResultTracker.register(
-            requestId,
-            clientId,
-            clientRequestId,
-            parts.size,
-            TimeHelper.nowMillis(),
-        )
+        } else smsManager
+
+    fun divideText(body: String, subscriptionId: Int?): List<String> = manager(subscriptionId).divideMessage(body)
+
+    fun sendParts(request: SmsDispatchRequest) {
+        val manager = manager(request.subscriptionId)
+        val parts = request.parts
+        require(parts.isNotEmpty())
         val sentIntents = ArrayList(parts.indices.map { partIndex ->
-            val identity = SmsProviderContract.smsSentIntentIdentity(appContext.packageName, requestId, partIndex)
+            val identity = SmsProviderContract.smsSentIntentIdentity(appContext.packageName, request.requestId, partIndex)
             val intent = Intent(appContext, SmsSentReceiver::class.java).apply {
                 action = identity.action
                 data = Uri.parse(identity.data)
-                putExtra(SmsSentReceiver.EXTRA_REQUEST_ID, requestId)
+                putExtra(SmsSentReceiver.EXTRA_REQUEST_ID, request.requestId)
                 putExtra(SmsSentReceiver.EXTRA_PART_INDEX, partIndex)
                 putExtra(SmsSentReceiver.EXTRA_PART_COUNT, parts.size)
             }
-            PendingIntent.getBroadcast(
-                appContext,
-                (requestId.hashCode() * 31) + partIndex,
-                intent,
-                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE,
-            )
+            PendingIntent.getBroadcast(appContext, (request.requestId.hashCode() * 31) + partIndex, intent,
+                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE)
         })
-        try {
-            if (parts.size > 1) {
-                manager.sendMultipartTextMessage(to, null, ArrayList(parts), sentIntents, null)
-            } else {
-                manager.sendTextMessage(to, null, message, sentIntents.single(), null)
-            }
-        } catch (e: Exception) {
-            SmsSendResultTracker.cancel(requestId)
-            throw e
-        }
-        scheduleSmsTimeout(requestId, SMS_SEND_TIMEOUT_MILLIS)
-    }
-
-    private fun scheduleSmsTimeout(requestId: String, delayMillis: Long) {
-        smsTimeoutJobs.remove(requestId)?.cancel()
-        val job = coIO {
-            delay(delayMillis.coerceAtLeast(0L))
-            val result = SmsSendResultTracker.expire(requestId, TimeHelper.nowMillis()) ?: return@coIO
-            dispatchSmsSendResult(requestId, result)
-        }
-        trackSmsJob(requestId, job)
-    }
-
-    private fun scheduleSmsTerminalCleanup(requestId: String, delayMillis: Long) {
-        smsTimeoutJobs.remove(requestId)?.cancel()
-        val job = coIO {
-            delay(delayMillis.coerceAtLeast(0L))
-            SmsSendResultTracker.acknowledge(requestId)
-        }
-        trackSmsJob(requestId, job)
-    }
-
-    private fun trackSmsJob(requestId: String, job: Job) {
-        smsTimeoutJobs[requestId] = job
-        job.invokeOnCompletion { smsTimeoutJobs.remove(requestId, job) }
-        if (job.isCompleted) smsTimeoutJobs.remove(requestId, job)
-    }
-
-    fun restoreSmsSendTracking() {
-        val now = TimeHelper.nowMillis()
-        SmsSendResultTracker.pending().forEach { state ->
-            if (state.terminalResultCode != null) {
-                val terminalAtMillis = state.terminalAtMillis ?: state.createdAtMillis
-                val elapsed = (now - terminalAtMillis).coerceAtLeast(0L)
-                scheduleSmsTerminalCleanup(state.requestId, SMS_SEND_TIMEOUT_MILLIS - elapsed)
-            } else {
-                val elapsed = (now - state.createdAtMillis).coerceAtLeast(0L)
-                scheduleSmsTimeout(state.requestId, SMS_SEND_TIMEOUT_MILLIS - elapsed)
-            }
-        }
-    }
-
-    fun stopSmsSendTracking() {
-        smsTimeoutJobs.values.forEach(Job::cancel)
-        smsTimeoutJobs.clear()
-    }
-
-    internal fun cancelSmsTimeout(requestId: String) {
-        smsTimeoutJobs.remove(requestId)?.cancel()
-    }
-
-    internal suspend fun dispatchSmsSendResult(requestId: String, result: SmsSendResultData) {
-        sendSmsResultEvent(result)
-        // WebSocket events are broadcast, so a successful send to some session cannot prove
-        // that the originating browser received it. Retain the terminal result as
-        // a bounded outbox entry for reconnect replay; cleanup is time-limited.
-        scheduleSmsTerminalCleanup(requestId, SMS_SEND_TIMEOUT_MILLIS)
-    }
-
-    suspend fun replayTerminalSmsSendResults() {
-        SmsSendResultTracker.terminalResults().forEach { result ->
-            sendSmsResultEvent(result)
-        }
-    }
-
-    private suspend fun sendSmsResultEvent(result: SmsSendResultData) {
-        sendEvent(HostEvent(EventType.SMS_SEND_RESULT, JsonHelper.jsonEncode(result)))
+        if (parts.size > 1) manager.sendMultipartTextMessage(request.number, null, ArrayList(parts), sentIntents, null)
+        else manager.sendTextMessage(request.number, null, parts.single(), sentIntents.single(), null)
     }
 
     private fun getProjection(): Array<String> {
@@ -189,8 +93,8 @@ object SmsHelper {
         )
     }
 
-    private fun cursorToSmsMessage(cursor: Cursor, cache: MutableMap<String, Int>): DMessage {
-        return DMessage(
+    private fun cursorToSmsMessage(cursor: Cursor, cache: MutableMap<String, Int>): SmsRowFacts {
+        return SmsRowFacts(
             cursor.getStringValue(Telephony.Sms._ID, cache),
             cursor.getStringValue(Telephony.Sms.BODY, cache),
             cursor.getStringValue(Telephony.Sms.ADDRESS, cache),
@@ -214,16 +118,14 @@ object SmsHelper {
         return count
     }
 
-    suspend fun searchAsync(context: Context, query: String, limit: Int, offset: Int, includeTrashed: Boolean = false): List<DMessage> =
-        RustSmsQuery.search(query, limit, offset, includeTrashed)
-
-    private fun cursorToMmsMessage(context: Context, cursor: Cursor, cache: MutableMap<String, Int>): DMessage {
+    private fun cursorToMmsMessage(context: Context, cursor: Cursor, cache: MutableMap<String, Int>): SmsRowFacts {
         val rawMmsId = cursor.getStringValue(Telephony.Mms._ID, cache)
         val bodyAndAttachments = readMmsBodyAndAttachments(context, rawMmsId)
-        return DMessage(
+        return SmsRowFacts(
             id = "mms_$rawMmsId",
             body = bodyAndAttachments.first,
-            address = readMmsAddress(context, rawMmsId),
+            address = "",
+            addressCandidates = readMmsAddresses(context, rawMmsId),
             date = cursor.getTimeSecondsValue(Telephony.Mms.DATE, cache),
             serviceCenter = "",
             read = cursor.getIntValue(Telephony.Mms.READ, cache) == 1,
@@ -235,7 +137,7 @@ object SmsHelper {
         )
     }
 
-    private fun getCanonicalAddressForThread(context: Context, threadId: String): String {
+    private fun getCanonicalAddressesForThread(context: Context, threadId: String): List<String> {
         val conversationsUri = "content://mms-sms/conversations?simple=true".toUri()
         val recipientIds = context.contentResolver.queryCursor(
             conversationsUri,
@@ -245,9 +147,9 @@ object SmsHelper {
             null
         )?.find { cursor, cache ->
             cursor.getStringValue("recipient_ids", cache)
-        } ?: ""
+        } ?: return emptyList()
 
-        if (recipientIds.isEmpty()) return ""
+        if (recipientIds.isEmpty()) return emptyList()
 
         val addresses = SmsProviderContract.parseRecipientIds(recipientIds).mapNotNull { recipientId ->
             val canonicalUri = "content://mms-sms/canonical-address/$recipientId".toUri()
@@ -258,11 +160,10 @@ object SmsHelper {
                 cursor.getStringValue("address", cache)
             }?.takeIf(String::isNotEmpty)
         }
-        val ownNumbers = getSims().map { it.number }.filter(String::isNotEmpty).toSet()
-        return SmsProviderContract.selectConversationAddresses(addresses, ownNumbers).firstOrNull().orEmpty()
+        return addresses
     }
 
-    internal fun readMmsAddress(context: Context, mmsId: String): String {
+    internal fun readMmsAddresses(context: Context, mmsId: String): List<MmsAddressFacts> {
         val addrUri = "content://mms/$mmsId/addr".toUri()
         val colType = Telephony.Mms.Addr.TYPE
         val colAddress = Telephony.Mms.Addr.ADDRESS
@@ -278,24 +179,13 @@ object SmsHelper {
             Pair(address, type)
         } ?: emptyList()
 
-        val preferred = candidates.firstOrNull {
-            it.second == MMS_ADDR_TYPE_FROM &&
-                it.first.isNotEmpty() &&
-                !it.first.equals(MMS_INSERT_ADDRESS_TOKEN, true)
-        }?.first
-        if (!preferred.isNullOrEmpty()) {
-            return preferred
-        }
-
-        return candidates.firstOrNull {
-            it.first.isNotEmpty() &&
-                !it.first.equals(MMS_INSERT_ADDRESS_TOKEN, true)
-        }?.first ?: ""
+        return candidates.filter { it.first.isNotEmpty() && !it.first.equals(MMS_INSERT_ADDRESS_TOKEN, true) }
+            .map { MmsAddressFacts(it.first, it.second == MMS_ADDR_TYPE_FROM) }
     }
 
-    internal fun readMmsBodyAndAttachments(context: Context, mmsId: String): Pair<String, List<DMessageAttachment>> {
+    internal fun readMmsBodyAndAttachments(context: Context, mmsId: String): Pair<String, List<SmsAttachment>> {
         val bodyParts = mutableListOf<String>()
-        val attachments = mutableListOf<DMessageAttachment>()
+        val attachments = mutableListOf<SmsAttachment>()
 
         context.contentResolver.queryCursor(
             mmsPartUri,
@@ -339,7 +229,7 @@ object SmsHelper {
                     val rawName = cursor.getStringValue(Telephony.Mms.Part.NAME, cache)
                     val fileName = if (rawName.isNotEmpty()) rawName else cursor.getStringValue(Telephony.Mms.Part.FILENAME, cache)
                     attachments.add(
-                        DMessageAttachment(
+                        SmsAttachment(
                             path = "content://mms/part/$partId",
                             contentType = contentType,
                             name = fileName,
@@ -398,16 +288,6 @@ object SmsHelper {
         return textByMmsId
     }
 
-    data class SmsCounts(val total: Int, val inbox: Int, val sent: Int, val drafts: Int)
-
-    suspend fun countAllAsync(context: Context): SmsCounts {
-        val result = RustSmsQuery.counts()
-        return SmsCounts(result.getValue("total").jsonPrimitive.int, result.getValue("inbox").jsonPrimitive.int,
-            result.getValue("sent").jsonPrimitive.int, result.getValue("drafts").jsonPrimitive.int)
-    }
-    suspend fun countAsync(context: Context, query: String): Int = RustSmsQuery.count(query)
-    suspend fun getIdsAsync(context: Context, query: String, includeTrashed: Boolean = false): Set<String> = RustSmsQuery.ids(query, includeTrashed)
-
     private fun JsonElement.where(): ContentWhere = ContentWhere().apply {
         jsonObject.getValue("clauses").jsonArray.forEach { add(it.jsonPrimitive.content) }
         args.addAll(jsonObject.getValue("args").jsonArray.map { it.jsonPrimitive.content })
@@ -462,7 +342,8 @@ object SmsHelper {
                 val threadId = plans.getValue("threadId").jsonPrimitive.content
                 JsonHelper.jsonEncodeToElement(SmsRowsFacts(
                     items = sms + mms,
-                    canonicalAddress = if (threadId.isNotEmpty()) getCanonicalAddressForThread(context, threadId) else "",
+                    canonicalAddresses = if (threadId.isNotEmpty()) getCanonicalAddressesForThread(context, threadId) else emptyList(),
+                    ownNumbers = getSims().map { it.number }.filter(String::isNotEmpty),
                 ))
             }
             else -> error("Unsupported SMS facts")

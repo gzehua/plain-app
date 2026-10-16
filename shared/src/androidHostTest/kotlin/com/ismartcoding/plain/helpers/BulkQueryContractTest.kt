@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.helpers
 
-import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -14,18 +13,14 @@ class BulkQueryContractTest {
     @Test
     fun emptyQueryParsesToNothing() {
         assertEquals(emptyList(), SearchHelper.parse(""))
-        runBlocking { assertEquals(emptyList(), QueryHelper.parseAsync("")) }
-        assertEquals("", QueryHelper.textOf(""))
     }
 
     @Test
     fun allSentinelParsesAsNamedField() {
         val fields = SearchHelper.parse("all:true")
         assertEquals(1, fields.size)
-        assertEquals(QueryHelper.BULK_ALL_FIELD, fields[0].name)
+        assertEquals("all", fields[0].name)
         assertEquals("true", fields[0].value)
-        // parseAsync must pass the sentinel through untouched (no tag rewrite path taken).
-        runBlocking { assertEquals(fields, QueryHelper.parseAsync("all:true")) }
     }
 
     @Test

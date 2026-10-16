@@ -1,12 +1,12 @@
 package com.ismartcoding.plain.services.screenmirror
 
+import com.ismartcoding.plain.graphql.models.ScreenMirrorQuality
 import android.content.Context
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.projection.MediaProjection
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
-import com.ismartcoding.plain.data.DScreenMirrorQuality
 import com.ismartcoding.plain.enums.ScreenMirrorMode
 import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.events.HostEvent
@@ -15,7 +15,7 @@ import com.ismartcoding.plain.platform.isUPlus
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.services.ScreenMirrorService
-import com.ismartcoding.plain.data.ScreenMirrorVideoCodec
+import com.ismartcoding.plain.graphql.models.ScreenMirrorVideoCodec
 import com.ismartcoding.plain.lib.screenmirror.ScreenMirrorCaptureSize
 import com.ismartcoding.plain.lib.screenmirror.VideoPacket
 import com.ismartcoding.plain.platform.isRPlus
@@ -27,7 +27,7 @@ import com.ismartcoding.plain.platform.isRPlus
 class ScreenMirrorPipeline(
     private val context: Context,
     private val projection: MediaProjection,
-    private var quality: DScreenMirrorQuality,
+    private var quality: ScreenMirrorQuality,
     private val getIsPortrait: () -> Boolean = { true },
 ) {
     companion object {
@@ -141,7 +141,7 @@ class ScreenMirrorPipeline(
         rebuildEncoderAndResize("orientation changed (portrait=${getIsPortrait()})")
     }
 
-    fun setQuality(quality: DScreenMirrorQuality) {
+    fun setQuality(quality: ScreenMirrorQuality) {
         this.quality = quality
         rebuildEncoderAndResize("quality=${quality.mode}")
     }

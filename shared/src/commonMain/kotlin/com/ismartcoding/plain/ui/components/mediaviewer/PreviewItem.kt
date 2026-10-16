@@ -1,17 +1,17 @@
 package com.ismartcoding.plain.ui.components.mediaviewer
 
+import com.ismartcoding.plain.extensions.getRotatedSize
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
+import com.ismartcoding.plain.graphql.models.Image as MediaImage
 import androidx.compose.ui.unit.IntSize
 import com.ismartcoding.plain.chat.models.MessageFile
-import com.ismartcoding.plain.data.DImage
-import com.ismartcoding.plain.data.DVideo
 import com.ismartcoding.plain.db.IData
 import com.ismartcoding.plain.graphql.models.Image
 import com.ismartcoding.plain.graphql.models.Video
 import com.ismartcoding.plain.lib.extensions.getMimeType
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isVideoFast
-import com.ismartcoding.plain.platform.getImageIntrinsicSize
-import com.ismartcoding.plain.platform.getImageRotation
+import com.ismartcoding.plain.platform.getImageMeta
 import com.ismartcoding.plain.platform.getVideoMeta
 import kotlin.text.ifEmpty
 
@@ -20,7 +20,7 @@ data class PreviewItem(
     var path: String = "",
     var size: Long = 0L,
     val mediaId: String = "",
-    val data: IData? = null, // MessageFile, DVideo, DImage
+    val data: IData? = null, // MessageFile, MediaVideo, MediaImage
 ) {
     var intrinsicSize: IntSize = IntSize.Zero
     var rotation: Int = -1
@@ -29,7 +29,7 @@ data class PreviewItem(
         if (path.isVideoFast()) return true
         return when (val d = data) {
             is MessageFile -> d.fileName.isVideoFast()
-            is DVideo -> true
+            is MediaVideo -> true
             else -> false
         }
     }
@@ -44,12 +44,12 @@ data class PreviewItem(
         if (path.isImageFast()) return true
         return when (val d = data) {
             is MessageFile -> d.fileName.isImageFast()
-            is DImage -> true
+            is MediaImage -> true
             else -> false
         }
     }
 
-    fun initAsync(m: DImage) {
+    suspend fun initAsync(m: MediaImage) {
         rotation = m.rotation
         intrinsicSize = m.getRotatedSize()
         if (intrinsicSize == IntSize.Zero) {
@@ -57,16 +57,17 @@ data class PreviewItem(
         }
     }
 
-    fun initImageAsync() {
-        rotation = getImageRotation(path)
-        intrinsicSize = getImageIntrinsicSize(path, rotation)
+    suspend fun initImageAsync() {
+        val meta = getImageMeta(path) ?: return
+        rotation = meta.rotation
+        intrinsicSize = IntSize(meta.width, meta.height)
     }
 
-    fun initVideoAsync() {
+    suspend fun initVideoAsync() {
         resolveVideoIntrinsicSize()
     }
 
-    private fun resolveVideoIntrinsicSize() {
+    private suspend fun resolveVideoIntrinsicSize() {
         val meta = getVideoMeta(path) ?: return
         rotation = meta.rotation
         intrinsicSize = if (rotation == 90 || rotation == 270) {
@@ -76,7 +77,7 @@ data class PreviewItem(
         }
     }
 
-    fun initAsync(m: DVideo) {
+    suspend fun initAsync(m: MediaVideo) {
         rotation = m.rotation
         intrinsicSize = m.getRotatedSize()
         if (intrinsicSize == IntSize.Zero) {
@@ -84,13 +85,14 @@ data class PreviewItem(
         }
     }
 
-    fun initAsync(item: MessageFile) {
+    suspend fun initAsync(item: MessageFile) {
         if (item.fileName.isImageFast()) {
-            rotation = getImageRotation(path)
+            val meta = getImageMeta(path)
+            rotation = meta?.rotation ?: 0
             intrinsicSize = if (item.width > 0 && item.height > 0) {
                 IntSize(item.width, item.height)
             } else {
-                getImageIntrinsicSize(path, rotation)
+                meta?.let { IntSize(it.width, it.height) } ?: IntSize.Zero
             }
         } else {
             if (item.width > 0 && item.height > 0) {

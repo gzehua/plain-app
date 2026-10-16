@@ -1,13 +1,8 @@
 package com.ismartcoding.plain.features.share
 
 import com.ismartcoding.plain.chat.models.MessageShare
-import com.ismartcoding.plain.lib.TimeHelper
-import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.content.gql
-import io.ktor.utils.io.readAvailable
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.json.*
 
 object SharedLinkClient {
@@ -56,31 +51,10 @@ object SharedLinkClient {
             mapOf("link" to json.encodeToJsonElement(link), "urlToken" to JsonPrimitive(urlToken), "virtualPath" to JsonPrimitive(virtualPath)),
         ).getValue("sharedFileUrl").jsonPrimitive.content
 
-    suspend fun downloadTo(
-        url: String,
-        write: (buffer: ByteArray, length: Int) -> Unit,
-        onProgress: suspend (downloaded: Long, total: Long) -> Unit = { _, _ -> },
-    ) {
-        RustContentApi.postStream("shares/client/file", buildJsonObject { put("url", url) }).use { response ->
-            check(response.isSuccess()) { "Shared download HTTP ${response.status.value}" }
-            val total = response.header("Content-Length")?.toLongOrNull() ?: -1L
-            val buffer = ByteArray(64 * 1024)
-            var downloaded = 0L
-            var lastReport = 0L
-            while (true) {
-                currentCoroutineContext().ensureActive()
-                val read = response.channel.readAvailable(buffer)
-                if (read == -1) break
-                if (read > 0) {
-                    write(buffer, read)
-                    downloaded += read
-                }
-                val now = TimeHelper.nowMillis()
-                if (now - lastReport > 300) { onProgress(downloaded, total); lastReport = now }
-            }
-            currentCoroutineContext().ensureActive()
-            onProgress(downloaded, total)
-        }
-    }
-
+    suspend fun cacheFile(link: SharedLink, urlToken: String, entry: SharedFileDto, thumbnail: Boolean = false): String =
+        PlainRust.mainGraphql(
+            "mutation(\$link: SharedLinkInput!, \$urlToken: String!, \$entry: SharedEntryInput!, \$thumbnail: Boolean!) { cacheSharedFile(link: \$link, urlToken: \$urlToken, entry: \$entry, thumbnail: \$thumbnail) }",
+            mapOf("link" to json.encodeToJsonElement(link), "urlToken" to JsonPrimitive(urlToken), "entry" to json.encodeToJsonElement(entry), "thumbnail" to JsonPrimitive(thumbnail)),
+            longRunning = true,
+        ).getValue("cacheSharedFile").jsonPrimitive.content
 }

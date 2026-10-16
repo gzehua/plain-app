@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.page.playlist.components
 
-import com.ismartcoding.plain.audio.DAudio
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
 import com.ismartcoding.plain.features.audio.AudioQueueManager
 import com.ismartcoding.plain.graphql.models.AudioItem
 import com.ismartcoding.plain.lib.TimeHelper
@@ -30,7 +30,7 @@ internal suspend fun playPlaylistShuffled(playlistId: String, audioQueueVM: Audi
     }
 }
 
-internal fun AudioItem.toDAudio(): DAudio = DAudio(
+internal fun AudioItem.toAudioTrack(): AudioTrack = AudioTrack(
     id = requireNotNull(mediaId),
     title = title,
     artist = artist,

@@ -46,7 +46,7 @@ class EventDirectionContractTest {
             assertTrue(declaration.value, declaration.groupValues[2] == HEvent::class.java.simpleName)
         }
         assertTrue(!HEvent::class.java.isAssignableFrom(HostEvent::class.java))
-        for (path in listOf("rust/event/RustEventProjection.kt", "discover/PairingProjection.kt", "discover/PairingCore.kt",
+        for (path in listOf("rust/event/RustEventProjection.kt", "discover/PairingProjection.kt",
             "discover/RustNearbyDevices.kt", "discover/RustMdnsRuntime.kt",
             "chat/channel/ChannelSystemMessageReceiver.kt", "ai/RustImageModels.kt",
             "features/dlna/DlnaRendererState.kt", "features/PomodoroHost.kt")) {

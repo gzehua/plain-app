@@ -47,7 +47,6 @@ object NetworkMonitor {
             ) == true
         val reason = if (connected) "Connected" else "Disconnected"
         MdnsDiscoverManager.scheduleRestart(reason)
-        com.ismartcoding.plain.platform.HttpServerResources.schedule(reason)
 
         // Keep the home page WebAddressBar in sync with the current local IP(s).
         // TempData.ip4s is a Compose MutableState, so writing it here triggers

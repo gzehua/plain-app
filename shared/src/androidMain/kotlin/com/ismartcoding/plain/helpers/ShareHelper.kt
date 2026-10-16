@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.helpers
 
+import com.ismartcoding.plain.platform.appCacheDir
+
 import com.ismartcoding.plain.platform.LocaleHelper
 
 import com.ismartcoding.plain.i18n.*
@@ -163,7 +165,7 @@ object ShareHelper {
         subject: String = "",
     ) {
         val fileToShare = if (displayName.isNotEmpty() && displayName != file.name) {
-            val tempDir = File(context.cacheDir, "share_temp").apply { mkdirs() }
+            val tempDir = File(File(appCacheDir()), "share_temp").apply { mkdirs() }
             tempDir.listFiles()?.forEach { it.delete() }
             File(tempDir, displayName).also { file.copyTo(it, overwrite = true) }
         } else {

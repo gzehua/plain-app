@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.ismartcoding.plain.chat.models.LinkPreview
-import com.ismartcoding.plain.extensions.getFinalPath
+import com.ismartcoding.plain.extensions.rememberFilePath
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.launchUrl
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
@@ -39,7 +39,7 @@ fun ChatLinkPreview(linkPreview: LinkPreview, modifier: Modifier = Modifier) {
             if (!imageLocalPath.isNullOrEmpty() && linkPreview.imageWidth >= 200 && linkPreview.imageHeight >= 200) {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     AsyncImage(
-                        model = imageLocalPath.getFinalPath(),
+                        model = rememberFilePath(imageLocalPath),
                         contentDescription = stringResource(Res.string.link_preview_image),
                         modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp, max = 200.dp),
                         contentScale = ContentScale.Fit
@@ -71,7 +71,7 @@ fun ChatLinkPreview(linkPreview: LinkPreview, modifier: Modifier = Modifier) {
                             (imageLocalPath.isNullOrEmpty() && !linkPreview.imageUrl.isNullOrEmpty())
                     if (showSmallIcon) {
                         AsyncImage(
-                            model = if (!imageLocalPath.isNullOrEmpty()) imageLocalPath.getFinalPath() else linkPreview.imageUrl,
+                            model = if (!imageLocalPath.isNullOrEmpty()) rememberFilePath(imageLocalPath) else linkPreview.imageUrl,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp).clip(RoundedCornerShape(3.dp)),
                             contentScale = ContentScale.Fit

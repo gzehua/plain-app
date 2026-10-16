@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.platform
 
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -8,7 +10,7 @@ class FilePlatformBuildersTest {
 
     // ── buildTextFile ──────────────────────────────────────────────────────
 
-    @Test fun `buildTextFile fills DFile from path and size`() {
+    @Test fun `buildTextFile fills FileEntry from path and size`() {
         val file = buildTextFile("/docs/notes.txt", 123L, 1_700_000_000_000L)
         assertEquals("notes.txt", file.name)
         assertEquals("/docs/notes.txt", file.path)

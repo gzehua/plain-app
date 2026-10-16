@@ -1,20 +1,28 @@
 package com.ismartcoding.plain.platform
 
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.long
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.IntSize
-import com.ismartcoding.plain.data.DImageMeta
-import com.ismartcoding.plain.data.DVideoMeta
+import com.ismartcoding.plain.graphql.models.ImageFileInfo
+import com.ismartcoding.plain.graphql.models.VideoFileInfo
 
-expect fun getImageRotation(path: String): Int
+suspend fun getVideoMeta(path: String): VideoFileInfo? {
+    val info = com.ismartcoding.plain.rust.PlainRust.mainGraphql(
+        "query(\$path:String!,\$name:String!){fileInfo(path:\$path,fileName:\$name){data{__typename ... on VideoFileInfo{width height rotation displayWidth displayHeight durationMs bitrate frameRate title artist album genre takenAt writer composer location{latitude longitude}}}}}",
+        mapOf("path" to kotlinx.serialization.json.JsonPrimitive(path), "name" to kotlinx.serialization.json.JsonPrimitive("video.mp4")),
+    ).getValue("fileInfo").jsonObject.getValue("data")
+    return if (info is kotlinx.serialization.json.JsonNull) null else com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(info)
+}
 
-expect fun getImageIntrinsicSize(path: String, rotation: Int): IntSize
-
-/** Returns the intrinsic (width, height) of the video at [path], or [IntSize.Zero] on failure. */
-expect fun getVideoIntrinsicSize(path: String): IntSize
-
-expect fun getVideoMeta(path: String): DVideoMeta?
-
-expect fun getImageMeta(path: String): DImageMeta?
+suspend fun getImageMeta(path: String): ImageFileInfo? {
+    val info = com.ismartcoding.plain.rust.PlainRust.mainGraphql(
+        "query(\$path:String!,\$name:String!){fileInfo(path:\$path,fileName:\$name){data{__typename ... on ImageFileInfo{width height rotation make model colorSpace apertureValue exposureTime focalLength isoSpeed takenAt flash fNumber exposureProgram meteringMode whiteBalance creator resolutionX resolutionY description location{latitude longitude}}}}}",
+        mapOf("path" to kotlinx.serialization.json.JsonPrimitive(path), "name" to kotlinx.serialization.json.JsonPrimitive("image.jpg")),
+    ).getValue("fileInfo").jsonObject.getValue("data")
+    return if (info is kotlinx.serialization.json.JsonNull) null else com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(info)
+}
 
 /**
  * Try to decode a QR code from the image at [path]. Returns the decoded text, or null if
@@ -34,11 +42,11 @@ expect fun fileLength(path: String): Long
  */
 suspend fun renameMediaFile(path: String, newName: String): String? = renameAndScanFile(path, newName)
 
-/** Returns the media duration in seconds for the file at [path], or 0L on failure. */
-expect fun getMediaDurationMs(path: String): Long
+suspend fun getMediaDurationMs(path: String): Long = com.ismartcoding.plain.rust.PlainRust.mainQuery(
+    "mediaDurationMs(path: ${com.ismartcoding.plain.rust.content.gql(path)})"
+).getValue("mediaDurationMs").jsonPrimitive.long
 
-/** Returns the audio duration in seconds for the file at [path], or 0L on failure. */
-expect fun getAudioDurationMs(path: String): Long
+suspend fun getAudioDurationMs(path: String): Long = getMediaDurationMs(path)
 
 expect fun generateQrCode(text: String, width: Int, height: Int): ImageBitmap
 
@@ -53,13 +61,3 @@ expect fun getSvgSize(path: String): IntSize
  * [path] is the media file path, [label] is the shortcut display name.
  */
 expect fun addMediaShortcut(path: String, label: String)
-
-/**
- * Process a single media item with zero duration: calculate actual duration
- * and update MediaStore. Called by [MediaDurationFixQueue] worker, never on
- * the list-API path.
- */
-expect suspend fun processSingleDurationZero(
-    mediaType: String,
-    item: com.ismartcoding.plain.events.MediaDurationZeroItem,
-)

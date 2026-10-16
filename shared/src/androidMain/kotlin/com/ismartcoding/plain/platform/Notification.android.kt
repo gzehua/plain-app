@@ -1,15 +1,16 @@
 package com.ismartcoding.plain.platform
 
+import com.ismartcoding.plain.helpers.NotificationsHelper
+
+import com.ismartcoding.plain.graphql.models.Notification as AppNotification
 import android.app.RemoteInput
 import android.content.Intent
 import android.os.Bundle
 import com.ismartcoding.plain.AndroidTempData
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.data.DNotification
-import com.ismartcoding.plain.features.PackageHelper
+import com.ismartcoding.plain.packageManager
 import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.helpers.NotificationHelper
-import com.ismartcoding.plain.helpers.NotificationsHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.services.PNotificationListenerService
 
@@ -19,19 +20,19 @@ actual fun toggleNotificationListener(enabled: Boolean) {
 
 actual suspend fun getNotificationApp(packageName: String): DNotificationApp? = withIO {
     runCatching {
-        val pkg = PackageHelper.getPackage(packageName)
-        DNotificationApp(id = pkg.id, name = pkg.name)
+        val info = packageManager.getApplicationInfo(packageName, 0)
+        DNotificationApp(id = info.packageName, name = packageManager.getApplicationLabel(info).toString())
     }.getOrNull()
 }
 
 actual suspend fun getAllNotificationApps(): List<DNotificationApp> = withIO {
     val ownPackage = appContext.packageName
-    PackageHelper.searchAsync("", Int.MAX_VALUE, 0, FileSortBy.NAME_ASC)
+    searchPackages("", Int.MAX_VALUE, 0, FileSortBy.NAME_ASC)
         .filter { it.id != ownPackage }
         .map { DNotificationApp(id = it.id, name = it.name) }
 }
 
-actual suspend fun notificationFacts(): List<DNotification> = withIO {
+actual suspend fun notificationFacts(): List<AppNotification> = withIO {
     AndroidTempData.notifications.toList()
 }
 

@@ -3,9 +3,8 @@ package com.ismartcoding.plain.ble.server
 import com.ismartcoding.plain.ble.RustBleWire
 import com.ismartcoding.plain.ble.BleUuids
 import com.ismartcoding.plain.discover.RustNearbyWire
-import com.ismartcoding.plain.discover.PairingCore
+import com.ismartcoding.plain.discover.RustPairingRuntime
 import com.ismartcoding.plain.enums.NearbyMessageType
-import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 
 class NearbyServiceHandler : BleServiceHandler {
@@ -30,17 +29,17 @@ class NearbyServiceHandler : BleServiceHandler {
             NearbyMessageType.DISCOVER_REPLY -> null
 
             NearbyMessageType.PAIR_REQUEST -> {
-                PairingCore.handlePairRequest(JsonHelper.jsonDecode(payload), clientMac)
+                RustPairingRuntime.receiveRequest(payload, clientMac)
                 "1"
             }
 
             NearbyMessageType.PAIR_RESPONSE -> {
-                PairingCore.handlePairResponse(JsonHelper.jsonDecode(payload))
+                RustPairingRuntime.complete(payload)
                 "1"
             }
 
             NearbyMessageType.PAIR_CANCEL -> {
-                PairingCore.handlePairCancel(JsonHelper.jsonDecode(payload))
+                RustPairingRuntime.receiveCancel(payload)
                 "1"
             }
         }

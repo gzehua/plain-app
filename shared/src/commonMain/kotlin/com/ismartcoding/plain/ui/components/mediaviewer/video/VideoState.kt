@@ -1,11 +1,13 @@
 package com.ismartcoding.plain.ui.components.mediaviewer.video
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 
 /**
  * Pure commonMain state holder for video playback.
@@ -90,7 +92,7 @@ class VideoState {
         currentTime = ctrl.currentPositionMs.coerceAtLeast(0L)
         // ExoPlayer returns C.TIME_UNSET (< 0) for fragmented MP4 files whose
         // duration can't be extracted from the moov box. Don't overwrite the
-        // expectedTotalMs (set from DVideo.durationMs / cache) with 0 — that
+        // expectedTotalMs (set from MediaVideo.durationMs / cache) with 0 — that
         // would break the progress bar for fMP4 videos.
         val ctrlDurationMs = ctrl.durationMs
         if (ctrlDurationMs > 0L) {

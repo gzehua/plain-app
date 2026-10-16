@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.models
 
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.preferences.*
 
 import com.ismartcoding.plain.i18n.*
@@ -13,7 +15,6 @@ import com.ismartcoding.plain.data.FilePathData
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.FilesType
 import com.ismartcoding.plain.enums.hasPermission
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.features.file.ZipBrowserHelper
 import com.ismartcoding.plain.helpers.FilePathValidator
@@ -37,7 +38,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class FilesViewModel : ISearchableViewModel<DFile>, ISelectableViewModel<DFile>, ViewModel() {
+class FilesViewModel : ISearchableViewModel<FileEntry>, ISelectableViewModel<FileEntry>, ViewModel() {
     var rootPath = getInternalStoragePath()
     private var _selectedPath = rootPath
     var selectedPath: String
@@ -60,8 +61,8 @@ class FilesViewModel : ISearchableViewModel<DFile>, ISelectableViewModel<DFile>,
 
     val breadcrumbs = mutableStateListOf<BreadcrumbItem>()
     val selectedBreadcrumbIndex = mutableIntStateOf(0)
-    var cutFiles = mutableListOf<DFile>()
-    var copyFiles = mutableListOf<DFile>()
+    var cutFiles = mutableListOf<FileEntry>()
+    var copyFiles = mutableListOf<FileEntry>()
     var type: FilesType = FilesType.INTERNAL_STORAGE
     val hasPermission = mutableStateOf(AppFeatureType.FILES.hasPermission())
     var offset = 0
@@ -71,14 +72,14 @@ class FilesViewModel : ISearchableViewModel<DFile>, ISelectableViewModel<DFile>,
 
     init { breadcrumbs.add(BreadcrumbItem(getRootDisplayName(), rootPath)) }
 
-    val selectedFile = mutableStateOf<DFile?>(null)
+    val selectedFile = mutableStateOf<FileEntry?>(null)
     override val showSearchBar = mutableStateOf(false)
     override val searchActive = mutableStateOf(false)
     override val queryText = mutableStateOf("")
     override val selectMode = mutableStateOf(false)
     override val selectedIds = mutableStateListOf<String>()
-    private val _itemsFlow = MutableStateFlow<List<DFile>>(emptyList())
-    override val itemsFlow: StateFlow<List<DFile>> = _itemsFlow.asStateFlow()
+    private val _itemsFlow = MutableStateFlow<List<FileEntry>>(emptyList())
+    override val itemsFlow: StateFlow<List<FileEntry>> = _itemsFlow.asStateFlow()
     val sortBy = mutableStateOf(FileSortBy.NAME_ASC)
     val showSortDialog = mutableStateOf(false)
     val isLoading = mutableStateOf(true)
@@ -102,7 +103,7 @@ class FilesViewModel : ISearchableViewModel<DFile>, ISelectableViewModel<DFile>,
 
     fun currentFolderTitleOverride(): String? = drawerFolderTitle.value?.takeIf { it.first == selectedPath }?.second
 
-    internal fun updateItemsInternal(items: List<DFile>) { _itemsFlow.value = items }
+    internal fun updateItemsInternal(items: List<FileEntry>) { _itemsFlow.value = items }
 
     fun navigateToDirectory(newPath: String) {
         if (selectedPath != newPath) {

@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.chat.peer
 
 import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.bridge.RustPeerStatusBridge
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.CancellationException
@@ -16,8 +15,7 @@ object PeerStatusManager {
         coIO {
             for (action in commands) {
                 try {
-                    val request = buildJsonObject { put("action", action) }
-                    RustPeerStatusBridge.action(request.toString())
+                    PlainRust.mainMutate("controlPeerStatus(action: $action)")
                 } catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) { LogCat.e("Rust peer status control", error) }
             }
@@ -26,10 +24,10 @@ object PeerStatusManager {
     private fun request(action: String) {
         if (!commands.trySend(action).isSuccess) LogCat.e("Peer status control queue is full")
     }
-    fun start() { request("start"); ensureAwareStarted() }
-    fun stop() = request("stop")
-    fun reconnectNow(reason: String) { LogCat.d("Peer status reconnect: $reason"); request("reconnect") }
-    fun ensureAwareStarted() = request("ensureAware")
+    fun start() { request("START"); ensureAwareStarted() }
+    fun stop() = request("STOP")
+    fun reconnectNow(reason: String) { LogCat.d("Peer status reconnect: $reason"); request("RECONNECT") }
+    fun ensureAwareStarted() = request("ENSURE_AWARE")
     fun isOnline(peerId: String): Boolean = peerId in online
     fun onlinePeers(): Set<String> = online
 

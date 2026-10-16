@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.components
 
+import com.ismartcoding.plain.graphql.models.MediaBucket
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,7 +22,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.lib.extensions.formatBytes
-import com.ismartcoding.plain.data.DMediaBucket
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.theme.cardBackgroundActive
@@ -34,7 +34,7 @@ import com.ismartcoding.plain.i18n.folder
 
 @Composable
 fun MediaFolderListItem(
-    folder: DMediaBucket,
+    folder: MediaBucket,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier

@@ -2,7 +2,6 @@ package com.ismartcoding.plain.ui.page.appfiles.components
 
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.chat.models.MessageFile
-import com.ismartcoding.plain.extensions.resolveAppFileRealPath
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.extensions.isAudioFast
@@ -33,7 +32,7 @@ fun openAppFile(
     itemState: TransformItemState,
     audioQueueVM: AudioQueueViewModel,
 ) {
-    val path = file.appFile.realPath.resolveAppFileRealPath()
+    val path = file.appFile.realPath
     val fileName = file.fileName
 
     when {
@@ -41,7 +40,7 @@ fun openAppFile(
             coMain {
                 val previewItems = withIO {
                     files.filter { it.fileName.isImageFast() || it.fileName.isVideoFast() }.map {
-                        val p = it.appFile.realPath.resolveAppFileRealPath()
+                        val p = it.appFile.realPath
                         PreviewItem(
                             it.appFile.id,
                             p,

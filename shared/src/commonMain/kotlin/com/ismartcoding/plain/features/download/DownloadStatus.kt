@@ -1,10 +1,5 @@
 package com.ismartcoding.plain.features.download
 
-/**
- * Lifecycle of a download task. Shared by every engine kind (chat peer
- * transfers, shared-folder batches); engines set one terminal status before
- * [DownloadEngine.execute] returns.
- */
 enum class DownloadStatus {
     PENDING,
     DOWNLOADING,

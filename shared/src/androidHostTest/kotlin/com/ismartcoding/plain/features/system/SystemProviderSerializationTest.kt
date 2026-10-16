@@ -58,8 +58,8 @@ class SystemProviderSerializationTest {
     @Test
     fun smsEmptyResponsesKeepPlatformContract() {
         assertEquals("""{"sms":0,"mms":0}""", JsonHelper.jsonEncode(SmsCountFacts(0, 0)))
-        assertEquals("""{"items":[],"canonicalAddress":""}""", JsonHelper.jsonEncode(SmsRowsFacts(emptyList(), "")))
-        assertEquals("""{"items":[],"snippets":{}}""", JsonHelper.jsonEncode(SmsConversationFacts(emptyList(), emptyMap())))
+        assertEquals("""{"items":[],"canonicalAddresses":[],"ownNumbers":[]}""", JsonHelper.jsonEncode(SmsRowsFacts(emptyList(), emptyList(), emptyList())))
+        assertEquals("""{"items":[],"ownNumbers":[],"snippets":{}}""", JsonHelper.jsonEncode(SmsConversationFacts(emptyList(), emptyList(), emptyMap())))
     }
 
     @Test

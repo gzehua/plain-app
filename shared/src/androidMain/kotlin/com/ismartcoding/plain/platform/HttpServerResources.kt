@@ -1,20 +1,21 @@
 package com.ismartcoding.plain.platform
 
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.mdns.MdnsRegister
-import com.ismartcoding.plain.mdns.NsdHelper
+import com.ismartcoding.plain.mdns.MdnsHotspotWatcher
+import com.ismartcoding.plain.discover.MdnsDiscoverManager
 import com.ismartcoding.plain.discover.RustMdnsRuntime
 
 internal object HttpServerResources {
-    private var mdnsRegister: MdnsRegister? = null
+    private var hotspotWatcher: MdnsHotspotWatcher? = null
     suspend fun start() {
-        if (mdnsRegister == null) mdnsRegister = MdnsRegister(appContext).also { it.start() }
-        NsdHelper.registerServices()
+        if (hotspotWatcher == null) hotspotWatcher = MdnsHotspotWatcher(appContext) {
+            MdnsDiscoverManager.scheduleRestart("hotspotStateChanged")
+        }.also { it.start() }
+        RustMdnsRuntime.control("publish")
     }
-    fun schedule(reason: String) { mdnsRegister?.schedule(reason) }
     suspend fun stop() {
-        mdnsRegister?.stop()
-        mdnsRegister = null
+        hotspotWatcher?.stop()
+        hotspotWatcher = null
         RustMdnsRuntime.control("unpublish")
     }
 }

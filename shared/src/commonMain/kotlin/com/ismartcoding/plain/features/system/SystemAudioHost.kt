@@ -5,9 +5,6 @@ import kotlinx.serialization.json.*
 
 internal object SystemAudioHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
-        "systemAudioLyrics" -> JsonHelper.jsonEncodeToElement(
-            com.ismartcoding.plain.platform.getAudioLyrics(
-                params.getValue("path").jsonPrimitive.content))
         "systemAudioPlaybackState" -> JsonHelper.jsonEncodeToElement(AudioPlaybackFacts(
             isPlaying = com.ismartcoding.plain.platform.audioIsPlayingFlow().value,
             positionMs = com.ismartcoding.plain.platform.audioPlayerProgressAsync(),

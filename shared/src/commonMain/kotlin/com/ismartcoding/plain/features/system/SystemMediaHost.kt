@@ -1,20 +1,13 @@
 package com.ismartcoding.plain.features.system
 
+
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
 
 internal object SystemMediaHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
         "systemMediaBucketItemFacts" -> JsonHelper.jsonEncodeToElement(
-            com.ismartcoding.plain.platform.mediaBucketItemFacts(mediaDataType(params)).map { item ->
-                MediaBucketItemFacts(
-                    id = item.id,
-                    name = item.name,
-                    size = item.size,
-                    path = item.path,
-                    sortName = item.sortName,
-                )
-        })
+            com.ismartcoding.plain.platform.mediaBucketItemFacts(mediaDataType(params)))
         "systemMediaRows" -> {
             val items = com.ismartcoding.plain.platform.searchMedia(
                 mediaDataType(params),
@@ -36,7 +29,7 @@ internal object SystemMediaHost {
     }
 
     private fun mediaFacts(item: com.ismartcoding.plain.db.IData): JsonElement = when (item) {
-        is com.ismartcoding.plain.audio.DAudio -> JsonHelper.jsonEncodeToElement(AudioFacts(
+        is com.ismartcoding.plain.graphql.models.Audio -> JsonHelper.jsonEncodeToElement(AudioFacts(
             id = item.id,
             title = item.title,
             artist = item.artist,
@@ -45,18 +38,18 @@ internal object SystemMediaHost {
             bucketId = item.bucketId,
             durationMs = item.durationMs,
             albumId = item.albumId,
-            albumFileId = com.ismartcoding.plain.platform.getAudioAlbumArtFileId(item),
+            albumArtUri = com.ismartcoding.plain.platform.audioAlbumArtUri(item.albumId),
             createdAt = item.createdAt.toString(),
             updatedAt = item.updatedAt.toString(),
             isFavorite = item.isFavorite,
         ))
-        is com.ismartcoding.plain.data.DImage -> mediaFacts(
+        is com.ismartcoding.plain.graphql.models.Image -> mediaFacts(
             item.id, item.title, item.path, item.size, item.bucketId, item.createdAt, item.updatedAt,
             durationMs = 0L, takenAt = item.takenAt, isFavorite = item.isFavorite, width = item.width, height = item.height, rotation = item.rotation)
-        is com.ismartcoding.plain.data.DVideo -> mediaFacts(
+        is com.ismartcoding.plain.graphql.models.Video -> mediaFacts(
             item.id, item.title, item.path, item.size, item.bucketId, item.createdAt, item.updatedAt,
             durationMs = item.durationMs, takenAt = item.takenAt, isFavorite = item.isFavorite, width = item.width, height = item.height, rotation = item.rotation)
-        is com.ismartcoding.plain.data.DDoc -> mediaFacts(
+        is com.ismartcoding.plain.graphql.models.Doc -> mediaFacts(
             item.id, item.title, item.path, item.size, item.bucketId, item.createdAt, item.updatedAt,
             durationMs = item.durationMs, takenAt = null, isFavorite = false)
         else -> error("Unsupported media row ${item::class.simpleName}")

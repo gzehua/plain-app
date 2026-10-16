@@ -1,10 +1,9 @@
 package com.ismartcoding.plain.ui.base
 
+import com.ismartcoding.plain.graphql.models.MediaBucket
 import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.data.DMediaBucket
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.platform.LocaleHelper
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
@@ -14,7 +13,7 @@ internal fun getMediaPageTitle(
     mediaType: DataType,
     isCastMode: Boolean,
     castDeviceName: String?,
-    bucket: DMediaBucket?,
+    bucket: MediaBucket?,
     dragSelectState: DragSelectState,
     tagName: String? = null,
 ): String {

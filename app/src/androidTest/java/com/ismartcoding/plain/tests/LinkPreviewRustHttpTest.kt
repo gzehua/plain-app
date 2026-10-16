@@ -27,7 +27,7 @@ class LinkPreviewRustHttpTest {
         val url = "https://example.com/$id"
         var hash: String? = null
         try {
-            val image = AppFileStore.importBytes(id.toByteArray(), "image/png")
+            val image = AppFileFixtures.importBytes(id.toByteArray(), "image/png")
             hash = image.id
             val content = MessageContent(MessageType.TEXT, MessageText(url,
                 listOf(LinkPreview(url = url, title = id, imageLocalPath = AppFileStore.toFidUri(image))))).toJSONString()

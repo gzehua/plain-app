@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class ContactGroup(
     var id: String,
     var name: String,
-    var contactCount: Int,
+    var contactCount: Int = 0,
 )

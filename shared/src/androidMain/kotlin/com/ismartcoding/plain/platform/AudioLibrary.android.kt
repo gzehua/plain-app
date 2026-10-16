@@ -6,24 +6,9 @@ import android.provider.DocumentsContract
 import com.ismartcoding.plain.features.audio.AudioMedia
 import android.provider.MediaStore
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.graphql.models.AudioItem
-import com.ismartcoding.plain.lib.extensions.pathToUri
 import com.ismartcoding.plain.lib.withIO
 
 private val audioUri get() = if (isQPlus()) MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL) else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-actual suspend fun audioLibraryMetadata(path: String): AudioItem = withIO {
-    val retriever = android.media.MediaMetadataRetriever()
-    try {
-        retriever.setDataSource(appContext, path.pathToUri())
-        AudioItem(
-            title = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_TITLE).orEmpty().ifEmpty { java.io.File(path).nameWithoutExtension },
-            path = path,
-            artist = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST).orEmpty(),
-            durationMs = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong() ?: 0,
-        )
-    } finally { retriever.release() }
-}
-
 actual suspend fun audioLibraryResolve(ids: List<String>, paths: List<String>): List<AudioMedia> = withIO {
     val systemIds = (ids + paths.mapNotNull { systemAudioMediaId(Uri.parse(it)) }).distinct()
     val filePaths = paths.mapNotNull { path -> val uri = Uri.parse(path); when (uri.scheme) { "content" -> null; "file" -> uri.path; else -> path } }.distinct()
@@ -31,8 +16,7 @@ actual suspend fun audioLibraryResolve(ids: List<String>, paths: List<String>): 
     if (!Permission.WRITE_EXTERNAL_STORAGE.isGranted() && !Permission.READ_MEDIA_AUDIO.isGranted()) {
         return@withIO paths.mapNotNull { path ->
             val id = systemAudioMediaId(Uri.parse(path)) ?: return@mapNotNull null
-            try { AudioMedia(audioLibraryMetadata(path), id).copy(aliases = listOf(path)) }
-            catch (_: SecurityException) { null }
+            AudioMedia(mediaId = id, path = path, title = "", artist = "", albumId = "", durationMs = 0, aliases = listOf(path))
         }
     }
     val columns = arrayOf(MediaStore.Audio.Media._ID, MediaStore.Audio.Media.DATA, MediaStore.Audio.Media.TITLE, MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.ALBUM_ID, MediaStore.Audio.Media.DURATION)

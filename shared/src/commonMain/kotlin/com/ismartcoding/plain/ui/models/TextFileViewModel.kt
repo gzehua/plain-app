@@ -1,11 +1,12 @@
 package com.ismartcoding.plain.ui.models
 
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.preferences.*
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.helpers.launchSafe
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.getFileByMediaId
@@ -25,7 +26,7 @@ class TextFileViewModel : ViewModel() {
             com.ismartcoding.plain.platform.writeByteChunksStreaming(path, chunks)
     })
     val showMoreActions = mutableStateOf(false)
-    val file = mutableStateOf<DFile?>(null)
+    val file = mutableStateOf<FileEntry?>(null)
     val isExternalFile = mutableStateOf(false)
 
     val isDataLoading: Boolean

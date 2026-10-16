@@ -1,18 +1,17 @@
 package com.ismartcoding.plain.features.contact
-import com.ismartcoding.plain.appContext
 
+import com.ismartcoding.plain.graphql.models.ContactSource
+import com.ismartcoding.plain.appContext
 import android.content.Context
 import android.net.Uri
 import android.provider.ContactsContract
 import com.ismartcoding.plain.lib.extensions.forEach
 import com.ismartcoding.plain.lib.extensions.getStringValue
 import com.ismartcoding.plain.lib.extensions.queryCursor
-import com.ismartcoding.plain.data.DContactSource
-
 object SourceHelper {
-    fun getAll(): List<DContactSource> {
+    fun getAll(): List<ContactSource> {
         val context = appContext
-        val sources = mutableListOf<DContactSource>()
+        val sources = mutableListOf<ContactSource>()
         setOf(
             ContactsContract.Groups.CONTENT_URI,
             ContactsContract.Settings.CONTENT_URI,
@@ -27,7 +26,7 @@ object SourceHelper {
     private fun fillSourcesFromUri(
         context: Context,
         uri: Uri,
-        sources: MutableList<DContactSource>,
+        sources: MutableList<ContactSource>,
     ) {
         context.contentResolver.queryCursor(
             uri,
@@ -39,7 +38,7 @@ object SourceHelper {
             val name = cursor.getStringValue(ContactsContract.RawContacts.ACCOUNT_NAME, cache)
             val type = cursor.getStringValue(ContactsContract.RawContacts.ACCOUNT_TYPE, cache)
             if (!sources.any { it.name == name && it.type == type }) {
-                sources.add(DContactSource(name, type))
+                sources.add(ContactSource(name, type))
             }
         }
     }

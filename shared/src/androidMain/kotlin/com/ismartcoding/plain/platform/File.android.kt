@@ -1,16 +1,18 @@
 package com.ismartcoding.plain.platform
 
+import com.ismartcoding.plain.features.file.extension
+
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.helpers.AppHelper
 import com.ismartcoding.plain.helpers.AppFileStore
 import com.ismartcoding.plain.helpers.ChatFileSaveHelper
 import com.ismartcoding.plain.helpers.FileHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.helpers.FileHashEdgeBytes
-import com.ismartcoding.plain.lib.extensions.isAnimatedImageOrSvgHeader
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.isHeifHeader
 import com.ismartcoding.plain.lib.extensions.toHexString
@@ -19,25 +21,16 @@ import com.ismartcoding.plain.lib.extensions.queryOpenableFileName
 import com.ismartcoding.plain.platform.StreamSink
 import android.net.Uri
 import androidx.core.net.toUri
-import com.ismartcoding.plain.rust.http.OkHttpClientFactory
-import com.ismartcoding.plain.helpers.Mp4Helper
-import com.ismartcoding.plain.helpers.ZipHelper
 import com.ismartcoding.plain.features.PackageHelper
 import com.ismartcoding.plain.features.media.FileMediaStoreHelper
 import com.ismartcoding.plain.lib.extensions.compress
 import com.ismartcoding.plain.thumbnail.DecodeLimiter
 import com.ismartcoding.plain.thumbnail.DecodePolicy
-import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
-import com.ismartcoding.plain.features.file.ZipBrowserHelper
-import okhttp3.Request
 import java.io.RandomAccessFile
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
-import java.util.zip.ZipOutputStream
 
 actual fun deleteFileAt(path: String) {
     File(path).delete()
@@ -117,8 +110,8 @@ actual fun writeBytesToPath(path: String, bytes: ByteArray): Boolean {
     }
 }
 
-actual fun saveFileToDownloads(path: String, fileName: String): String {
-    return FileHelper.copyFileToDownloads(path, fileName)
+actual suspend fun saveFileToDownloads(path: String, fileName: String): String = withIO {
+    FileHelper.copyFileToDownloads(path, fileName)
 }
 
 actual fun fileToUriString(path: String): String = File(path).toUri().toString()
@@ -127,22 +120,6 @@ actual fun getFileIconPath(extension: String): String =
     AppHelper.getFileIconPath(extension)
 
 actual fun fileExists(path: String): Boolean = File(path).exists()
-
-actual suspend fun copyPickedFileToAppStorage(uriStr: String, destRelativePath: String): String? = withIO {
-    val context = appContext
-    val uri = Uri.parse(uriStr)
-    val file = context.contentResolver.queryOpenableFile(uri) ?: return@withIO null
-    val destFile = File(appDir(), destRelativePath)
-    destFile.parentFile?.mkdirs()
-    FileHelper.copyFile(context, uri, destFile.absolutePath)
-    file.displayName
-}
-
-actual fun getUploadTmpDirPath(): String =
-    File(appContext.filesDir, "upload_tmp").absolutePath
-
-actual fun getUploadCacheMergeDirPath(): String =
-    File(appContext.cacheDir, "upload_merge").apply { mkdirs() }.absolutePath
 
 // --- HTTP streaming & file sink abstractions ---
 
@@ -211,7 +188,7 @@ actual suspend fun ensureParentDir(path: String) {
 }
 
 actual suspend fun createTempFilePath(prefix: String): String = withIO {
-    File(appContext.cacheDir, "${prefix}_${System.currentTimeMillis()}_${Thread.currentThread().id}").absolutePath
+    File(File(appCacheDir()), "${prefix}_${System.currentTimeMillis()}_${Thread.currentThread().id}").absolutePath
 }
 
 actual suspend fun importAppFile(tempFilePath: String, fileName: String, contentType: String, deleteSrc: Boolean): String? = withIO {
@@ -236,31 +213,6 @@ actual suspend fun streamContentUri(uri: String, sink: StreamSink): String? = wi
     } catch (e: Exception) {
         null
     }
-}
-
-actual suspend fun convert3gpToMp4(uri: String): ByteArray? = withIO {
-    val context = appContext
-    val parsed = uri.toUri()
-    val mimeType = context.contentResolver.getType(parsed).orEmpty()
-    if (mimeType.equals("video/3gpp", true) || mimeType.equals("video/3gp", true) || uri.endsWith(".3gp", true)) {
-        Mp4Helper.convert3gpToMp4(context, parsed)
-    } else {
-        null
-    }
-}
-
-actual suspend fun remuxMp4ForBrowser(path: String): String? = withIO {
-    // Box-level probe first: skips the extractor entirely for normal files.
-    if (!Mp4Helper.hasBrowserIncompatibleTrack(path)) return@withIO null
-    Mp4Helper.remuxForBrowser(appContext, path)
-}
-
-actual suspend fun probeVideoCodec(path: String): String = withIO {
-    Mp4Helper.firstVideoSampleEntry(path) ?: ""
-}
-
-actual suspend fun transcodeMp4ForBrowser(path: String): String? = withIO {
-    Mp4Helper.transcodeForBrowser(appContext, path)
 }
 
 actual suspend fun getPackageIconBytes(packageName: String): ByteArray? = withIO {
@@ -302,20 +254,6 @@ actual suspend fun decodeImageFileToPng(path: String): ByteArray? = withIO {
     }
 }
 
-actual fun isAnimatedImageOrSvg(path: String, fileName: String): Boolean {
-    val file = File(path)
-    if (!file.exists()) return false
-    return try {
-        file.inputStream().use { input ->
-            val header = ByteArray(256)
-            input.read(header)
-            isAnimatedImageOrSvgHeader(fileName, header, file.length())
-        }
-    } catch (_: Exception) {
-        false
-    }
-}
-
 actual suspend fun decodeThumbnailBytes(
     path: String,
     width: Int,
@@ -327,108 +265,6 @@ actual suspend fun decodeThumbnailBytes(
     val file = File(path)
     if (!file.exists()) return@withIO null
     com.ismartcoding.plain.thumbnail.ThumbnailGenerator.decodeBytesAsync(appContext, file, width, height, centerCrop, mediaId, fileName)
-}
-
-actual suspend fun streamZipToSink(items: List<ZipStreamEntry>, sink: StreamSink, recursive: Boolean): Boolean = withIO {
-    val os = object : OutputStream() {
-        override fun write(b: Int) { runBlocking { sink.write(byteArrayOf(b.toByte())) } }
-        override fun write(b: ByteArray, off: Int, len: Int) { runBlocking { sink.write(b, off, len) } }
-    }
-    try {
-        ZipOutputStream(os).use { zip ->
-            val dirs = if (recursive) items.filter { File(it.sourcePath).isDirectory } else emptyList()
-            items.forEach { item ->
-                val file = File(item.sourcePath)
-                if (!file.exists()) return@forEach
-                val skip = dirs.any {
-                    file.absolutePath != it.sourcePath && file.absolutePath.startsWith(it.sourcePath)
-                }
-                if (skip) return@forEach
-                val entryName = item.entryName.ifEmpty { file.name }
-                if (file.isDirectory) {
-                    zip.putNextEntry(ZipEntry("${entryName.trimEnd('/')}/"))
-                    if (recursive) ZipHelper.zipFolderToStreamAsync(file, zip, entryName)
-                } else {
-                    zip.putNextEntry(ZipEntry(entryName))
-                    file.inputStream().copyTo(zip)
-                }
-                zip.closeEntry()
-            }
-        }
-        runBlocking { sink.flush() }
-        true
-    } catch (e: Exception) {
-        false
-    }
-}
-
-actual suspend fun streamZipFolderToSink(folderPath: String, sink: StreamSink): Boolean = withIO {
-    val folder = File(folderPath)
-    if (!folder.exists() || !folder.isDirectory) return@withIO false
-    val os = object : OutputStream() {
-        override fun write(b: Int) { runBlocking { sink.write(byteArrayOf(b.toByte())) } }
-        override fun write(b: ByteArray, off: Int, len: Int) { runBlocking { sink.write(b, off, len) } }
-    }
-    try {
-        ZipOutputStream(os).use { zip ->
-            ZipHelper.zipFolderToStreamAsync(folder, zip)
-        }
-        runBlocking { sink.flush() }
-        true
-    } catch (e: Exception) {
-        false
-    }
-}
-
-actual suspend fun streamZipInternalDirToSink(zipVirtualPath: String, sink: StreamSink): Boolean = withIO {
-    val zipFilePath = ZipBrowserHelper.getZipFilePath(zipVirtualPath)
-    val prefix = ZipBrowserHelper.getInternalPath(zipVirtualPath).trimStart('/')
-    val os = object : OutputStream() {
-        override fun write(b: Int) { runBlocking { sink.write(byteArrayOf(b.toByte())) } }
-        override fun write(b: ByteArray, off: Int, len: Int) { runBlocking { sink.write(b, off, len) } }
-    }
-    try {
-        ZipFile(zipFilePath).use { zf ->
-            ZipOutputStream(os).use { zip ->
-                val it = zf.entries()
-                while (it.hasMoreElements()) {
-                    val entry = it.nextElement()
-                    val entryName = entry.name.trimStart('/')
-                    if (!entryName.startsWith(prefix)) continue
-                    val newName = entryName.removePrefix(prefix).trimStart('/')
-                    if (newName.isEmpty()) continue
-                    zip.putNextEntry(ZipEntry(newName))
-                    zf.getInputStream(entry).copyTo(zip)
-                    zip.closeEntry()
-                }
-            }
-        }
-        runBlocking { sink.flush() }
-        true
-    } catch (e: Exception) {
-        false
-    }
-}
-
-actual suspend fun fetchUrlToStream(url: String, sink: StreamSink): Pair<Int, String?> = withIO {
-    try {
-        val client = OkHttpClientFactory.createUnsafeOkHttpClient()
-        val request = Request.Builder().url(url).build()
-        val response = client.newCall(request).execute()
-        val status = response.code
-        val contentType = response.header("Content-Type")
-        response.body?.byteStream()?.use { input ->
-            val buffer = ByteArray(64 * 1024)
-            while (true) {
-                val read = input.read(buffer)
-                if (read <= 0) break
-                sink.write(buffer, 0, read)
-            }
-        }
-        status to contentType
-    } catch (e: Exception) {
-        0 to null
-    }
 }
 
 actual fun isContentUri(path: String): Boolean = path.startsWith("content://")
@@ -494,7 +330,30 @@ actual suspend fun importChatFile(uriStr: String, mimeType: String): String? = w
     }
 }
 
-actual suspend fun getFileByMediaId(mediaId: String): DFile? = withIO {
+actual suspend fun getFileByMediaId(mediaId: String): FileEntry? = withIO {
     if (mediaId.isEmpty()) null
     else FileMediaStoreHelper.getByIdAsync(appContext, mediaId)
+}
+
+internal actual suspend fun provideResourceFile(id: String, uri: String): Unit = withIO {
+    appContext.contentResolver.openAssetFileDescriptor(Uri.parse(uri), "r")?.use { asset ->
+        val error = com.ismartcoding.plain.rust.bridge.RustCoreBridge.resourceFile(
+            id, asset.parcelFileDescriptor.fd, asset.startOffset, asset.declaredLength,
+        )
+        check(error.isEmpty()) { error }
+    } ?: error("Unable to open content URI")
+}
+
+actual suspend fun copyFileToUri(path: String, uriStr: String): Boolean = withIO {
+    val uri = Uri.parse(uriStr)
+    val source = File(path)
+    if (uri.scheme == "content") {
+        val output = appContext.contentResolver.openOutputStream(uri, "wt") ?: return@withIO false
+        output.use { sink -> source.inputStream().use { input -> input.copyTo(sink) } }
+    } else {
+        val destination = File(if (uri.scheme == "file") uri.path ?: return@withIO false else uriStr)
+        if (source.canonicalFile == destination.canonicalFile) return@withIO false
+        source.copyTo(destination, overwrite = true)
+    }
+    true
 }

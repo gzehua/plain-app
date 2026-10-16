@@ -53,7 +53,6 @@
     <string name="keywords">Palavras-chave</string>
     <string name="name">Nome</string>
     <string name="sort_by_random">Ordenar aleatoriamente</string>
-    <string name="app_restored">Dados do APP foram restaurados, você precisa sair forçadamente deste app e iniciá-lo novamente como novo.</string>
     <string name="welcome_text">Bem-vindo! Você pode facilmente enviar texto, imagens e vídeos para esta página e visualizá-los no seu computador.\nSe encontrar algum problema, não hesite em enviar um e-mail para support@plainapp.app para assistência ou junte-se à nossa discussão no Discord em: https://discord.gg/RQWcS6DEEe.</string>
     <string name="donation">Doação</string>
     <string name="logs">Registros</string>

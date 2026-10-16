@@ -1,6 +1,10 @@
 package com.ismartcoding.plain.discover
 
 import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.lib.coIO
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
+import com.ismartcoding.plain.rust.PlainRust
 
 object MdnsDiscoverManager {
     fun startReceiver() = RustMdnsRuntime.request("receiver")
@@ -11,6 +15,6 @@ object MdnsDiscoverManager {
     fun browse() = RustMdnsRuntime.request("browse")
     fun scheduleRestart(reason: String) {
         LogCat.d("Network change ($reason): refreshing Rust mDNS interfaces")
-        RustMdnsRuntime.request("restart")
+        coIO { PlainRust.publish(HostEvent(EventType.NETWORK_INTERFACES_CHANGED, "null")) }
     }
 }

@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.components
 
+import com.ismartcoding.plain.graphql.models.MediaBucket
 import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,7 +28,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.ismartcoding.plain.lib.extensions.formatBytes
-import com.ismartcoding.plain.data.DMediaBucket
 import com.ismartcoding.plain.platform.combineBitmapGrid
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.theme.cardBackgroundActive
@@ -41,7 +40,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun MediaFolderGridItem(
     modifier: Modifier = Modifier,
-    m: DMediaBucket,
+    m: MediaBucket,
     isSelected: Boolean = false,
     onClick: () -> Unit,
 ) {
@@ -49,7 +48,7 @@ fun MediaFolderGridItem(
 
     LaunchedEffect(Unit) {
         bitmapResult.value = withContext(Dispatchers.Default) {
-            combineBitmapGrid(m.topItems, 200)
+            combineBitmapGrid(m.topItemPaths, 200)
         }
     }
 

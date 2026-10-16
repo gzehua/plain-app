@@ -2,6 +2,7 @@
 <paths>
     <external-path name="external_files" path="."/>
     <cache-path name="cache" path="."/>
+    <files-path name="shared_data_cache" path="cache/"/>
 <!--    https://developer.android.com/privacy-and-security/risks/file-providers-->
 <!--    <root-path name="external_files" path="/" />-->
 </paths>

@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.lib.pdfviewer.util
 
+import com.ismartcoding.plain.platform.appCacheDir
+
 import android.content.Context
 import java.io.*
 
@@ -9,7 +11,7 @@ object FileUtils {
         context: Context,
         assetName: String,
     ): File {
-        val outFile = File(context.cacheDir, "$assetName-pdfview.pdf")
+        val outFile = File(java.io.File(appCacheDir()), "$assetName-pdfview.pdf")
         if (assetName.contains("/")) {
             outFile.parentFile?.mkdirs()
         }

@@ -1,6 +1,9 @@
 package com.ismartcoding.plain.features.media
-import com.ismartcoding.plain.appContext
 
+import com.ismartcoding.plain.features.contact.DOrganization
+
+import com.ismartcoding.plain.graphql.models.ContactGroup
+import com.ismartcoding.plain.appContext
 import android.content.ContentProviderOperation
 import android.content.ContentUris
 import android.content.Context
@@ -18,12 +21,9 @@ import com.ismartcoding.plain.lib.extensions.getTimeValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.helpers.StringHelper
-import com.ismartcoding.plain.data.DContact
-import com.ismartcoding.plain.data.DGroup
+import com.ismartcoding.plain.features.system.*
 import com.ismartcoding.plain.features.contact.ContentHelper
-import com.ismartcoding.plain.features.contact.DOrganization
 import com.ismartcoding.plain.features.contact.SourceHelper
-import com.ismartcoding.plain.helpers.QueryHelper
 import com.ismartcoding.plain.features.contact.ContactInput
 
 object ContactMediaStoreHelper {
@@ -65,12 +65,6 @@ object ContactMediaStoreHelper {
         }
     }
 
-    suspend fun getByIdAsync(
-        context: Context,
-        id: String,
-    ): DContact? {
-        return searchAsync(context, "id:$id", 1, 0).firstOrNull()
-    }
 
     suspend fun getIdsAsync(context: Context, query: String): Set<String> = com.ismartcoding.plain.features.system.RustPhoneQuery.contactIds(query)
 
@@ -231,19 +225,12 @@ object ContactMediaStoreHelper {
         return ContentUris.parseId(results[0].uri!!).toString()
     }
 
-    suspend fun searchAsync(
-        context: Context,
-        query: String,
-        limit: Int,
-        offset: Int,
-    ): List<DContact> = com.ismartcoding.plain.features.system.RustPhoneQuery.contacts(query, limit, offset)
-
-    suspend fun searchAsync(
+    internal suspend fun searchAsync(
         context: Context,
         where: ContentWhere,
         limit: Int,
         offset: Int,
-    ): List<DContact> = withIO {
+    ): List<ContactFacts> = withIO {
         val contentMap = ContentHelper.getMap(context)
         context.contentResolver.getPagingCursor(
             uriExternal, getProjection(), where, limit, offset,
@@ -265,7 +252,7 @@ object ContactMediaStoreHelper {
 
             val nicknames = contentMap[rawId]?.nicknames ?: arrayListOf()
             val notes = contentMap[rawId]?.notes ?: arrayListOf()
-            val groups = ArrayList<DGroup>()
+            val groups = ArrayList<ContactGroup>()
             val organizations = contentMap[rawId]?.organizations ?: arrayListOf()
             val websites = contentMap[rawId]?.websites ?: arrayListOf()
             val events = contentMap[rawId]?.events ?: arrayListOf()
@@ -273,25 +260,20 @@ object ContactMediaStoreHelper {
             val addresses = contentMap[rawId]?.addresses ?: arrayListOf()
             val ims = contentMap[rawId]?.ims ?: arrayListOf()
             val phoneNumbers = contentMap[rawId]?.phoneNumbers ?: arrayListOf()
-            DContact(
-                rawId, prefix, givenName, middleName,
-                familyName, suffix,
-                if (nicknames.isNotEmpty()) nicknames[0] else "",
-                photoUri,
-                phoneNumbers,
-                emails,
-                addresses,
-                events,
-                accountName,
-                starred,
-                contactId, thumbnailUri,
-                if (notes.isNotEmpty()) notes[0] else "",
-                groups,
-                if (organizations.isNotEmpty()) organizations[0] else DOrganization("", ""),
-                websites,
-                ims,
-                ringtone,
-                updatedAt,
+            fun details(items: List<com.ismartcoding.plain.features.contact.DContentItem>) =
+                items.map { ContactDetailFacts(it.value, it.type, it.label) }
+            ContactFacts(
+                id = rawId, prefix = prefix, firstName = givenName, middleName = middleName,
+                lastName = familyName, suffix = suffix, nickname = nicknames.firstOrNull().orEmpty(),
+                photoId = photoUri,
+                phoneNumbers = phoneNumbers.map { ContactPhoneFacts(it.value, it.type, it.label, it.normalizedNumber) },
+                emails = details(emails), addresses = details(addresses), events = details(events),
+                websites = details(websites), ims = details(ims), source = accountName,
+                starred = starred != 0, contactId = contactId, thumbnailId = thumbnailUri,
+                notes = notes.firstOrNull().orEmpty(), groups = groups.map { ContactGroupFacts(it.id.toString(), it.name) },
+                organization = organizations.firstOrNull()?.let { ContactOrganizationFacts(it.company, it.title) }
+                    ?: ContactOrganizationFacts("", ""),
+                ringtone = ringtone, updatedAt = updatedAt.toString(),
             )
         } ?: emptyList()
     }

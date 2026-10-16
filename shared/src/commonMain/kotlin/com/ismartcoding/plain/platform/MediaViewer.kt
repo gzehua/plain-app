@@ -215,7 +215,11 @@ fun MediaNormalImage(
         }
     } else {
         imageSpecified = true
-        if (model.intrinsicSize == IntSize.Zero) model.initImageAsync()
+        LaunchedEffect(model.path) {
+            if (model.intrinsicSize == IntSize.Zero) model.initImageAsync()
+            oSize = model.intrinsicSize
+            if (oSize != IntSize.Zero) goMounted()
+        }
         oSize = model.intrinsicSize
         LaunchedEffect(model.intrinsicSize) {
             if (model.intrinsicSize != IntSize.Zero) {

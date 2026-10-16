@@ -145,6 +145,11 @@ android {
             excludes += listOf("META-INF/*")
         }
     }
+    sourceSets.getByName("androidTest").java.srcDirs(
+        "../shared/src/testFixtures/kotlin",
+        "../plain-common/src/testFixtures/kotlin",
+        "../shared/src/androidTestFixtures/kotlin",
+    )
     namespace = "com.ismartcoding.plain"
     sourceSets.getByName("main").jniLibs.srcDir(layout.buildDirectory.dir("generated/rustJniLibs").get().asFile)
     // The web bundle ships under src/main/resources/web, which Gradle treats

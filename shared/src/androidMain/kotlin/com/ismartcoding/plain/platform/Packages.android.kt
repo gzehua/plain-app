@@ -1,43 +1,21 @@
 package com.ismartcoding.plain.platform
 
-import androidx.core.content.pm.PackageInfoCompat
+import com.ismartcoding.plain.graphql.models.Package as AppPackage
+
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.BundleApkInstaller
 import com.ismartcoding.plain.features.PackageHelper
-import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.apk.ApkParsers
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.packageManager
 import kotlin.time.Instant
 
-actual suspend fun installedPackageFacts(): List<DPackageInfo> = withIO {
-    PackageHelper.installedFacts().map { pkg ->
-            DPackageInfo(pkg.id, pkg.name, pkg.type, pkg.version, pkg.path, pkg.size, pkg.installedAt, pkg.updatedAt, pkg.certs)
-    }
-}
+actual suspend fun installedPackageFacts(): List<AppPackage> = withIO { PackageHelper.installedFacts() }
 
-actual suspend fun getPackageInfoMap(ids: List<String>): Map<String, DPackageInfo?> = withIO {
-    val packageInfos = PackageHelper.getPackageInfoMap(ids)
-    packageInfos.mapValues { (_, pkgInfo) ->
-        if (pkgInfo == null) null
-        else try {
-            val pkg = PackageHelper.getPackage(pkgInfo.packageName)
-            DPackageInfo(
-                id = pkg.id,
-                name = pkg.name,
-                type = pkg.type,
-                version = pkg.version,
-                path = pkg.path,
-                size = pkg.size,
-                installedAt = pkg.installedAt,
-                updatedAt = pkg.updatedAt,
-                certs = PackageHelper.getCerts(pkgInfo),
-            )
-        } catch (e: Exception) {
-            LogCat.d(e.toString())
-            null
-        }
+actual suspend fun getPackageInfoMap(ids: List<String>): Map<String, AppPackage?> = withIO {
+    PackageHelper.getPackageInfoMap(ids).mapValues { (_, packageInfo) ->
+        packageInfo?.let { runCatching { PackageHelper.getPackage(it.packageName) }.getOrNull() }
     }
 }
 
@@ -90,30 +68,8 @@ actual fun getApplicationIcon(packageId: String): Any? {
     }
 }
 
-actual suspend fun getPackageDetail(id: String): DPackageInfo? = withIO {
-    try {
-        val detail = PackageHelper.getPackageDetail(id)
-        DPackageInfo(
-            id = detail.id,
-            name = detail.name,
-            type = detail.type,
-            version = detail.version,
-            path = detail.path,
-            size = detail.size,
-            installedAt = detail.installedAt,
-            updatedAt = detail.updatedAt,
-            certs = detail.certs,
-            sourceDir = detail.appInfo.sourceDir ?: "",
-            dataDir = detail.appInfo.dataDir ?: "",
-            targetSdkVersion = detail.appInfo.targetSdkVersion,
-            minSdkVersion = detail.appInfo.minSdkVersion,
-            versionCode = PackageInfoCompat.getLongVersionCode(detail.packageInfo),
-            hasLargeHeap = detail.hasLargeHeap,
-        )
-    } catch (e: Exception) {
-        LogCat.d(e.toString())
-        null
-    }
+actual suspend fun getPackageDetail(id: String): PackageDetails? = withIO {
+    runCatching { PackageHelper.getPackageDetail(id) }.getOrNull()
 }
 
 actual fun isPackageInstalled(id: String): Boolean = PackageHelper.isInstalled(id)

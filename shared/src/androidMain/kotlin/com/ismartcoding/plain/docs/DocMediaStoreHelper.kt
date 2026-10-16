@@ -1,20 +1,21 @@
 package com.ismartcoding.plain.docs
 
+import com.ismartcoding.plain.helpers.escapeLike
+import com.ismartcoding.plain.lib.extensions.forEach
+import com.ismartcoding.plain.lib.extensions.queryCursor
+
+import com.ismartcoding.plain.graphql.models.Doc as Document
 import com.ismartcoding.plain.helpers.ContentWhere
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
-import com.ismartcoding.plain.data.DDoc
-import com.ismartcoding.plain.helpers.escapeLike
-import com.ismartcoding.plain.lib.extensions.forEach
 import com.ismartcoding.plain.lib.extensions.getLongValue
 import com.ismartcoding.plain.lib.extensions.getStringValue
 import com.ismartcoding.plain.lib.extensions.getTimeSecondsValue
 import com.ismartcoding.plain.lib.extensions.map
-import com.ismartcoding.plain.lib.extensions.queryCursor
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.isQPlus
-import com.ismartcoding.plain.data.DMediaBucketItemFact
+import com.ismartcoding.plain.features.system.MediaBucketItemFacts
 import com.ismartcoding.plain.data.TagRelationStub
 import com.ismartcoding.plain.enums.MediaType
 import com.ismartcoding.plain.enums.DataType
@@ -60,7 +61,7 @@ object DocMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
-    ): List<DDoc> = com.ismartcoding.plain.features.system.RustMediaQuery.rows(com.ismartcoding.plain.enums.DataType.DOC, query, limit, offset, sortBy).map { it as DDoc }
+    ): List<Document> = com.ismartcoding.plain.features.system.RustMediaQuery.rows(com.ismartcoding.plain.enums.DataType.DOC, query, limit, offset, sortBy).map { it as Document }
 
     suspend fun searchAsync(
         context: Context,
@@ -68,7 +69,7 @@ object DocMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
-    ): List<DDoc> = withIO {
+    ): List<Document> = withIO {
         getPagingCursorAsync(context, where, limit, offset, sortBy.toSortBy())?.map { cursor, cache ->
             val id = cursor.getStringValue(MediaStore.Files.FileColumns._ID, cache)
             val title = cursor.getStringValue(MediaStore.Files.FileColumns.DISPLAY_NAME, cache)
@@ -79,7 +80,7 @@ object DocMediaStoreHelper : BaseMediaContentHelper() {
             val bucketId = if (isQPlus()) {
                 cursor.getStringValue(MediaStore.MediaColumns.BUCKET_ID, cache)
             } else ""
-            DDoc(id, title, path, 0, size, bucketId, createdAt, updatedAt)
+            Document(id = id, title = title, path = path, extension = path.substringAfterLast('/').substringAfterLast('.', ""), durationMs = 0, size = size, bucketId = bucketId, createdAt = createdAt, updatedAt = updatedAt)
         } ?: emptyList()
     }
 
@@ -90,7 +91,7 @@ object DocMediaStoreHelper : BaseMediaContentHelper() {
     suspend fun getDocExtGroupsAsync(context: Context, query: String = ""): List<Pair<String, Int>> =
         com.ismartcoding.plain.features.system.RustMediaQuery.docExtGroups(query)
 
-    fun getDocBucketItemFactsAsync(context: Context): List<DMediaBucketItemFact> {
+    fun getDocBucketItemFactsAsync(context: Context): List<MediaBucketItemFacts> {
         if (!isQPlus()) return emptyList()
         val mimeTypePlaceholders = extraDocumentMimeTypes.joinToString(",") { "?" }
         val selection = "(${MediaStore.Files.FileColumns.MIME_TYPE} LIKE ? OR ${MediaStore.Files.FileColumns.MIME_TYPE} IN ($mimeTypePlaceholders)) AND ${MediaStore.Files.FileColumns.SIZE} > 0 AND ${MediaStore.MediaColumns.BUCKET_DISPLAY_NAME} != ''"

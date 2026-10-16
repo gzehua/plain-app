@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.tests.fixtures.ImageEmbeddings
+
 import android.content.ContentValues
 import android.graphics.Bitmap
 import android.net.Uri
@@ -7,7 +9,7 @@ import android.provider.MediaStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.data.TagRelationStub
-import com.ismartcoding.plain.db.DImageEmbedding
+import com.ismartcoding.plain.tests.fixtures.imageEmbedding
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.*
 import com.ismartcoding.plain.features.audio.*
@@ -84,7 +86,6 @@ class MediaActionsRustHttpTest {
             TagHelper.editTagRelations(DataType.AUDIO,TagRelationStub(id,"Synthetic",1),listOf(audioTag),emptyList())
             TagHelper.editTagRelations(DataType.AUDIO,TagRelationStub(missingId,"Synthetic missing",1),listOf(audioTag),emptyList())
             TagHelper.editTagRelations(DataType.VIDEO,TagRelationStub(id,"Other domain",1),listOf(videoTag),emptyList())
-            MediaDurationHelper.save("audio", id, 1000, path, File(path).length(), kotlin.time.Instant.fromEpochMilliseconds(File(path).lastModified()))
             val track = AudioItem(title = "Synthetic", artist = prefix, path = path, durationMs = 1000, mediaId = id)
             playlistId = AudioPlaylistManager.createPlaylist(prefix).id
             AudioPlaylistManager.addPlaylistItems(playlistId,listOf(track))
@@ -108,27 +109,25 @@ class MediaActionsRustHttpTest {
             val (videoId,videoPath) = create(DataType.VIDEO)
             videoIds.add(videoId)
             VideoProgressHelper.saveAsync(videoId,5_000_000_001L)
-            MediaDurationHelper.save("video", videoId, 6_000_000_001L, videoPath, File(videoPath).length(), kotlin.time.Instant.fromEpochMilliseconds(File(videoPath).lastModified()))
             TagHelper.editTagRelations(DataType.VIDEO,TagRelationStub(videoId,"Synthetic video",1),listOf(videoTag),emptyList())
             trashMedia(DataType.VIDEO,setOf(videoId))
             assertNull(VideoProgressHelper.getAsync(videoId))
-            assertTrue(MediaDurationHelper.all().none { it.type == DataType.VIDEO && it.mediaId == videoId })
             assertTrue(TagHelper.getTagRelationsByKey(videoId,DataType.VIDEO).isEmpty())
             deleteMedia(DataType.VIDEO,setOf(videoId),true)
             assertFalse(File(videoPath).exists())
             val (imageId,imagePath) = create(DataType.IMAGE)
             val imageTag = tag(DataType.IMAGE)
             TagHelper.editTagRelations(DataType.IMAGE,TagRelationStub(imageId,"Synthetic image",1),listOf(imageTag),emptyList())
-            ImageEmbeddingHelper.insertAll(listOf(DImageEmbedding(imageId,imagePath,ByteBuffer.allocate(512*4).apply { putFloat(1f) }.array())))
+            ImageEmbeddings.insertAll(listOf(imageEmbedding(imageId,imagePath,ByteBuffer.allocate(512*4).apply { putFloat(1f) }.array())))
             moveDir = File(File(imagePath).parentFile,"$prefix-moved")
             assertEquals(1,MediaActionHelper.run(DataType.IMAGE,MediaAction.MOVE,listOf(imageId),destDir=checkNotNull(moveDir).path))
             val movedPath = File(moveDir,File(imagePath).name).path
             assertFalse(File(imagePath).exists())
             assertTrue(File(movedPath).isFile)
             assertEquals(1,TagHelper.getTagRelationsByKey(imageId,DataType.IMAGE).size)
-            assertFalse(ImageEmbeddingHelper.getAllIds().contains(imageId))
+            assertFalse(ImageEmbeddings.getAllIds().contains(imageId))
             trashMedia(DataType.IMAGE,setOf(imageId))
-            assertFalse(ImageEmbeddingHelper.getAllIds().contains(imageId))
+            assertFalse(ImageEmbeddings.getAllIds().contains(imageId))
             assertTrue(TagHelper.getTagRelationsByKey(imageId,DataType.IMAGE).isEmpty())
             restoreMedia(DataType.IMAGE,setOf(imageId))
             deleteMedia(DataType.IMAGE,setOf(imageId),false)
@@ -138,10 +137,8 @@ class MediaActionsRustHttpTest {
                 AudioQueueManager.clearQueue()
                 if (playlistId.isNotEmpty()) AudioPlaylistManager.deletePlaylist(playlistId)
                 tagIds.forEach { TagHelper.delete(it) }
-                MediaDurationHelper.delete(DataType.AUDIO,touchedIds)
-                MediaDurationHelper.delete(DataType.VIDEO,videoIds)
                 videoIds.forEach { VideoProgressHelper.deleteAsync(it) }
-                ImageEmbeddingHelper.deleteByIds(touchedIds)
+                ImageEmbeddings.deleteByIds(touchedIds)
             } finally {
                 try { uris.forEach { appContext.contentResolver.delete(it,android.os.Bundle().apply { putInt(MediaStore.QUERY_ARG_MATCH_TRASHED,MediaStore.MATCH_INCLUDE) }) } }
                 finally { moveDir?.delete() }

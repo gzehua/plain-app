@@ -3,25 +3,6 @@ package com.ismartcoding.plain.platform
 import com.ismartcoding.plain.enums.DeviceType
 
 /**
- * App version as displayed to the user (e.g. "1.0.0 (100)").
- */
-expect fun getAppVersion(): String
-
-/**
- * OS version string.
- * Android: "Android 14 (API 34)"
- * iOS: "iOS 17.5"
- */
-expect fun getOSVersion(): String
-
-/**
- * Human-readable device name.
- * Android: manufacturer + model (e.g. "Google Pixel 7")
- * iOS: UIDevice.current.name
- */
-expect fun getDeviceName(): String
-
-/**
  * Build flavor + variant identifier (e.g. "fdroid-debug", "google-release").
  */
 expect fun getBuildType(): String
@@ -41,40 +22,20 @@ expect fun getDeviceType(): DeviceType
  */
 expect fun getDeviceIP4s(): List<String>
 
-/**
- * App's external files directory (Android) or Documents directory (iOS).
- * Used to resolve `app://` and `fid:` paths.
- */
-expect fun appDir(): String
+fun appDir(): String = com.ismartcoding.plain.rust.request.RustContentApi.directory
 
 /**
  * Platform cache/temp directory. Android: `Context.cacheDir`; iOS:
- * `NSTemporaryDirectory()`. Used for short-lived files such as crash reports.
+ * `NSCachesDirectory`. Supplied to Rust once at startup.
  */
 expect fun cacheDirPath(): String
-
-/**
- * Absolute path of the database file with the given [name].
- * On Android this is `<filesDir>/databases/<name>` (matching Room's default
- * location so existing databases are preserved across the KMP migration).
- * On iOS this is `<Documents>/<name>`.
- */
-expect fun databaseFilePath(name: String): String
 
 /**
  * The app's own package name / bundle identifier.
  */
 expect fun getOwnPackageName(): String
 
-/**
- * Absolute path to the Rust preferences file (`prefs.json`) in app data.
- */
-expect fun prefsFilePath(): String
-
-/**
- * Numeric app version code (e.g. 100). 0 if not available.
- */
-expect fun getAppVersionCode(): Long
+expect fun dataDirPath(): String
 
 /**
  * Whether the running app is a debuggable build.

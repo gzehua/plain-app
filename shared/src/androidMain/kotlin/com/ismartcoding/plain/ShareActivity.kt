@@ -1,5 +1,7 @@
 package com.ismartcoding.plain
 
+import com.ismartcoding.plain.platform.appCacheDir
+
 import com.ismartcoding.plain.ui.extensions.collectAsStateValue
 
 import com.ismartcoding.plain.preferences.*
@@ -213,7 +215,7 @@ class ShareActivity : ComponentActivity() {
     }
 
     private fun shareOpenFile(name: String): File =
-        File(File(cacheDir, "share_open").apply { mkdirs() }, name.replace('/', '_'))
+        File(File(File(appCacheDir()), "share_open").apply { mkdirs() }, name.replace('/', '_'))
 
     private suspend fun copyToShareOpenCache(uri: Uri, name: String): File {
         val f = shareOpenFile(name.ifBlank { "file_${System.currentTimeMillis()}" })

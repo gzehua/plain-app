@@ -133,7 +133,7 @@ fun newImageLoader(context: PlatformContext): ImageLoader {
         }
         .diskCache {
             DiskCache.Builder()
-                .directory(appContext.cacheDir.resolve("image_cache").absoluteFile)
+                .directory(java.io.File(imageCacheDir()))
                 .maxSizePercent(1.0)
                 .build()
         }

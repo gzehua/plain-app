@@ -20,7 +20,7 @@ class AppFileRustHttpTest {
         val ids = mutableListOf<String>()
         val source = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir, marker)
         try {
-            val first = AppFileStore.importBytes(data,"text/plain")
+            val first = AppFileFixtures.importBytes(data,"text/plain")
             ids += first.id
             val canonical = File(AppFileStore.toFidUri(first).getFinalPath())
             assertArrayEquals(data,canonical.readBytes())

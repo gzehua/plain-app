@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.page.pomodoro
 
+import com.ismartcoding.plain.graphql.models.PomodoroSettings
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +25,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.data.DPomodoroSettings
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PCapsuleMoreClose
 import com.ismartcoding.plain.ui.base.PScaffold
@@ -42,7 +42,7 @@ import com.ismartcoding.plain.i18n.settings
 fun PomodoroPage(
     navController: NavHostController,
     pomodoroVM: PomodoroViewModel,
-    settingsDialog: @Composable (DPomodoroSettings, (DPomodoroSettings) -> Unit, () -> Unit) -> Unit,
+    settingsDialog: @Composable (PomodoroSettings, (PomodoroSettings) -> Unit, () -> Unit) -> Unit,
     onCheckNotificationPermission: (() -> Unit) -> Unit,
 ) {
     val scope = rememberCoroutineScope()

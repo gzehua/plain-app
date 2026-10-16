@@ -110,7 +110,6 @@
     <string name="keywords">Keywords</string>
     <string name="name">Name</string>
     <string name="sort_by_random">Sort by random</string>
-    <string name="app_restored">APP data is restored, you need to force quit this app and start the app again as new.</string>
     <string name="welcome_text">Welcome! You can easily send text, images, and videos to this page and view them on your computer.\nIf you encounter any issues, please feel free to send an email to support@plainapp.app for assistance or join our Discord discussion at: https://discord.gg/RQWcS6DEEe.</string>
     <string name="donation">Donate</string>
     <string name="donation_desc">PlainApp is free, open-source, and built by one developer. If it saves you time, consider buying a coffee.</string>
@@ -157,4 +156,5 @@
     <string name="clipboard_history">Clipboard history</string>
     <string name="clipboard_source_local">This device</string>
     <string name="clipboard_sync_tips_dir">Choose what each desktop syncs in the desktop settings.</string>
+    <string name="app_restore_ready">The backup is ready to restore. Close and reopen the app to apply it.</string>
 </resources>

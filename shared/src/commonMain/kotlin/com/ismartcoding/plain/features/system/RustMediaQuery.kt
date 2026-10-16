@@ -1,14 +1,14 @@
 package com.ismartcoding.plain.features.system
 
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.graphql.models.Doc as Document
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
+import com.ismartcoding.plain.graphql.models.Image as MediaImage
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.content.gql
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.audio.DAudio
-import com.ismartcoding.plain.data.DImage
-import com.ismartcoding.plain.data.DVideo
-import com.ismartcoding.plain.data.DDoc
 import kotlinx.serialization.json.*
 import kotlin.time.Instant
 
@@ -24,30 +24,19 @@ internal object RustMediaQuery {
     suspend fun rows(type: DataType, query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> {
         val root = root(type)
         val extra = when (type) {
-            DataType.AUDIO -> "artist durationMs albumId isFavorite"
+            DataType.AUDIO -> "artist durationMs albumId albumFileId isFavorite"
             DataType.IMAGE -> "width height rotation takenAt isFavorite"
             DataType.VIDEO -> "durationMs width height rotation takenAt isFavorite"
-            DataType.DOC -> "durationMs"
+            DataType.DOC -> "durationMs extension"
             else -> error("Unsupported media type: $type")
         }
         return PlainRust.mainQuery("$root(query: ${gql(query)}, limit: $limit, offset: $offset, sortBy: ${sortBy.name}) { $COMMON $extra }").getValue(root).jsonArray.map {
             val row = it.jsonObject
-            val id = row.text("id")
-            val title = row.text("title")
-            val path = row.text("path")
-            val size = row.getValue("size").jsonPrimitive.long
-            val bucket = row.text("bucketId")
-            val created = Instant.parse(row.text("createdAt"))
-            val updated = Instant.parse(row.text("updatedAt"))
             when (type) {
-                DataType.AUDIO -> DAudio(id, title, row.text("artist"), path, row.getValue("durationMs").jsonPrimitive.long,
-                    size, bucket, row.text("albumId"), created, updated, row.getValue("isFavorite").jsonPrimitive.boolean)
-                DataType.IMAGE -> DImage(id, title, path, size, row.int("width"), row.int("height"), row.int("rotation"),
-                    bucket, created, updated, row.instantOrNull("takenAt"), row.getValue("isFavorite").jsonPrimitive.boolean)
-                DataType.VIDEO -> DVideo(id, title, path, row.getValue("durationMs").jsonPrimitive.long, size,
-                    row.int("width"), row.int("height"), row.int("rotation"), bucket, created, updated,
-                    row.instantOrNull("takenAt"), row.getValue("isFavorite").jsonPrimitive.boolean)
-                DataType.DOC -> DDoc(id, title, path, row.getValue("durationMs").jsonPrimitive.long, size, bucket, created, updated)
+                DataType.AUDIO -> com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<AudioTrack>(row)
+                DataType.IMAGE -> com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<MediaImage>(row)
+                DataType.VIDEO -> com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<MediaVideo>(row)
+                DataType.DOC -> com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<Document>(row)
                 else -> error("Unsupported media type: $type")
             }
         }

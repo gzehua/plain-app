@@ -1,5 +1,10 @@
 package com.ismartcoding.plain.ui.page.audio
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
+import com.ismartcoding.plain.audio.toPlaylistAudio
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
 import com.ismartcoding.plain.preferences.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,11 +23,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -30,7 +33,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.audio.AudioQueueManager
 import com.ismartcoding.plain.i18n.*
@@ -95,7 +97,7 @@ fun AudioArtistPage(
     val tagsMapState by tagsVM.tagsMapFlow.collectAsState()
 
     val isPlaying by audioIsPlayingFlow().collectAsState()
-    var items by remember { mutableStateOf<List<DAudio>>(listOf()) }
+    var items by remember { mutableStateOf<List<AudioTrack>>(listOf()) }
     val scrollState = rememberLazyListState()
     val dragSelectState = rememberListDragSelectState({ scrollState })
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(canScroll = {
@@ -113,7 +115,7 @@ fun AudioArtistPage(
     LaunchedEffect(artistName, sortBy) {
         items = withIO {
             searchMedia(DataType.AUDIO, artistName, 500, 0, sortBy)
-        }.filterIsInstance<DAudio>().filter { it.artist == artistName }
+        }.filterIsInstance<AudioTrack>().filter { it.artist == artistName }
     }
 
     // Play-all fills the manual queue with exactly this artist's tracks;

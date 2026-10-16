@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.helpers
 
+import com.ismartcoding.plain.platform.appCacheDir
+
 import android.Manifest
 import android.content.Context
 import android.net.Uri
@@ -28,7 +30,7 @@ object FileHelper {
         context: Context,
         name: String,
     ): File {
-        return File("${context.cacheDir.absolutePath}/$name").apply {
+        return File(appCacheDir(), name).apply {
             writeBytes(context.assets.open(name).readBytes())
         }
     }

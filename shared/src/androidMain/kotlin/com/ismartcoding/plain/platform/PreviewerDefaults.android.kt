@@ -64,10 +64,14 @@ actual fun getModel(item: PreviewItem): Any {
     val imageType = remember { ImageHelper.getImageType(item.path, item.path) }
     if (imageType.isApplicableAnimated() || imageType == ImageType.SVG) return item
 
-    val rotation = remember {
-        if (item.rotation == -1) item.rotation = ImageHelper.getRotation(item.path)
-        item.rotation
+    var rotation by remember(item.path) { mutableStateOf(item.rotation) }
+    LaunchedEffect(item.path) {
+        if (rotation == -1) {
+            item.initImageAsync()
+            rotation = item.rotation.takeIf { it >= 0 } ?: 0
+        }
     }
+    if (rotation == -1) return item
     val fileExists = remember(item.path) { fileExistsCache.getOrPut(item.path) { File(item.path).exists() } }
     if (!fileExists) return item
 

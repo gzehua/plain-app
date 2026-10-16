@@ -28,7 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.ismartcoding.plain.enums.FeedEntryFilterType
-import com.ismartcoding.plain.extensions.getFinalPath
+import com.ismartcoding.plain.extensions.rememberFilePath
 import com.ismartcoding.plain.graphql.models.Feed
 import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.i18n.*
@@ -123,7 +123,7 @@ internal fun FeedEntriesDrawerContent(
                             }
                         } else {
                             AsyncImage(
-                                model = feed.logo.getFinalPath(),
+                                model = rememberFilePath(feed.logo),
                                 contentDescription = null,
                                 modifier = Modifier
                                     .size(24.dp)

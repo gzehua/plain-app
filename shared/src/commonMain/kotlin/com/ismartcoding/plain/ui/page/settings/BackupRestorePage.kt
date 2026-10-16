@@ -21,7 +21,6 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.lib.Channel
-import com.ismartcoding.plain.platform.isP
 import com.ismartcoding.plain.enums.ExportFileType
 import com.ismartcoding.plain.enums.PickFileTag
 import com.ismartcoding.plain.enums.PickFileType
@@ -31,7 +30,6 @@ import com.ismartcoding.plain.events.PickFileEvent
 import com.ismartcoding.plain.events.PickFileResultEvent
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.backup
-import com.ismartcoding.plain.platform.backupToFile
 import com.ismartcoding.plain.platform.formatName
 import com.ismartcoding.plain.platform.restore
 import com.ismartcoding.plain.ui.base.PCircularButton
@@ -94,15 +92,7 @@ fun BackupRestorePage(
                         description = stringResource(Res.string.backup),
                         onClick = {
                             val fileName = "backup_" + Clock.System.now().formatName() + ".zip"
-                            // ACTION_CREATE_DOCUMENT is broken on many Samsung Android 9 devices:
-                            // it returns RESULT_CANCELED with no URI even after the user picks a location.
-                            // On Android 9 and below, skip the file picker and write directly to
-                            // app-specific external storage instead.
-                            if (isP()) {
-                                backupToFile(fileName)
-                            } else {
-                                sendEvent(ExportFileEvent(ExportFileType.BACKUP, fileName))
-                            }
+                            sendEvent(ExportFileEvent(ExportFileType.BACKUP, fileName))
                         }
                     )
 

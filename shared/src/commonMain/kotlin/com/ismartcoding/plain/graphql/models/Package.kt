@@ -6,13 +6,13 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Package(
-    var id: String,
+    override var id: String,
     var name: String,
     var type: PackageType,
     var version: String,
     var path: String,
     var size: Long,
-    var certs: List<Certificate>,
+    var certs: List<Certificate> = emptyList(),
     var installedAt: Instant,
     var updatedAt: Instant,
-)
+) : com.ismartcoding.plain.db.IData

@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.features
 
+import com.ismartcoding.plain.platform.appCacheDir
+
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageInstaller
@@ -29,7 +31,7 @@ object BundleApkInstaller {
     fun isBundle(file: File): Boolean = file.extension.lowercase() in BUNDLE_EXTENSIONS
 
     fun install(bundle: File): PackageInstallResult {
-        val cacheDir = appContext.cacheDir
+        val cacheDir = File(appCacheDir())
         if (StatFs(cacheDir.path).availableBytes < bundle.length() * 2) {
             throw IllegalArgumentException("Insufficient storage space to unpack ${bundle.name}")
         }

@@ -1,5 +1,10 @@
 package com.ismartcoding.plain.ui.page.audio
 
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import com.ismartcoding.plain.ui.base.BottomSpace
+
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,8 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -21,10 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.graphql.models.Audio
 import com.ismartcoding.plain.graphql.models.TagHostRecord
-import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.NoDataColumn
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -46,7 +47,7 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun ColumnScope.AudioPageList(
     scrollBehavior: TopAppBarScrollBehavior,
-    dragSelectState: DragSelectState, itemsState: List<DAudio>,
+    dragSelectState: DragSelectState, itemsState: List<AudioTrack>,
     audioVM: AudioViewModel, audioQueueVM: AudioQueueViewModel,
     tagsVM: TagsViewModel, castVM: CastViewModel,
     audioTagsMap: Map<String, List<TagHostRecord>>, isAudioPlaying: Boolean,

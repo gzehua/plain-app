@@ -1,7 +1,8 @@
 package com.ismartcoding.plain.platform
 
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.features.file.RustFileHelper
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.features.file.DStorageStatsItem
 import com.ismartcoding.plain.features.file.FileSortBy
 
@@ -29,38 +30,38 @@ expect fun getUsbDiskPaths(): List<String>
 /**
  * List files in [dir], optionally including hidden files, sorted by [sortBy].
  */
-suspend fun listFilesInDir(dir: String, showHidden: Boolean, sortBy: FileSortBy): List<DFile> = RustFileHelper.list(dir, showHidden, sortBy)
+suspend fun listFilesInDir(dir: String, showHidden: Boolean, sortBy: FileSortBy): List<FileEntry> = RustFileHelper.list(dir, showHidden, sortBy)
 
 /**
  * Search files recursively under [root] matching [query], optionally including hidden files.
  * Rust owns query parsing, traversal, filtering and sorting.
  */
-suspend fun searchFilesInDir(query: String, root: String, sortBy: FileSortBy): List<DFile> = RustFileHelper.search(query, root, sortBy)
+suspend fun searchFilesInDir(query: String, root: String, sortBy: FileSortBy): List<FileEntry> = RustFileHelper.search(query, root, sortBy)
 
 /**
  * Recursively search files under [dir] whose name contains [query] (case-insensitive).
  * When [showHidden] is false, hidden files are skipped. Results are sorted by [sortBy].
  */
-suspend fun searchFilesByName(query: String, dir: String, showHidden: Boolean, sortBy: FileSortBy): List<DFile> = RustFileHelper.searchName(query, dir, showHidden, sortBy)
+suspend fun searchFilesByName(query: String, dir: String, showHidden: Boolean, sortBy: FileSortBy): List<FileEntry> = RustFileHelper.searchName(query, dir, showHidden, sortBy)
 
-suspend fun searchFiles(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<DFile> = RustFileHelper.indexed(query, limit, offset, sortBy)
+suspend fun searchFiles(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<FileEntry> = RustFileHelper.indexed(query, limit, offset, sortBy)
 
 suspend fun countFiles(query: String): Int = RustFileHelper.indexedCount(query)
 
 /**
  * Returns the most recently modified files (up to 100) from MediaStore.
  */
-expect suspend fun getRecentFiles(): List<DFile>
+suspend fun getRecentFiles(): List<FileEntry> = RustFileHelper.recent()
 
 /**
- * Create a directory at [path] (including parents). Returns the resulting DFile.
+ * Create a directory at [path] (including parents). Returns the resulting FileEntry.
  */
-suspend fun createDirectory(path: String): DFile = RustFileHelper.createDirectory(path)
+suspend fun createDirectory(path: String): FileEntry = RustFileHelper.createDirectory(path)
 
 /**
- * Create an empty file at [path]. Returns the resulting DFile.
+ * Create an empty file at [path]. Returns the resulting FileEntry.
  */
-suspend fun createFile(path: String): DFile = RustFileHelper.createFile(path)
+suspend fun createFile(path: String): FileEntry = RustFileHelper.createFile(path)
 
 /**
  * Notify the media scanner that files at [paths] were added/removed.
@@ -93,7 +94,7 @@ expect fun getUSBStorageStats(): List<DStorageStatsItem>
  * List entries inside a zip file at [zipVirtualPath], sorted by [sortBy].
  * Returns empty list if the path is not a zip or cannot be read.
  */
-expect suspend fun listZipEntries(zipVirtualPath: String, sortBy: FileSortBy): List<DFile>
+expect suspend fun listZipEntries(zipVirtualPath: String, sortBy: FileSortBy): List<FileEntry>
 
 /**
  * Extract a single zip entry to a temporary cache file and return its path.
@@ -112,12 +113,6 @@ suspend fun extractZipEntryToCache(zipVirtualPath: String): String? = try {
  */
 suspend fun deleteFileOrDir(path: String): Boolean = RustFileHelper.delete(path)
 
-/**
- * Given an existing [path], returns a sibling path with a "(1)", "(2)"... suffix
- * inserted before the extension that does not yet exist. Used to avoid overwriting
- * an existing file when moving/copying/zipping.
- */
-expect fun getNewPath(path: String): String
 
 /**
  * Canonical absolute path of [path] (resolving symlinks). Falls back to the
@@ -125,17 +120,7 @@ expect fun getNewPath(path: String): String
  */
 expect fun getCanonicalPath(path: String): String
 
-/**
- * Recursively copy a file or directory from [srcPath] to [destPath].
- * Returns true on success.
- */
-expect fun copyFileOrDir(srcPath: String, destPath: String): Boolean
 
-/**
- * Move a file or directory from [srcPath] to [destPath]. Tries an atomic rename
- * first and falls back to copy-then-delete. Returns true on success.
- */
-expect fun moveFileOrDir(srcPath: String, destPath: String): Boolean
 
 /**
  * Zip the given [sourcePaths] (files and/or directories) into a new archive at
@@ -166,4 +151,4 @@ private suspend fun archiveOperation(operation: suspend () -> String): Boolean =
  * Returns file metadata (size, last-modified, is-directory) for [path], or null
  * if the file does not exist. Children count is 0 for non-directories.
  */
-expect fun statFile(path: String): DFile?
+expect fun statFile(path: String): FileEntry?

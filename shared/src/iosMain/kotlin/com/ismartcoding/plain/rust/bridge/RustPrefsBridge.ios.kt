@@ -2,8 +2,6 @@ package com.ismartcoding.plain.rust.bridge
 
 import com.ismartcoding.plain.rustprefs.plain_prefs_open
 import com.ismartcoding.plain.rustprefs.plain_prefs_string_free
-import com.ismartcoding.plain.rustprefs.plain_prefs_update_user
-import com.ismartcoding.plain.rustprefs.plain_prefs_user_action
 import com.ismartcoding.plain.rustprefs.plain_prefs_user_snapshot
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.cstr
@@ -12,8 +10,8 @@ import kotlinx.cinterop.toKString
 
 @OptIn(ExperimentalForeignApi::class)
 internal actual object RustPrefsBridge {
-    actual fun open(systemPath: String, userPath: String) = memScoped {
-        checkError(plain_prefs_open(systemPath.cstr.ptr, userPath.cstr.ptr))
+    actual fun open(dataDir: String, cacheDir: String) = memScoped {
+        checkError(plain_prefs_open(dataDir.cstr.ptr, cacheDir.cstr.ptr))
     }
 
     actual fun userSnapshot(): String = memScoped {
@@ -23,14 +21,6 @@ internal actual object RustPrefsBridge {
         } finally {
             plain_prefs_string_free(result)
         }
-    }
-
-    actual fun updateUser(patchJson: String) = memScoped {
-        checkError(plain_prefs_update_user(patchJson.cstr.ptr))
-    }
-
-    actual fun userAction(actionJson: String) = memScoped {
-        checkError(plain_prefs_user_action(actionJson.cstr.ptr))
     }
 
     private fun checkError(pointer: kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar>?) {

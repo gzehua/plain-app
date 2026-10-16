@@ -42,6 +42,7 @@ kotlin {
             implementation(libs.zxing.core)
         }
 
+        getByName("commonTest").kotlin.srcDir("src/testFixtures/kotlin")
         commonTest.dependencies {
             implementation(kotlin("test"))
         }

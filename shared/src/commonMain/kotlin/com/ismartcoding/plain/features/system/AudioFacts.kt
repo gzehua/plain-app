@@ -11,7 +11,7 @@ internal data class AudioFacts(
     val size: Long,
     val bucketId: String,
     val durationMs: Long,
-    val albumFileId: String,
+    val albumArtUri: String,
     val albumId: String,
     val createdAt: String,
     val updatedAt: String,

@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.features.media
 
+import com.ismartcoding.plain.TempData
+
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
 import com.ismartcoding.plain.helpers.ContentWhere
 import android.content.Context
 import android.net.Uri
@@ -11,18 +14,13 @@ import com.ismartcoding.plain.lib.extensions.getTimeSecondsValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.isQPlus
-import com.ismartcoding.plain.TempData
-import com.ismartcoding.plain.data.DVideo
 import com.ismartcoding.plain.data.TagRelationStub
 import com.ismartcoding.plain.enums.AppFeatureType
 import com.ismartcoding.plain.enums.MediaType
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.enums.has
-import com.ismartcoding.plain.events.MediaDurationZeroEvent
-import com.ismartcoding.plain.events.MediaDurationZeroItem
 import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.features.file.toSortBy
-import com.ismartcoding.plain.lib.sendEvent
 import kotlin.time.Instant
 
 object VideoMediaStoreHelper : BaseMediaContentHelper() {
@@ -61,7 +59,7 @@ object VideoMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
-    ): List<DVideo> = com.ismartcoding.plain.features.system.RustMediaQuery.rows(com.ismartcoding.plain.enums.DataType.VIDEO, query, limit, offset, sortBy).map { it as DVideo }
+    ): List<MediaVideo> = com.ismartcoding.plain.features.system.RustMediaQuery.rows(com.ismartcoding.plain.enums.DataType.VIDEO, query, limit, offset, sortBy).map { it as MediaVideo }
 
     suspend fun searchAsync(
         context: Context,
@@ -69,9 +67,8 @@ object VideoMediaStoreHelper : BaseMediaContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
-    ): List<DVideo> = withIO {
-        val videos = mutableListOf<DVideo>()
-        val zeroDurationItems = mutableListOf<MediaDurationZeroItem>()
+    ): List<MediaVideo> = withIO {
+        val videos = mutableListOf<MediaVideo>()
         
         getPagingCursorAsync(context, where, limit, offset, sortBy.toSortBy())?.map { cursor, cache ->
             val id = cursor.getStringValue(MediaStore.Video.Media._ID, cache)
@@ -89,26 +86,11 @@ object VideoMediaStoreHelper : BaseMediaContentHelper() {
             val takenAt = if (dateTakenMs > 0) Instant.fromEpochMilliseconds(dateTakenMs) else null
             val isFavorite = if (AppFeatureType.MEDIA_FAVORITE.has()) cursor.getIntValue(MediaStore.Video.Media.IS_FAVORITE, cache) == 1 else false
 
-            // MediaStore.DURATION is read-only on Android 10+; for fMP4 files
-            // it stays 0. Fall back to the app-local cache (computed by
-            // MediaDurationFixQueue, stored in milliseconds — same unit as
-            // DVideo.durationMs and the MediaStore column) before reporting zero to the UI.
-            val effectiveDurationMs = if (durationMs <= 0L) {
-                com.ismartcoding.plain.features.MediaDurationHelper.cachedDuration("video", id, path, size, updatedAt)
-            } else {
-                durationMs
-            }
-            val video = DVideo(id, title, path, effectiveDurationMs, size, width, height, rotation, bucketId, createdAt, updatedAt, takenAt, isFavorite)
+            val video = MediaVideo(id = id, title = title, path = path, durationMs = durationMs, size = size, width = width, height = height, rotation = rotation, bucketId = bucketId, createdAt = createdAt, updatedAt = updatedAt, takenAt = takenAt, isFavorite = isFavorite)
             videos.add(video)
 
-            if (effectiveDurationMs <= 0L && path.isNotEmpty()) {
-                zeroDurationItems.add(MediaDurationZeroItem(id, path, size, updatedAt))
-            }
         }
         
-        if (zeroDurationItems.isNotEmpty()) {
-            sendEvent(MediaDurationZeroEvent("video", zeroDurationItems))
-        }
         
         videos
     }

@@ -1,7 +1,8 @@
 package com.ismartcoding.plain.helpers
 
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.features.file.DFile
 import kotlin.time.Instant
 import java.io.DataOutputStream
 
@@ -93,7 +94,7 @@ object RootHelper {
      * Lists files in [dir] using a root shell.
      * Translates FUSE paths to real paths for the shell command, then maps results back.
      */
-    fun listFiles(dir: String, showHidden: Boolean): List<DFile> {
+    fun listFiles(dir: String, showHidden: Boolean): List<FileEntry> {
         val realDir = toRealPath(dir)
         // Escape double-quotes in path for the shell
         val safeDir = realDir.replace("\"", "\\\"")
@@ -128,16 +129,7 @@ object RootHelper {
                 // Map real path back to FUSE path for app-internal use
                 val displayPath = fromRealPath(rawPath)
                 val isDir = typeName.contains("directory")
-                DFile(
-                    name = name,
-                    path = displayPath,
-                    permission = "",
-                    createdAt = null,
-                    updatedAt = Instant.fromEpochMilliseconds(epochSeconds * 1000L),
-                    size = if (isDir) 0L else size,
-                    isDir = isDir,
-                    childCount = 0,
-                )
+                FileEntry(name = name, path = displayPath, permission = "", createdAt = null, updatedAt = Instant.fromEpochMilliseconds(epochSeconds * 1000L), size = if (isDir) 0L else size, isDir = isDir, childCount = 0)
             }
     }
 }

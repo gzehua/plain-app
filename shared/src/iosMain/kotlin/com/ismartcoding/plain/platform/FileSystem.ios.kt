@@ -2,17 +2,16 @@
 
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.extensions.normalizeComparison
-import com.ismartcoding.plain.extensions.sorted
-import com.ismartcoding.plain.features.file.DFile
+
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.features.file.DStorageStatsItem
 import com.ismartcoding.plain.features.file.FileSortBy
-import com.ismartcoding.plain.helpers.FilterField
-import com.ismartcoding.plain.helpers.QueryHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlin.time.Instant
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.toKString
 import kotlinx.datetime.toKotlinInstant
 import platform.Foundation.NSDate
 import platform.Foundation.NSFileModificationDate
@@ -31,7 +30,6 @@ actual fun getSDCardPath(): String = ""
 
 actual fun getUsbDiskPaths(): List<String> = emptyList()
 
-actual suspend fun getRecentFiles(): List<DFile> = emptyList()
 
 actual fun scanFiles(paths: Array<String>) {}
 
@@ -52,49 +50,23 @@ actual fun getSDCardStorageStats(): DStorageStatsItem = DStorageStatsItem(0, 0)
 
 actual fun getUSBStorageStats(): List<DStorageStatsItem> = emptyList()
 
-actual suspend fun listZipEntries(zipVirtualPath: String, sortBy: FileSortBy): List<DFile> = com.ismartcoding.plain.features.file.RustFileHelper.list(zipVirtualPath, true, sortBy)
+actual suspend fun listZipEntries(zipVirtualPath: String, sortBy: FileSortBy): List<FileEntry> = com.ismartcoding.plain.features.file.RustFileHelper.list(zipVirtualPath, true, sortBy)
 
-actual fun getNewPath(path: String): String {
-    val dotIndex = path.lastIndexOf('.')
-    val slashIndex = path.lastIndexOf('/')
-    val base = if (dotIndex > slashIndex) path.substring(0, dotIndex) else path
-    val ext = if (dotIndex > slashIndex) path.substring(dotIndex) else ""
-    return "$base (1)$ext"
+
+actual fun getCanonicalPath(path: String): String {
+    val resolved = platform.posix.realpath(path, null) ?: return path
+    return try { resolved.toKString() } finally { platform.posix.free(resolved) }
 }
 
-actual fun getCanonicalPath(path: String): String = path
 
-actual fun copyFileOrDir(srcPath: String, destPath: String): Boolean {
-    return try {
-        NSFileManager.defaultManager.copyItemAtPath(srcPath, destPath, error = null)
-    } catch (e: Exception) {
-        false
-    }
-}
 
-actual fun moveFileOrDir(srcPath: String, destPath: String): Boolean {
-    return try {
-        NSFileManager.defaultManager.moveItemAtPath(srcPath, destPath, error = null)
-    } catch (e: Exception) {
-        false
-    }
-}
-
-actual fun statFile(path: String): DFile? {
+actual fun statFile(path: String): FileEntry? {
     if (!NSFileManager.defaultManager.fileExistsAtPath(path)) return null
     val name = path.substringAfterLast('/')
-    return buildDFile(path, name, showHidden = false, computeChildren = false)
+    return buildFile(path, name)
 }
 
-private fun joinPath(dir: String, name: String): String =
-    if (dir.endsWith("/")) "$dir$name" else "$dir/$name"
-
-private fun buildDFile(
-    path: String,
-    name: String,
-    showHidden: Boolean,
-    computeChildren: Boolean,
-): DFile? {
+private fun buildFile(path: String, name: String): FileEntry? {
     val mgr = NSFileManager.defaultManager
     val attrs = try {
         mgr.attributesOfItemAtPath(path, null) ?: return null
@@ -105,57 +77,5 @@ private fun buildDFile(
     val size = if (isDir) 0L else (attrs[NSFileSize] as? Long) ?: 0L
     val updatedAt = (attrs[NSFileModificationDate] as? NSDate?)?.toKotlinInstant()
         ?: Instant.fromEpochMilliseconds(0)
-    val childCount = if (isDir && computeChildren) countChildren(path, showHidden) else 0
-    return DFile(
-        name = name,
-        path = path,
-        permission = "",
-        createdAt = null,
-        updatedAt = updatedAt,
-        size = size,
-        isDir = isDir,
-        childCount = childCount,
-        mediaId = "",
-    )
-}
-
-private fun countChildren(dir: String, showHidden: Boolean): Int {
-    val names = NSFileManager.defaultManager.contentsOfDirectoryAtPath(dir, null)?.filterIsInstance<String>() ?: return 0
-    return if (showHidden) names.size else names.count { !it.startsWith(".") }
-}
-
-private fun searchRecursive(query: String, root: String, showHidden: Boolean): List<DFile> {
-    val mgr = NSFileManager.defaultManager
-    if (!mgr.fileExistsAtPath(root)) return emptyList()
-    val enumerator = mgr.enumeratorAtPath(root) ?: return emptyList()
-    val results = ArrayList<DFile>()
-    while (true) {
-        val raw = enumerator.nextObject() ?: break
-        val rel = raw.toString()
-        if (!showHidden && rel.split('/').any { it.startsWith(".") }) continue
-        val name = rel.substringAfterLast('/')
-        if (query.isNotEmpty() && !name.contains(query, ignoreCase = true)) continue
-        val fullPath = joinPath(root, rel)
-        val dfile = buildDFile(fullPath, name, showHidden, computeChildren = false) ?: continue
-        results.add(dfile)
-    }
-    return results
-}
-
-private fun matchFileSizeFilters(size: Long, fileSizeFields: List<FilterField>): Boolean {
-    for (f in fileSizeFields) {
-        val (op, rawValue) = f.normalizeComparison(defaultOp = "=")
-        val bytes = rawValue.toLongOrNull() ?: return false
-        val ok = when (op) {
-            ">" -> size > bytes
-            ">=" -> size >= bytes
-            "<" -> size < bytes
-            "<=" -> size <= bytes
-            "!=" -> size != bytes
-            "=", "" -> size == bytes
-            else -> true
-        }
-        if (!ok) return false
-    }
-    return true
+    return FileEntry(name = name, path = path, permission = "", createdAt = null, updatedAt = updatedAt, size = size, isDir = isDir, childCount = 0, mediaId = "")
 }

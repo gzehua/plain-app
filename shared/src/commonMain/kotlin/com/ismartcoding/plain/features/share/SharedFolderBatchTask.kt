@@ -12,9 +12,8 @@ class SharedFolderBatchTask(
     val title: String,
     /** "" = public Downloads target; otherwise an absolute directory path. */
     val targetDir: String,
-    /** Working endpoint; refreshed from a fresh enqueue before a re-run (see [refreshFrom]). */
-    var link: SharedLink,
-    var urlToken: String,
+    val link: SharedLink,
+    val urlToken: String,
     val entries: List<SharedFileDto>,
     val zipName: String = "",
 ) : DownloadTaskHandle {
@@ -30,8 +29,6 @@ class SharedFolderBatchTask(
     var currentFile: String = ""
     var packing: Boolean = false
     var failures = mutableListOf<DownloadFailure>()
-    override var aborted: Boolean = false
-    override var job: kotlinx.coroutines.Job? = null
 
     override fun flowSnapshot(): DownloadTaskHandle {
         val s = SharedFolderBatchTask(
@@ -51,14 +48,6 @@ class SharedFolderBatchTask(
         return s
     }
 
-    /** Takes over the fresh enqueue's endpoint, so re-runs survive address changes. */
-    override fun refreshFrom(fresh: DownloadTaskHandle) {
-        if (fresh !is SharedFolderBatchTask) return
-        link = fresh.link
-        urlToken = fresh.urlToken
-    }
-
     /** Overall fraction 0..1; 0 while the walker is still counting. */
     fun fraction(): Float = if (totalSize > 0) (downloadedSize.toFloat() / totalSize).coerceIn(0f, 1f) else 0f
 }
-

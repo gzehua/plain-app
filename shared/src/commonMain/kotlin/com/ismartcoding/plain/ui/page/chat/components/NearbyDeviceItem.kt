@@ -1,7 +1,9 @@
 package com.ismartcoding.plain.ui.page.chat.components
 
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+
+import com.ismartcoding.plain.graphql.models.NearbyDevice
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -12,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.i18n.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.data.DNearbyDevice
 import com.ismartcoding.plain.enums.BadgeType
 import com.ismartcoding.plain.enums.ButtonSize
 import com.ismartcoding.plain.enums.ButtonType
@@ -32,7 +33,7 @@ import com.ismartcoding.plain.i18n.bluetooth
 
 @Composable
 fun NearbyDeviceItem(
-    item: DNearbyDevice,
+    item: NearbyDevice,
     status: NearbyItemStatus,
     bestIp: String,
 ) {
@@ -43,7 +44,7 @@ fun NearbyDeviceItem(
         PListItem(
             title = item.name,
             titleSuffix = {
-                if (DiscoveryMethod.BLE in item.discoveryMethods) {
+                if (DiscoveryMethod.BLE.name in item.discoveryMethods) {
                     Icon(
                         painter = painterResource(UiRes.drawable.ui_drawable_bluetooth),
                         contentDescription = "Bluetooth",
@@ -51,8 +52,8 @@ fun NearbyDeviceItem(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                if (DiscoveryMethod.LAN in item.discoveryMethods) {
-                    if (DiscoveryMethod.BLE in item.discoveryMethods) HorizontalSpace(2.dp)
+                if (DiscoveryMethod.LAN.name in item.discoveryMethods) {
+                    if (DiscoveryMethod.BLE.name in item.discoveryMethods) HorizontalSpace(2.dp)
                     Icon(
                         painter = painterResource(UiRes.drawable.ui_drawable_wifi),
                         contentDescription = "Wi-Fi",
@@ -66,7 +67,7 @@ fun NearbyDeviceItem(
                 }
             },
             subtitle = bestIp,
-            icon = item.deviceType.getIcon(),
+            icon = runCatching { com.ismartcoding.plain.enums.DeviceType.valueOf(item.deviceType) }.getOrDefault(com.ismartcoding.plain.enums.DeviceType.OTHER).getIcon(),
             action = {
                 when (status) {
                     NearbyItemStatus.PAIRING -> {

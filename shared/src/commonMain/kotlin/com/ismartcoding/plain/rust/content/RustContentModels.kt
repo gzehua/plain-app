@@ -5,9 +5,6 @@ import com.ismartcoding.plain.graphql.models.Feed
 import com.ismartcoding.plain.graphql.models.FeedEntry
 import com.ismartcoding.plain.graphql.models.Note
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.platform.chaCha20Decrypt
-import com.ismartcoding.plain.preferences.RustSystemState
-import kotlin.io.encoding.Base64
 import kotlin.time.Instant
 import kotlinx.serialization.json.*
 

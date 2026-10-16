@@ -4,8 +4,6 @@ import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.ismartcoding.plain.features.sms.SmsHelper
-import com.ismartcoding.plain.features.sms.SmsSendResultTracker
 import com.ismartcoding.plain.lib.TimeHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,16 +19,10 @@ class SmsSentReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         receiverScope.launch {
             try {
-                val result = SmsSendResultTracker.record(
-                    requestId = requestId,
-                    partIndex = partIndex,
-                    partCount = partCount,
-                    resultCode = broadcastResultCode,
-                    successResultCode = Activity.RESULT_OK,
-                    terminalAtMillis = TimeHelper.nowMillis(),
-                ) ?: return@launch
-                SmsHelper.cancelSmsTimeout(requestId)
-                SmsHelper.dispatchSmsSendResult(requestId, result)
+                val report = com.ismartcoding.plain.features.sms.SmsPartSentReport(requestId, partIndex, partCount,
+                    broadcastResultCode == Activity.RESULT_OK, broadcastResultCode)
+                com.ismartcoding.plain.rust.PlainRust.publish(com.ismartcoding.plain.events.HostEvent(
+                    com.ismartcoding.plain.events.EventType.SMS_PART_SENT_REPORTED, com.ismartcoding.plain.lib.JsonHelper.jsonEncode(report)))
             } finally {
                 pendingResult.finish()
             }

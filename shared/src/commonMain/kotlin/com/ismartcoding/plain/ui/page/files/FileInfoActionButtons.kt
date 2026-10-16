@@ -1,12 +1,13 @@
 package com.ismartcoding.plain.ui.page.files
 
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.openFileExternal
 import com.ismartcoding.plain.platform.shareFiles
@@ -39,7 +40,7 @@ import com.ismartcoding.plain.i18n.copy
 
 @Composable
 internal fun FileInfoPrimaryActions(
-    file: DFile,
+    file: FileEntry,
     filesVM: FilesViewModel,
     onDismiss: () -> Unit,
     onShowPasteBar: (Boolean) -> Unit,
@@ -78,7 +79,7 @@ internal fun FileInfoPrimaryActions(
 
 @Composable
 internal fun FileInfoSecondaryActions(
-    file: DFile,
+    file: FileEntry,
     filesVM: FilesViewModel,
     isFavorite: Boolean,
     onFavoriteToggle: () -> Unit,

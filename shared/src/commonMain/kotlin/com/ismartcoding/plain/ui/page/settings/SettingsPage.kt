@@ -61,11 +61,18 @@ fun SettingsPage(navController: NavHostController, updateViewModel: UpdateViewMo
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     var cacheSize by remember { mutableLongStateOf(0L) }
-    var fileSize by remember { mutableLongStateOf(getLogFileSize()) }
+    var fileSize by remember { mutableLongStateOf(0L) }
     val isDiscoverable = UserPrefs.nearbyDiscoverable.collectAsStateValue()
     LaunchedEffect(Unit) {
         scope.launch(Dispatchers.Default) {
-            cacheSize = getCacheSize()
+            try {
+                cacheSize = getCacheSize()
+                fileSize = getLogFileSize()
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                DialogHelper.showErrorMessage(error.toString())
+            }
         }
     }
 

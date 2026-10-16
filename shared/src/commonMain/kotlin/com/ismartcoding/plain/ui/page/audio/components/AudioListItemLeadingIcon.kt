@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.page.audio.components
 
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
 import com.ismartcoding.plain.i18n.*
-
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
 import com.ismartcoding.plain.ui.components.CheckCircle
 import com.ismartcoding.plain.ui.components.PulsatingWave
@@ -23,7 +22,7 @@ import com.ismartcoding.plain.i18n.cast
 
 @Composable
 fun AudioListItemLeadingIcon(
-    item: DAudio,
+    item: AudioTrack,
     dragSelectState: DragSelectState,
     castMode: Boolean,
     isCurrentItemLoading: Boolean,

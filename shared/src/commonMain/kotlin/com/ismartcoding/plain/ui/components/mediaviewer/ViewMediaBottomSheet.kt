@@ -1,22 +1,23 @@
 package com.ismartcoding.plain.ui.components.mediaviewer
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
+import com.ismartcoding.plain.graphql.models.Video as MediaVideo
+import com.ismartcoding.plain.graphql.models.Image as MediaImage
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.chat.models.MessageFile
-import com.ismartcoding.plain.data.DImage
-import com.ismartcoding.plain.data.DVideo
 import com.ismartcoding.plain.graphql.models.Image
 import com.ismartcoding.plain.graphql.models.TagHostRecord
 import com.ismartcoding.plain.graphql.models.TagHostRelation
@@ -92,13 +93,13 @@ fun ViewMediaBottomSheet(
 
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
-        if (m.data is DImage) {
+        if (m.data is MediaImage) {
             scope.launch(Dispatchers.Default) {
                 qrScanResult = tryDecodeQrCode(m.path) ?: ""
             }
         }
         // `PreviewItem` rows built from raw markdown (`<img src="app://…">` or
-        // `![alt](app://…)`) have no associated `MessageFile` / `DImage`, so the
+        // `![alt](app://…)`) have no associated `MessageFile` / `MediaImage`, so the
         // caller never gets a chance to set `size` at construction time. Stat
         // the file lazily here so we don't pay the cost for every image in the
         // document on every recomposition — only the one the user is currently
@@ -123,7 +124,7 @@ fun ViewMediaBottomSheet(
                     deleteAction = deleteAction, onDismiss = onDismiss,
                     onCast = castViewModel?.let { vm -> { vm.showCastDialog.value = true } })
             }
-            if (m.data is DImage || m.data is DVideo) {
+            if (m.data is MediaImage || m.data is MediaVideo) {
                 item {
                     VerticalSpace(dp = 16.dp)
                     Subtitle(text = stringResource(Res.string.tags))
@@ -146,11 +147,11 @@ fun ViewMediaBottomSheet(
                     if (intrinsicSize.width > 0 && intrinsicSize.height > 0) {
                         PListItem(title = stringResource(Res.string.dimensions), value = "${intrinsicSize.width}\u00d7${intrinsicSize.height}")
                     }
-                    if (m.data is DImage) {
+                    if (m.data is MediaImage) {
                         PListItem(title = stringResource(Res.string.created_at), value = m.data.createdAt.formatDateTime())
                         PListItem(title = stringResource(Res.string.updated_at), value = m.data.updatedAt.formatDateTime())
                         ImageMetaRows(path = m.path, loadMeta = { getImageMeta(it) }, formatTexts = { mt -> formatImageMetaTexts(mt) })
-                    } else if (m.data is DVideo) {
+                    } else if (m.data is MediaVideo) {
                         PListItem(title = stringResource(Res.string.created_at), value = m.data.createdAt.formatDateTime())
                         PListItem(title = stringResource(Res.string.updated_at), value = m.data.updatedAt.formatDateTime())
                         VideoMetaRows(path = m.path, loadMeta = { getVideoMeta(it) })

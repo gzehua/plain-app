@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.features.media
 
+import com.ismartcoding.plain.features.file.extension
+
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
@@ -13,11 +17,9 @@ import com.ismartcoding.plain.lib.extensions.queryCursor
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.extensions.toFile
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.features.file.FileSortBy
 import com.ismartcoding.plain.features.file.toFileSortBy
 import com.ismartcoding.plain.enums.DataType
-import com.ismartcoding.plain.helpers.QueryHelper
 
 object FileMediaStoreHelper : BaseContentHelper() {
     override val uriExternal: Uri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
@@ -41,21 +43,21 @@ object FileMediaStoreHelper : BaseContentHelper() {
         limit: Int,
         offset: Int,
         sortBy: FileSortBy,
-    ): List<DFile> = withIO {
+    ): List<FileEntry> = withIO {
         val items = context.contentResolver.getPagingCursor(
             uriExternal, getProjection(), where,
             limit, offset, sortBy.toFileSortBy()
         )?.map { cursor, cache ->
             cursor.toFile(cache)
         } ?: emptyList()
-        val folderIds = items.filter { it.isDir }.map { it.mediaId }
+        val folderIds = items.filter { it.isDir }.mapNotNull { it.mediaId }
         val counts = getChildrenCountAsync(context, folderIds)
         return@withIO items.map {
-            it.copy(childCount = counts[it.mediaId] ?: 0)
+            it.copy(childCount = counts[it.mediaId.orEmpty()] ?: 0)
         }
     }
 
-    fun getByIdAsync(context: Context, id: String): DFile? {
+    fun getByIdAsync(context: Context, id: String): FileEntry? {
         return context.contentResolver
             .queryCursor(uriExternal, getProjection(), "${MediaStore.Files.FileColumns._ID} = ?", arrayOf(id))?.find { cursor, cache ->
                 cursor.toFile(cache)
@@ -86,14 +88,4 @@ object FileMediaStoreHelper : BaseContentHelper() {
     }
 
 
-    suspend fun getRecentFilesAsync(context: Context): List<DFile> = withIO {
-        val where = ContentWhere()
-        where.addNotEqual(MediaStore.Files.FileColumns.MIME_TYPE,  "vnd.android.document/directory")
-        return@withIO context.contentResolver.getPagingCursor(
-            uriExternal, getProjection(), where,
-            100, 0, FileSortBy.DATE_DESC.toFileSortBy()
-        )?.map { cursor, cache ->
-            cursor.toFile(cache)
-        } ?: emptyList()
-    }
 }

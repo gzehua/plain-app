@@ -1,11 +1,11 @@
 package com.ismartcoding.plain.ui.page.playlist
 
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
 import com.ismartcoding.plain.ui.models.AudioViewModel
@@ -23,7 +23,7 @@ internal fun PlaylistTracksList(
     itemCount: Int,
     albums: List<PlaylistAlbumCover>,
     gradientIndex: Int,
-    rowAudios: List<DAudio>,
+    rowAudios: List<AudioTrack>,
     audioVM: AudioViewModel,
     audioQueueVM: AudioQueueViewModel,
     tagsVM: TagsViewModel,

@@ -9,12 +9,12 @@ data class Audio(
     override var title: String,
     var artist: String,
     override var path: String,
-    var durationMs: Long,
+    override var durationMs: Long,
     override var size: Long,
     override var bucketId: String,
-    var albumFileId: String,
+    var albumFileId: String = "",
     override var createdAt: Instant,
     override var updatedAt: Instant,
-    var isFavorite: Boolean,
+    var isFavorite: Boolean = false,
     var albumId: String = "",
-) : MediaItem
+) : MediaItem, com.ismartcoding.plain.db.IMedia

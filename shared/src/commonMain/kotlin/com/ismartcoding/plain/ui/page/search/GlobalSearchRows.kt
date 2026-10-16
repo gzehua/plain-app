@@ -39,7 +39,6 @@ import com.ismartcoding.plain.ui.components.mediaviewer.previewer.TransformItemS
 import com.ismartcoding.plain.ui.components.mediaviewer.previewer.rememberTransformItemState
 import com.ismartcoding.plain.ui.models.GlobalSearchHit
 import com.ismartcoding.plain.ui.models.GlobalSearchSource
-import com.ismartcoding.plain.ui.models.VPackage
 import com.ismartcoding.plain.ui.page.audio.components.AudioListItem
 import com.ismartcoding.plain.ui.page.feeds.FeedClusterEntryRow
 import com.ismartcoding.plain.ui.page.feeds.FeedListRow
@@ -158,17 +157,7 @@ fun GlobalSearchRow(
 
         is GlobalSearchSource.App -> CardSpace {
             PackageListItem(
-                item = VPackage(
-                    id = src.info.id,
-                    name = src.info.name,
-                    type = src.info.type,
-                    version = src.info.version,
-                    path = src.info.path,
-                    size = src.info.size,
-                    certs = src.info.certs,
-                    installedAt = src.info.installedAt,
-                    updatedAt = src.info.updatedAt,
-                ),
+                item = src.info,
                 iconProvider = { getApplicationIcon(it) },
                 modifier = PlainTheme.getCardModifier(),
                 onClick = { onOpen(hit) },

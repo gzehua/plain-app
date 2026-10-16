@@ -1,21 +1,11 @@
 package com.ismartcoding.plain.audio
 
-import android.content.Context
-import android.media.MediaMetadataRetriever
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import com.ismartcoding.plain.graphql.models.AudioItem
-import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.i18n.unknown
-import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
 import com.ismartcoding.plain.lib.extensions.pathToUri
-import com.ismartcoding.plain.platform.LocaleHelper
 
-/**
- * Android-specific extensions on [AudioItem] kept in androidMain because they
- * depend on MediaMetadataRetriever and Media3.
- */
 @OptIn(UnstableApi::class)
 fun AudioItem.toMediaItem(): MediaItem {
     val mediaMetadata = MediaMetadata.Builder()
@@ -31,31 +21,4 @@ fun AudioItem.toMediaItem(): MediaItem {
         .setCustomCacheKey(path)
         .setMediaMetadata(mediaMetadata)
         .build()
-}
-
-fun AudioItem.Companion.fromPath(
-    context: Context,
-    path: String,
-): AudioItem {
-    val retriever = MediaMetadataRetriever()
-    var title = path.getFilenameWithoutExtensionFromPath()
-    var durationMs = 0L
-    var artist = LocaleHelper.getString(Res.string.unknown)
-
-    try {
-        retriever.setDataSource(context, path.pathToUri())
-        val keyTitle = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE) ?: ""
-        if (keyTitle.isNotEmpty()) {
-            title = keyTitle
-        }
-        durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong() ?: 0L
-        val keyArtist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST) ?: ""
-        if (keyArtist.isNotEmpty()) {
-            artist = keyArtist
-        }
-        retriever.release()
-    } catch (ex: Throwable) {
-        ex.printStackTrace()
-    }
-    return AudioItem(title = title, path = path, artist = artist, durationMs = durationMs)
 }

@@ -2,7 +2,6 @@ package com.ismartcoding.plain
 
 object Constants {
     const val SSL_NAME = "Plain"
-    const val DATABASE_NAME = "plain.db"
     const val NOTIFICATION_CHANNEL_ID = "default"
     const val CHAT_NOTIFICATION_CHANNEL_ID = "peer_chat"
     const val SUPPORT_EMAIL = "support@plainapp.app"

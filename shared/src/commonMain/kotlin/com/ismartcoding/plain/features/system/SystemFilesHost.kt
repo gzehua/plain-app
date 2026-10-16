@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.features.system
 
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
 
@@ -16,19 +18,16 @@ internal object SystemFilesHost {
             ))
         }
         "systemMountFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.storageVolumeFacts())
-        "systemRecentFileFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.getRecentFiles().map(::fileFacts))
-        "systemImageFileInfo" -> fileInfoFacts(method, params)
-        "systemVideoFileInfo" -> fileInfoFacts(method, params)
-        "systemAudioFileInfo" -> fileInfoFacts(method, params)
+        "imageDecodeBounds" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.readImageBounds(params.getValue("path").jsonPrimitive.content))
         else -> error("Unsupported provider operation")
     }
 
     /** The `File` contract row. `mediaId` stays an empty string for non-media
      * entries; Rust maps that to `null` rather than carrying the sentinel. */
-    private fun fileFacts(file: com.ismartcoding.plain.features.file.DFile): FileFacts = FileFacts(
+    private fun fileFacts(file: FileEntry): FileFacts = FileFacts(
         name = file.name,
         path = file.path,
-        mediaId = file.mediaId,
+        mediaId = file.mediaId.orEmpty(),
         createdAt = file.createdAt?.toEpochMilliseconds(),
         updatedAt = file.updatedAt.toEpochMilliseconds(),
         size = file.size,
@@ -36,12 +35,4 @@ internal object SystemFilesHost {
         childCount = file.childCount,
     )
 
-    private fun fileInfoFacts(method: String, params: JsonObject): JsonElement {
-        val path = params.getValue("path").jsonPrimitive.content
-        return when (method) {
-            "systemImageFileInfo" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.loadImageInfo(path))
-            "systemVideoFileInfo" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.loadVideoInfo(path))
-            else -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.loadAudioInfo(path))
-        }
-    }
 }

@@ -25,7 +25,6 @@ class AudioEngineRustHttpTest {
         fun track(index: Int) = AudioItem(title = "Track $index", path = "$prefix/$index", artist = "Synthetic", durationMs = 117123, mediaId = "$prefix-$index")
         val oldProvider = AudioLibraryHost.install(object : AudioLibraryProvider {
             override suspend fun resolve(ids: List<String>, paths: List<String>): List<AudioMedia> = (0 until 2).map(::track).filter { it.mediaId in ids || it.path in paths }.map { AudioMedia(it, it.mediaId) }
-            override suspend fun metadata(path: String) = track(path.substringAfterLast('/').toInt())
         })
         val engine = AudioTestPlayer()
         val oldEngine = AudioEngineHost.install(engine)

@@ -1,11 +1,12 @@
 package com.ismartcoding.plain.ui.models
 
+import com.ismartcoding.plain.features.audio.AudioQueueManager
+
+import com.ismartcoding.plain.graphql.models.Audio as AudioTrack
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.ismartcoding.plain.audio.DAudio
 import com.ismartcoding.plain.features.audio.AudioPlayHistoryManager
 import com.ismartcoding.plain.features.audio.AudioPlaylistManager
-import com.ismartcoding.plain.features.audio.AudioQueueManager
 import com.ismartcoding.plain.graphql.models.Audio
 import com.ismartcoding.plain.graphql.models.AudioPlaylist
 import com.ismartcoding.plain.ui.page.playlist.PlaylistAlbumCover
@@ -20,7 +21,7 @@ class AudioHomeViewModel : ViewModel() {
     val playlistCovers = mutableStateOf<Map<String, List<PlaylistAlbumCover>>>(emptyMap())
 
     /** 最近 section: play history resolved to library tracks, or recently-added as fallback. */
-    val recentItems = mutableStateOf<List<DAudio>>(listOf())
+    val recentItems = mutableStateOf<List<AudioTrack>>(listOf())
 
     /** All artists, most played first, then by name. */
     val artists = mutableStateOf<List<AudioHomeArtist>>(listOf())
@@ -42,7 +43,7 @@ class AudioHomeViewModel : ViewModel() {
         return covers
     }
 
-    suspend fun rebuild(items: List<DAudio>) {
+    suspend fun rebuild(items: List<AudioTrack>) {
         val history = AudioPlayHistoryManager.recentPage(limit = 8, offset = 0)
         recentItems.value = if (history.isNotEmpty()) {
             val byPath = items.associateBy { it.path }

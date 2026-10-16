@@ -2,6 +2,9 @@ package com.ismartcoding.plain.preferences
 
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.PlatformLock
+import com.ismartcoding.plain.platform.IODispatcher
+import com.ismartcoding.plain.rust.request.RustContentApi
+import kotlinx.coroutines.runBlocking
 import com.ismartcoding.plain.rust.bridge.RustPrefsBridge
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -53,7 +56,12 @@ internal object PrefStore {
     fun write(key: String, value: JsonElement) {
         val (previous, current) = lock.withLock {
             val previous = snapshot ?: JsonObject(emptyMap())
-            RustPrefsBridge.updateUser(JsonObject(mapOf(key to value)).toString())
+            runBlocking(IODispatcher) {
+                RustContentApi.graphql(
+                    "mutation(\$input: UserSettingsInput!) { updateUserSettings(input: \$input) { result { affectedCount } } }",
+                    mapOf("input" to JsonObject(mapOf(key to value))),
+                )
+            }
             val current = JsonObject(previous + (key to value))
             snapshot = current
             previous to current
@@ -67,7 +75,7 @@ internal object PrefStore {
      * named.
      */
     suspend fun runAction(action: UserAction) {
-        RustPrefsBridge.userAction(JsonHelper.jsonEncode(action))
+        RustContentApi.mutate(action.selection())
         refresh()
     }
 }

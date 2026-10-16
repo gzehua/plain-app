@@ -22,7 +22,7 @@ import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.settings
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.platform.DPackageInfo
+import com.ismartcoding.plain.platform.PackageDetails
 import com.ismartcoding.plain.platform.canLaunchPackage
 import com.ismartcoding.plain.platform.getApplicationIcon
 import com.ismartcoding.plain.platform.getManifestXml
@@ -44,8 +44,9 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun AppPageHeader(
     navController: NavHostController,
-    item: DPackageInfo,
+    details: PackageDetails,
 ) {
+    val item = details.item
     Column(
         modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -67,14 +68,14 @@ fun AppPageHeader(
         VerticalSpace(dp = 8.dp)
         SelectionContainer {
             Text(
-                text = stringResource(Res.string.version_name_with_code, item.version, item.versionCode),
+                text = stringResource(Res.string.version_name_with_code, item.version, details.versionCode),
                 textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 32.dp),
                 style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         Row(Modifier.padding(start = 32.dp, end = 32.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             SuggestionChip(onClick = {}, label = { Text(text = stringResource(if (item.type == PackageType.USER) Res.string.user_app else Res.string.system_app)) })
-            if (item.hasLargeHeap) {
+            if (details.hasLargeHeap) {
                 HorizontalSpace(dp = 8.dp)
                 SuggestionChip(onClick = {}, label = { Text(text = stringResource(Res.string.large_heap)) })
             }

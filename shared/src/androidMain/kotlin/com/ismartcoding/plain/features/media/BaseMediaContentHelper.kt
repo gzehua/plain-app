@@ -18,12 +18,9 @@ import com.ismartcoding.plain.lib.extensions.getSearchCursor
 import com.ismartcoding.plain.lib.extensions.getStringValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.extensions.scanFileByConnection
-import com.ismartcoding.plain.lib.extensions.toSortName
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.platform.getNewPath
-import com.ismartcoding.plain.platform.moveFileOrDir
-import com.ismartcoding.plain.data.DMediaBucketItemFact
+import com.ismartcoding.plain.features.system.MediaBucketItemFacts
 import com.ismartcoding.plain.enums.MediaType
 import com.ismartcoding.plain.enums.DataType
 import com.ismartcoding.plain.features.system.RustMediaQuery
@@ -66,55 +63,7 @@ abstract class BaseMediaContentHelper {
         }?.toSet() ?: emptySet()
     }
 
-    suspend fun isCurrentItemAsync(context: Context, item: com.ismartcoding.plain.events.MediaDurationZeroItem): Boolean = withIO {
-        val where = ContentWhere().apply { addIn(BaseColumns._ID, listOf(item.id)) }
-        context.contentResolver.getSearchCursor(
-            uriExternal,
-            arrayOf(BaseColumns._ID, MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.SIZE, MediaStore.MediaColumns.DATE_MODIFIED),
-            where,
-        )?.map { cursor, cache ->
-            cursor.getStringValue(BaseColumns._ID, cache) == item.id &&
-                cursor.getStringValue(MediaStore.MediaColumns.DATA, cache) == item.path &&
-                cursor.getLongValue(MediaStore.MediaColumns.SIZE, cache) == item.sizeBytes &&
-                cursor.getLongValue(MediaStore.MediaColumns.DATE_MODIFIED, cache) == item.modifiedAt.epochSeconds
-        }?.any { it } == true
-    }
-
     suspend fun getTrashedIdsAsync(context: Context, query: String): Set<String> = RustMediaQuery.ids(providerType, query, fromTrash = true)
-
-    fun deleteRecordsAndFilesByIdsAsync(
-        context: Context,
-        ids: Set<String>,
-        trash: Boolean? = null,
-    ): Set<String> {
-        val paths = mutableSetOf<String>()
-        val projection = arrayOf(BaseColumns._ID, MediaStore.MediaColumns.DATA)
-        ids.chunked(500).forEach { chunk ->
-            val where = ContentWhere()
-            where.addIn(BaseColumns._ID, chunk)
-            where.trash = trash
-            context.contentResolver.getSearchCursor(uriExternal, projection, where)?.forEach { cursor, cache ->
-                val id = cursor.getStringValue(BaseColumns._ID, cache)
-                val path = cursor.getStringValue(MediaStore.MediaColumns.DATA, cache)
-                paths.add(path)
-                try {
-                    // File.delete can throw a security exception
-                    val f = File(path)
-                    if (f.deleteRecursively()) {
-                        context.contentResolver.delete(
-                            getItemUri(id),
-                            null,
-                            null,
-                        )
-                    }
-                } catch (ex: Exception) {
-                    LogCat.e(ex.toString())
-                }
-            }
-        }
-
-        return paths
-    }
 
     fun getPathsByIdsAsync(
         context: Context,
@@ -134,85 +83,7 @@ abstract class BaseMediaContentHelper {
         return paths
     }
 
-    /**
-     * Move media files identified by [ids] into the directory [destDir].
-     * The destination directory is created if missing; files already in [destDir]
-     * are skipped. After each successful move, the old and new paths are scanned
-     * so MediaStore picks up the change. Returns true when all items moved.
-     */
-    suspend fun moveByIdsAsync(
-        context: Context,
-        ids: Set<String>,
-        destDir: String,
-    ): Boolean = withIO {
-        val dest = File(destDir)
-        if (!dest.isDirectory && !dest.mkdirs()) {
-            LogCat.w("Failed to create destination directory: $destDir")
-            return@withIO false
-        }
-        var allOk = true
-        val projection = arrayOf(BaseColumns._ID, MediaStore.MediaColumns.DATA)
-        ids.chunked(500).forEach { chunk ->
-            val where = ContentWhere()
-            where.addIn(BaseColumns._ID, chunk)
-            context.contentResolver.getSearchCursor(uriExternal, projection, where)?.forEach { cursor, cache ->
-                val id = cursor.getStringValue(BaseColumns._ID, cache)
-                val path = cursor.getStringValue(MediaStore.MediaColumns.DATA, cache)
-                val src = File(path)
-                if (!src.isFile || src.parentFile == dest) {
-                    return@forEach
-                }
-                val target = File(dest, src.name)
-                val finalPath = if (target.exists()) getNewPath(target.absolutePath) else target.absolutePath
-                if (moveFileOrDir(src.absolutePath, finalPath)) {
-                    context.scanFileByConnection(path)
-                    context.scanFileByConnection(finalPath)
-                } else {
-                    allOk = false
-                    LogCat.w("Failed to move media id=$id to $destDir")
-                }
-            } ?: run { allOk = false }
-        }
-        allOk
-    }
-
-    @RequiresApi(Build.VERSION_CODES.R)
-    fun trashByIdsAsync(
-        context: Context,
-        ids: Set<String>,
-    ) {
-        val contentValues = ContentValues().apply {
-//            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Trash")
-            put(MediaStore.MediaColumns.IS_TRASHED, 1)
-        }
-        ids.forEach { id ->
-            try {
-                context.contentResolver.update(getItemUri(id), contentValues, null, null)
-            } catch (ex: Exception) {
-                LogCat.w("Failed to trash media id=$id: ${ex.message}")
-            }
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.R)
-    fun restoreByIdsAsync(
-        context: Context,
-        ids: Set<String>,
-    ) {
-        val contentValues = ContentValues().apply {
-//            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Trash")
-            put(MediaStore.MediaColumns.IS_TRASHED, 0)
-        }
-        ids.forEach { id ->
-            try {
-                context.contentResolver.update(getItemUri(id), contentValues, null, null)
-            } catch (ex: Exception) {
-                LogCat.w("Failed to restore media id=$id: ${ex.message}")
-            }
-        }
-    }
-
-    fun getBucketItemFactsAsync(context: Context): List<DMediaBucketItemFact> = queryBucketItemFacts(
+    fun getBucketItemFactsAsync(context: Context): List<MediaBucketItemFacts> = queryBucketItemFacts(
         context,
         if (mediaType == MediaType.AUDIO) {
             "${MediaStore.Audio.Media.DURATION} > 0 AND ${MediaStore.MediaColumns.BUCKET_DISPLAY_NAME} != ''"
@@ -226,7 +97,7 @@ abstract class BaseMediaContentHelper {
         context: Context,
         selection: String,
         selectionArgs: Array<String>?,
-    ): List<DMediaBucketItemFact> {
+    ): List<MediaBucketItemFacts> {
         val projection = arrayOf(
             MediaStore.MediaColumns.BUCKET_ID,
             MediaStore.MediaColumns.BUCKET_DISPLAY_NAME,
@@ -241,12 +112,11 @@ abstract class BaseMediaContentHelper {
             "${MediaStore.MediaColumns.DATE_MODIFIED} DESC",
         )?.map { cursor, cache ->
             val name = cursor.getStringValue(MediaStore.MediaColumns.BUCKET_DISPLAY_NAME, cache)
-            DMediaBucketItemFact(
+            MediaBucketItemFacts(
                 id = cursor.getStringValue(MediaStore.MediaColumns.BUCKET_ID, cache),
                 name = name,
                 size = cursor.getLongValue(MediaStore.MediaColumns.SIZE, cache),
                 path = cursor.getStringValue(MediaStore.MediaColumns.DATA, cache),
-                sortName = name.toSortName(),
             )
         }.orEmpty()
     }

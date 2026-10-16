@@ -421,7 +421,7 @@ class VideoAudioFocusManager(private val audioManager: AudioManager) {
 @OptIn(UnstableApi::class)
 object VideoPlayerCacheManager {
 
-    private lateinit var cacheInstance: Cache
+    @Volatile private lateinit var cacheInstance: Cache
 
     /**
      * Set the cache for video player.
@@ -437,7 +437,7 @@ object VideoPlayerCacheManager {
         }
 
         cacheInstance = SimpleCache(
-            File(context.cacheDir, "video"),
+            File(videoCacheDir()),
             LeastRecentlyUsedCacheEvictor(maxCacheBytes),
             StandaloneDatabaseProvider(context),
         )

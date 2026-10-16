@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class ContactFacts(
-    val id: String,
+    override var id: String,
     val prefix: String,
     val firstName: String,
     val middleName: String,
@@ -27,4 +27,4 @@ internal data class ContactFacts(
     val organization: ContactOrganizationFacts?,
     val ringtone: String,
     val updatedAt: String,
-)
+) : com.ismartcoding.plain.db.IData

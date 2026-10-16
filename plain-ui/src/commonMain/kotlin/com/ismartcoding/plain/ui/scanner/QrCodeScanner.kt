@@ -45,7 +45,7 @@ fun QrCodeScanner(
     onCloseActionVisibilityChanged: (Boolean) -> Unit,
     pickImage: ((String) -> Unit) -> Unit,
     onScanResult: (String, () -> Unit) -> Unit,
-    handleSpecialCode: (String, () -> Unit) -> Boolean,
+    handleSpecialCode: suspend (String, () -> Unit) -> Boolean,
     showNoCodeFound: () -> Unit,
     showImageLoading: () -> Unit,
     hideImageLoading: () -> Unit,
@@ -98,13 +98,23 @@ fun QrCodeScanner(
     fun handleScanResult(text: String) {
         pairingInFlight = true
         cameraDetecting.value = false
-        val handled = handleSpecialCode(text) {
-            pairingInFlight = false
-            resumeIfIdle()
-        }
-        if (!handled) {
-            pairingInFlight = false
-            openResult(text)
+        scope.launch {
+            try {
+                val handled = handleSpecialCode(text) {
+                    pairingInFlight = false
+                    resumeIfIdle()
+                }
+                if (!handled) {
+                    pairingInFlight = false
+                    openResult(text)
+                }
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                pairingInFlight = false
+                throw cancelled
+            } catch (_: Exception) {
+                pairingInFlight = false
+                openResult(text)
+            }
         }
     }
 

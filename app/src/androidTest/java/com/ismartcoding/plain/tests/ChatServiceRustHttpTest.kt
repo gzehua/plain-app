@@ -55,7 +55,7 @@ class ChatServiceRustHttpTest {
             assertEquals(source.length(), attachment.size)
             val forward = ChatManager.forward(picked.first().id, local).also { ids += it.id }
             assertEquals(ChatStatus.SENT, forward.status)
-            val encoded = com.ismartcoding.plain.helpers.UrlHelper.encrypt(attachment.uri)
+            val encoded = ResourceCrypto.encrypt(attachment.uri)
             val request = BleBinaryFixture.file("local", encoded, 0, 8192)
             val rawReply = com.ismartcoding.plain.ble.server.HttpServiceHandler().handleRequest(request, "synthetic BLE MAC")
             val (status, body) = BleBinaryFixture.response(rawReply)

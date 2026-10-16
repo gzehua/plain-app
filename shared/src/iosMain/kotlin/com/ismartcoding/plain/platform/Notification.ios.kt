@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.data.DNotification
+import com.ismartcoding.plain.graphql.models.Notification as AppNotification
 import kotlin.concurrent.Volatile
 
 @Volatile
@@ -12,7 +12,7 @@ actual suspend fun getNotificationApp(packageName: String): DNotificationApp? = 
 
 actual suspend fun getAllNotificationApps(): List<DNotificationApp> = emptyList()
 
-actual suspend fun notificationFacts(): List<DNotification> = emptyList()
+actual suspend fun notificationFacts(): List<AppNotification> = emptyList()
 
 actual suspend fun cancelNotificationFacts(ids: Set<String>): Set<String> = emptySet()
 

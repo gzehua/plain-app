@@ -4,6 +4,9 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 object SystemProviderHost {
+    internal fun accepts(method: String): Boolean =
+        method.startsWith("system") || method == "fileMetadataFacts" || method == "imageDecodeBounds"
+
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
         "systemPackageFacts",
         "systemPackageStatuses",
@@ -34,7 +37,8 @@ object SystemProviderHost {
         "systemSmsIdsFacts",
         "systemSmsConversationFacts",
         "systemSmsThreadFacts",
-        "systemSendSms",
+        "systemDivideSmsText",
+        "systemSendSmsParts",
         "systemDeleteSmsRows",
         "systemMmsLatest", "systemMmsLaunch", "systemMmsCandidates",
         "systemSimFacts" -> SystemSmsHost.handle(method, params)
@@ -53,20 +57,14 @@ object SystemProviderHost {
         "systemFileIndexCount",
         "fileMetadataFacts",
         "systemMountFacts",
-        "systemRecentFileFacts",
-        "systemImageFileInfo",
-        "systemVideoFileInfo",
-        "systemAudioFileInfo" -> SystemFilesHost.handle(method, params)
+        "imageDecodeBounds" -> SystemFilesHost.handle(method, params)
         "systemMediaBucketItemFacts",
         "systemMediaRows",
         "systemMediaCount",
         "systemMediaIdsFacts" -> SystemMediaHost.handle(method, params)
-        "systemAudioLyrics",
         "systemAudioPlaybackState" -> SystemAudioHost.handle(method, params)
-        "systemDbPath" -> SystemDatabaseHost.handle(method, params)
         "systemDeleteRecords" -> SystemRecordsHost.handle(method, params)
         "systemSetClipboard",
-        "systemEpochMillis",
         "systemPermissionFacts",
         "systemOpenAccessibilitySettings",
         "systemOpenWebSettings",
@@ -75,8 +73,8 @@ object SystemProviderHost {
         "systemBatterySample",
         "systemMemoryAvailable",
         "systemCapabilities",
-        "systemAppFacts",
         "systemLogPath",
+        "systemClearMediaCache",
         "systemRelaunchApp" -> SystemAppHost.handle(method, params)
         else -> error("Unsupported provider operation")
     }

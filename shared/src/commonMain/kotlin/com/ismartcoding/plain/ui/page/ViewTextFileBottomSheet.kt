@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.ui.page
 
+import com.ismartcoding.plain.features.file.extension
+
+import com.ismartcoding.plain.graphql.models.File as FileEntry
+
 import com.ismartcoding.plain.preferences.*
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
@@ -19,7 +23,6 @@ import com.ismartcoding.plain.lib.extensions.getMimeType
 import com.ismartcoding.plain.platform.deleteFileOrDir
 import com.ismartcoding.plain.platform.formatDateTime
 import com.ismartcoding.plain.platform.shareFiles
-import com.ismartcoding.plain.features.file.DFile
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.CopyIconButton
 import com.ismartcoding.plain.ui.base.PCard
@@ -51,7 +54,7 @@ import com.ismartcoding.plain.i18n.type
 fun ViewTextFileBottomSheet(
     textFileVM: TextFileViewModel,
     path: String,
-    m: DFile?,
+    m: FileEntry?,
     onDeleted: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()

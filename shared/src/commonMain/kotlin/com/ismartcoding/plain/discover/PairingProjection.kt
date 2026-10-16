@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.discover
 
+import com.ismartcoding.plain.graphql.models.PairingRequestInput
 import com.ismartcoding.plain.ui.models.NearbyItemStatus
 import com.ismartcoding.plain.ui.models.NearbyViewModel
 import kotlinx.serialization.json.*
@@ -25,7 +26,7 @@ object PairingProjection {
     }
 
     suspend fun request(payload: String) {
-        val request = com.ismartcoding.plain.lib.JsonHelper.jsonDecode<com.ismartcoding.plain.data.DPairingRequest>(payload)
+        val request = com.ismartcoding.plain.lib.JsonHelper.jsonDecode<com.ismartcoding.plain.graphql.models.PairingRequestInput>(payload)
         if (!RustPairingRuntime.currentRequest(request.fromId, request.signature)) return
         com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.events.HPairingRequestReceivedEvent(request))
     }
@@ -42,7 +43,11 @@ object PairingProjection {
         val value = Json.parseToJsonElement(payload).jsonObject
         val peer = com.ismartcoding.plain.chat.peer.RustPeerStore.getById(value.getValue("deviceId").jsonPrimitive.content) ?: return
         if (!peer.isPaired() || peer.key != value.getValue("key").jsonPrimitive.content) return
-        PairingCore.publishSuccess(peer.id, peer.name, value.getValue("ip").jsonPrimitive.content, peer.key)
+        com.ismartcoding.plain.chat.peer.PeerManager.load()
+        NearbyViewModel.handlePairingSuccess(peer.id)
+        com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.events.HPairingSuccessEvent(
+            peer.id, peer.name, value.getValue("ip").jsonPrimitive.content, peer.key,
+        ))
     }
 
     suspend fun timeout(payload: String) {

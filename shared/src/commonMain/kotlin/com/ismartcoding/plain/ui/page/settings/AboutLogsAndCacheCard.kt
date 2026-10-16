@@ -13,13 +13,11 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.lib.extensions.formatBytes
-import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.DiskLogFormatStrategy
 import com.ismartcoding.plain.enums.ButtonSize
 import com.ismartcoding.plain.enums.ButtonType
 import com.ismartcoding.plain.enums.TextFileType
 import com.ismartcoding.plain.platform.clearCacheAsync
-import com.ismartcoding.plain.platform.clearImageMemoryCache
 import com.ismartcoding.plain.platform.clearLogsAsync
 import com.ismartcoding.plain.platform.exportLogsAsync
 import com.ismartcoding.plain.platform.getCacheSize
@@ -71,8 +69,13 @@ fun AboutLogsAndCacheCard(
                                         Res.string.clear,
                                         Res.string.confirm_to_clear_logs,
                                         callback = {
-                                            clearLogsAsync()
-                                            onFileSizeCleared()
+                                            scope.launch {
+                                                try {
+                                                    clearLogsAsync()
+                                                    onFileSizeCleared()
+                                                } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+                                                catch (error: Exception) { DialogHelper.showErrorMessage(error.toString()) }
+                                            }
                                         },
                                         danger = true
                                     )
@@ -92,14 +95,18 @@ fun AboutLogsAndCacheCard(
                     buttonSize = ButtonSize.SMALL, onClick = {
                         scope.launch {
                             DialogHelper.showLoading()
-                            withIO {
+                            try {
                                 clearCacheAsync()
+                                val newSize = getCacheSize()
+                                onCacheCleared(newSize)
+                                DialogHelper.showMessage(Res.string.local_cache_cleared)
+                            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                                throw cancelled
+                            } catch (error: Exception) {
+                                DialogHelper.showErrorMessage(error.toString())
+                            } finally {
+                                DialogHelper.hideLoading()
                             }
-                            clearImageMemoryCache()
-                            val newSize = getCacheSize()
-                            DialogHelper.hideLoading()
-                            DialogHelper.showMessage(Res.string.local_cache_cleared)
-                            onCacheCleared(newSize)
                         }
                     })
             },

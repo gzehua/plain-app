@@ -1,20 +1,20 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.data.DContactSource
-import com.ismartcoding.plain.data.DGroup
+import com.ismartcoding.plain.graphql.models.ContactSource
+import com.ismartcoding.plain.graphql.models.ContactGroup
 import com.ismartcoding.plain.features.contact.GroupHelper
 import com.ismartcoding.plain.features.contact.SourceHelper
 
-actual fun getContactGroups(): List<DGroup> = GroupHelper.getAll()
+actual fun getContactGroups(): List<ContactGroup> = GroupHelper.getAll()
 
-actual fun createContactGroup(name: String, accountName: String, accountType: String): DGroup =
+actual fun createContactGroup(name: String, accountName: String, accountType: String): ContactGroup =
     GroupHelper.create(name, accountName, accountType)
 
-actual fun updateContactGroup(id: String, name: String): DGroup? {
+actual fun updateContactGroup(id: String, name: String): ContactGroup? {
     GroupHelper.update(id, name)
-    return DGroup(id.toLong(), name)
+    return ContactGroup(id, name)
 }
 
 actual fun deleteContactGroup(id: String) = GroupHelper.delete(id)
 
-actual fun getContactSources(): List<DContactSource> = SourceHelper.getAll()
+actual fun getContactSources(): List<ContactSource> = SourceHelper.getAll()

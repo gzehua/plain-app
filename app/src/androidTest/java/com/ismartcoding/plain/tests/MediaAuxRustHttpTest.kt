@@ -1,11 +1,8 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.TempData
-import com.ismartcoding.plain.db.DImageEmbedding
-import com.ismartcoding.plain.enums.DataType
-import com.ismartcoding.plain.features.ImageEmbeddingHelper
-import com.ismartcoding.plain.features.MediaDurationHelper
+import com.ismartcoding.plain.tests.fixtures.imageEmbedding
+import com.ismartcoding.plain.tests.fixtures.ImageEmbeddings
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -16,10 +13,8 @@ import java.util.UUID
 @RunWith(AndroidJUnit4::class)
 class MediaAuxRustHttpTest {
     @Test
-    fun durationsAndEmbeddingsUseRustWithExactValuesAndRankedSearch() = runBlocking {
+    fun embeddingsUseRustWithExactValuesAndRankedSearch() = runBlocking {
         val prefix = "media-aux-${UUID.randomUUID()}"
-        val audioId = "$prefix-audio"
-        val videoId = "$prefix-video"
         val bestId = "$prefix-best"
         val nextId = "$prefix-next"
         fun vector(first: Float): ByteArray = ByteBuffer.allocate(512 * 4).apply {
@@ -27,35 +22,27 @@ class MediaAuxRustHttpTest {
             repeat(511) { putFloat(0f) }
         }.array()
         try {
-            MediaDurationHelper.save("audio", audioId, 5_000_000_001L, "/synthetic/$audioId", 42, kotlin.time.Instant.fromEpochMilliseconds(1_000))
-            MediaDurationHelper.save("video", videoId, 6_000_000_001L, "/synthetic/$videoId", 84, kotlin.time.Instant.fromEpochMilliseconds(2_000))
-            TempData.mediaDurationMap.remove("audio:$audioId")
-            MediaDurationHelper.restore()
-            assertEquals(5_000_000_001L,TempData.mediaDurationMap["audio:$audioId"]?.durationMs)
-            assertEquals(6_000_000_001L,TempData.mediaDurationMap["video:$videoId"]?.durationMs)
-            ImageEmbeddingHelper.insertAll(listOf(
-                DImageEmbedding(bestId,"/synthetic/$bestId",vector(10f)),
-                DImageEmbedding(nextId,"/synthetic/$nextId",vector(9f)),
+            ImageEmbeddings.insertAll(listOf(
+                imageEmbedding(bestId,"/synthetic/$bestId",vector(10f)),
+                imageEmbedding(nextId,"/synthetic/$nextId",vector(9f)),
             ))
-            assertTrue(ImageEmbeddingHelper.getAllIds().containsAll(listOf(bestId,nextId)))
-            val results = ImageEmbeddingHelper.search(vector(1f),2)
+            assertTrue(ImageEmbeddings.getAllIds().containsAll(listOf(bestId,nextId)))
+            val results = ImageEmbeddings.search(vector(1f),2)
             assertEquals(listOf(bestId,nextId),results.map { it.imageId })
             assertEquals(10f,results.first().score,0f)
             var failed = false
             try {
-                ImageEmbeddingHelper.insertAll(listOf(
-                    DImageEmbedding("$prefix-new","/synthetic/new",vector(1f)),
-                    DImageEmbedding("$prefix-bad","/synthetic/bad",vector(Float.NaN)),
+                ImageEmbeddings.insertAll(listOf(
+                    imageEmbedding("$prefix-new","/synthetic/new",vector(1f)),
+                    imageEmbedding("$prefix-bad","/synthetic/bad",vector(Float.NaN)),
                 ))
             } catch (_: Exception) { failed = true }
             assertTrue(failed)
-            assertFalse(ImageEmbeddingHelper.getAllIds().contains("$prefix-new"))
-            ImageEmbeddingHelper.deleteByIds(emptyList())
-            assertTrue(ImageEmbeddingHelper.getAllIds().contains(bestId))
+            assertFalse(ImageEmbeddings.getAllIds().contains("$prefix-new"))
+            ImageEmbeddings.deleteByIds(emptyList())
+            assertTrue(ImageEmbeddings.getAllIds().contains(bestId))
         } finally {
-            ImageEmbeddingHelper.deleteByIds(listOf(bestId,nextId,"$prefix-new","$prefix-bad"))
-            MediaDurationHelper.delete(DataType.AUDIO,listOf(audioId))
-            MediaDurationHelper.delete(DataType.VIDEO,listOf(videoId))
+            ImageEmbeddings.deleteByIds(listOf(bestId,nextId,"$prefix-new","$prefix-bad"))
         }
     }
 }

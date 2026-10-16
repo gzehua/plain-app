@@ -1,10 +1,11 @@
 package com.ismartcoding.plain.ui.models
 
+import com.ismartcoding.plain.ble.PairingTransport
+
+import com.ismartcoding.plain.graphql.models.NearbyDevice
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import com.ismartcoding.plain.ble.PairingTransport
 import com.ismartcoding.plain.chat.peer.PeerManager
-import com.ismartcoding.plain.data.DNearbyDevice
 import com.ismartcoding.plain.discover.MdnsDiscoverManager
 import com.ismartcoding.plain.discover.PairingInitiator
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -19,7 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 object NearbyViewModel {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    val nearbyDevices = MutableStateFlow<List<DNearbyDevice>>(emptyList())
+    val nearbyDevices = MutableStateFlow<List<NearbyDevice>>(emptyList())
     var isDiscovering = mutableStateOf(false)
     val itemStatus = mutableStateMapOf<String, NearbyItemStatus>()
 
@@ -68,7 +69,7 @@ object NearbyViewModel {
         com.ismartcoding.plain.discover.BleScanDriver.stop()
     }
 
-    fun startPairing(device: DNearbyDevice) {
+    fun startPairing(device: NearbyDevice) {
         if (itemStatus[device.id] != null) return
         itemStatus[device.id] = NearbyItemStatus.STARTING
 
