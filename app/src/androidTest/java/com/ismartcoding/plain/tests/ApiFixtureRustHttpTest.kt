@@ -10,6 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.app.startHttpEngineAsync
 import com.ismartcoding.plain.app.stopHttpEngineAsync
 import com.ismartcoding.plain.appContext
+import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.preferences.SystemCommand
 import com.ismartcoding.plain.preferences.SystemPrefsClient
@@ -21,10 +22,14 @@ import java.util.UUID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+
+@Serializable
+private data class ApiPeerFixture(val id: String, val key: String, val publicKey: String)
 
 @RunWith(AndroidJUnit4::class)
 class ApiFixtureRustHttpTest {
@@ -38,7 +43,15 @@ class ApiFixtureRustHttpTest {
         ready.delete()
         stop.delete()
         val root = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "PlainApiFixture/${UUID.randomUUID()}")
-        val peerId = "api-fixture-${UUID.randomUUID()}"
+        val peerFile = File(appContext.filesDir, "api-test-peer.json")
+        val peerFixture = JsonHelper.jsonDecode<ApiPeerFixture>(peerFile.readText())
+        peerFile.delete()
+        check(peerFixture.id.startsWith("api-fixture-"))
+        UUID.fromString(peerFixture.id.removePrefix("api-fixture-"))
+        check(Base64.decode(peerFixture.key, Base64.NO_WRAP).size == 32)
+        check(Base64.decode(peerFixture.publicKey, Base64.NO_WRAP).size == 32)
+        val peerId = peerFixture.id
+        var channelId = ""
         var clientId = ""
         val oldAccess = UserPrefs.desktopAccess.value
         UserPrefs.desktopAccess.value = true
@@ -51,33 +64,39 @@ class ApiFixtureRustHttpTest {
             val session = PlainRust.mainMutate("createSession(name: \"API emulator fixture\") { clientId token }").getValue("createSession").jsonObject
             clientId = session.getValue("clientId").jsonPrimitive.content
             val randomKey = { Base64.encodeToString(ByteArray(32).also { SecureRandom().nextBytes(it) }, Base64.NO_WRAP) }
-            val peer = buildJsonObject {
-                put("id", peerId)
-                put("name", "API fixture peer")
-                put("host", "127.0.0.1:1")
-                put("deviceType", "OTHER")
-                put("token", randomKey())
-                put("signaturePublicKey", randomKey())
-                put("chatKey", randomKey())
-            }
+            val peer = JsonHelper.jsonEncodeToElement(mapOf(
+                "id" to peerId,
+                "name" to "API fixture peer",
+                "host" to "127.0.0.1:1",
+                "deviceType" to "OTHER",
+                "token" to randomKey(),
+                "signaturePublicKey" to peerFixture.publicKey,
+                "chatKey" to peerFixture.key,
+            ))
             check(PlainRust.mainGraphql("mutation(\$input: PeerLoginInput!) { loginPeer(input: \$input) }", mapOf("input" to peer)).getValue("loginPeer").jsonPrimitive.boolean)
             check(PlainRust.mainQuery("peerRecord(id: ${JsonPrimitive(peerId)}) { id }").getValue("peerRecord").jsonObject.getValue("id").jsonPrimitive.content == peerId)
+            channelId = PlainRust.mainMutate("createChatChannel(name: \"API fixture channel\") { id }").getValue("createChatChannel").jsonObject.getValue("id").jsonPrimitive.content
+            val channelKey = PlainRust.mainQuery("chatChannelRecord(id: ${JsonPrimitive(channelId)}) { key }").getValue("chatChannelRecord").jsonObject.getValue("key")
             val app = PlainRust.mainQuery("app { httpPort capabilities }").getValue("app").jsonObject
-            val credentials = buildJsonObject {
-                put("clientId", clientId)
-                put("token", session.getValue("token"))
-                put("port", app.getValue("httpPort"))
-                put("capabilities", app.getValue("capabilities"))
-                put("testRoot", root.path)
-                put("dataDir", appContext.filesDir.path)
-                put("cacheDir", appContext.cacheDir.path)
-            }.toString()
+            val credentials = JsonHelper.jsonEncode(mapOf(
+                "clientId" to JsonPrimitive(clientId),
+                "token" to session.getValue("token"),
+                "port" to app.getValue("httpPort"),
+                "capabilities" to app.getValue("capabilities"),
+                "testRoot" to JsonPrimitive(root.path),
+                "dataDir" to JsonPrimitive(appContext.filesDir.path),
+                "cacheDir" to JsonPrimitive(appContext.cacheDir.path),
+                "peerId" to JsonPrimitive(peerId),
+                "peerChannelId" to JsonPrimitive(channelId),
+                "peerChannelKey" to channelKey,
+            ))
             appContext.openFileOutput(ready.name, Context.MODE_PRIVATE).bufferedWriter().use { it.write(credentials) }
             withTimeout(10 * 60 * 1000L) { while (!stop.exists()) delay(250) }
         } finally {
             ready.delete()
             stop.delete()
             if (clientId.isNotEmpty()) PlainRust.mainMutate("revokeSession(clientId: ${JsonPrimitive(clientId)})")
+            if (channelId.isNotEmpty()) PlainRust.mainMutate("deleteChatChannel(id: ${JsonPrimitive(channelId)})")
             PlainRust.mainMutate("removePeerRecord(id: ${JsonPrimitive(peerId)})")
             root.deleteRecursively()
             SystemPrefsClient.local.updateSystem(SystemCommand.SetApiPermissions(oldPermissions))
