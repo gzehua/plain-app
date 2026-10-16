@@ -48,7 +48,6 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             core.server.port = http;
         }
     } else {
-        plain_rs::prefs::system::bootstrap(&prefs).map_err(|e| e.to_string())?;
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(2)
             .enable_all()
