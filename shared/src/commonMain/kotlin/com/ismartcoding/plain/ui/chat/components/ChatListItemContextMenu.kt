@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.chat.components
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -19,7 +21,6 @@ import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.platform.files.copyFileToDir
 import com.ismartcoding.plain.platform.files.saveFileToDownloads
 import com.ismartcoding.plain.platform.setClipboardText
 import com.ismartcoding.plain.ui.base.PDropdownMenu
@@ -135,7 +136,7 @@ fun ChatListItemContextMenu(
             onDirectory = { dir ->
                 showSaveSheet = false
                 coMain {
-                    saveMessageImages(images) { path, name -> withIO { copyFileToDir(path, dir, name) } }
+                    saveMessageImages(images) { path, name -> withIO { FilesClient.copyToDirectory(path, dir, name) } }
                 }
             },
         )

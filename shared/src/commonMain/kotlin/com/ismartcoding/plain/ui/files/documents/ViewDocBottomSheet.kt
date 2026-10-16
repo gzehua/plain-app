@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.files.documents
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.padding
@@ -30,7 +32,6 @@ import com.ismartcoding.plain.ui.platform.media.addMediaShortcut
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.platform.files.getFileIconPath
 import com.ismartcoding.plain.platform.system.openFileExternal
-import com.ismartcoding.plain.platform.files.renameAndScanFile
 import com.ismartcoding.plain.platform.system.shareFile
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.CopyIconButton
@@ -94,7 +95,7 @@ fun ViewDocBottomSheet(
     if (docsVM.showRenameDialog.value) {
         FileRenameDialog(path = m.path, onDismiss = {
             docsVM.showRenameDialog.value = false
-        }, onRename = { p, name -> renameAndScanFile(p, name) }, onRenamed = {
+        }, onRename = { p, name -> FilesClient.rename(p, name) }, onRenamed = {
             m.path = it
             m.title = it.getFilenameFromPath()
         })

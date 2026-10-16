@@ -289,7 +289,7 @@ fun EditSharePage(
                 scope.launch {
                     ShareSendHelper.sendContentAsync(
                         targets,
-                        ShareSendHelper.buildShareContent(current, current.roots.map { it.realPath }),
+                        ShareSendHelper.buildShareContent(current),
                     )
                     DialogHelper.showSuccess(Res.string.sent)
                 }

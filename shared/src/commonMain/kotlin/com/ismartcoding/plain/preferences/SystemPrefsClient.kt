@@ -45,7 +45,7 @@ class SystemPrefsClient(private val session: ContentApiSession? = null) {
         RustContentApi.graphql("query(\$token: String!) { verifyAdbToken(token: \$token) }", mapOf("token" to JsonHelper.jsonEncodeToElement(token)), session).getValue("verifyAdbToken"))
 
     companion object {
-        private const val SELECTION = "systemSettings { password passwordType authTwoFactor rotateUrlTokenOnRestart adbToken updateInfo urlToken apiPermissions onboardingCompleted clientId mdnsHostname signaturePublicKey }"
+        private const val SELECTION = "systemSettings { password passwordType authTwoFactor rotateUrlTokenOnRestart adbToken updateInfo appUpdateAvailable urlToken apiPermissions onboardingCompleted clientId mdnsHostname signaturePublicKey }"
         val local = SystemPrefsClient()
     }
 }

@@ -44,7 +44,7 @@ class FeedCatalogViewModel : ViewModel() {
                         this.url = feed.url
                         this.name = feed.name
                     }
-                    FeedsClient.fetchOneTime(id)
+                    FeedsClient.sync(id)
                 } else {
                     feedsVM.deleteAsync(setOf(existing.id))
                 }

@@ -3,7 +3,6 @@ package com.ismartcoding.plain.ui.home
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
 import com.ismartcoding.plain.preferences.*
-import com.ismartcoding.plain.platform.system.getAppVersionName
 
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.background
@@ -26,8 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.data.Version
-import com.ismartcoding.plain.data.toVersion
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.app.events.CancelUpdateDownloadEvent
 import com.ismartcoding.plain.app.events.DownloadUpdateEvent
@@ -48,10 +45,9 @@ private const val GITHUB_RELEASES_URL = "https://github.com/plainhub/plain-app/r
 
 @Composable
 fun UpdateBanner(updateVM: UpdateViewModel) {
-    val updateInfo = RustSystemState.state.collectAsStateValue().updateInfo
-    val newVersion = updateInfo.newVersion.toVersion()
-    val skipVersion = updateInfo.skipVersion.toVersion()
-    val currentVersion = Version(getAppVersionName())
+    val system = RustSystemState.state.collectAsStateValue()
+    val updateInfo = system.updateInfo
+    val newVersion = updateInfo.newVersion
     val isDownloading = updateVM.isDownloading.value
     val downloadProgress = updateVM.downloadProgress.intValue
     val downloadFailed = updateVM.downloadFailed.value
@@ -59,14 +55,14 @@ fun UpdateBanner(updateVM: UpdateViewModel) {
     val downloadedFilePath = updateVM.downloadedFilePath.value
     val scope = rememberCoroutineScope()
 
-    val needsUpdate = newVersion.whetherNeedUpdate(currentVersion, skipVersion)
+    val needsUpdate = system.appUpdateAvailable
 
     LaunchedEffect(Unit) {
         val info = RustSystemState.state.value.updateInfo
         val path = info.downloadedApkPath
         if (path.isNotEmpty()) {
             val downloadedVersionNeedsUpdate =
-                info.newVersion.toVersion().whetherNeedUpdate(currentVersion, info.skipVersion.toVersion())
+                RustSystemState.state.value.appUpdateAvailable
             if (fileExists(path) && downloadedVersionNeedsUpdate
                 && !updateVM.isDownloading.value && !updateVM.isDownloadComplete.value
             ) {

@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.casting
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +42,6 @@ import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
 import com.ismartcoding.plain.lib.extensions.isAudioFast
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isVideoFast
-import com.ismartcoding.plain.ui.platform.media.getAudioMetadata
 import com.ismartcoding.plain.ui.base.PlayerSlider
 import com.ismartcoding.plain.ui.base.PlayerSliderDefaults
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -79,7 +80,7 @@ fun CastNowPlayingSection(
         if (currentUri.isEmpty()) {
             title = ""; subtitle = ""
         } else if (isAudio) {
-            val (t, a) = withIO { getAudioMetadata(currentUri) }
+            val (t, a) = withIO { MediaClient.audioInfo(currentUri).let { it.title to it.artist } }
             title = t; subtitle = a
         } else {
             title = currentUri.getFilenameWithoutExtensionFromPath()

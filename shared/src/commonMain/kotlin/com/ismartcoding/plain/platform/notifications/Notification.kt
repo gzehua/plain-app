@@ -21,12 +21,6 @@ expect suspend fun getNotificationApp(packageName: String): DNotificationApp?
  */
 expect suspend fun getAllNotificationApps(): List<DNotificationApp>
 
-/**
- * Filter cached notifications using the platform notification listener state.
- * Returns an empty list on platforms without a notification listener.
- */
-suspend fun filterNotificationsAsync(): List<AppNotification> = com.ismartcoding.plain.rust.host.provider.RustSystemProviders.notifications("", 0, Int.MAX_VALUE)
-
 expect suspend fun notificationFacts(): List<AppNotification>
 
 /**

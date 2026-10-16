@@ -26,6 +26,8 @@ internal actual fun readSystemProperties(names: List<String>): Map<String, JsonE
         when (name) {
             "files.recentCatalog" -> JsonPrimitive(false)
             "files.recentRoot" -> kotlinx.serialization.json.JsonNull
+            "supportedAbis" -> kotlinx.serialization.json.JsonArray(emptyList())
+            "updateSource" -> kotlinx.serialization.json.JsonNull
             "deviceType" -> JsonPrimitive(getDeviceType().name)
             "ipv4Addresses" -> kotlinx.serialization.json.JsonArray(getDeviceIP4s().map(::JsonPrimitive))
             "wifiAwareSupported" -> JsonPrimitive(isWifiAwareSupported)

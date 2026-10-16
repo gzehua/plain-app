@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.media
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +14,6 @@ import com.ismartcoding.plain.lib.extensions.isAudioFast
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.media.audioJustPlayWithNotificationCheck
-import com.ismartcoding.plain.ui.platform.media.playlistAudioFromPath
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 
@@ -28,7 +29,7 @@ fun PlayMediaPage(
     if (path.isAudioFast()) {
         LaunchedEffect(path) {
             coMain {
-                val audio = withIO { playlistAudioFromPath(path) }
+                val audio = withIO { MediaClient.audioInfo(path) }
                 withIO { audioQueueVM.playSingleAsync(audio) }
                 audioJustPlayWithNotificationCheck(audio)
                 navController.navigate(Routing.Audio) {

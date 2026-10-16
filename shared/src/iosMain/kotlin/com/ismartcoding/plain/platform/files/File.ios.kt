@@ -2,18 +2,16 @@
 
 package com.ismartcoding.plain.platform.files
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.platform.getContentTypeForPath
 import com.ismartcoding.plain.platform.media.getDownloadsDirPath
-import com.ismartcoding.plain.platform.system.appCacheDir
 import com.ismartcoding.plain.rust.http.get
 
 import com.ismartcoding.plain.features.files.extension
 
 import com.ismartcoding.plain.api.graphql.models.File as FileEntry
 
-import com.ismartcoding.plain.features.files.stored.AppFileStore
-import com.ismartcoding.plain.helpers.FileHashHelper
-import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
@@ -67,18 +65,6 @@ actual fun copyFile(srcPath: String, destPath: String): Boolean {
 }
 
 @OptIn(ExperimentalForeignApi::class)
-actual fun moveFile(fromPath: String, toPath: String): Boolean =
-    NSFileManager.defaultManager.moveItemAtPath(fromPath, toPath, error = null)
-
-@OptIn(ExperimentalForeignApi::class)
-actual suspend fun sha256File(path: String): String =
-    NSFileManager.defaultManager.contentsAtPath(path)?.toByteArray()?.let { FileHashHelper.strongHash(it) } ?: ""
-
-@OptIn(ExperimentalForeignApi::class)
-actual suspend fun sha256FileEdges(path: String, size: Long): String =
-    NSFileManager.defaultManager.contentsAtPath(path)?.toByteArray()?.let { FileHashHelper.weakHash(it) } ?: ""
-
-@OptIn(ExperimentalForeignApi::class)
 actual fun writeBytesToPath(path: String, bytes: ByteArray): Boolean {
     return try {
         bytes.toNSData().writeToFile(path, atomically = true)
@@ -88,7 +74,7 @@ actual fun writeBytesToPath(path: String, bytes: ByteArray): Boolean {
 }
 
 actual suspend fun saveFileToDownloads(path: String, fileName: String): String =
-    copyFileToDir(path, getDownloadsDirPath(), fileName)
+    FilesClient.copyToDirectory(path, getDownloadsDirPath(), fileName)
 
 actual suspend fun copyFileToUri(path: String, uriStr: String): Boolean = withIO {
     val destination = if (uriStr.startsWith("/")) NSURL.fileURLWithPath(uriStr)
@@ -111,36 +97,6 @@ actual fun fileExists(path: String): Boolean =
     NSFileManager.defaultManager.fileExistsAtPath(path)
 
 @OptIn(ExperimentalForeignApi::class)
-actual fun listFilesInDir(path: String): List<String> =
-    NSFileManager.defaultManager.contentsOfDirectoryAtPath(path, null)
-        ?.filterIsInstance<String>()
-        ?: emptyList()
-
-@OptIn(ExperimentalForeignApi::class)
-actual fun deleteDirRecursively(path: String) {
-    NSFileManager.defaultManager.removeItemAtPath(path, null)
-}
-
-@OptIn(ExperimentalForeignApi::class)
-actual suspend fun streamFileTo(path: String, sink: StreamSink): Boolean = withIO {
-    try {
-        val data = NSFileManager.defaultManager.contentsAtPath(path) ?: return@withIO false
-        val bytes = data.toByteArray()
-        val bufferSize = 64 * 1024
-        var offset = 0
-        while (offset < bytes.size) {
-            val len = minOf(bufferSize, bytes.size - offset)
-            sink.write(bytes, offset, len)
-            offset += len
-        }
-        true
-    } catch (e: Exception) {
-        LogCat.e("streamFileTo: ${e.message}")
-        false
-    }
-}
-
-@OptIn(ExperimentalForeignApi::class)
 actual suspend fun readFileRange(path: String, offset: Long, length: Int): ByteArray? = withIO {
     try {
         if (!NSFileManager.defaultManager.fileExistsAtPath(path)) return@withIO null
@@ -159,76 +115,6 @@ actual suspend fun readFileRange(path: String, offset: Long, length: Int): ByteA
 }
 
 @OptIn(ExperimentalForeignApi::class)
-actual suspend fun createFileSink(path: String): StreamSink = withIO {
-    val parent = path.substringBeforeLast('/', "")
-    if (parent.isNotEmpty()) {
-        NSFileManager.defaultManager.createDirectoryAtPath(
-            parent, withIntermediateDirectories = true, attributes = null, error = null,
-        )
-    }
-    val destPath = path
-    object : StreamSink {
-        private val chunks = mutableListOf<ByteArray>()
-
-        override suspend fun write(bytes: ByteArray) = withIO {
-            if (bytes.isNotEmpty()) {
-                chunks.add(bytes)
-            }
-        }
-
-        override suspend fun write(bytes: ByteArray, offset: Int, length: Int) = withIO {
-            if (length > 0) {
-                chunks.add(bytes.copyOfRange(offset, offset + length))
-            }
-        }
-
-        override suspend fun flush() {
-            withIO {
-                writeToDisk()
-            }
-        }
-
-        override suspend fun close() {
-            withIO {
-                writeToDisk()
-            }
-        }
-
-        private fun writeToDisk() {
-            val size = chunks.sumOf { it.size }
-            val merged = ByteArray(size)
-            var pos = 0
-            for (chunk in chunks) {
-                chunk.copyInto(merged, pos)
-                pos += chunk.size
-            }
-            merged.toNSData().writeToFile(destPath, atomically = true)
-        }
-    }
-}
-
-@OptIn(ExperimentalForeignApi::class)
-actual suspend fun renameFileAtomic(from: String, to: String): Boolean = withIO {
-    val mgr = NSFileManager.defaultManager
-    if (!mgr.fileExistsAtPath(from)) return@withIO false
-    if (mgr.fileExistsAtPath(to)) {
-        mgr.removeItemAtPath(to, null)
-    }
-    val parent = to.substringBeforeLast('/', "")
-    if (parent.isNotEmpty()) {
-        mgr.createDirectoryAtPath(
-            parent, withIntermediateDirectories = true, attributes = null, error = null,
-        )
-    }
-    try {
-        mgr.moveItemAtPath(from, to, error = null)
-    } catch (e: Exception) {
-        LogCat.e("renameFileAtomic: ${e.message}")
-        false
-    }
-}
-
-@OptIn(ExperimentalForeignApi::class)
 actual suspend fun ensureParentDir(path: String) {
     withIO {
         val parent = path.substringBeforeLast('/', "")
@@ -238,16 +124,6 @@ actual suspend fun ensureParentDir(path: String) {
             )
         }
     }
-}
-
-actual suspend fun createTempFilePath(prefix: String): String = withIO {
-    "${appCacheDir()}/${prefix}_${TimeHelper.nowMillis()}"
-}
-
-@OptIn(ExperimentalForeignApi::class)
-actual suspend fun importAppFile(tempFilePath: String, fileName: String, contentType: String, deleteSrc: Boolean): String? = withIO {
-    val dFile = AppFileStore.importFile(tempFilePath, fileName, contentType, deleteSrc)
-    dFile.realPath.substringAfterLast('/')
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -392,17 +268,6 @@ actual fun queryPickedFileInfo(uriStr: String): PickedFileInfo? = try {
     PickedFileInfo(displayName, size, mime)
 } catch (_: Exception) {
     null
-}
-
-actual suspend fun importChatFile(uriStr: String, mimeType: String): String? = withIO {
-    try {
-        val url = NSURL.URLWithString(uriStr) ?: return@withIO null
-        val path = url.path ?: return@withIO null
-        if (!NSFileManager.defaultManager.fileExistsAtPath(path)) return@withIO null
-        importAppFile(path, path.substringAfterLast('/'), mimeType, deleteSrc = false)
-    } catch (_: Exception) {
-        null
-    }
 }
 
 actual suspend fun getFileByMediaId(mediaId: String): FileEntry? = null

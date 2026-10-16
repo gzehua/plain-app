@@ -30,16 +30,6 @@ object CallMediaStoreHelper : BaseContentHelper() {
         )
     }
 
-    suspend fun countAsync(context: Context, query: String): Int = com.ismartcoding.plain.rust.host.provider.RustPhoneQuery.countCalls(query)
-    suspend fun getIdsAsync(context: Context, query: String): Set<String> = com.ismartcoding.plain.rust.host.provider.RustPhoneQuery.callIds(query)
-
-    suspend fun searchAsync(
-        context: Context,
-        query: String,
-        limit: Int,
-        offset: Int,
-    ): List<PhoneCall> = com.ismartcoding.plain.rust.host.provider.RustPhoneQuery.calls(query, limit, offset)
-
     suspend fun searchAsync(
         context: Context,
         where: ContentWhere,

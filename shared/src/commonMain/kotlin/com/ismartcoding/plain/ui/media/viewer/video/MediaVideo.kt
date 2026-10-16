@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.media.viewer.video
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import com.ismartcoding.plain.ui.app.AppUiState
 
 import androidx.compose.runtime.getValue
@@ -29,7 +31,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import com.ismartcoding.plain.features.videos.VideoProgressHost
-import com.ismartcoding.plain.ui.platform.media.getVideoMeta
 import com.ismartcoding.plain.ui.platform.media.rememberVideoPlayerController
 import com.ismartcoding.plain.ui.platform.media.VideoPlayerSurface
 import com.ismartcoding.plain.app.TempData
@@ -77,7 +78,7 @@ fun MediaVideo(
             when (val data = model.data) {
                 is MediaVideo -> model.initAsync(data)
                 else -> {
-                    val meta = getVideoMeta(model.path)
+                    val meta = MediaClient.videoInfo(model.path)
                     if (meta != null) {
                         model.intrinsicSize = if (meta.rotation == 90 || meta.rotation == 270) {
                             IntSize(meta.height, meta.width)

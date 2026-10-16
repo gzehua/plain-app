@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.platform.media
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import com.ismartcoding.plain.platform.media.audioJustPlay
 
 import com.ismartcoding.plain.platform.permissions.Permission
@@ -124,7 +126,7 @@ actual suspend fun playPomodoroCompletionSound(settings: PomodoroSettings) {
 
 private suspend fun playCustomSong(songPath: String) {
     try {
-        val audio = playlistAudioFromPath(songPath)
+        val audio = MediaClient.audioInfo(songPath)
         coIO {
             audioJustPlay(audio)
         }

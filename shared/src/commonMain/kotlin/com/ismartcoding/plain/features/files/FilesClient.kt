@@ -4,17 +4,35 @@ import com.ismartcoding.plain.api.graphql.models.File as FileEntry
 
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
+import kotlinx.coroutines.CancellationException
 import io.ktor.http.Url
 import io.ktor.http.decodeURLPart
 import kotlinx.serialization.json.*
 
 object FilesClient {
-    suspend fun createZipArchive(paths: List<String>, target: String): String =
-        PlainRust.mainMutate("createZipArchive(paths: [${paths.joinToString(",") { gql(it) }}], target: ${gql(target)})", longRunning = true).getValue("createZipArchive").jsonPrimitive.content
-    suspend fun extractZipArchive(path: String, target: String): String =
-        PlainRust.mainMutate("extractZipArchive(path: ${gql(path)}, target: ${gql(target)})", longRunning = true).getValue("extractZipArchive").jsonPrimitive.content
+    suspend fun copyToDirectory(srcPath: String, dirPath: String, fileName: String): String {
+        val result = PlainRust.mainGraphql(
+            "mutation(\$src:String!,\$directory:String!,\$name:String!){copyFileToDirectory(src:\$src,directory:\$directory,name:\$name)}",
+            mapOf("src" to JsonPrimitive(srcPath), "directory" to JsonPrimitive(dirPath), "name" to JsonPrimitive(fileName)),
+            longRunning = true,
+        ).getValue("copyFileToDirectory")
+        return if (result is JsonNull) "" else result.jsonPrimitive.content
+    }
 
-    suspend fun cacheZipEntry(path: String): String = PlainRust.mainMutate("cacheZipEntry(path: ${gql(path)})").getValue("cacheZipEntry").jsonPrimitive.content
+    suspend fun createZipArchive(paths: List<String>, target: String): Boolean = archiveOperation {
+        PlainRust.mainMutate("createZipArchive(paths: [${paths.joinToString(",") { gql(it) }}], target: ${gql(target)})", longRunning = true).getValue("createZipArchive").jsonPrimitive.content
+    }
+    suspend fun extractZipArchive(path: String, target: String): Boolean = archiveOperation {
+        PlainRust.mainMutate("extractZipArchive(path: ${gql(path)}, target: ${gql(target)})", longRunning = true).getValue("extractZipArchive").jsonPrimitive.content
+    }
+
+    suspend fun cacheZipEntry(path: String): String? = try {
+        PlainRust.mainMutate("cacheZipEntry(path: ${gql(path)})").getValue("cacheZipEntry").jsonPrimitive.content
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (_: Exception) {
+        null
+    }
 
     suspend fun createDirectory(path: String): FileEntry = write("createDirectory", path)
     suspend fun createFile(path: String): FileEntry = write("createFile", path)
@@ -33,6 +51,15 @@ object FilesClient {
         )
 
     suspend fun indexedCount(query: String): Int = PlainRust.mainQuery("indexedFileCount(query: ${gql(query)})").getValue("indexedFileCount").jsonPrimitive.int
+
+    private suspend fun archiveOperation(operation: suspend () -> String): Boolean = try {
+        operation()
+        true
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (_: Exception) {
+        false
+    }
 
     private const val fields = "name path permission createdAt updatedAt size isDir childCount mediaId"
     suspend fun rename(path: String, name: String): String? {

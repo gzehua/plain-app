@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.platform.media
 
-import com.ismartcoding.plain.ui.platform.system.ImageDecoder
-import com.ismartcoding.plain.ui.platform.system.MediaHugeImage
 import com.ismartcoding.plain.rust.http.request
 
 import androidx.compose.animation.core.Animatable

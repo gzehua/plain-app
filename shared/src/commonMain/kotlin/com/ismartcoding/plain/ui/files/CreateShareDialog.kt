@@ -100,7 +100,7 @@ fun CreateShareDialog(
                 scope.launch {
                     ShareSendHelper.sendContentAsync(
                         targets,
-                        ShareSendHelper.buildShareContent(share!!, paths),
+                        ShareSendHelper.buildShareContent(share!!),
                     )
                     DialogHelper.showSuccess(Res.string.sent)
                 }

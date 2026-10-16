@@ -37,7 +37,7 @@ class EventDirectionContractTest {
         val root = generateSequence(File(System.getProperty("user.dir"))) { it.parentFile }
             .first { File(it, "shared/src/commonMain").isDirectory }
         val sources = File(root, "shared/src/commonMain/kotlin/com/ismartcoding/plain")
-        val httpEvents = File(sources, "events/HttpApiEvents.kt").readText()
+        val httpEvents = File(sources, "app/events/HttpApiEvents.kt").readText()
         val declarations = Regex("(?:data )?class (\\w+)[^\\n]*: (\\w+)\\(\\)")
             .findAll(httpEvents).toList()
         assertTrue(declarations.isNotEmpty())
@@ -46,10 +46,10 @@ class EventDirectionContractTest {
             assertTrue(declaration.value, declaration.groupValues[2] == HEvent::class.java.simpleName)
         }
         assertTrue(!HEvent::class.java.isAssignableFrom(HostEvent::class.java))
-        for (path in listOf("rust/event/RustEventProjection.kt", "discover/PairingProjection.kt",
-            "discover/RustNearbyDevices.kt", "discover/RustMdnsRuntime.kt",
-            "chat/channel/ChannelSystemMessageReceiver.kt", "ai/RustImageModels.kt",
-            "features/dlna/DlnaRendererState.kt", "features/PomodoroHost.kt")) {
+        for (path in listOf("rust/event/RustEventProjection.kt", "features/nearby/PairingProjection.kt",
+            "features/nearby/RustNearbyDevices.kt", "features/nearby/RustMdnsRuntime.kt",
+            "features/chat/channel/ChannelSystemMessageReceiver.kt", "features/images/search/RustImageModels.kt",
+            "features/dlna/DlnaRendererState.kt", "features/pomodoro/PomodoroHost.kt")) {
             val source = File(sources, path).readText()
             assertTrue("$path must only project HTTP state locally", !source.contains("HostEvent"))
         }

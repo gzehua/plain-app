@@ -285,10 +285,19 @@ val checkJava21Collisions by tasks.registering {
         srcRoot.asFile.walkTopDown()
             .filter { it.isFile && it.extension == "kt" }
             .forEach { f ->
-                f.readLines().forEachIndexed { i, line ->
-                // LockFreeLinkedListHead is a kotlinx-coroutines class with its own addLast member
-                if (line.contains("LockFreeLinkedListHead")) return@forEachIndexed
-                if (forbidden.containsMatchIn(line)) offenders += "${f.relativeTo(srcRoot.asFile)}:${i + 1}: ${line.trim()}"
+                val source = f.readText()
+                val blockingDeques = Regex("""\b(?:val|var)\s+(\w+)\s*=\s*(?:java\.util\.concurrent\.)?LinkedBlockingDeque\b""")
+                    .findAll(source).map { it.groupValues[1] }.toSet()
+                    .takeIf { source.contains("import java.util.concurrent.LinkedBlockingDeque") || source.contains("java.util.concurrent.LinkedBlockingDeque") }
+                    .orEmpty()
+                val dequeMethods = setOf("removeLast", "removeFirst", "getFirst", "getLast", "addFirst", "addLast", "putFirst", "putLast")
+                source.lineSequence().forEachIndexed { i, line ->
+                    if (line.contains("LockFreeLinkedListHead")) return@forEachIndexed
+                    val invalid = forbidden.findAll(line).any { match ->
+                        val receiver = line.substring(0, match.range.first).takeLastWhile { it.isLetterOrDigit() || it == '_' }
+                        receiver !in blockingDeques || match.groupValues[1] !in dequeMethods
+                    }
+                    if (invalid) offenders += "${f.relativeTo(srcRoot.asFile)}:${i + 1}: ${line.trim()}"
                 }
             }
         if (offenders.isNotEmpty()) {

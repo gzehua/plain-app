@@ -24,9 +24,6 @@ internal actual suspend fun clearMediaCache(): Unit = com.ismartcoding.plain.lib
     VideoPlayerCacheManager.getCache()?.let { cache -> cache.keys.toList().forEach(cache::removeResource) }
 }
 
-actual suspend fun checkUpdateAsync(showToast: Boolean): Boolean? =
-    AppHelper.checkUpdateAsync(appContext, showToast)
-
 actual fun getAppIcon(packageName: String): Any? = runCatching {
     appContext.packageManager.getApplicationIcon(packageName)
 }.getOrNull()

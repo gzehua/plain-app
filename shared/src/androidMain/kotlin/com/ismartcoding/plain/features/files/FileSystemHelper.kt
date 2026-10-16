@@ -5,7 +5,6 @@ import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.helpers.FilterField
 import com.ismartcoding.plain.extensions.getDirectChildrenCount
 import com.ismartcoding.plain.extensions.normalizeComparison
-import com.ismartcoding.plain.platform.files.listZipEntries
 import com.ismartcoding.plain.extensions.sorted
 import kotlin.time.Instant
 import java.util.Locale

@@ -18,6 +18,7 @@ import kotlin.concurrent.Volatile
  */
 interface IosNetworkInfoProvider {
     fun getDeviceIP4s(): List<String>
+    fun getNetworkType(): String
 }
 
 /**
@@ -96,6 +97,11 @@ interface IosSoundMeter {
  * startup. Kotlin code in iosMain reads these providers from commonMain.
  */
 object IosPlatformRegistry {
+    private var backgroundScheduler: IosBackgroundScheduler? = null
+    fun setBackgroundScheduler(scheduler: IosBackgroundScheduler) { backgroundScheduler = scheduler }
+    fun scheduleBackgroundWake(atMillis: Double): String = checkNotNull(backgroundScheduler).schedule(atMillis)
+    fun networkType(): String = _networkInfoProvider?.getNetworkType() ?: "NONE"
+
     @Volatile
     private var _networkInfoProvider: IosNetworkInfoProvider? = null
 

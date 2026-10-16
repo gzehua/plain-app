@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.files
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.i18n.*
 
@@ -7,8 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.platform.files.createDirectory
-import com.ismartcoding.plain.platform.files.createFile
 import com.ismartcoding.plain.ui.components.TextFieldDialog
 import com.ismartcoding.plain.ui.components.FileSortDialog
 import com.ismartcoding.plain.ui.components.DialogHelper
@@ -38,7 +38,7 @@ internal fun FilesPageDialogs(
             onConfirm = { name ->
                 scope.launch {
                     DialogHelper.showLoading()
-                        val error = withIO { runCatching { createDirectory(filesVM.selectedPath + "/" + name) }.exceptionOrNull() }
+                        val error = withIO { runCatching { FilesClient.createDirectory(filesVM.selectedPath + "/" + name) }.exceptionOrNull() }
                         DialogHelper.hideLoading()
                         if (error != null) { DialogHelper.showMessage(error); return@launch }
                         filesVM.loadAsync()
@@ -58,7 +58,7 @@ internal fun FilesPageDialogs(
             onConfirm = { name ->
                 scope.launch {
                     DialogHelper.showLoading()
-                        val error = withIO { runCatching { createFile(filesVM.selectedPath + "/" + name) }.exceptionOrNull() }
+                        val error = withIO { runCatching { FilesClient.createFile(filesVM.selectedPath + "/" + name) }.exceptionOrNull() }
                         DialogHelper.hideLoading()
                         if (error != null) { DialogHelper.showMessage(error); return@launch }
                         filesVM.loadAsync()

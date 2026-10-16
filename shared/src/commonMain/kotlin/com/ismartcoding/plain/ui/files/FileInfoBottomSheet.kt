@@ -1,4 +1,6 @@
 package com.ismartcoding.plain.ui.files
+
+import com.ismartcoding.plain.features.files.FilesClient
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import com.ismartcoding.plain.ui.theme.PlainTheme
@@ -23,7 +25,6 @@ import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.lib.extensions.getMimeType
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.platform.files.getFileIconPath
-import com.ismartcoding.plain.platform.files.renameAndScanFile
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.CopyIconButton
 import com.ismartcoding.plain.ui.base.PCard
@@ -62,7 +63,7 @@ fun FileInfoBottomSheet(filesVM: FilesViewModel) {
     if (showRenameDialog.value) {
         FileRenameDialog(path = file.path, onDismiss = {
             showRenameDialog.value = false
-        }, onRename = { p, name -> renameAndScanFile(p, name) }, onRenamed = {
+        }, onRename = { p, name -> FilesClient.rename(p, name) }, onRenamed = {
             file.name = it.getFilenameFromPath()
             file.path = it
             filesVM.selectedFile.value = null

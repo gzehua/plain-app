@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.chat.components
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,7 +28,6 @@ import com.ismartcoding.plain.platform.media.audioPause
 import com.ismartcoding.plain.platform.media.audioPlay
 import com.ismartcoding.plain.platform.media.audioPlayerProgress
 import com.ismartcoding.plain.platform.media.audioSeekTo
-import com.ismartcoding.plain.ui.platform.media.getAudioDurationMs
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.media.viewer.previewer.rememberTransformItemState
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModelBase
@@ -83,7 +84,7 @@ fun ChatFileItem(
         if (isAudio && isCurrentlyPlaying && durationMs <= 0f) {
             val loadedDurationMs = withIO {
                 runCatching {
-                    getAudioDurationMs(path).toFloat()
+                    MediaClient.durationMs(path).toFloat()
                 }.getOrDefault(0f)
             }
             if (loadedDurationMs > 0f) {

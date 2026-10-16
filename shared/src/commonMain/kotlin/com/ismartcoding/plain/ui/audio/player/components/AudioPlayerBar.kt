@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.audio.player.components
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -19,7 +21,6 @@ import com.ismartcoding.plain.platform.media.audioIsPlayingFlow
 import com.ismartcoding.plain.platform.media.audioPause
 import com.ismartcoding.plain.platform.media.audioPlay
 import com.ismartcoding.plain.platform.media.audioPlayerProgress
-import com.ismartcoding.plain.ui.platform.media.playlistAudioFromPath
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.casting.CastViewModel
@@ -49,7 +50,7 @@ fun AudioPlayerBar(
         scope.launch {
             val path = currentPlayingPath.value
             if (path.isNotEmpty()) {
-                val audio = withIO { playlistAudioFromPath(path) }
+                val audio = withIO { MediaClient.audioInfo(path) }
                 title = audio.title; artist = audio.artist
                 durationMs = audio.durationMs.toFloat(); progress = audioPlayerProgress().toFloat()
             }

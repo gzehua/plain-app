@@ -52,11 +52,11 @@ internal fun FeedEntriesPageEffects(
     LaunchedEffect(Channel.sharedFlow) {
         Channel.sharedFlow.collect { event ->
             if (event is HFeedStatusEvent) {
-                if (event.status == FeedWorkerStatus.COMPLETED || event.status == FeedWorkerStatus.ERROR) {
+                if (event.status == FeedWorkerStatus.COMPLETED || event.status == FeedWorkerStatus.ERROR || event.status == FeedWorkerStatus.CANCELLED) {
                     topRefreshLayoutState.setRefreshState(
                         if (event.status == FeedWorkerStatus.ERROR) RefreshContentState.Failed else RefreshContentState.Finished,
                     )
-                    // Sync outcomes are persisted on Feed by FeedFetcher; reload so the
+                    // Sync outcomes are persisted on Feed by Rust; reload so the
                     // banner, drawer dots and the open feed sheet reflect the new state.
                     feedsVM.loadAsync(withCount = true)
                     feedsVM.refreshSelectedItemAsync()

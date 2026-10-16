@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.apps
 
+import com.ismartcoding.plain.features.packages.PackagesClient
 import com.ismartcoding.plain.ui.state.ISearchableViewModel
 import com.ismartcoding.plain.ui.state.VTabData
 
@@ -13,8 +14,6 @@ import androidx.lifecycle.ViewModel
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.helpers.SearchHelper
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.platform.system.countPackages
-import com.ismartcoding.plain.platform.system.searchPackages
 import com.ismartcoding.plain.platform.system.PackageType
 import com.ismartcoding.plain.features.files.FileSortBy
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +40,7 @@ class AppsViewModel : ISearchableViewModel<AppPackage>, ViewModel() {
 
     suspend fun moreAsync() = withIO {
         offset.value += limit.intValue
-        val items = searchPackages(getQuery(), limit.intValue, offset.intValue, sortBy.value)
+        val items = PackagesClient.search(getQuery(), limit.intValue, offset.intValue, sortBy.value)
         _itemsFlow.update { it + items }
         showLoading.value = false
         noMore.value = items.size < limit.intValue
@@ -49,9 +48,9 @@ class AppsViewModel : ISearchableViewModel<AppPackage>, ViewModel() {
 
     suspend fun loadAsync() = withIO {
         offset.intValue = 0
-        _itemsFlow.value = searchPackages(getQuery(), limit.intValue, 0, sortBy.value)
-        total.intValue = countPackages(SearchHelper.buildTextFilter(queryText.value))
-        totalSystem.intValue = countPackages("${SearchHelper.buildTextFilter(queryText.value)} type:${PackageType.SYSTEM.name}")
+        _itemsFlow.value = PackagesClient.search(getQuery(), limit.intValue, 0, sortBy.value)
+        total.intValue = PackagesClient.count(SearchHelper.buildTextFilter(queryText.value))
+        totalSystem.intValue = PackagesClient.count("${SearchHelper.buildTextFilter(queryText.value)} type:${PackageType.SYSTEM.name}")
         noMore.value = _itemsFlow.value.size < limit.intValue
         tabs.value = listOf(
             VTabData(LocaleHelper.getStringAsync(Res.string.all), "", total.intValue),

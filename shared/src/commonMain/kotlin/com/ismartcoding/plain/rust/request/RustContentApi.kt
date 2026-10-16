@@ -6,8 +6,6 @@ import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.lib.JsonHelper
 
 import com.ismartcoding.plain.app.events.*
-import com.ismartcoding.plain.ui.feeds.FeedWorkerState
-import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.app.*
 import com.ismartcoding.plain.ui.app.*
@@ -40,7 +38,6 @@ import com.ismartcoding.plain.ui.platform.files.*
 import com.ismartcoding.plain.platform.media.*
 import com.ismartcoding.plain.ui.platform.media.*
 import com.ismartcoding.plain.platform.notifications.*
-import com.ismartcoding.plain.ui.platform.notifications.*
 import com.ismartcoding.plain.platform.system.*
 import com.ismartcoding.plain.ui.platform.system.*
 import com.ismartcoding.plain.ui.state.*
@@ -48,8 +45,6 @@ import com.ismartcoding.plain.platform.telephony.*
 import com.ismartcoding.plain.rust.http.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.*
 import kotlin.concurrent.Volatile
 
@@ -59,11 +54,9 @@ class RustApiException(message: String, cause: Throwable? = null) : Exception(me
 object RustContentApi {
     private val lock = PlatformLock()
     private val client by lazy { createPlainHttpClient(PlainHttpClientSpec.Local()) }
-    private val statusLock = Mutex()
 
     /** Endpoint description of this device's own Rust server, for the REST calls below. */
     @Volatile private var localSession: ContentApiSession? = null
-    private val syncStates = MutableStateFlow<Map<String, Pair<String, String>>>(emptyMap())
 
     internal fun startedSession(): ContentApiSession? = localSession
 
@@ -145,33 +138,6 @@ object RustContentApi {
 
     suspend fun graphql(document: String, variables: Map<String, JsonElement> = emptyMap(), session: ContentApiSession? = null): JsonObject =
         PlainRust.mainGraphql(document, variables, session)
-
-    suspend fun sync(feedId: String) {
-        val key = feedId.ifEmpty { "all" }
-        mutate("syncFeeds(id: ${if (feedId.isEmpty()) "null" else gql(feedId)})")
-        refreshSyncStates()
-        val completed = withTimeout(5 * 60 * 1000L) {
-            syncStates.first { it[key]?.first?.let { status -> status != "PENDING" } == true }.getValue(key)
-        }
-        check(completed.first == "COMPLETED") { completed.second.ifEmpty { "Feed sync failed" } }
-    }
-
-    internal suspend fun refreshSyncStates() = statusLock.withLock {
-        val values = query("feedSyncStates { feedId status error }")["feedSyncStates"]!!.jsonArray
-        val states = values.associate { value ->
-            val row = value.jsonObject
-            row.getValue("feedId").jsonPrimitive.content to (row.getValue("status").jsonPrimitive.content to row.getValue("error").jsonPrimitive.content)
-        }
-        syncStates.value = states
-        withContext(Dispatchers.Main) {
-            states.forEach { (id, state) ->
-                val status = FeedWorkerStatus.valueOf(state.first)
-                FeedWorkerState.statusMap[id] = status
-                if (state.second.isEmpty()) FeedWorkerState.errorMap.remove(id) else FeedWorkerState.errorMap[id] = state.second
-                sendEvent(HFeedStatusEvent(id, status))
-            }
-        }
-    }
 
     suspend fun publish(event: HostEvent): Int = PlainRust.publish(event)
 }

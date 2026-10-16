@@ -35,14 +35,6 @@ actual fun tryDecodeQrCode(path: String): String? = try {
     null
 }
 
-actual fun fileLength(path: String): Long = try {
-    val attrs = NSFileManager.defaultManager.attributesOfItemAtPath(path, null)
-    val size = attrs?.get("NSFileSize")
-    (size as? Number)?.toLong() ?: 0L
-} catch (e: Exception) {
-    0L
-}
-
 actual fun generateQrCode(text: String, width: Int, height: Int): ImageBitmap {
     return ImageBitmap(width, height, ImageBitmapConfig.Argb8888)
 }

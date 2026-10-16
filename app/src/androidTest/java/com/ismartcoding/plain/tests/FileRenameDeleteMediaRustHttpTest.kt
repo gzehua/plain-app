@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.tests.fixtures.ImageEmbeddings
 
 import android.content.ContentValues
@@ -35,8 +37,6 @@ import com.ismartcoding.plain.features.videos.*
 import com.ismartcoding.plain.ui.videos.*
 import com.ismartcoding.plain.features.files.*
 import com.ismartcoding.plain.ui.files.*
-import com.ismartcoding.plain.platform.files.renameAndScanFile
-import com.ismartcoding.plain.platform.files.deleteFileOrDir
 import com.ismartcoding.plain.platform.files.queryFileTaskMedia
 import com.ismartcoding.plain.platform.files.scanFileTaskPaths
 import kotlinx.coroutines.runBlocking
@@ -86,11 +86,11 @@ class FileRenameDeleteMediaRustHttpTest {
             TagsClient.editTagRelations(DataType.IMAGE, TagRelationStub(oldId, prefix, 1), listOf(imageTag), emptyList())
             TagsClient.editTagRelations(DataType.FILE, TagRelationStub(sourcePath, prefix, 1), listOf(fileTag), emptyList())
             ImageEmbeddings.insertAll(listOf(imageEmbedding(oldId, sourcePath, ByteBuffer.allocate(4).putFloat(1f).array())))
-            assertNull(renameAndScanFile(sourcePath, "../escape.png"))
+            assertNull(FilesClient.rename(sourcePath, "../escape.png"))
             val collision = File(File(sourcePath).parentFile, "existing.png").apply { writeText("existing") }
-            assertNull(renameAndScanFile(sourcePath, collision.name))
+            assertNull(FilesClient.rename(sourcePath, collision.name))
             assertEquals("existing", collision.readText())
-            assertEquals(destinationPath, renameAndScanFile(sourcePath, "renamed.png"))
+            assertEquals(destinationPath, FilesClient.rename(sourcePath, "renamed.png"))
             val renameTask = FileTaskHelper.list(0, 1000, "").single { task -> task.completedOps.any { it.src == sourcePath && it.dst == destinationPath } }
             assertEquals(FileTaskType.MOVE, renameTask.type)
             assertEquals(FileTaskStatus.DONE, renameTask.status)
@@ -106,12 +106,12 @@ class FileRenameDeleteMediaRustHttpTest {
             assertEquals(listOf(fileTag), TagsClient.getTagRelationsByKey(destinationPath, DataType.FILE).map { it.tagId })
             assertFalse(ImageEmbeddings.getAllIds().any { it in ids })
             ImageEmbeddings.insertAll(listOf(imageEmbedding(moved.id, destinationPath, ByteBuffer.allocate(4).putFloat(1f).array())))
-            assertTrue(deleteFileOrDir(destinationPath))
+            assertTrue(FilesClient.delete(destinationPath))
             assertFalse(File(destinationPath).exists())
             assertTrue(TagsClient.getTagRelationsByKey(moved.id, DataType.IMAGE).isEmpty())
             assertTrue(TagsClient.getTagRelationsByKey(destinationPath, DataType.FILE).isEmpty())
             assertFalse(ImageEmbeddings.getAllIds().any { it in ids })
-            assertFalse(deleteFileOrDir(destinationPath))
+            assertFalse(FilesClient.delete(destinationPath))
         } finally {
             FileTaskHelper.list(0, 1000, "").filter { task -> task.completedOps.any { it.src.startsWith(root.path + "/") } }.forEach { FileTaskHelper.remove(it.id) }
             tags.forEach { TagsClient.delete(it) }

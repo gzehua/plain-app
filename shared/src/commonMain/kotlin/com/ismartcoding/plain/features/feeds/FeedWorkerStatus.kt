@@ -1,7 +1,9 @@
 package com.ismartcoding.plain.features.feeds
 
 enum class FeedWorkerStatus {
-    PENDING,
+    QUEUED,
+    RUNNING,
+    CANCELLED,
     COMPLETED,
     ERROR,
 }

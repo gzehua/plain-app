@@ -11,6 +11,7 @@ data class SystemState(
     val rotateUrlTokenOnRestart: Boolean,
     val adbToken: String,
     val updateInfo: DUpdateInfo,
+    val appUpdateAvailable: Boolean = false,
     val urlToken: String,
     val apiPermissions: Set<String>,
     val onboardingCompleted: Boolean,

@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.ui.search
 
+import com.ismartcoding.plain.features.packages.PackagesClient
+import com.ismartcoding.plain.features.media.MediaCatalogClient
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.features.files.extension
 
 import com.ismartcoding.plain.api.graphql.models.File as FileEntry
@@ -32,13 +36,7 @@ import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.formatDurationMs
 import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.platform.files.countFiles
-import com.ismartcoding.plain.platform.media.countMedia
-import com.ismartcoding.plain.platform.system.countPackages
 import com.ismartcoding.plain.platform.system.formatDateTime
-import com.ismartcoding.plain.platform.files.searchFiles
-import com.ismartcoding.plain.platform.media.searchMedia
-import com.ismartcoding.plain.platform.system.searchPackages
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.bot as ui_drawable_bot
@@ -60,14 +58,14 @@ import org.jetbrains.compose.resources.DrawableResource
 internal suspend fun GlobalSearchViewModel.countDomain(d: GlobalSearchDomain, q: String): Int =
     when (d) {
         GlobalSearchDomain.NOTES -> NotesClient.count("${SearchHelper.buildTextFilter(q)} trash:false")
-        GlobalSearchDomain.AUDIO -> countMedia(DataType.AUDIO, "${SearchHelper.buildTextFilter(q)} trash:false")
-        GlobalSearchDomain.IMAGES -> countMedia(DataType.IMAGE, "${SearchHelper.buildTextFilter(q)} trash:false")
-        GlobalSearchDomain.VIDEOS -> countMedia(DataType.VIDEO, "${SearchHelper.buildTextFilter(q)} trash:false")
-        GlobalSearchDomain.DOCS -> countMedia(DataType.DOC, "${SearchHelper.buildTextFilter(q)} trash:false")
-        GlobalSearchDomain.FILES -> countFiles(SearchHelper.buildTextFilter(q))
+        GlobalSearchDomain.AUDIO -> MediaCatalogClient.count(DataType.AUDIO, "${SearchHelper.buildTextFilter(q)} trash:false")
+        GlobalSearchDomain.IMAGES -> MediaCatalogClient.count(DataType.IMAGE, "${SearchHelper.buildTextFilter(q)} trash:false")
+        GlobalSearchDomain.VIDEOS -> MediaCatalogClient.count(DataType.VIDEO, "${SearchHelper.buildTextFilter(q)} trash:false")
+        GlobalSearchDomain.DOCS -> MediaCatalogClient.count(DataType.DOC, "${SearchHelper.buildTextFilter(q)} trash:false")
+        GlobalSearchDomain.FILES -> FilesClient.indexedCount(SearchHelper.buildTextFilter(q))
         GlobalSearchDomain.FEEDS -> FeedEntriesClient.count(SearchHelper.buildTextFilter(q))
         GlobalSearchDomain.CHAT -> ChatQueries.countAsync(q)
-        GlobalSearchDomain.APPS -> countPackages(q)
+        GlobalSearchDomain.APPS -> PackagesClient.count(q)
     }
 
 internal suspend fun GlobalSearchViewModel.queryDomain(
@@ -80,25 +78,25 @@ internal suspend fun GlobalSearchViewModel.queryDomain(
         GlobalSearchDomain.NOTES ->
             NotesClient.search("${SearchHelper.buildTextFilter(q)} trash:false", limit, offset).map { it.toHit(q) }
         GlobalSearchDomain.AUDIO ->
-            searchMedia(DataType.AUDIO, "${SearchHelper.buildTextFilter(q)} trash:false", limit, offset, FileSortBy.DATE_DESC)
+            MediaCatalogClient.rows(DataType.AUDIO, "${SearchHelper.buildTextFilter(q)} trash:false", limit, offset, FileSortBy.DATE_DESC)
                 .filterIsInstance<AudioTrack>().map { it.toHit() }
         GlobalSearchDomain.IMAGES ->
-            searchMedia(DataType.IMAGE, "${SearchHelper.buildTextFilter(q)} trash:false", limit, offset, FileSortBy.DATE_DESC)
+            MediaCatalogClient.rows(DataType.IMAGE, "${SearchHelper.buildTextFilter(q)} trash:false", limit, offset, FileSortBy.DATE_DESC)
                 .filterIsInstance<MediaImage>().map { it.toHit() }
         GlobalSearchDomain.VIDEOS ->
-            searchMedia(DataType.VIDEO, "${SearchHelper.buildTextFilter(q)} trash:false", limit, offset, FileSortBy.DATE_DESC)
+            MediaCatalogClient.rows(DataType.VIDEO, "${SearchHelper.buildTextFilter(q)} trash:false", limit, offset, FileSortBy.DATE_DESC)
                 .filterIsInstance<MediaVideo>().map { it.toHit() }
         GlobalSearchDomain.DOCS ->
-            searchMedia(DataType.DOC, "${SearchHelper.buildTextFilter(q)} trash:false", limit, offset, FileSortBy.DATE_DESC)
+            MediaCatalogClient.rows(DataType.DOC, "${SearchHelper.buildTextFilter(q)} trash:false", limit, offset, FileSortBy.DATE_DESC)
                 .filterIsInstance<Document>().map { it.toHit() }
         GlobalSearchDomain.FILES ->
-            searchFiles(SearchHelper.buildTextFilter(q), limit, offset, FileSortBy.DATE_DESC).map { it.toHit() }
+            FilesClient.indexed(SearchHelper.buildTextFilter(q), limit, offset, FileSortBy.DATE_DESC).map { it.toHit() }
         GlobalSearchDomain.FEEDS ->
             FeedEntriesClient.search(SearchHelper.buildTextFilter(q), limit, offset).map { it.toHit(q) }
         GlobalSearchDomain.CHAT ->
             ChatQueries.searchAsync(q, limit, offset).map { it.toHit(q) }
         GlobalSearchDomain.APPS ->
-            searchPackages(q, limit, offset, FileSortBy.DATE_DESC).filter { it.name.isNotBlank() }.map { it.toHit() }
+            PackagesClient.search(q, limit, offset, FileSortBy.DATE_DESC).filter { it.name.isNotBlank() }.map { it.toHit() }
     }
 
 /**
@@ -142,7 +140,7 @@ private suspend inline fun <reified T : Any> reloadMediaHits(
         }
     }
     if (ids.isEmpty()) return null
-    return searchMedia(dataType, "ids:${ids.joinToString(",")} trash:false", ids.size, 0, FileSortBy.DATE_DESC)
+    return MediaCatalogClient.rows(dataType, "ids:${ids.joinToString(",")} trash:false", ids.size, 0, FileSortBy.DATE_DESC)
         .filterIsInstance<T>()
         .map { toHit(it) }
 }

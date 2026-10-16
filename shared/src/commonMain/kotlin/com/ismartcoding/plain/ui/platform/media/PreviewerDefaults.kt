@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.platform.media
 
-import com.ismartcoding.plain.ui.platform.system.ImageDecoder
-
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween

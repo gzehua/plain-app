@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.features.audio
 
-
 import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
 import com.ismartcoding.plain.helpers.ContentWhere
 import android.content.Context
@@ -13,17 +12,14 @@ import com.ismartcoding.plain.lib.extensions.getTimeSecondsValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.isQPlus
-import com.ismartcoding.plain.features.tags.TagRelationStub
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.features.media.MediaType
-import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.features.files.toSortBy
 import com.ismartcoding.plain.platform.media.provider.BaseMediaContentHelper
 
 object AudioMediaStoreHelper : BaseMediaContentHelper() {
-    override val providerType: DataType = DataType.AUDIO
     override val uriExternal: Uri = if (isQPlus()) MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL) else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
     override val mediaType: MediaType = MediaType.AUDIO
 
@@ -49,14 +45,6 @@ object AudioMediaStoreHelper : BaseMediaContentHelper() {
 
         return projection.toTypedArray()
     }
-
-    suspend fun searchAsync(
-        context: Context,
-        query: String,
-        limit: Int,
-        offset: Int,
-        sortBy: FileSortBy,
-    ): List<AudioTrack> = com.ismartcoding.plain.rust.host.provider.RustMediaQuery.rows(com.ismartcoding.plain.platform.system.DataType.AUDIO, query, limit, offset, sortBy).map { it as AudioTrack }
 
     suspend fun searchAsync(
         context: Context,
@@ -90,8 +78,5 @@ object AudioMediaStoreHelper : BaseMediaContentHelper() {
         
         audios
     }
-
-    suspend fun getTagRelationStubsAsync(context: Context, query: String): List<TagRelationStub> =
-        com.ismartcoding.plain.rust.host.provider.RustMediaQuery.tagStubs(com.ismartcoding.plain.platform.system.DataType.AUDIO, query)
 
 }

@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.features.bookmarks
 
-import com.ismartcoding.plain.ui.permissions.request
-
 import com.ismartcoding.plain.api.graphql.models.Bookmark
 import com.ismartcoding.plain.api.graphql.models.BookmarkGroup
 import com.ismartcoding.plain.lib.JsonHelper

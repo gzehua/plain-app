@@ -56,6 +56,10 @@ class PhoneMetadataTest {
 
     @Test
     fun a_blank_region_leaves_the_number_unparsed_rather_than_guessing() {
-        assertEquals("", phoneMetadata(PhoneMetadataRequest(cnMobileNumber, "", "zh_CN")).country)
+        val national = PhoneNumberUtil.getInstance().let { numbers ->
+            numbers.format(numbers.parse(cnMobileNumber, null), PhoneNumberUtil.PhoneNumberFormat.NATIONAL)
+        }
+        assertEquals("", phoneMetadata(PhoneMetadataRequest(national, "", "zh_CN")).country)
+        assertEquals("CN", phoneMetadata(PhoneMetadataRequest(cnMobileNumber, "", "zh_CN")).country)
     }
 }

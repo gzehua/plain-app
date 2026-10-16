@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.chat.components
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -31,7 +33,6 @@ import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.lib.extensions.isZipFile
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.platform.files.copyFileToDir
 import com.ismartcoding.plain.platform.files.fileToUriString
 import com.ismartcoding.plain.platform.media.playAudioWithNotificationCheck
 import com.ismartcoding.plain.platform.files.saveFileToDownloads
@@ -88,7 +89,7 @@ internal fun ChatFileItemContent(
             onDirectory = { dir ->
                 showSaveSheet = false
                 coMain {
-                    val result = withIO { copyFileToDir(path, dir, fileName) }
+                    val result = withIO { FilesClient.copyToDirectory(path, dir, fileName) }
                     if (result.isNotEmpty()) {
                         DialogHelper.showConfirmDialog("", LocaleHelper.getStringFAsync(Res.string.file_save_to, result))
                     } else {

@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.casting
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -37,7 +39,6 @@ import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
 import com.ismartcoding.plain.lib.extensions.isAudioFast
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isVideoFast
-import com.ismartcoding.plain.ui.platform.media.getAudioMetadata
 import com.ismartcoding.plain.ui.components.PIconButton
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
 import com.ismartcoding.plain.ui.theme.listItemSubtitle
@@ -59,7 +60,7 @@ fun CastSessionPlaylistItem(
 
     LaunchedEffect(item.path) {
         if (item is CastItem && item.audio) {
-            val (t, a) = withIO { getAudioMetadata(item.path) }
+            val (t, a) = withIO { MediaClient.audioInfo(item.path).let { it.title to it.artist } }
             title = t; subtitle = a
         } else {
             title = item.title.ifEmpty { item.path.getFilenameWithoutExtensionFromPath() }

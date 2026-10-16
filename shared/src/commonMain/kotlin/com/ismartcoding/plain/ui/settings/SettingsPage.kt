@@ -29,7 +29,6 @@ import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.app.events.DownloadUpdateEvent
 import com.ismartcoding.plain.util.UrlHelper
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.platform.system.checkUpdateAsync
 import com.ismartcoding.plain.platform.system.getAppVersion
 import com.ismartcoding.plain.platform.system.getCacheSize
 import com.ismartcoding.plain.platform.system.getLogFileSize
@@ -129,7 +128,7 @@ fun SettingsPage(navController: NavHostController, updateViewModel: UpdateViewMo
                                     scope.launch {
                                         DialogHelper.showMessage(Res.string.checking_updates)
                                         RustSystemState.patchUpdate(UpdateInfoPatch(skipVersion = ""))
-                                        val r = withIO { checkUpdateAsync(true) }
+                                        val r = withIO { checkAppUpdate(true) }
                                         if (r != null) {
                                             if (r) updateViewModel.showDialog()
                                             else DialogHelper.showMessage(Res.string.is_latest_version)

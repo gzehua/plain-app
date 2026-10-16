@@ -15,7 +15,7 @@ actual fun getNetworkType(): NetworkType {
         caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NetworkType.WIFI
         caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> NetworkType.CELLULAR
         caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> NetworkType.ETHERNET
-        else -> NetworkType.NONE
+        else -> NetworkType.OTHER
     }
 }
 

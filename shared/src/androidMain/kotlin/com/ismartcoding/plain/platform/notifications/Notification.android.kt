@@ -1,9 +1,6 @@
 package com.ismartcoding.plain.platform.notifications
 
-import com.ismartcoding.plain.platform.system.searchPackages
-
-import com.ismartcoding.plain.platform.notifications.NotificationsHelper
-
+import com.ismartcoding.plain.features.packages.PackagesClient
 import com.ismartcoding.plain.api.graphql.models.Notification as AppNotification
 import android.app.RemoteInput
 import android.content.Intent
@@ -29,7 +26,7 @@ actual suspend fun getNotificationApp(packageName: String): DNotificationApp? = 
 
 actual suspend fun getAllNotificationApps(): List<DNotificationApp> = withIO {
     val ownPackage = appContext.packageName
-    searchPackages("", Int.MAX_VALUE, 0, FileSortBy.NAME_ASC)
+    PackagesClient.search("", Int.MAX_VALUE, 0, FileSortBy.NAME_ASC)
         .filter { it.id != ownPackage }
         .map { DNotificationApp(id = it.id, name = it.name) }
 }

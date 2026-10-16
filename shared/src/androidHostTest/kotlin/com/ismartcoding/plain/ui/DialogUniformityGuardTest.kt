@@ -7,7 +7,7 @@ import kotlin.test.fail
 
 /**
  * Locks the dialog uniformity rule (2026-09-21): text-input dialogs MUST be
- * built on ui/base/TextFieldDialog (reference implementation: FileRenameDialog);
+ * built on ui/components/TextFieldDialog (reference implementation: FileRenameDialog);
  * business code must not hand-roll AlertDialog + text field. A file under ui/
  * outside ui/base that combines AlertDialog( with any *TextField( composable is
  * either legacy (frozen in ALLOWLIST — never add new entries) or a violation.
@@ -45,10 +45,12 @@ class DialogUniformityGuardTest {
     @Test
     fun `text input dialogs must build on TextFieldDialog`() {
         val root = uiDir()
+        assertTrue(File(root, "components/TextFieldDialog.kt").isFile)
         val violations = mutableListOf<String>()
         root.walkTopDown().filter { it.isFile && it.extension == "kt" }.forEach { file ->
             // ui/base hosts the sanctioned dialog builders (TextFieldDialog etc.).
-            if (file.independentRelativePath(root).startsWith("base/")) return@forEach
+            val path = file.independentRelativePath(root)
+            if (path.startsWith("base/") || path == "components/TextFieldDialog.kt") return@forEach
             val text = file.readText()
             if (text.contains("AlertDialog(") && text.contains(Regex("TextField\\("))) {
                 val rel = "$uiRoot/${file.independentRelativePath(root)}"
@@ -57,7 +59,7 @@ class DialogUniformityGuardTest {
         }
         assertTrue(
             violations.isEmpty(),
-            "Hand-rolled text-input AlertDialogs found (use ui/base/TextFieldDialog; " +
+            "Hand-rolled text-input AlertDialogs found (use ui/components/TextFieldDialog; " +
                 "multi-field customs need an explicit rules review):\n" + violations.joinToString("\n"),
         )
     }

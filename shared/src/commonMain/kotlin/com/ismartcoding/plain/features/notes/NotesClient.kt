@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.features.notes
 
-import com.ismartcoding.plain.ui.permissions.request
-
 import com.ismartcoding.plain.api.graphql.models.Note
 import com.ismartcoding.plain.rust.bridge.*
 import com.ismartcoding.plain.features.feeds.*

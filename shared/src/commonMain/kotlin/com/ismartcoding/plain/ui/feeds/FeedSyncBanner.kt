@@ -169,7 +169,7 @@ private fun FeedSyncBannerRow(
     onToggleDetail: () -> Unit,
     onRetry: () -> Unit,
 ) {
-    val busy = FeedWorkerState.statusMap[feed.id] == FeedWorkerStatus.PENDING
+    val busy = FeedWorkerState.status(feed.id) in setOf(FeedWorkerStatus.QUEUED, FeedWorkerStatus.RUNNING)
     val reason = feedSyncErrorReason(feed.lastError.code) ?: stringResource(Res.string.sync_failed)
     val lastSyncedAt = feed.lastSyncAt?.timeAgo()
     var showMenu by remember { mutableStateOf(false) }

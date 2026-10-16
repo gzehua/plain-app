@@ -12,7 +12,7 @@ internal expect fun startupPlatformPropertyNames(): List<String>
 private val startupProperties = StartupSystemProperties {
     readSystemProperties(listOf(
         "name", "deviceType", "osVersion", "appVersion", "appBuildNumber",
-        "wifiAwareSupported", "files.recentCatalog", "files.recentRoot",
+        "wifiAwareSupported", "files.recentCatalog", "files.recentRoot", "supportedAbis", "updateSource",
     ) + startupPlatformPropertyNames()) + mapOf(
         "buildChannel" to kotlinx.serialization.json.JsonPrimitive(com.ismartcoding.plain.platform.system.AppChannelType.fromString(com.ismartcoding.plain.buildChannel).name),
         "cacheDir" to kotlinx.serialization.json.JsonPrimitive(com.ismartcoding.plain.rust.request.RustContentApi.cacheDirectory),

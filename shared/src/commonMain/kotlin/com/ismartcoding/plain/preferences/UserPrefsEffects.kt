@@ -3,8 +3,6 @@ package com.ismartcoding.plain.preferences
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.dlna.DlnaRendererState
 import com.ismartcoding.plain.app.HttpServerManager
-import com.ismartcoding.plain.features.feeds.feedWorkerCancelRepeat
-import com.ismartcoding.plain.features.feeds.feedWorkerStartRepeat
 import com.ismartcoding.plain.platform.media.onScreenMirrorQualityChanged
 import com.ismartcoding.plain.platform.system.setSystemLocale
 import com.ismartcoding.plain.app.stopHttpServiceAsync
@@ -36,9 +34,6 @@ internal object UserPrefsEffects {
         if (changed(previous, current, DLNA)) {
             if (UserPrefs.dlna.value) DlnaRendererState.start() else DlnaRendererState.stop()
         }
-        if (changed(previous, current, FEED_AUTO_REFRESH, FEED_AUTO_REFRESH_INTERVAL, FEED_AUTO_REFRESH_ONLY_WIFI)) {
-            if (UserPrefs.feedAutoRefresh.value) feedWorkerStartRepeat() else feedWorkerCancelRepeat()
-        }
         if (changed(previous, current, LOCALE)) {
             setSystemLocale(UserPrefs.localeValue())
         }
@@ -56,9 +51,6 @@ internal object UserPrefsEffects {
     private const val DEVICE_NAME = "deviceName"
     private const val SCREEN_MIRROR_QUALITY = "screenMirrorQuality"
     private const val DLNA = "dlna"
-    private const val FEED_AUTO_REFRESH = "feedAutoRefresh"
-    private const val FEED_AUTO_REFRESH_INTERVAL = "feedAutoRefreshIntervalSec"
-    private const val FEED_AUTO_REFRESH_ONLY_WIFI = "feedAutoRefreshOnlyWifi"
     private const val LOCALE = "locale"
     private const val SERVICE = "service"
 }

@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.audio.components
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -13,7 +15,6 @@ import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.formatDurationMs
 import com.ismartcoding.plain.lib.extensions.getMimeType
 import com.ismartcoding.plain.platform.system.formatDateTime
-import com.ismartcoding.plain.platform.files.renameAndScanFile
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.CopyIconButton
 import com.ismartcoding.plain.ui.base.PCard
@@ -51,7 +52,7 @@ fun ViewAudioBottomSheet(
     if (audioVM.showRenameDialog.value) {
         FileRenameDialog(path = m.path, onDismiss = {
             audioVM.showRenameDialog.value = false
-        }, onRename = { p, name -> renameAndScanFile(p, name) }, onRenamed = {
+        }, onRename = { p, name -> FilesClient.rename(p, name) }, onRenamed = {
             audioVM.loadAsync(tagsVM)
             onDismiss()
         })

@@ -14,6 +14,7 @@ import kotlinx.serialization.json.*
 
 internal object RustEventProjection {
     suspend fun reconcile() {
+        com.ismartcoding.plain.ui.feeds.FeedWorkerState.refresh()
         com.ismartcoding.plain.features.videos.VideoProgressHost.restore()
         com.ismartcoding.plain.preferences.Prefs.refresh()
         com.ismartcoding.plain.features.sessions.refreshOnlineClientIds()
@@ -132,6 +133,7 @@ internal object RustEventProjection {
                 sendEvent(HWebRequestReceivedEvent())
             }
             EventType.SHARED_FOLDER_DOWNLOAD_UPDATED.name -> com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine.refresh()
+            EventType.FEED_SYNC_UPDATED.name -> com.ismartcoding.plain.ui.feeds.FeedWorkerState.apply(JsonHelper.jsonDecode<com.ismartcoding.plain.ui.feeds.FeedSyncUpdate>(payload))
             EventType.CONTENT_CHANGED.name -> {
                 com.ismartcoding.plain.preferences.Prefs.refresh()
                 com.ismartcoding.plain.ui.chat.peer.PeerCacher.load()
@@ -140,7 +142,6 @@ internal object RustEventProjection {
                 try { com.ismartcoding.plain.features.files.FavoriteFoldersClient.refresh() }
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) { com.ismartcoding.plain.lib.logcat.LogCat.e("Favorite folders refresh",error) }
-                RustContentApi.refreshSyncStates()
                 NotesViewModel.reloadAsync()
                 com.ismartcoding.plain.features.pomodoro.PomodoroHost.refresh()
             }

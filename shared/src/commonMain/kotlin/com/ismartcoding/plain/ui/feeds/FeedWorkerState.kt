@@ -1,24 +1,38 @@
 package com.ismartcoding.plain.ui.feeds
 
-import com.ismartcoding.plain.features.feeds.FeedFetcher
-import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
-import com.ismartcoding.plain.features.feeds.feed
-
 import androidx.compose.runtime.mutableStateMapOf
+import com.ismartcoding.plain.api.graphql.models.FeedSyncState
+import com.ismartcoding.plain.app.events.HFeedStatusEvent
+import com.ismartcoding.plain.features.feeds.FeedsClient
+import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
+import com.ismartcoding.plain.lib.sendEvent
+import kotlinx.serialization.Serializable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+
+@Serializable
+internal data class FeedSyncUpdate(val states: List<FeedSyncState>, val removed: List<String>)
 
 object FeedWorkerState {
-    // Mutated concurrently by parallel feed sync tasks (FeedFetcher.pmap()), so
-    // a plain mutableMapOf (LinkedHashMap) is not safe here.
-    val statusMap = mutableStateMapOf<String, FeedWorkerStatus>()
-    val errorMap = mutableStateMapOf<String, String>()
+    private val lock = Mutex()
+    private val states = mutableStateMapOf<String, FeedSyncState>()
 
-    fun clear(feedId: String) {
-        statusMap.remove(feedId)
-        errorMap.remove(feedId)
+    fun status(id: String): FeedWorkerStatus? = states[id]?.let { FeedWorkerStatus.valueOf(it.status) }
+
+    suspend fun refresh() = lock.withLock { applyLocked(FeedsClient.syncStates(), replace = true) }
+    internal suspend fun apply(update: FeedSyncUpdate) = lock.withLock {
+        withContext(Dispatchers.Main) { update.removed.forEach(states::remove) }
+        applyLocked(update.states, replace = false)
     }
 
-    fun clearAll() {
-        statusMap.clear()
-        errorMap.clear()
+    private suspend fun applyLocked(values: List<FeedSyncState>, replace: Boolean) = withContext(Dispatchers.Main) {
+        if (replace) states.keys.retainAll(values.map { it.feedId }.toSet())
+        values.forEach { state ->
+            if (!replace && (states[state.feedId]?.revision ?: -1L) > state.revision) return@forEach
+            val previous = states.put(state.feedId, state)
+            if (previous != state) sendEvent(HFeedStatusEvent(state.feedId, FeedWorkerStatus.valueOf(state.status)))
+        }
     }
 }

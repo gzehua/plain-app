@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.files.stored.components
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.i18n.*
@@ -12,7 +14,6 @@ import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.files.fileToUriString
 import com.ismartcoding.plain.platform.media.playAudioWithNotificationCheck
-import com.ismartcoding.plain.ui.platform.media.playlistAudioFromPath
 import com.ismartcoding.plain.ui.media.viewer.PreviewItem
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.media.viewer.previewer.TransformItemState
@@ -66,7 +67,7 @@ fun openAppFile(
         fileName.isAudioFast() -> {
             coMain {
                 try {
-                    val audio = withIO { playlistAudioFromPath(path) }
+                    val audio = withIO { MediaClient.audioInfo(path) }
                     audioQueueVM.playSingleAsync(audio)
                     playAudioWithNotificationCheck(path)
                 } catch (ex: Exception) {

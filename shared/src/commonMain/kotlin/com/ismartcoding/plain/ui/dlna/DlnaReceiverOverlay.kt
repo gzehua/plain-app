@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.dlna
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,7 +34,6 @@ import com.ismartcoding.plain.features.dlna.DlnaPlaybackState
 import com.ismartcoding.plain.features.dlna.DlnaRendererState
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.features.files.RemoteFiles
-import com.ismartcoding.plain.platform.files.copyFileToDir
 import com.ismartcoding.plain.platform.files.saveFileToDownloads
 import com.ismartcoding.plain.platform.files.deleteFileAt
 import com.ismartcoding.plain.lib.withIO
@@ -214,7 +215,7 @@ private suspend fun downloadDlnaMedia(url: String, mediaType: DlnaMediaType, tit
     return try {
         val path = RemoteFiles.cache(url, filename)
         temporary = path
-        val saved = withIO { if (dir == null) saveFileToDownloads(path, filename) else copyFileToDir(path, dir, filename) }
+        val saved = withIO { if (dir == null) saveFileToDownloads(path, filename) else FilesClient.copyToDirectory(path, dir, filename) }
         if (saved.isEmpty()) {
             DialogHelper.showMessage(getString(Res.string.dlna_download_failed))
             false

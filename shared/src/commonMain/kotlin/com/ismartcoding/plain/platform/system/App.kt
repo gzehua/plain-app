@@ -14,13 +14,6 @@ expect fun exitApp()
 internal expect suspend fun clearMediaCache()
 
 /**
- * Check for app updates from the release source.
- * @param showToast whether to show a toast on rate-limit / failure
- * @return true if an update is available, false if up-to-date, null on failure
- */
-expect suspend fun checkUpdateAsync(showToast: Boolean): Boolean?
-
-/**
  * Load the icon for the app with [packageName].
  * Returns a platform-specific model suitable for use with coil3 `AsyncImage`
  * (Android: `android.graphics.drawable.Drawable`; iOS: `UIImage`).

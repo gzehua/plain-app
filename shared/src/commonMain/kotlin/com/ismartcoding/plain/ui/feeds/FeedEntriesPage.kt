@@ -35,7 +35,7 @@ import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.features.files.PickFileType
 import com.ismartcoding.plain.app.events.ExportFileEvent
 import com.ismartcoding.plain.app.events.PickFileEvent
-import com.ismartcoding.plain.features.feeds.FeedFetcher
+import com.ismartcoding.plain.features.feeds.FeedsClient
 import com.ismartcoding.plain.api.graphql.models.Feed
 import com.ismartcoding.plain.api.graphql.models.TagHostRecord
 import com.ismartcoding.plain.i18n.*
@@ -220,7 +220,7 @@ fun FeedEntriesPage(
         }) { paddingValues ->
             Column(modifier = Modifier.padding(top = paddingValues.calculateTopPadding())) {
                 // State-driven sync failure banner: persisted errors on Feed,
-                // scoped to the current feed filter, retries go through FeedFetcher.
+                // scoped to the current feed filter, retries go through Rust.
                 val failingFeeds = feedsState.filter {
                     it.hasSyncError &&
                         (feedEntriesVM.feedId.value.isEmpty() || it.id == feedEntriesVM.feedId.value)
@@ -229,8 +229,8 @@ fun FeedEntriesPage(
                     FeedSyncBanner(
                         failedFeeds = failingFeeds,
                         singleFeed = feedEntriesVM.feedId.value.isNotEmpty(),
-                        onRetry = { id -> scope.launch(IODispatcher) { FeedFetcher.fetchOne(id) } },
-                        onRetryAll = { failingFeeds.forEach { f -> scope.launch(IODispatcher) { FeedFetcher.fetchOne(f.id) } } },
+                        onRetry = { id -> scope.launch(IODispatcher) { FeedsClient.sync(id) } },
+                        onRetryAll = { failingFeeds.forEach { f -> scope.launch(IODispatcher) { FeedsClient.sync(f.id) } } },
                     )
                 }
                 PullToRefresh(

@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.media
 
+import com.ismartcoding.plain.features.media.MediaCatalogClient
 import com.ismartcoding.plain.ui.tags.TagsViewModel
 import com.ismartcoding.plain.ui.state.ISearchableViewModel
 import com.ismartcoding.plain.ui.state.launchSafe
@@ -17,10 +18,8 @@ import com.ismartcoding.plain.api.graphql.models.TagHostRecord
 import com.ismartcoding.plain.helpers.SearchHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.platform.media.countMedia
 import com.ismartcoding.plain.platform.media.deleteMedia
 import com.ismartcoding.plain.platform.media.restoreMedia
-import com.ismartcoding.plain.platform.media.searchMedia
 import com.ismartcoding.plain.platform.media.trashMedia
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -138,13 +137,13 @@ abstract class BaseMediaViewModel<T : IData> : ISearchableViewModel<T>, ViewMode
     suspend fun countMediaAsync(
         query: String,
     ): Int = withIO {
-        countMedia(dataType, query)
+        MediaCatalogClient.count(dataType, query)
     }
 
     @Suppress("UNCHECKED_CAST")
     suspend fun searchMediaAsync(
         query: String,
     ): List<T> = withIO {
-        searchMedia(dataType, query, limit.intValue, offset.intValue, sortBy.value) as List<T>
+        MediaCatalogClient.rows(dataType, query, limit.intValue, offset.intValue, sortBy.value) as List<T>
     }
 }

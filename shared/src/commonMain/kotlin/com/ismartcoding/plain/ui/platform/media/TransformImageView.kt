@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.platform.media
 
-import com.ismartcoding.plain.platform.system.ForceVideoDecoder
-
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState

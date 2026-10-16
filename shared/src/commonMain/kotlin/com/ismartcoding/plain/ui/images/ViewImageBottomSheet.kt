@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.images
 
+import com.ismartcoding.plain.features.files.FilesClient
+import com.ismartcoding.plain.features.media.MediaClient
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
@@ -23,9 +26,7 @@ import com.ismartcoding.plain.lib.extensions.getMimeType
 import com.ismartcoding.plain.ui.platform.media.ImageMetaRows
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.ui.platform.media.formatImageMetaTexts
-import com.ismartcoding.plain.ui.platform.media.getImageMeta
 import com.ismartcoding.plain.ui.platform.media.getSvgSize
-import com.ismartcoding.plain.platform.files.renameAndScanFile
 import com.ismartcoding.plain.ui.platform.media.tryDecodeQrCode
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PCard
@@ -78,7 +79,7 @@ fun ViewImageBottomSheet(
     if (imagesVM.showRenameDialog.value) {
         FileRenameDialog(path = m.path, onDismiss = {
             imagesVM.showRenameDialog.value = false
-        }, onRename = { p, name -> renameAndScanFile(p, name) }, onRenamed = {
+        }, onRename = { p, name -> FilesClient.rename(p, name) }, onRenamed = {
             imagesVM.loadAsync(tagsVM)
             onDismiss()
         })
@@ -114,7 +115,7 @@ fun ViewImageBottomSheet(
                     PListItem(title = stringResource(Res.string.dimensions), value = "${viewSize.width}\u00d7${viewSize.height}")
                     PListItem(title = stringResource(Res.string.created_at), value = m.createdAt.formatDateTime())
                     PListItem(title = stringResource(Res.string.updated_at), value = m.updatedAt.formatDateTime())
-                    ImageMetaRows(path = m.path, loadMeta = { getImageMeta(it) }, formatTexts = { mt -> formatImageMetaTexts(mt) })
+                    ImageMetaRows(path = m.path, loadMeta = { MediaClient.imageInfo(it) }, formatTexts = { mt -> formatImageMetaTexts(mt) })
                 }
             }
             item { BottomSpace() }

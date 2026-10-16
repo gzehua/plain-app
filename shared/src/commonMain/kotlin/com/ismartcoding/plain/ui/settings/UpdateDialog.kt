@@ -24,7 +24,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.lib.extensions.formatBytes
-import com.ismartcoding.plain.data.toVersion
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.app.events.DownloadUpdateEvent
 import com.ismartcoding.plain.lib.sendEvent
@@ -42,7 +41,7 @@ import com.ismartcoding.plain.ui.resources.rocket as ui_drawable_rocket
 @Composable
 fun UpdateDialog(updateVM: UpdateViewModel) {
     val updateInfo = RustSystemState.state.collectAsStateValue().updateInfo
-    val newVersion = updateInfo.newVersion.toVersion()
+    val newVersion = updateInfo.newVersion
     val newVersionPublishDate = updateInfo.publishDate
     val newVersionLog = updateInfo.log
     val newVersionSize = updateInfo.size

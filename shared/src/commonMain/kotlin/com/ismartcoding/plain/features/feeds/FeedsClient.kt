@@ -1,11 +1,9 @@
 package com.ismartcoding.plain.features.feeds
 
-import com.ismartcoding.plain.ui.feeds.FeedWorkerState
 
 import com.ismartcoding.plain.db.*
 import com.ismartcoding.plain.api.graphql.models.Feed
 import com.ismartcoding.plain.api.graphql.models.FeedEntryCount
-import com.ismartcoding.plain.features.feeds.feedWorkerOneTimeRequest
 import com.ismartcoding.plain.rust.bridge.*
 import com.ismartcoding.plain.features.feeds.*
 import com.ismartcoding.plain.ui.feeds.*
@@ -41,6 +39,8 @@ object FeedsClient {
         RustContentApi.mutate("updateFeed(id: ${gql(id)}, name: ${gql(current.name)}, fetchContent: ${current.fetchContent}) { id }")
         return id
     }
-    suspend fun deleteAsync(ids: Set<String>) { ids.forEach { RustContentApi.mutate("deleteFeed(id: ${gql(it)})"); FeedWorkerState.clear(it) } }
-    fun fetchOneTime(feedId: String) = feedWorkerOneTimeRequest(feedId)
+    suspend fun deleteAsync(ids: Set<String>) { ids.forEach { RustContentApi.mutate("deleteFeed(id: ${gql(it)})") } }
+    suspend fun sync(feedId: String) { RustContentApi.mutate("syncFeeds(id: ${if (feedId.isEmpty()) "null" else gql(feedId)})") }
+    suspend fun syncStates(): List<com.ismartcoding.plain.api.graphql.models.FeedSyncState> =
+        com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(RustContentApi.query("feedSyncStates { feedId taskId revision status error }").getValue("feedSyncStates"))
 }

@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.files
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -9,10 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.helpers.FilePathValidator
-import com.ismartcoding.plain.platform.files.deleteFileOrDir
-import com.ismartcoding.plain.platform.files.renameAndScanFile
 import com.ismartcoding.plain.platform.system.shareFiles
-import com.ismartcoding.plain.platform.files.unzipFile
 import com.ismartcoding.plain.ui.base.BottomActionButtons
 import com.ismartcoding.plain.ui.components.IconTextSmallButtonCopy
 import com.ismartcoding.plain.ui.components.IconTextSmallButtonCut
@@ -45,7 +44,7 @@ fun FilesSelectModeBottomActions(
         FileRenameDialog(
             path = file.path,
             onDismiss = { showRenameDialog.value = false },
-            onRename = { p, name -> renameAndScanFile(p, name) },
+            onRename = { p, name -> FilesClient.rename(p, name) },
             onRenamed = { newPath ->
                 val oldPath = file.path
                 file.name = newPath.substringAfterLast("/")
@@ -89,7 +88,7 @@ fun FilesSelectModeBottomActions(
                                 try {
                                     withIO {
                                         FilePathValidator.requireAllSafe(paths.toList())
-                                        paths.forEach { deleteFileOrDir(it) }
+                                        paths.forEach { FilesClient.delete(it) }
                                     }
                                 } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
                                 catch (error: Exception) { DialogHelper.showMessage(error) }
@@ -114,7 +113,7 @@ fun FilesSelectModeBottomActions(
                         val file = selectedFiles[0]
                         val destPath = file.path.removeSuffix(".zip")
                         val success = withIO {
-                            unzipFile(file.path, destPath)
+                            FilesClient.extractZipArchive(file.path, destPath)
                         }
                         if (success) {
                             withIO {

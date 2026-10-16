@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.ui.files.components
 
+import com.ismartcoding.plain.features.media.MediaClient
+
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.features.files.extension
 
 import com.ismartcoding.plain.api.graphql.models.File as FileEntry
@@ -56,8 +60,6 @@ import com.ismartcoding.plain.platform.media.audioPlayerProgress
 import com.ismartcoding.plain.platform.media.audioSeekTo
 import com.ismartcoding.plain.platform.media.audioPause
 import com.ismartcoding.plain.platform.media.audioPlay
-import com.ismartcoding.plain.platform.files.extractZipEntryToCache
-import com.ismartcoding.plain.ui.platform.media.playlistAudioFromPath
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.audio.player.AudioPlayerPage
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
@@ -85,7 +87,7 @@ fun FileListItem(
     LaunchedEffect(isCurrentlyPlaying) {
         if (isCurrentlyPlaying && isAudio) {
             scope.launch { withIO {
-                val audio = playlistAudioFromPath(file.path)
+                val audio = MediaClient.audioInfo(file.path)
                 durationMs = audio.durationMs.toFloat()
             } }
         }
@@ -153,7 +155,7 @@ private fun FileListItemThumbnail(
     var zipCachedPath by remember(file.path) { mutableStateOf<String?>(null) }
     if (isMedia && isZipEntry) {
         LaunchedEffect(file.path) {
-            zipCachedPath = withIO { extractZipEntryToCache(file.path) }
+            zipCachedPath = withIO { FilesClient.cacheZipEntry(file.path) }
         }
     }
 

@@ -25,7 +25,6 @@ import com.ismartcoding.plain.platform.system.initDiskLogging
 import com.ismartcoding.plain.preferences.setDarkMode
 import com.ismartcoding.plain.receivers.PlugInControlReceiver
 import com.ismartcoding.plain.platform.system.newImageLoader
-import com.ismartcoding.plain.workers.FeedFetchWorker
 import dalvik.system.ZipPathValidator
 
 object MainAppHelper {
@@ -66,16 +65,10 @@ object MainAppHelper {
                 sendEvent(PowerConnectedEvent())
             }
 
-            if (UserPrefs.feedAutoRefresh.value) {
-                FeedFetchWorker.startRepeatWorkerAsync(app)
-            }
             ImageSearchManager.restoreIfEnabled()
 
-            val updateInfo = RustSystemState.state.value.updateInfo
-            val checkUpdateTime = updateInfo.checkUpdateTime
-            val autoCheckUpdate = updateInfo.autoCheckUpdate
-            if (AppFeatureType.CHECK_UPDATES.has() && autoCheckUpdate && checkUpdateTime < System.currentTimeMillis() - Constants.ONE_DAY_MS) {
-                AppHelper.checkUpdateAsync(app, false)
+            if (AppFeatureType.CHECK_UPDATES.has()) {
+                com.ismartcoding.plain.ui.settings.checkAppUpdate(showToast = false, automatic = true)
             }
         }
     }

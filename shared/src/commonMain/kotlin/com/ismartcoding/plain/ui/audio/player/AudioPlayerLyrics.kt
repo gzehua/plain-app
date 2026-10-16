@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.audio.player
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +35,6 @@ import com.ismartcoding.plain.ui.resources.music2 as ui_drawable_music2
 import com.ismartcoding.plain.i18n.no_lyrics
 import com.ismartcoding.plain.lib.LrcParser
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.ui.platform.media.getAudioLyrics
 import com.ismartcoding.plain.platform.files.readTextFile
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -56,7 +57,7 @@ private fun lyricsPathFor(audioPath: String): String {
 /** Sidecar .lrc file first, lyrics embedded in the audio metadata as fallback. */
 suspend fun loadLyrics(audioPath: String): List<LrcParser.LrcLine> =
     withIO {
-        LrcParser.parse(readTextFile(lyricsPathFor(audioPath)).ifEmpty { getAudioLyrics(audioPath) })
+        LrcParser.parse(readTextFile(lyricsPathFor(audioPath)).ifEmpty { MediaClient.embeddedLyrics(audioPath) })
     }
 
 /**

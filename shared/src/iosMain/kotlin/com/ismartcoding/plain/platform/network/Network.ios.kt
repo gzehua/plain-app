@@ -3,10 +3,7 @@ package com.ismartcoding.plain.platform.network
 import com.ismartcoding.plain.platform.system.getDeviceIP4s
 
 
-actual fun getNetworkType(): NetworkType {
-    val ips = getDeviceIP4s()
-    return if (ips.any { !it.startsWith("127.") }) NetworkType.WIFI else NetworkType.NONE
-}
+actual fun getNetworkType(): NetworkType = NetworkType.valueOf(com.ismartcoding.plain.platform.system.IosPlatformRegistry.networkType())
 
 actual fun getDeviceIP4(): String {
     val ips = getDeviceIP4s()

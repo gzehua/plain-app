@@ -12,7 +12,6 @@ import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.mainActivity
 import com.ismartcoding.plain.appContextValue
 import com.ismartcoding.plain.ui.permissions.Permissions
-import com.ismartcoding.plain.platform.files.FileHelper
 import com.ismartcoding.plain.lib.extensions.hasPermission
 import org.jetbrains.compose.resources.StringResource
 import com.ismartcoding.plain.platform.permissions.*

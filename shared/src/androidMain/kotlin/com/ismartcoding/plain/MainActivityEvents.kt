@@ -1,5 +1,6 @@
 package com.ismartcoding.plain
 
+import com.ismartcoding.plain.ui.app.navControllerState
 import android.Manifest
 
 import android.annotation.SuppressLint

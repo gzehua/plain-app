@@ -17,4 +17,5 @@ data class SystemSettings(
     var clientId: String,
     var mdnsHostname: String,
     var signaturePublicKey: String,
+    var appUpdateAvailable: Boolean = false,
 )

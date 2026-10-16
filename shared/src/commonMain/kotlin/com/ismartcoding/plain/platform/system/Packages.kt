@@ -6,7 +6,6 @@ import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
 
 import com.ismartcoding.plain.api.graphql.models.Certificate
 import com.ismartcoding.plain.platform.system.PackageType
-import com.ismartcoding.plain.features.files.FileSortBy
 import kotlin.time.Instant
 
 /**
@@ -23,20 +22,7 @@ data class PackageInstallResult(
     val isNew: Boolean,
 )
 
-/**
- * Search installed packages matching [query], paginated by [limit]/[offset]
- * and sorted by [sortBy]. Returns an empty list on platforms without a
- * package manager.
- */
-suspend fun searchPackages(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<AppPackage> =
-    com.ismartcoding.plain.rust.host.provider.RustSystemProviders.packages(query, limit, offset, sortBy)
-
 expect suspend fun installedPackageFacts(): List<AppPackage>
-
-/**
- * Count installed packages matching [query]. Returns 0 on unsupported platforms.
- */
-suspend fun countPackages(query: String): Int = com.ismartcoding.plain.rust.host.provider.RustSystemProviders.packageCount(query)
 
 /**
  * Returns a map of package id -> AppPackage (or null if not installed) for

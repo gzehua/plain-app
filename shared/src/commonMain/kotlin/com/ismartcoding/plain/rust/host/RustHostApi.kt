@@ -33,7 +33,7 @@ internal object RustHostApi {
                                 val params = request.params
                                 val reply = try {
                                     val result = when {
-                                        method == "fileResourceStream" -> { com.ismartcoding.plain.platform.files.FileResourceStreamHost.start(exchangeScope, session, params); JsonNull }
+                                        method == "fileResourceStream" -> { com.ismartcoding.plain.platform.files.FileResourceStreamHost.start(exchangeScope, params); JsonNull }
                                         method.startsWith("thumbnail") -> com.ismartcoding.plain.ui.media.thumbnail.ThumbnailHost.handle(session, method, params)
                                         method.startsWith("blePair") -> com.ismartcoding.plain.features.nearby.BlePairingHost.handle(method, params)
                                         method == "bleScanRead" -> com.ismartcoding.plain.features.nearby.BleScanDriver.read(params)

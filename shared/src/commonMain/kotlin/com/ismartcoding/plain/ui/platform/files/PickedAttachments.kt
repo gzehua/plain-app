@@ -1,11 +1,10 @@
 package com.ismartcoding.plain.ui.platform.files
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import com.ismartcoding.plain.platform.files.queryPickedFileInfo
 
 import com.ismartcoding.plain.platform.media.getExtensionFromMimeType
-import com.ismartcoding.plain.ui.platform.media.getImageMeta
-import com.ismartcoding.plain.ui.platform.media.getMediaDurationMs
-import com.ismartcoding.plain.ui.platform.media.getVideoMeta
 
 import androidx.compose.ui.unit.IntSize
 import com.ismartcoding.plain.features.chat.models.MessageFile
@@ -35,10 +34,10 @@ internal object PickedAttachments {
                     currentCoroutineContext().ensureActive()
                     val path = file.realPath
                     val isVideo = info.mimeType.startsWith("video/") || info.displayName.isVideoFast()
-                    val video = if (isVideo) getVideoMeta(path) else null
+                    val video = if (isVideo) MediaClient.videoInfo(path) else null
                     val size = when {
                         info.mimeType.startsWith("image/") || info.displayName.isImageFast() ->
-                            getImageMeta(path)?.let { IntSize(it.width, it.height) } ?: IntSize.Zero
+                            MediaClient.imageInfo(path)?.let { IntSize(it.width, it.height) } ?: IntSize.Zero
                         video != null -> IntSize(video.displayWidth, video.displayHeight)
                         else -> IntSize.Zero
                     }
@@ -46,7 +45,7 @@ internal object PickedAttachments {
                     val name = if (normalize && extension.isNotEmpty()) "${info.displayName.substringBeforeLast('.', info.displayName)}.$extension" else info.displayName
                     val duration = when {
                         video != null -> video.durationMs
-                        isVideo || info.mimeType.startsWith("audio/") || info.displayName.isAudioFast() -> getMediaDurationMs(path)
+                        isVideo || info.mimeType.startsWith("audio/") || info.displayName.isAudioFast() -> MediaClient.durationMs(path)
                         else -> 0L
                     }
                     MessageFile(uri = AppFileStore.toFidUri(file), size = file.size, fileName = name,

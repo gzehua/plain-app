@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.app.*
@@ -84,8 +86,8 @@ class BrowserVideoInstrumentedTest {
                     assertEquals(200, response.status.value)
                     assertEquals("avc1", Json.parseToJsonElement(response.bodyAsText()).jsonObject.getValue("codec").jsonPrimitive.content)
                 }
-                val sourceDuration = getMediaDurationMs(source.absolutePath)
-                val outputDuration = getMediaDurationMs(output.absolutePath)
+                val sourceDuration = MediaClient.durationMs(source.absolutePath)
+                val outputDuration = MediaClient.durationMs(output.absolutePath)
                 assertTrue(sourceDuration > 0)
                 assertTrue(kotlin.math.abs(sourceDuration-outputDuration) <= 2000)
             }

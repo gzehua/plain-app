@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.audio.player
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -45,7 +47,6 @@ import com.ismartcoding.plain.platform.media.audioSeekTo
 import com.ismartcoding.plain.platform.media.audioSkipToNext
 import com.ismartcoding.plain.platform.media.audioSkipToPrevious
 import com.ismartcoding.plain.ui.platform.system.exitImmersiveFullscreen
-import com.ismartcoding.plain.ui.platform.media.playlistAudioFromPath
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.base.PModalBottomSheet
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
@@ -81,7 +82,7 @@ fun AudioPlayerPage(audioQueueVM: AudioQueueViewModel, onDismissRequest: () -> U
         fallbackItem = null
         if (!isDragging) progress = audioPlayerProgress().toFloat()
         if (currentPlayingPath.value.isNotEmpty() && audioQueueVM.queueItems.value.none { if (it.mediaId != null) it.mediaId == audioQueueVM.selectedMediaId.value else it.path == currentPlayingPath.value }) {
-            fallbackItem = withIO { playlistAudioFromPath(currentPlayingPath.value) }.copy(mediaId = audioQueueVM.selectedMediaId.value)
+            fallbackItem = withIO { MediaClient.audioInfo(currentPlayingPath.value) }.copy(mediaId = audioQueueVM.selectedMediaId.value)
         }
     }
     val pages = if (fallbackItem != null) listOfNotNull(fallbackItem) else audioQueueVM.queueItems.value

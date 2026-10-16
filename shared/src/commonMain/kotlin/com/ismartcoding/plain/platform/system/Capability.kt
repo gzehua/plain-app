@@ -1,6 +1,8 @@
 package com.ismartcoding.plain.platform.system
 
 enum class Capability {
+    BACKGROUND_TIMER,
+    BACKGROUND_WAKE,
     FILE_EXPORT,
     FILE_REVEAL,
     FILE_CLIPBOARD,

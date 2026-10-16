@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.features.pomodoro
 
-import com.ismartcoding.plain.ui.permissions.request
-
 import com.ismartcoding.plain.api.graphql.models.PomodoroRecord
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.rust.bridge.*

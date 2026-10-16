@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.files
 
+import com.ismartcoding.plain.features.media.MediaCatalogClient
 import com.ismartcoding.plain.api.graphql.models.MediaBucket
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.runtime.mutableIntStateOf
@@ -10,8 +11,6 @@ import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.platform.media.getMediaBuckets
-import com.ismartcoding.plain.platform.media.countMedia
 import com.ismartcoding.plain.platform.files.fileExists
 import com.ismartcoding.plain.ui.components.LoadingHelper
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,8 +36,8 @@ class MediaFoldersViewModel : ViewModel() {
 
     suspend fun loadAsync() = withIO {
         val startTime = TimeHelper.nowMillis()
-        _itemsFlow.value = getMediaBuckets(dataType.value)
-        trashCount.intValue = countMedia(dataType.value, "trash:true")
+        _itemsFlow.value = MediaCatalogClient.buckets(dataType.value)
+        trashCount.intValue = MediaCatalogClient.count(dataType.value, "trash:true")
 
         var totalValue = 0
         var sizeValue = 0L

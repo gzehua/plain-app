@@ -3,6 +3,7 @@ package com.ismartcoding.plain.platform.system
 import com.ismartcoding.plain.platform.network.isWifiAwareSupported
 
 import android.os.Build
+import com.ismartcoding.plain.buildChannel
 import com.ismartcoding.plain.activityManager
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.platform.system.PhoneHelper
@@ -20,6 +21,15 @@ internal actual fun readSystemProperties(names: List<String>): Map<String, JsonE
         when (name) {
             "files.recentCatalog" -> JsonPrimitive(Build.VERSION.SDK_INT >= 29)
             "files.recentRoot" -> if (Build.VERSION.SDK_INT < 29) JsonPrimitive(android.os.Environment.getExternalStorageDirectory().absolutePath) else JsonNull
+            "supportedAbis" -> kotlinx.serialization.json.JsonArray(Build.SUPPORTED_ABIS.map(::JsonPrimitive))
+            "updateSource" -> if (buildChannel != AppChannelType.GITHUB.name) JsonNull else kotlinx.serialization.json.Json.parseToJsonElement("""{
+                "url":"https://api.github.com/repos/plainhub/plain-app/releases/latest",
+                "pageUrl":"https://github.com/plainhub/plain-app/releases/latest",
+                "assets":[
+                    {"requiredAbis":["arm64-v8a","x86_64","riscv64"],"nameContains":"Recommended"},
+                    {"nameSuffix":"-Old-32bit.apk"}
+                ]
+            }""")
             "deviceType" -> JsonPrimitive(getDeviceType().name)
             "ipv4Addresses" -> kotlinx.serialization.json.JsonArray(getDeviceIP4s().map(::JsonPrimitive))
             "wifiAwareSupported" -> JsonPrimitive(isWifiAwareSupported)

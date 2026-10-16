@@ -12,17 +12,14 @@ import com.ismartcoding.plain.lib.extensions.getTimeSecondsValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.isQPlus
-import com.ismartcoding.plain.features.tags.TagRelationStub
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.features.media.MediaType
-import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.features.files.toSortBy
 import kotlin.time.Instant
 
 object ImageMediaStoreHelper : BaseMediaContentHelper() {
-    override val providerType: DataType = DataType.IMAGE
     override val uriExternal: Uri = if (isQPlus()) MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL) else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
     override val mediaType: MediaType = MediaType.IMAGE
 
@@ -48,14 +45,6 @@ object ImageMediaStoreHelper : BaseMediaContentHelper() {
 
     suspend fun searchAsync(
         context: Context,
-        query: String,
-        limit: Int,
-        offset: Int,
-        sortBy: FileSortBy,
-    ): List<MediaImage> = com.ismartcoding.plain.rust.host.provider.RustMediaQuery.rows(com.ismartcoding.plain.platform.system.DataType.IMAGE, query, limit, offset, sortBy).map { it as MediaImage }
-
-    suspend fun searchAsync(
-        context: Context,
         where: ContentWhere,
         limit: Int,
         offset: Int,
@@ -78,8 +67,5 @@ object ImageMediaStoreHelper : BaseMediaContentHelper() {
             MediaImage(id = id, title = title, path = path, size = size, width = width, height = height, rotation = rotation, bucketId = bucketId, createdAt = createdAt, updatedAt = updatedAt, takenAt = takenAt, isFavorite = isFavorite)
         } ?: emptyList()
     }
-
-    suspend fun getTagRelationStubsAsync(context: Context, query: String): List<TagRelationStub> =
-        com.ismartcoding.plain.rust.host.provider.RustMediaQuery.tagStubs(com.ismartcoding.plain.platform.system.DataType.IMAGE, query)
 
 }

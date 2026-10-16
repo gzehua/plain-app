@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.files.documents
 
+import com.ismartcoding.plain.features.media.MediaCatalogClient
 import com.ismartcoding.plain.ui.tags.TagsViewModel
 import com.ismartcoding.plain.ui.media.BaseMediaViewModel
 import com.ismartcoding.plain.ui.state.VTabData
@@ -14,7 +15,6 @@ import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.platform.media.getDocExtGroups
 
 class DocsViewModel : BaseMediaViewModel<Document>() {
     override val dataType = DataType.DOC
@@ -39,7 +39,7 @@ class DocsViewModel : BaseMediaViewModel<Document>() {
         totalTrash.intValue = countMediaAsync(getTrashQuery())
         noMore.value = _itemsFlow.value.size < limit.intValue
         if (!trash.value) {
-            val extGroups = getDocExtGroups(super.getQuery())
+            val extGroups = MediaCatalogClient.docExtGroups(super.getQuery())
             val trashTabs = if (AppFeatureType.MEDIA_TRASH.has()) listOf(VTabData(LocaleHelper.getStringAsync(Res.string.trash), "trash", totalTrash.intValue)) else emptyList()
             val extensions = extGroups.map { VTabData(it.first, it.first.lowercase(), it.second) }
             tabs.value = listOf(VTabData(LocaleHelper.getStringAsync(Res.string.all), "", total.intValue)) + trashTabs + extensions

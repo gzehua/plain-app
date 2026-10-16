@@ -16,15 +16,12 @@ import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.isQPlus
 import com.ismartcoding.plain.rust.host.provider.MediaBucketItemFacts
-import com.ismartcoding.plain.features.tags.TagRelationStub
 import com.ismartcoding.plain.features.media.MediaType
-import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.features.files.toSortBy
 import com.ismartcoding.plain.platform.media.provider.BaseMediaContentHelper
 
 object DocMediaStoreHelper : BaseMediaContentHelper() {
-    override val providerType: DataType = DataType.DOC
     override val uriExternal: Uri = if (isQPlus()) MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY) else MediaStore.Files.getContentUri("external")
     override val mediaType: MediaType = MediaType.FILE
 
@@ -57,14 +54,6 @@ object DocMediaStoreHelper : BaseMediaContentHelper() {
 
     suspend fun searchAsync(
         context: Context,
-        query: String,
-        limit: Int,
-        offset: Int,
-        sortBy: FileSortBy,
-    ): List<Document> = com.ismartcoding.plain.rust.host.provider.RustMediaQuery.rows(com.ismartcoding.plain.platform.system.DataType.DOC, query, limit, offset, sortBy).map { it as Document }
-
-    suspend fun searchAsync(
-        context: Context,
         where: ContentWhere,
         limit: Int,
         offset: Int,
@@ -83,13 +72,6 @@ object DocMediaStoreHelper : BaseMediaContentHelper() {
             Document(id = id, title = title, path = path, extension = path.substringAfterLast('/').substringAfterLast('.', ""), durationMs = 0, size = size, bucketId = bucketId, createdAt = createdAt, updatedAt = updatedAt)
         } ?: emptyList()
     }
-
-    suspend fun getTagRelationStubsAsync(context: Context, query: String): List<TagRelationStub> =
-        com.ismartcoding.plain.rust.host.provider.RustMediaQuery.tagStubs(com.ismartcoding.plain.platform.system.DataType.DOC, query)
-
-
-    suspend fun getDocExtGroupsAsync(context: Context, query: String = ""): List<Pair<String, Int>> =
-        com.ismartcoding.plain.rust.host.provider.RustMediaQuery.docExtGroups(query)
 
     fun getDocBucketItemFactsAsync(context: Context): List<MediaBucketItemFacts> {
         if (!isQPlus()) return emptyList()

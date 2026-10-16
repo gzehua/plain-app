@@ -5,6 +5,7 @@ import com.ismartcoding.plain.platform.media.call
 import com.ismartcoding.plain.app.events.WindowFocusChangedEvent
 import com.ismartcoding.plain.lib.sendEvent
 import platform.Foundation.NSNotificationCenter
+import platform.UIKit.UIApplicationDidEnterBackgroundNotification
 import platform.UIKit.UIApplicationDidBecomeActiveNotification
 import platform.UIKit.UIApplicationWillResignActiveNotification
 
@@ -28,12 +29,17 @@ object IosWindowFocusEvents {
 
         val center = NSNotificationCenter.defaultCenter
 
+        center.addObserverForName(UIApplicationDidEnterBackgroundNotification, `object` = null, queue = null) {
+            BackgroundExecution.executionStateChanged()
+        }
+
         center.addObserverForName(
             UIApplicationDidBecomeActiveNotification,
             `object` = null,
             queue = null,
         ) { _ ->
             sendEvent(WindowFocusChangedEvent(hasFocus = true))
+            BackgroundExecution.executionStateChanged()
         }
 
         center.addObserverForName(
@@ -42,6 +48,7 @@ object IosWindowFocusEvents {
             queue = null,
         ) { _ ->
             sendEvent(WindowFocusChangedEvent(hasFocus = false))
+            BackgroundExecution.executionStateChanged()
         }
     }
 }

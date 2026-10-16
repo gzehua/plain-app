@@ -2,8 +2,6 @@ package com.ismartcoding.plain.platform.files
 
 import com.ismartcoding.plain.helpers.PathHelper
 
-import com.ismartcoding.plain.platform.system.appCacheDir
-
 import android.Manifest
 import android.content.Context
 import android.net.Uri
@@ -20,63 +18,17 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
-import java.io.FileWriter
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import kotlin.io.encoding.ExperimentalEncodingApi
 
-@OptIn(ExperimentalEncodingApi::class)
 object FileHelper {
-    fun fileFromAsset(
-        context: Context,
-        name: String,
-    ): File {
-        return File(appCacheDir(), name).apply {
-            writeBytes(context.assets.open(name).readBytes())
-        }
-    }
-
-    fun writeFile(
-        context: Context,
-        filename: String,
-        content: String,
-    ) {
-        FileWriter(File(context.filesDir, filename)).use {
-            it.write(content)
-        }
-    }
-
     fun hasStoragePermission(context: Context): Boolean {
         return if (isRPlus()) {
             Environment.isExternalStorageManager()
         } else {
             context.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
-    }
-
-
-
-    fun rename(
-        filePath: String,
-        newName: String,
-    ): File? {
-        return rename(File(filePath), newName)
-    }
-
-    fun rename(
-        file: File,
-        newName: String,
-    ): File? {
-        if (!file.exists()) return null
-        if (newName.isBlank()) return null
-        if (newName == file.name) return file
-        val newFile = File((file.parent?.plus(File.separator) ?: "") + newName)
-        if (!newFile.exists()) {
-            file.renameTo(newFile)
-            return newFile
-        }
-        return null
     }
 
     fun copyFile(
@@ -142,8 +94,7 @@ object FileHelper {
         return ""
     }
 
-
-    fun createPublicFile(fileName: String, dirName: String): File {
+    private fun createPublicFile(fileName: String, dirName: String): File {
         val dir = PathHelper.getPlainPublicDir(dirName)
         if (!dir.exists()) {
             dir.mkdirs()
@@ -154,6 +105,5 @@ object FileHelper {
         }
         return file
     }
-
 
 }

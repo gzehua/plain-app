@@ -2,6 +2,8 @@
 
 package com.ismartcoding.plain.ui.shares
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.features.files.extension
 
 import com.ismartcoding.plain.api.graphql.models.File as FileEntry
@@ -38,7 +40,6 @@ import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.files.getInternalStoragePath
-import com.ismartcoding.plain.platform.files.listFilesInDir
 import com.ismartcoding.plain.ui.base.BottomActionButtons
 import com.ismartcoding.plain.ui.base.PBottomSheetTopAppBar
 import com.ismartcoding.plain.ui.base.PFilledButton
@@ -65,7 +66,7 @@ fun ShareItemsPickerSheet(
 
     LaunchedEffect(currentPath) {
         withIO {
-            entries = listFilesInDir(currentPath, showHidden = false, sortBy = FileSortBy.NAME_ASC)
+            entries = FilesClient.list(currentPath, showHidden = false, sortBy = FileSortBy.NAME_ASC)
         }
     }
 

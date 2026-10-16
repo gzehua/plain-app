@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.features.images.editor
 
-import com.ismartcoding.plain.ui.permissions.request
-
 import com.ismartcoding.plain.util.ID
 import com.ismartcoding.plain.features.images.editor.ImageEditorProjectSummary
 import com.ismartcoding.plain.api.graphql.models.ImageEditorProject

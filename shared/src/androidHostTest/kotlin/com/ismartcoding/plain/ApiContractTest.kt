@@ -64,10 +64,10 @@ class ApiContractTest {
         // Counted over all operation fields, not just the ones taking arguments.
         val queries = operationFieldNamesIn("Query")
         val mutations = operationFieldNamesIn("Mutation")
-        if (queries.size != 189 || mutations.size != 282) {
+        if (queries.size != 190 || mutations.size != 283) {
             fail(
                 "shared/apitest/schema.graphqls declares ${queries.size} Query / ${mutations.size} " +
-                    "Mutation operations — the contract has 189 / 282. The snapshot looks truncated or " +
+                    "Mutation operations — the contract has 190 / 283. The snapshot looks truncated or " +
                     "drifted; every check in this class reads it, so they would pass on an empty file.",
             )
         }

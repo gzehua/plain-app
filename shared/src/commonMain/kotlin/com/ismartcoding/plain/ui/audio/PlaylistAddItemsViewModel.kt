@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.audio
 
+import com.ismartcoding.plain.features.media.MediaCatalogClient
 import com.ismartcoding.plain.ui.state.ISearchableViewModel
 
 import com.ismartcoding.plain.features.audio.AudioQueueClient
@@ -12,7 +13,6 @@ import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.audio.AudioPlaylistsClient
 import com.ismartcoding.plain.helpers.SearchHelper
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.platform.media.searchMedia
 
 /**
  * Picker state for adding library tracks to a playlist: search input plus the
@@ -38,7 +38,7 @@ class PlaylistAddItemsViewModel : ViewModel(), ISearchableViewModel<AudioTrack> 
 
     suspend fun searchAsync() {
         items.value = withIO {
-            searchMedia(DataType.AUDIO, SearchHelper.buildTextFilter(queryText.value), 500, 0, UserPrefs.audioSortBy.value)
+            MediaCatalogClient.rows(DataType.AUDIO, SearchHelper.buildTextFilter(queryText.value), 500, 0, UserPrefs.audioSortBy.value)
         }.filterIsInstance<AudioTrack>()
     }
 }

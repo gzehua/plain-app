@@ -141,8 +141,19 @@ class MainActivity : AppCompatActivity() {
     private val plugInReceiver = PlugInControlReceiver()
     private val networkStateReceiver = NetworkStateReceiver()
 
+    override fun onStart() {
+        super.onStart()
+        com.ismartcoding.plain.platform.system.BackgroundExecution.executionStateChanged()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        com.ismartcoding.plain.platform.system.BackgroundExecution.executionStateChanged()
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         sendEvent(WindowFocusChangedEvent(hasFocus))
+        com.ismartcoding.plain.platform.system.BackgroundExecution.executionStateChanged()
     }
 
     @SuppressLint("ClickableViewAccessibility", "DiscouragedPrivateApi")

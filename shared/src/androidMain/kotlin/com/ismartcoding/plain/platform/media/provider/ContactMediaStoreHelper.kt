@@ -48,8 +48,6 @@ object ContactMediaStoreHelper {
         )
     }
 
-    suspend fun countAsync(context: Context, query: String): Int = com.ismartcoding.plain.rust.host.provider.RustPhoneQuery.countContacts(query)
-
     suspend fun countAsync(context: Context, where: ContentWhere): Int = withIO {
         context.contentResolver.count(uriExternal, where)
     }
@@ -64,9 +62,6 @@ object ContactMediaStoreHelper {
             context.contentResolver.delete(uriExternal, selection, selectionArgs)
         }
     }
-
-
-    suspend fun getIdsAsync(context: Context, query: String): Set<String> = com.ismartcoding.plain.rust.host.provider.RustPhoneQuery.contactIds(query)
 
     suspend fun getIdsAsync(context: Context, where: ContentWhere): Set<String> = withIO {
         context.contentResolver.getSearchCursor(uriExternal, arrayOf(ContactsContract.Data.RAW_CONTACT_ID), where)?.map { cursor, cache ->

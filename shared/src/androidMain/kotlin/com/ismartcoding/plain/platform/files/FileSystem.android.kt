@@ -10,7 +10,6 @@ import com.ismartcoding.plain.features.files.DStorageStatsItem
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.features.files.FileSystemHelper
 import com.ismartcoding.plain.extensions.newPath
-import com.ismartcoding.plain.platform.files.FileHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.extensions.scanFileByConnection
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -26,24 +25,14 @@ actual fun getSDCardPath(): String = FileSystemHelper.getSDCardPath(appContext)
 
 actual fun getUsbDiskPaths(): List<String> = FileSystemHelper.getUsbDiskPaths()
 
-actual fun scanFiles(paths: Array<String>) {
-    appContext.scanFileByConnection(paths)
-}
-
 actual fun getInternalStorageStats(): DStorageStatsItem = FileSystemHelper.getInternalStorageStats()
 
 actual fun getSDCardStorageStats(): DStorageStatsItem = FileSystemHelper.getSDCardStorageStats(appContext)
 
 actual fun getUSBStorageStats(): List<DStorageStatsItem> = FileSystemHelper.getUSBStorageStats()
 
-actual suspend fun listZipEntries(zipVirtualPath: String, sortBy: FileSortBy): List<FileEntry> =
-    com.ismartcoding.plain.features.files.FilesClient.list(zipVirtualPath, true, sortBy)
-
-
 actual fun getCanonicalPath(path: String): String =
     runCatching { File(path).canonicalPath }.getOrDefault(path)
-
-
 
 actual fun statFile(path: String): FileEntry? {
     val file = File(path)

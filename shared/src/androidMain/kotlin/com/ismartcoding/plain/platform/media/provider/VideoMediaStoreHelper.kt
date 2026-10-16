@@ -14,17 +14,14 @@ import com.ismartcoding.plain.lib.extensions.getTimeSecondsValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.isQPlus
-import com.ismartcoding.plain.features.tags.TagRelationStub
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.features.media.MediaType
-import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.features.files.toSortBy
 import kotlin.time.Instant
 
 object VideoMediaStoreHelper : BaseMediaContentHelper() {
-    override val providerType: DataType = DataType.VIDEO
     // https://stackoverflow.com/questions/63111091/java-lang-illegalargumentexception-volume-external-primary-not-found-in-android
     override val uriExternal: Uri = if (isQPlus()) MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL) else MediaStore.Video.Media.EXTERNAL_CONTENT_URI
     override val mediaType: MediaType = MediaType.VIDEO
@@ -52,14 +49,6 @@ object VideoMediaStoreHelper : BaseMediaContentHelper() {
 
         return projection.toTypedArray()
     }
-
-    suspend fun searchAsync(
-        context: Context,
-        query: String,
-        limit: Int,
-        offset: Int,
-        sortBy: FileSortBy,
-    ): List<MediaVideo> = com.ismartcoding.plain.rust.host.provider.RustMediaQuery.rows(com.ismartcoding.plain.platform.system.DataType.VIDEO, query, limit, offset, sortBy).map { it as MediaVideo }
 
     suspend fun searchAsync(
         context: Context,
@@ -94,8 +83,5 @@ object VideoMediaStoreHelper : BaseMediaContentHelper() {
         
         videos
     }
-
-    suspend fun getTagRelationStubsAsync(context: Context, query: String): List<TagRelationStub> =
-        com.ismartcoding.plain.rust.host.provider.RustMediaQuery.tagStubs(com.ismartcoding.plain.platform.system.DataType.VIDEO, query)
 
 }

@@ -1,13 +1,12 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.features.files.PathKind
-import com.ismartcoding.plain.platform.files.listFilesInDir
-import com.ismartcoding.plain.platform.files.searchFilesInDir
-import com.ismartcoding.plain.platform.files.searchFilesByName
 import com.ismartcoding.plain.preferences.RustSystemState
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
@@ -31,24 +30,24 @@ class FileBrowseRustHttpTest {
             File(dir, ".needle-hidden").writeText("hidden")
             File(root, "a.txt").writeText("a")
             File(root, ".hidden").writeText("secret")
-            val listed = listFilesInDir(root.path, false, FileSortBy.NAME_ASC)
+            val listed = FilesClient.list(root.path, false, FileSortBy.NAME_ASC)
             assertEquals(listOf("NeedleDir", "a.txt"), listed.map { it.name })
             assertEquals(1, listed.first().childCount)
-            assertEquals(3, listFilesInDir(root.path, true, FileSortBy.NAME_ASC).size)
-            assertEquals(2, searchFilesByName("needle", root.path, false, FileSortBy.NAME_ASC).size)
-            assertEquals(3, searchFilesByName("needle", root.path, true, FileSortBy.NAME_ASC).size)
-            assertEquals(1, searchFilesInDir("text:中文 file_size:>=4 file_size:<=4", root.path, FileSortBy.SIZE_DESC).size)
-            assertEquals(1, searchFilesInDir("parent:\"${dir.path}\" text:中文", File(root, "missing").path, FileSortBy.NAME_ASC).size)
-            assertTrue(runCatching { searchFilesInDir("parent:/system", root.path, FileSortBy.NAME_ASC) }.isFailure)
+            assertEquals(3, FilesClient.list(root.path, true, FileSortBy.NAME_ASC).size)
+            assertEquals(2, FilesClient.searchName("needle", root.path, false, FileSortBy.NAME_ASC).size)
+            assertEquals(3, FilesClient.searchName("needle", root.path, true, FileSortBy.NAME_ASC).size)
+            assertEquals(1, FilesClient.search("text:中文 file_size:>=4 file_size:<=4", root.path, FileSortBy.SIZE_DESC).size)
+            assertEquals(1, FilesClient.search("parent:\"${dir.path}\" text:中文", File(root, "missing").path, FileSortBy.NAME_ASC).size)
+            assertTrue(runCatching { FilesClient.search("parent:/system", root.path, FileSortBy.NAME_ASC) }.isFailure)
             val archive = File(root, "synthetic.zip")
             ZipOutputStream(archive.outputStream()).use { zip ->
                 zip.putNextEntry(ZipEntry("small.txt")); zip.write("hi".toByteArray()); zip.closeEntry()
                 zip.putNextEntry(ZipEntry("large.txt")); zip.write("synthetic".toByteArray()); zip.closeEntry()
                 zip.putNextEntry(ZipEntry("folder/child.txt")); zip.write("child".toByteArray()); zip.closeEntry()
             }
-            val zipped = searchFilesInDir("file_size:>4", "${archive.path}!zip!/", FileSortBy.NAME_ASC)
+            val zipped = FilesClient.search("file_size:>4", "${archive.path}!zip!/", FileSortBy.NAME_ASC)
             assertEquals(listOf("large.txt"), zipped.map { it.name })
-            assertEquals("folder", searchFilesInDir("", "${archive.path}!zip!/", FileSortBy.NAME_ASC).first().name)
+            assertEquals("folder", FilesClient.search("", "${archive.path}!zip!/", FileSortBy.NAME_ASC).first().name)
             RustSystemState.setApiPermissions(permissions + "WRITE_EXTERNAL_STORAGE")
             suspend fun field(selection: String): JsonElement =
                 RustContentApi.query(selection).values.first()

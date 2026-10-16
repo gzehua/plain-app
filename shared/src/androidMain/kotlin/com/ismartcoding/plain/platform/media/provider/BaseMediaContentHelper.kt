@@ -1,13 +1,10 @@
 package com.ismartcoding.plain.platform.media.provider
 
-import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
-import android.os.Build
 import android.provider.BaseColumns
 import android.provider.MediaStore
-import androidx.annotation.RequiresApi
 import com.ismartcoding.plain.helpers.ContentWhere
 import com.ismartcoding.plain.features.files.SortBy
 import com.ismartcoding.plain.lib.extensions.count
@@ -19,24 +16,17 @@ import com.ismartcoding.plain.lib.extensions.getStringValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.extensions.scanFileByConnection
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.rust.host.provider.MediaBucketItemFacts
 import com.ismartcoding.plain.features.media.MediaType
-import com.ismartcoding.plain.platform.system.DataType
-import com.ismartcoding.plain.rust.host.provider.RustMediaQuery
-import java.io.File
 
 abstract class BaseMediaContentHelper {
     protected abstract val uriExternal: Uri
-    protected abstract val providerType: DataType
     protected abstract fun getProjection(): Array<String>
     protected abstract val mediaType: MediaType
 
     fun getItemUri(id: String): Uri {
         return Uri.withAppendedPath(uriExternal, id)
     }
-
-    suspend fun countAsync(context: Context, query: String): Int = RustMediaQuery.count(providerType, query)
 
     suspend fun countAsync(context: Context, where: ContentWhere): Int = withIO {
         context.contentResolver.count(uriExternal, where)
@@ -53,8 +43,6 @@ abstract class BaseMediaContentHelper {
         )
     }
 
-    suspend fun getIdsAsync(context: Context, query: String): Set<String> = RustMediaQuery.ids(providerType, query)
-
     suspend fun getIdsAsync(context: Context, where: ContentWhere): Set<String> = withIO {
         context.contentResolver.getSearchCursor(
             uriExternal, arrayOf(BaseColumns._ID), where
@@ -62,8 +50,6 @@ abstract class BaseMediaContentHelper {
             cursor.getStringValue(BaseColumns._ID, cache)
         }?.toSet() ?: emptySet()
     }
-
-    suspend fun getTrashedIdsAsync(context: Context, query: String): Set<String> = RustMediaQuery.ids(providerType, query, fromTrash = true)
 
     fun getPathsByIdsAsync(
         context: Context,

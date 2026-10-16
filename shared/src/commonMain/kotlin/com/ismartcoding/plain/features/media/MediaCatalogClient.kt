@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.rust.host.provider
+package com.ismartcoding.plain.features.media
 
 import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
 import com.ismartcoding.plain.api.graphql.models.Doc as Document
@@ -10,9 +10,8 @@ import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.db.IData
 import kotlinx.serialization.json.*
-import kotlin.time.Instant
 
-internal object RustMediaQuery {
+object MediaCatalogClient {
     private const val COMMON = "id title path size bucketId createdAt updatedAt"
     private fun root(type: DataType): String = when (type) {
         DataType.AUDIO -> "audios"
@@ -22,6 +21,12 @@ internal object RustMediaQuery {
         else -> error("Unsupported media type: $type")
     }
     suspend fun rows(type: DataType, query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> {
+        when (type) {
+            DataType.CALL -> return com.ismartcoding.plain.features.telephony.CallsClient.search(query, limit, offset)
+            DataType.CONTACT -> return com.ismartcoding.plain.features.contacts.ContactsClient.search(query, limit, offset)
+            DataType.SMS -> return com.ismartcoding.plain.features.telephony.sms.RustSmsQuery.search(query, limit, offset)
+            else -> Unit
+        }
         val root = root(type)
         val extra = when (type) {
             DataType.AUDIO -> "artist durationMs albumId albumFileId isFavorite"
@@ -42,27 +47,23 @@ internal object RustMediaQuery {
         }
     }
     suspend fun count(type: DataType, query: String): Int {
+        when (type) {
+            DataType.CALL -> return com.ismartcoding.plain.features.telephony.CallsClient.count(query)
+            DataType.CONTACT -> return com.ismartcoding.plain.features.contacts.ContactsClient.count(query)
+            DataType.SMS -> return com.ismartcoding.plain.features.telephony.sms.RustSmsQuery.count(query)
+            else -> Unit
+        }
         root(type)
         val field = type.name.lowercase() + "Count"
         return PlainRust.mainQuery("$field(query: ${gql(query)})").getValue(field).jsonPrimitive.int
-    }
-    suspend fun ids(type: DataType, query: String, fromTrash: Boolean = false): Set<String> {
-        root(type)
-        return PlainRust.mainQuery("mediaIds(type: ${type.name}, query: ${gql(query)}, fromTrash: $fromTrash)")
-            .getValue("mediaIds").jsonArray.map { it.jsonPrimitive.content }.toSet()
-    }
-    suspend fun tagStubs(type: DataType, query: String): List<com.ismartcoding.plain.features.tags.TagRelationStub> {
-        val field = root(type)
-        return PlainRust.mainQuery("$field(query: ${gql(query)}, limit: 2147483647, offset: 0, sortBy: DATE_DESC) { id title size }").getValue(field).jsonArray.map {
-            val row = it.jsonObject
-            com.ismartcoding.plain.features.tags.TagRelationStub(row.text("id"), row.text("title"), row.getValue("size").jsonPrimitive.long)
-        }
     }
     suspend fun docExtGroups(query: String): List<Pair<String, Int>> =
         PlainRust.mainQuery("docExtGroups(query: ${gql(query)}) { ext count }").getValue("docExtGroups").jsonArray.map {
             it.jsonObject.let { row -> row.text("ext") to row.int("count") }
         }
+    suspend fun buckets(dataType: DataType): List<com.ismartcoding.plain.api.graphql.models.MediaBucket> =
+        com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(PlainRust.mainQuery("mediaBuckets(type: ${dataType.name}) { id name itemCount size topItemPaths }").getValue("mediaBuckets"))
+
     private fun JsonObject.text(key: String): String = getValue(key).jsonPrimitive.content
     private fun JsonObject.int(key: String): Int = getValue(key).jsonPrimitive.int
-    private fun JsonObject.instantOrNull(key: String): Instant? = getValue(key).let { if (it is JsonNull) null else Instant.parse(it.jsonPrimitive.content) }
 }

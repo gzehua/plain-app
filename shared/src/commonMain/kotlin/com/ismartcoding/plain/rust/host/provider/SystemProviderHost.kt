@@ -68,6 +68,8 @@ object SystemProviderHost {
         "systemPermissionFacts",
         "systemOpenAccessibilitySettings",
         "systemOpenWebSettings",
+        "systemNetworkType",
+        "systemScheduleBackgroundWake",
         "systemIpv4Address",
         "systemProperties",
         "systemBatterySample",

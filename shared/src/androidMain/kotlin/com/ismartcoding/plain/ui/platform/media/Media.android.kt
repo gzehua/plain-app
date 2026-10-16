@@ -11,7 +11,6 @@ import com.ismartcoding.plain.platform.system.MediaShortcutHelper
 import com.ismartcoding.plain.helpers.QrCodeGenerateHelper
 import com.ismartcoding.plain.ui.media.SvgHelper
 import com.ismartcoding.plain.ui.scanner.QrCodeScanHelper
-import java.io.File
 
 actual fun tryDecodeQrCode(path: String): String? {
     return try {
@@ -21,11 +20,6 @@ actual fun tryDecodeQrCode(path: String): String? {
         null
     }
 }
-
-actual fun fileLength(path: String): Long {
-    return runCatching { File(path).takeIf { it.exists() }?.length() ?: 0L }.getOrDefault(0L)
-}
-
 
 actual fun generateQrCode(text: String, width: Int, height: Int): ImageBitmap {
     return QrCodeGenerateHelper.generate(text, width, height).asImageBitmap()

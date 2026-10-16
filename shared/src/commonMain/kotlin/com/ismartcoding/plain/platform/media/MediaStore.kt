@@ -1,42 +1,10 @@
 package com.ismartcoding.plain.platform.media
 
-import com.ismartcoding.plain.rust.http.request
-
 import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
-import com.ismartcoding.plain.api.graphql.models.MediaBucket
 import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.features.tags.TagRelationStub
 import com.ismartcoding.plain.rust.host.provider.ProviderPlan
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.files.FileSortBy
-
-/**
- * Returns all media buckets (folders) for the given [dataType].
- */
-suspend fun getMediaBuckets(dataType: DataType): List<MediaBucket> = com.ismartcoding.plain.rust.host.provider.RustSystemProviders.mediaBuckets(dataType)
-
-/**
- * Search media items of [dataType] matching [query], paginated by [limit]/[offset]
- * and sorted by [sortBy]. Returns an empty list on unsupported platforms.
- */
-suspend fun searchMedia(dataType: DataType, query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> = when (dataType) {
-    DataType.AUDIO, DataType.VIDEO, DataType.IMAGE, DataType.DOC -> com.ismartcoding.plain.rust.host.provider.RustMediaQuery.rows(dataType, query, limit, offset, sortBy)
-    DataType.CALL -> com.ismartcoding.plain.rust.host.provider.RustPhoneQuery.calls(query, limit, offset)
-    DataType.CONTACT -> com.ismartcoding.plain.rust.host.provider.RustPhoneQuery.contacts(query, limit, offset)
-    DataType.SMS -> com.ismartcoding.plain.features.telephony.sms.RustSmsQuery.search(query, limit, offset)
-    else -> error("Unsupported provider: $dataType")
-}
-
-/**
- * Count media items of [dataType] matching [query]. Returns 0 on unsupported platforms.
- */
-suspend fun countMedia(dataType: DataType, query: String): Int = when (dataType) {
-    DataType.AUDIO, DataType.VIDEO, DataType.IMAGE, DataType.DOC -> com.ismartcoding.plain.rust.host.provider.RustMediaQuery.count(dataType, query)
-    DataType.CALL -> com.ismartcoding.plain.rust.host.provider.RustPhoneQuery.countCalls(query)
-    DataType.CONTACT -> com.ismartcoding.plain.rust.host.provider.RustPhoneQuery.countContacts(query)
-    DataType.SMS -> com.ismartcoding.plain.features.telephony.sms.RustSmsQuery.count(query)
-    else -> error("Unsupported provider: $dataType")
-}
 
 /**
  * Move media items of [dataType] identified by [ids] to the trash.
@@ -62,12 +30,6 @@ expect suspend fun deleteMedia(dataType: DataType, ids: Set<String>, fromTrash: 
 expect suspend fun moveMedia(dataType: DataType, ids: Set<String>, destDir: String): Boolean
 
 /**
- * Returns file-extension groups for documents matching [query].
- * Each pair is (extension, count). Returns an empty list on unsupported platforms.
- */
-suspend fun getDocExtGroups(query: String): List<Pair<String, Int>> = com.ismartcoding.plain.rust.host.provider.RustMediaQuery.docExtGroups(query)
-
-/**
  * Combined image search: filename + optional AI semantic search.
  * If the AI model is not ready or [queryText] is blank, falls back to filename-only search.
  */
@@ -84,7 +46,6 @@ suspend fun searchImagesCombined(
  */
 fun isImageSearchModelReady(): Boolean = com.ismartcoding.plain.features.images.search.ImageSearchManager.isModelReady()
 
-
 /**
  * Returns a URI string for the media item identified by [id] of [dataType],
  * suitable for sharing via the system share sheet. Empty string on failure.
@@ -92,37 +53,10 @@ fun isImageSearchModelReady(): Boolean = com.ismartcoding.plain.features.images.
 expect fun getMediaItemUriString(dataType: DataType, id: String): String
 
 /**
- * Returns the IDs of media items of [dataType] matching [query].
- * Used by tag operations and trash/delete mutations.
- */
-suspend fun getMediaIds(dataType: DataType, query: String): Set<String> = when (dataType) {
-    DataType.AUDIO, DataType.VIDEO, DataType.IMAGE, DataType.DOC -> com.ismartcoding.plain.rust.host.provider.RustMediaQuery.ids(dataType, query)
-    DataType.CALL -> com.ismartcoding.plain.rust.host.provider.RustPhoneQuery.callIds(query)
-    DataType.CONTACT -> com.ismartcoding.plain.rust.host.provider.RustPhoneQuery.contactIds(query)
-    DataType.SMS -> com.ismartcoding.plain.features.telephony.sms.RustSmsQuery.ids(query)
-    else -> error("Unsupported provider: $dataType")
-}
-
-/**
- * Returns the IDs of trashed media items of [dataType] matching [query].
- * On platforms without a trash concept, returns the same as [getMediaIds].
- */
-suspend fun getTrashedMediaIds(dataType: DataType, query: String): Set<String> = com.ismartcoding.plain.rust.host.provider.RustMediaQuery.ids(dataType, query, fromTrash = true)
-
-/**
  * Returns the file paths for the media items of [dataType] identified by [ids].
  * Used to clean up playlist entries when items are trashed.
  */
 expect suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set<String>
-
-/**
- * Returns [TagRelationStub]s for media items of [dataType] matching [query].
- * Used by tag-batch-add operations.
- */
-suspend fun getMediaTagRelationStubs(dataType: DataType, query: String): List<TagRelationStub> = when (dataType) {
-    DataType.AUDIO, DataType.VIDEO, DataType.IMAGE, DataType.DOC -> com.ismartcoding.plain.rust.host.provider.RustMediaQuery.tagStubs(dataType, query)
-    else -> getMediaIds(dataType, query).map { TagRelationStub(it) }
-}
 
 /**
  * Count images matching a combined filename + AI semantic search [queryText]
@@ -199,8 +133,6 @@ fun getDownloadsDirPath(): String = downloadsDirectory
 private val downloadsDirectory: String by lazy { platformDownloadsDirPath() }
 
 internal expect fun platformDownloadsDirPath(): String
-
-
 
 /**
  * Update the contact identified by [id] with the values in [input].

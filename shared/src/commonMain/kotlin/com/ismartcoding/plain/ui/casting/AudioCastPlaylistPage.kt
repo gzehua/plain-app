@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.casting
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -35,7 +37,6 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.features.dlna.sender.RustDlnaSender
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.ui.platform.media.getAudioMetadata
 import com.ismartcoding.plain.ui.base.PBottomSheetTopAppBar
 import com.ismartcoding.plain.ui.base.PModalBottomSheet
 import com.ismartcoding.plain.ui.components.reorderable.ReorderableItem
@@ -64,7 +65,7 @@ fun AudioCastPlaylistPage(castVM: CastViewModel, onDismissRequest: () -> Unit) {
     var nowPlayingArtist by remember { mutableStateOf("") }
     LaunchedEffect(currentUri) {
         if (currentUri.isNotEmpty()) {
-            val (t, a) = getAudioMetadata(currentUri)
+            val (t, a) = MediaClient.audioInfo(currentUri).let { it.title to it.artist }
             nowPlayingTitle = t
             nowPlayingArtist = a
         } else {
@@ -140,7 +141,7 @@ fun AudioCastPlaylistPage(castVM: CastViewModel, onDismissRequest: () -> Unit) {
                                         item = audio, index = index, isPlaying = isPlaying,
                                         isLoading = castVM.isLoading.value && isPlaying,
                                         onLoadMetadata = { path ->
-                                            val (title, artist) = getAudioMetadata(path)
+                                            val (title, artist) = MediaClient.audioInfo(path).let { it.title to it.artist }
                                             title to artist
                                         },
                                         onRemove = { scope.launch(Dispatchers.Default) { castVM.removeCastItemAt(index) } })

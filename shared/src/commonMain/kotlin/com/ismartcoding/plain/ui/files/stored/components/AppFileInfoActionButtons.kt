@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.files.stored.components
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,7 +12,6 @@ import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.platform.files.copyFileToDir
 import com.ismartcoding.plain.platform.system.openFileExternal
 import com.ismartcoding.plain.platform.files.saveFileToDownloads
 import com.ismartcoding.plain.platform.system.shareFiles
@@ -76,7 +77,7 @@ fun AppFileInfoActionButtons(
             onDirectory = { dir ->
                 showSaveSheet = false
                 coMain {
-                    val result = withIO { copyFileToDir(realPath, dir, file.fileName) }
+                    val result = withIO { FilesClient.copyToDirectory(realPath, dir, file.fileName) }
                     if (result.isNotEmpty()) {
                         DialogHelper.showConfirmDialog("", LocaleHelper.getStringFAsync(Res.string.file_save_to, result))
                     } else {

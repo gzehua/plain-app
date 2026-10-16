@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.files.stored.components
 
+import com.ismartcoding.plain.features.media.MediaClient
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -43,7 +45,6 @@ import com.ismartcoding.plain.platform.media.audioSeekTo
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.platform.media.getExtensionFromMimeType
 import com.ismartcoding.plain.platform.files.getFileIconPath
-import com.ismartcoding.plain.ui.platform.media.playlistAudioFromPath
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.platform.media.TransformImageView
@@ -84,7 +85,7 @@ fun AppFileListItem(
     LaunchedEffect(isCurrentlyPlaying) {
         if (isCurrentlyPlaying && isAudio) {
             scope.launch {
-                val audio = withIO { playlistAudioFromPath(path) }
+                val audio = withIO { MediaClient.audioInfo(path) }
                 durationMs = audio.durationMs.toFloat()
             }
         }

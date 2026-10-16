@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.ui.files.components
 
+import com.ismartcoding.plain.features.media.MediaClient
+
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.features.files.extension
 
 import com.ismartcoding.plain.api.graphql.models.File as FileEntry
@@ -15,11 +19,9 @@ import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.features.files.ZipBrowserHelper
-import com.ismartcoding.plain.platform.files.extractZipEntryToCache
 import com.ismartcoding.plain.platform.files.fileToUriString
 import com.ismartcoding.plain.platform.system.openFileExternal
 import com.ismartcoding.plain.platform.media.playAudioWithNotificationCheck
-import com.ismartcoding.plain.ui.platform.media.playlistAudioFromPath
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.media.viewer.previewer.TransformItemState
 import com.ismartcoding.plain.ui.media.extensions.toPreviewItem
@@ -41,7 +43,7 @@ fun openFile(
     if (ZipBrowserHelper.isZipPath(file.path)) {
         coMain {
             DialogHelper.showLoading()
-            val tempPath = withIO { extractZipEntryToCache(file.path) }
+            val tempPath = withIO { FilesClient.cacheZipEntry(file.path) }
             DialogHelper.hideLoading()
             if (tempPath == null) {
                 DialogHelper.showMessage(Res.string.error)
@@ -121,7 +123,7 @@ fun openLocalFileByType(
             coMain {
                 try {
                     if (audioQueueVM != null) {
-                        val audio = playlistAudioFromPath(path)
+                        val audio = MediaClient.audioInfo(path)
                         audioQueueVM.playSingleAsync(audio)
                     }
                     playAudioWithNotificationCheck(path)

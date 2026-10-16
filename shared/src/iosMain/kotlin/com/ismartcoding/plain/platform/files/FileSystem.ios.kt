@@ -4,7 +4,6 @@ package com.ismartcoding.plain.platform.files
 
 import com.ismartcoding.plain.platform.system.appDir
 
-
 import com.ismartcoding.plain.api.graphql.models.File as FileEntry
 
 import com.ismartcoding.plain.features.files.DStorageStatsItem
@@ -32,9 +31,6 @@ actual fun getSDCardPath(): String = ""
 
 actual fun getUsbDiskPaths(): List<String> = emptyList()
 
-
-actual fun scanFiles(paths: Array<String>) {}
-
 actual fun getInternalStorageStats(): DStorageStatsItem {
     val path = appDir()
     return try {
@@ -52,15 +48,10 @@ actual fun getSDCardStorageStats(): DStorageStatsItem = DStorageStatsItem(0, 0)
 
 actual fun getUSBStorageStats(): List<DStorageStatsItem> = emptyList()
 
-actual suspend fun listZipEntries(zipVirtualPath: String, sortBy: FileSortBy): List<FileEntry> = com.ismartcoding.plain.features.files.FilesClient.list(zipVirtualPath, true, sortBy)
-
-
 actual fun getCanonicalPath(path: String): String {
     val resolved = platform.posix.realpath(path, null) ?: return path
     return try { resolved.toKString() } finally { platform.posix.free(resolved) }
 }
-
-
 
 actual fun statFile(path: String): FileEntry? {
     if (!NSFileManager.defaultManager.fileExistsAtPath(path)) return null

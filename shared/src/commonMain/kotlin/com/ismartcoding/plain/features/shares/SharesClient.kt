@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.features.shares
 
+import com.ismartcoding.plain.features.chat.models.MessageContent
 import com.ismartcoding.plain.api.graphql.models.Root
 import com.ismartcoding.plain.api.graphql.models.ShareRecord
 import com.ismartcoding.plain.lib.JsonHelper
@@ -36,6 +37,9 @@ object SharesClient {
     suspend fun listShares(): List<ShareRecord> = RustContentApi.query("shareRecords { $FIELDS }").getValue("shareRecords").jsonArray.map { it.share() }
     suspend fun getShare(id: String): ShareRecord? = RustContentApi.query("shareRecord(id: ${gql(id)}) { $FIELDS }")["shareRecord"]?.takeUnless { it is JsonNull }?.share()
     suspend fun sharedToken(id: String): String = RustContentApi.query("shareToken(id: ${gql(id)})").string("shareToken")
+
+    suspend fun messageContent(id: String): MessageContent =
+        JsonHelper.jsonDecode(RustContentApi.query("shareMessageContent(id: ${gql(id)})").string("shareMessageContent"))
 
     suspend fun buildLink(share: ShareRecord, host: String? = null): String = SharedLinkClient.pageUrl(SharedLinkClient.ownLink(share.id, host))
 

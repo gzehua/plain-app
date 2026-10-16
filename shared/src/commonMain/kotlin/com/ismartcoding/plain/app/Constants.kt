@@ -5,7 +5,6 @@ object Constants {
     const val NOTIFICATION_CHANNEL_ID = "default"
     const val CHAT_NOTIFICATION_CHANNEL_ID = "peer_chat"
     const val SUPPORT_EMAIL = "support@plainapp.app"
-    const val LATEST_RELEASE_URL = "https://api.github.com/repos/plainhub/plain-app/releases/latest"
     const val ONE_DAY = 24 * 60 * 60L
     const val ONE_DAY_MS = ONE_DAY * 1000L
     const val KEY_STORE_FILE_NAME = "keystore.bks"

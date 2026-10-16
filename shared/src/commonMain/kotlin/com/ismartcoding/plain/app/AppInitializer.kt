@@ -1,9 +1,5 @@
 package com.ismartcoding.plain.app
 
-import com.ismartcoding.plain.MainAppHelper
-import com.ismartcoding.plain.ui.app.MainViewController
-
-
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.chat.ChatCacher
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher

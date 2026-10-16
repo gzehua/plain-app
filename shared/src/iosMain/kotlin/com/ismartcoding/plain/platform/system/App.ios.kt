@@ -4,7 +4,7 @@ package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.rust.http.get
 
-actual fun isAppForegrounded(): Boolean = true
+actual fun isAppForegrounded(): Boolean = platform.UIKit.UIApplication.sharedApplication.applicationState != platform.UIKit.UIApplicationState.UIApplicationStateBackground
 actual fun installApk(path: String) {}
 actual fun exitApp() {}
 
@@ -15,8 +15,6 @@ internal actual suspend fun clearMediaCache(): Unit = com.ismartcoding.plain.lib
     loader.diskCache?.clear()
     loader.memoryCache?.clear()
 }
-actual suspend fun checkUpdateAsync(showToast: Boolean): Boolean? = null
-
 actual fun getAppIcon(packageName: String): Any? = null
 actual fun isIgnoringBatteryOptimizations(): Boolean = false
 actual fun openBatteryOptimizationSettings() {}

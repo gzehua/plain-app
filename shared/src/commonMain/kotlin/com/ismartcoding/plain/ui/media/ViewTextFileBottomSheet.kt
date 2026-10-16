@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.media
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.features.files.extension
 
 import com.ismartcoding.plain.api.graphql.models.File as FileEntry
@@ -20,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.getMimeType
-import com.ismartcoding.plain.platform.files.deleteFileOrDir
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.platform.system.shareFiles
 import com.ismartcoding.plain.ui.base.BottomSpace
@@ -89,7 +90,7 @@ fun ViewTextFileBottomSheet(
                         callback = {
                             scope.launch(Dispatchers.Default) {
                                 try {
-                                    if (deleteFileOrDir(path)) {
+                                    if (FilesClient.delete(path)) {
                                         onDismiss()
                                         onDeleted()
                                     }

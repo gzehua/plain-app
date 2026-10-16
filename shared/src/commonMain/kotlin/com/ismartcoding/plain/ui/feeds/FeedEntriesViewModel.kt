@@ -21,7 +21,6 @@ import com.ismartcoding.plain.api.graphql.models.FeedEntry
 import com.ismartcoding.plain.api.graphql.models.TagHostRecord
 import com.ismartcoding.plain.helpers.SearchHelper
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.features.feeds.feedWorkerOneTimeRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -96,15 +95,11 @@ class FeedEntriesViewModel :
     }
 
     fun sync() {
-        feedWorkerOneTimeRequest(feedId.value)
+        viewModelScope.launchSafe { com.ismartcoding.plain.features.feeds.FeedsClient.sync(feedId.value) }
     }
 
     fun delete(tagsVM: TagsViewModel, ids: Set<String>) {
         viewModelScope.launchSafe {
-            TagsClient.deleteTagRelationByKeys(
-                ids,
-                dataType,
-            )
             FeedEntriesClient.deleteAsync(ids)
             loadAsync(tagsVM)
         }

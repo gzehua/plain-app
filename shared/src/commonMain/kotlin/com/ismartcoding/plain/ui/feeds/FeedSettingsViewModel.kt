@@ -15,8 +15,6 @@ import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.tags.TagsClient
 import com.ismartcoding.plain.features.feeds.FeedEntriesClient
 import com.ismartcoding.plain.lib.TimeHelper
-import com.ismartcoding.plain.features.feeds.feedWorkerCancelRepeat
-import com.ismartcoding.plain.features.feeds.feedWorkerStartRepeat
 import kotlinx.coroutines.launch
 import kotlin.time.Instant
 
@@ -58,9 +56,7 @@ class FeedSettingsViewModel : ViewModel() {
     }
 
     suspend fun clearByFeedIdAsync(feedId: String) = withIO {
-        val ids = FeedEntriesClient.getIdsAsync("feed_id:$feedId")
-        TagsClient.deleteTagRelationByKeys(ids, DataType.FEED_ENTRY)
-        FeedEntriesClient.deleteAsync(ids)
+        FeedEntriesClient.deleteQuery("feed_id:$feedId")
     }
 
     fun clearAllAsync() {
@@ -72,8 +68,6 @@ class FeedSettingsViewModel : ViewModel() {
 
     suspend fun clearByTimeAsync(ts: Long) = withIO {
         val time = TimeHelper.now().epochSeconds - ts
-        val ids = FeedEntriesClient.getIdsAsync("created_at:<${Instant.fromEpochSeconds(time)}")
-        TagsClient.deleteTagRelationByKeys(ids, DataType.FEED_ENTRY)
-        FeedEntriesClient.deleteAsync(ids)
+        FeedEntriesClient.deleteQuery("created_at:<${Instant.fromEpochSeconds(time)}")
     }
 }

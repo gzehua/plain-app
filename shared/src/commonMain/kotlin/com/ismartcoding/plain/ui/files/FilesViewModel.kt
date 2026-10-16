@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.files
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.features.files.BreadcrumbItem
 
 import com.ismartcoding.plain.ui.state.ISearchableViewModel
@@ -27,16 +29,11 @@ import com.ismartcoding.plain.helpers.FilePathValidator
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.system.appDir
-import com.ismartcoding.plain.platform.files.deleteFileOrDir
 import com.ismartcoding.plain.platform.files.fileExists
 import com.ismartcoding.plain.platform.files.getInternalStorageName
 import com.ismartcoding.plain.platform.files.getInternalStoragePath
-import com.ismartcoding.plain.platform.files.getRecentFiles
 import com.ismartcoding.plain.platform.files.getSDCardPath
 import com.ismartcoding.plain.platform.files.getUsbDiskPaths
-import com.ismartcoding.plain.platform.files.listFilesInDir
-import com.ismartcoding.plain.platform.files.listZipEntries
-import com.ismartcoding.plain.platform.files.searchFilesByName
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -231,10 +228,10 @@ class FilesViewModel : ISearchableViewModel<FileEntry>, ISelectableViewModel<Fil
             isLoading.value = true
             val query = getQuery()
             val files = when {
-                ZipBrowserHelper.isZipPath(selectedPath) -> listZipEntries(selectedPath, sortBy.value)
-                showSearchBar.value && query.isNotEmpty() -> searchFilesByName(query, selectedPath, showHiddenFiles, sortBy.value)
-                type == FilesType.RECENTS -> getRecentFiles()
-                else -> listFilesInDir(selectedPath, showHiddenFiles, sortBy.value)
+                ZipBrowserHelper.isZipPath(selectedPath) -> FilesClient.list(selectedPath, true, sortBy.value)
+                showSearchBar.value && query.isNotEmpty() -> FilesClient.searchName(query, selectedPath, showHiddenFiles, sortBy.value)
+                type == FilesType.RECENTS -> FilesClient.recent()
+                else -> FilesClient.list(selectedPath, showHiddenFiles, sortBy.value)
             }
             _itemsFlow.value = files
             isLoading.value = false
@@ -247,7 +244,7 @@ class FilesViewModel : ISearchableViewModel<FileEntry>, ISelectableViewModel<Fil
             try {
                 withIO {
                     FilePathValidator.requireAllSafe(paths.toList())
-                    paths.forEach { deleteFileOrDir(it) }
+                    paths.forEach { FilesClient.delete(it) }
                 }
             } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
             catch (error: Exception) { DialogHelper.showMessage(error) }

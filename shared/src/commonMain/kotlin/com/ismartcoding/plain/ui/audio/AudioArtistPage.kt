@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.audio
 
+import com.ismartcoding.plain.features.media.MediaCatalogClient
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
@@ -42,7 +43,6 @@ import com.ismartcoding.plain.platform.media.audioIsPlayingFlow
 import com.ismartcoding.plain.platform.media.audioJustPlayWithNotificationCheck
 import com.ismartcoding.plain.platform.media.audioPause
 import com.ismartcoding.plain.platform.media.audioPlay
-import com.ismartcoding.plain.platform.media.searchMedia
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.media.MediaTopBar
 import com.ismartcoding.plain.ui.components.NavigationBackIcon
@@ -114,7 +114,7 @@ fun AudioArtistPage(
     val sortBy = audioVM.sortBy.value
     LaunchedEffect(artistName, sortBy) {
         items = withIO {
-            searchMedia(DataType.AUDIO, artistName, 500, 0, sortBy)
+            MediaCatalogClient.rows(DataType.AUDIO, artistName, 500, 0, sortBy)
         }.filterIsInstance<AudioTrack>().filter { it.artist == artistName }
     }
 

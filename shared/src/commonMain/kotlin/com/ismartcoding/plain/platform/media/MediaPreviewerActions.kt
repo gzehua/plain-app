@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.platform.media
 
-import com.ismartcoding.plain.platform.files.copyFileToDir
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.platform.files.deleteFileAt
 import com.ismartcoding.plain.platform.files.saveFileToDownloads
 import com.ismartcoding.plain.platform.system.Capability
@@ -66,7 +67,7 @@ suspend fun savePreviewMedia(m: PreviewItem, dir: String?) {
 }
 
 private suspend fun savePreviewFile(path: String, name: String, directory: String?) {
-    val saved = if (directory == null) saveFileToDownloads(path, name) else copyFileToDir(path, directory, name)
+    val saved = if (directory == null) saveFileToDownloads(path, name) else FilesClient.copyToDirectory(path, directory, name)
     if (saved.isNotEmpty()) {
         DialogHelper.showMessage(LocaleHelper.getStringFAsync(Res.string.image_save_to, saved))
     } else {

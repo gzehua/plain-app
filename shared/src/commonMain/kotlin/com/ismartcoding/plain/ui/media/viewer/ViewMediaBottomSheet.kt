@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.media.viewer
 
+import com.ismartcoding.plain.features.files.FilesClient
+import com.ismartcoding.plain.features.media.MediaClient
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
@@ -26,12 +29,9 @@ import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.isUrl
 import com.ismartcoding.plain.ui.platform.media.ImageMetaRows
-import com.ismartcoding.plain.ui.platform.media.fileLength
+import com.ismartcoding.plain.platform.files.fileSize
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.ui.platform.media.formatImageMetaTexts
-import com.ismartcoding.plain.ui.platform.media.getImageMeta
-import com.ismartcoding.plain.ui.platform.media.getVideoMeta
-import com.ismartcoding.plain.ui.platform.media.renameMediaFile
 import com.ismartcoding.plain.ui.platform.media.tryDecodeQrCode
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PCard
@@ -84,7 +84,7 @@ fun ViewMediaBottomSheet(
     }
 
     if (showRenameDialog) {
-        FileRenameDialog(path = m.path, onDismiss = { showRenameDialog = false }, onRename = { p, name -> renameMediaFile(p, name) }, onRenamed = {
+        FileRenameDialog(path = m.path, onDismiss = { showRenameDialog = false }, onRename = { p, name -> FilesClient.rename(p, name) }, onRenamed = {
             m.path = m.path.substring(0, m.path.lastIndexOf("/") + 1) + it
             onRenamedAsync()
             onDismiss()
@@ -107,7 +107,7 @@ fun ViewMediaBottomSheet(
         // byte count of an HTTP download, which the previewer doesn't surface.
         if (displaySize <= 0L && !m.path.isUrl()) {
             scope.launch(Dispatchers.Default) {
-                val stat = fileLength(m.path)
+                val stat = fileSize(m.path)
                 if (stat > 0L) displaySize = stat
             }
         }
@@ -150,16 +150,16 @@ fun ViewMediaBottomSheet(
                     if (m.data is MediaImage) {
                         PListItem(title = stringResource(Res.string.created_at), value = m.data.createdAt.formatDateTime())
                         PListItem(title = stringResource(Res.string.updated_at), value = m.data.updatedAt.formatDateTime())
-                        ImageMetaRows(path = m.path, loadMeta = { getImageMeta(it) }, formatTexts = { mt -> formatImageMetaTexts(mt) })
+                        ImageMetaRows(path = m.path, loadMeta = { MediaClient.imageInfo(it) }, formatTexts = { mt -> formatImageMetaTexts(mt) })
                     } else if (m.data is MediaVideo) {
                         PListItem(title = stringResource(Res.string.created_at), value = m.data.createdAt.formatDateTime())
                         PListItem(title = stringResource(Res.string.updated_at), value = m.data.updatedAt.formatDateTime())
-                        VideoMetaRows(path = m.path, loadMeta = { getVideoMeta(it) })
+                        VideoMetaRows(path = m.path, loadMeta = { MediaClient.videoInfo(it) })
                     } else if (m.path.isUrl()) {
                     } else if (mimeType.startsWith("image/")) {
-                        ImageMetaRows(path = m.path, loadMeta = { getImageMeta(it) }, formatTexts = { mt -> formatImageMetaTexts(mt) })
+                        ImageMetaRows(path = m.path, loadMeta = { MediaClient.imageInfo(it) }, formatTexts = { mt -> formatImageMetaTexts(mt) })
                     } else if (mimeType.startsWith("video/")) {
-                        VideoMetaRows(path = m.path, loadMeta = { getVideoMeta(it) })
+                        VideoMetaRows(path = m.path, loadMeta = { MediaClient.videoInfo(it) })
                     }
                 }
             }

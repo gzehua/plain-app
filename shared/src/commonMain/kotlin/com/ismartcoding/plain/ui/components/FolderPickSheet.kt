@@ -2,6 +2,8 @@
 
 package com.ismartcoding.plain.ui.components
 
+import com.ismartcoding.plain.features.files.FilesClient
+
 import com.ismartcoding.plain.api.graphql.models.File as FileEntry
 
 import androidx.compose.foundation.layout.Column
@@ -25,7 +27,6 @@ import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.files.getInternalStoragePath
-import com.ismartcoding.plain.platform.files.listFilesInDir
 import com.ismartcoding.plain.ui.base.BottomActionButtons
 import com.ismartcoding.plain.ui.base.PBottomSheetTopAppBar
 import com.ismartcoding.plain.ui.base.PFilledButton
@@ -48,7 +49,7 @@ fun FolderPickSheet(
 
     LaunchedEffect(currentPath) {
         withIO {
-            dirs = listFilesInDir(currentPath, showHidden = false, sortBy = FileSortBy.NAME_ASC).filter { it.isDir }
+            dirs = FilesClient.list(currentPath, showHidden = false, sortBy = FileSortBy.NAME_ASC).filter { it.isDir }
         }
     }
 
