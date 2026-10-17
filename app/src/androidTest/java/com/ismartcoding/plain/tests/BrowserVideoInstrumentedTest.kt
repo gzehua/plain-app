@@ -71,7 +71,7 @@ class BrowserVideoInstrumentedTest {
             startHttpEngineAsync()
             val base = "http://127.0.0.1:${UserPrefs.httpPort.value}"
             fun resource(file: File) = "$base/fs?id=${URLEncoder.encode(ResourceCrypto.encrypt(file.absolutePath), "UTF-8")}"
-            createUnsafeHttpClient().use { client ->
+            createPlainHttpClient(PlainHttpClientSpec.Local()).use { client ->
                 client.get("${resource(source)}&probe=1").use { response ->
                     assertEquals(200, response.status.value)
                     val codec = Json.parseToJsonElement(response.bodyAsText()).jsonObject.getValue("codec").jsonPrimitive.content

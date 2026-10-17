@@ -100,18 +100,7 @@ class PlainResponse(
     }
 }
 
-/**
- * Minimal multiplatform HTTP client abstraction that replaces the previous
- * ktor-based HTTP client. Android is backed by OkHttp directly; iOS uses a
- * native NSURLSession implementation.
- *
- * When built from [PlainHttpClientSpec.Crypto], [cryptoKey] carries the
- * ChaCha20 key so transport-layer callers (e.g. `executeGraphQLRequest`) can
- * encrypt/decrypt bodies — replacing the previous ktor attribute approach.
- */
 interface PlainHttpClient : AutoCloseable {
-    val cryptoKey: ByteArray? get() = null
-
     suspend fun request(req: PlainRequest): PlainResponse
 
     suspend fun <T> webSocket(
@@ -153,40 +142,15 @@ const val BROWSER_USER_AGENT =
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 sealed class PlainHttpClientSpec {
-    data object Default : PlainHttpClientSpec()
     data class Local(val timeoutSeconds: Int = 30) : PlainHttpClientSpec()
     data object Browser : PlainHttpClientSpec()
-    data object Unsafe : PlainHttpClientSpec()
-    data object Download : PlainHttpClientSpec()
-    data object PeerStatus : PlainHttpClientSpec()
     data object HttpHost : PlainHttpClientSpec()
-    data class Crypto(
-        val keyBytes: ByteArray,
-        val timeoutSeconds: Int = 10,
-        val connectTimeoutMs: Long = 1_000L,
-    ) : PlainHttpClientSpec()
 }
 
 expect fun createPlainHttpClient(spec: PlainHttpClientSpec): PlainHttpClient
 
-fun createHttpClient(): PlainHttpClient = createPlainHttpClient(PlainHttpClientSpec.Default)
-
 fun createBrowserHttpClient(): PlainHttpClient = createPlainHttpClient(PlainHttpClientSpec.Browser)
 
-fun createUnsafeHttpClient(): PlainHttpClient = createPlainHttpClient(PlainHttpClientSpec.Unsafe)
-
-fun createDownloadClient(): PlainHttpClient = createPlainHttpClient(PlainHttpClientSpec.Download)
-
-fun createCryptoClient(
-    keyBytes: ByteArray,
-    timeoutSeconds: Int = 10,
-    connectTimeoutMs: Long = 1_000L,
-): PlainHttpClient = createPlainHttpClient(PlainHttpClientSpec.Crypto(keyBytes, timeoutSeconds, connectTimeoutMs))
-
-fun createPeerStatusHttpClient(): PlainHttpClient = createPlainHttpClient(PlainHttpClientSpec.PeerStatus)
-
-/** Shared timeout constants (kept for parity with the previous ktor plugin config). */
 object PlainHttpTimeouts {
-    val DEFAULT_MS = HttpApiTimeout.DEFAULT_SECONDS * 1000L
     val BROWSER_MS = HttpApiTimeout.BROWSER_SECONDS * 1000L
 }

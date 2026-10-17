@@ -23,7 +23,6 @@ import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
-import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -44,7 +43,6 @@ import kotlin.coroutines.resumeWithException
  */
 internal class OkHttpPlainClient(
     private val client: OkHttpClient,
-    override val cryptoKey: ByteArray? = null,
     private val boundedWs: Boolean = false,
 ) : PlainHttpClient {
     override suspend fun request(req: PlainRequest): PlainResponse {
@@ -182,19 +180,7 @@ internal fun PlainRequest.toOkHttpRequest(): Request {
     return builder.method(method, body).build()
 }
 
-/**
- * Shared [OkHttpClient] per spec, so repeated `createHttpClient()` calls reuse
- * the same connection pool and dispatcher instead of leaking fresh ones.
- * Crypto specs are excluded: their timeouts are caller-specific.
- */
 internal object SharedOkHttpClients {
-    val default: OkHttpClient by lazy {
-        OkHttpClient.Builder()
-            .connectTimeout(PlainHttpTimeouts.DEFAULT_MS, TimeUnit.MILLISECONDS)
-            .callTimeout(PlainHttpTimeouts.DEFAULT_MS, TimeUnit.MILLISECONDS)
-            .build()
-    }
-
     val browser: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .callTimeout(PlainHttpTimeouts.BROWSER_MS, TimeUnit.MILLISECONDS)
@@ -206,17 +192,7 @@ internal object SharedOkHttpClients {
 
     val unsafe: OkHttpClient by lazy { OkHttpClientFactory.createUnsafeOkHttpClient() }
 
-    val download: OkHttpClient by lazy {
-        unsafe.newBuilder()
-            .protocols(listOf(Protocol.HTTP_1_1))
-            .connectTimeout(5, TimeUnit.SECONDS)
-            .readTimeout(120, TimeUnit.SECONDS)
-            .writeTimeout(120, TimeUnit.SECONDS)
-            .retryOnConnectionFailure(true)
-            .build()
-    }
-
-    val peerStatus: OkHttpClient by lazy {
+    val host: OkHttpClient by lazy {
         unsafe.newBuilder()
             .connectTimeout(500, TimeUnit.MILLISECONDS)
             .pingInterval(15, TimeUnit.SECONDS)
@@ -226,51 +202,16 @@ internal object SharedOkHttpClients {
 
 internal fun createOkHttpPlainClient(spec: PlainHttpClientSpec): PlainHttpClient =
     when (spec) {
-        PlainHttpClientSpec.Default -> OkHttpPlainClient(SharedOkHttpClients.default)
         is PlainHttpClientSpec.Local -> OkHttpPlainClient(
-            SharedOkHttpClients.default.newBuilder()
-                .connectTimeout(1, TimeUnit.SECONDS)
-                .callTimeout(spec.timeoutSeconds.toLong(), TimeUnit.SECONDS)
+            SharedOkHttpClients.unsafe.newBuilder()
+                .connectTimeout(spec.timeoutSeconds.toLong(), TimeUnit.SECONDS)
                 .readTimeout(spec.timeoutSeconds.toLong(), TimeUnit.SECONDS)
                 .writeTimeout(spec.timeoutSeconds.toLong(), TimeUnit.SECONDS)
                 .build(),
         )
         PlainHttpClientSpec.Browser -> OkHttpPlainClient(SharedOkHttpClients.browser)
-        PlainHttpClientSpec.Unsafe -> OkHttpPlainClient(SharedOkHttpClients.unsafe)
-        PlainHttpClientSpec.Download -> OkHttpPlainClient(SharedOkHttpClients.download)
-        PlainHttpClientSpec.PeerStatus -> OkHttpPlainClient(SharedOkHttpClients.peerStatus)
-        PlainHttpClientSpec.HttpHost -> OkHttpPlainClient(SharedOkHttpClients.peerStatus, boundedWs = true)
-
-        is PlainHttpClientSpec.Crypto -> OkHttpPlainClient(
-            SharedOkHttpClients.unsafe.newBuilder()
-                .connectTimeout(spec.connectTimeoutMs, TimeUnit.MILLISECONDS)
-                .writeTimeout(spec.timeoutSeconds.toLong(), TimeUnit.SECONDS)
-                .readTimeout(spec.timeoutSeconds.toLong(), TimeUnit.SECONDS)
-                .build(),
-            cryptoKey = spec.keyBytes,
-        )
+        PlainHttpClientSpec.HttpHost -> OkHttpPlainClient(SharedOkHttpClients.host, boundedWs = true)
     }
-
-/** Android-only entry for transports that must bind to a specific Network/DNS (Wi-Fi Aware). */
-fun createCryptoPlainClient(
-    keyBytes: ByteArray,
-    socketFactory: javax.net.SocketFactory? = null,
-    dns: okhttp3.Dns? = null,
-    timeoutSeconds: Int = 30,
-    connectTimeoutMs: Long = 5_000L,
-): PlainHttpClient {
-    // Encryption is done once, in commonMain (executeGraphQLRequest reads
-    // `cryptoKey`). OkHttpClientFactory's interceptor-based client would encrypt
-    // a second time, so build from the plain unsafe client instead.
-    val builder = SharedOkHttpClients.unsafe.newBuilder()
-        .connectTimeout(connectTimeoutMs, TimeUnit.MILLISECONDS)
-        .writeTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
-        .readTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
-        .retryOnConnectionFailure(true)
-    if (socketFactory != null) builder.socketFactory(socketFactory)
-    if (dns != null) builder.dns(dns)
-    return OkHttpPlainClient(builder.build(), cryptoKey = keyBytes)
-}
 
 private fun browserHeaders() = Interceptor { chain ->
     chain.proceed(

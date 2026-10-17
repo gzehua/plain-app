@@ -68,7 +68,7 @@ class SessionMigrationRustHttpTest {
         val oldTwoFactor = RustSystemState.state.value.authTwoFactor
         val id = "session-fixture-${UUID.randomUUID()}"
         var pendingId = ""
-        val http = createPeerStatusHttpClient()
+        val http = createPlainHttpClient(PlainHttpClientSpec.HttpHost)
         try {
             UserPrefs.service.value = true
             UserPrefs.desktopAccess.value = true

@@ -83,7 +83,7 @@ class PublicRustHttpTest {
                 val certificate = it.session.peerCertificates.first() as java.security.cert.X509Certificate
                 assertArrayEquals(getSSLSignature(), certificate.signature)
             }
-            createUnsafeHttpClient().use { client ->
+            createPlainHttpClient(PlainHttpClientSpec.Local()).use { client ->
                 client.get("http://127.0.0.1:$port/health").use { assertEquals(200, it.status.value); assertEquals("OK", it.bodyAsText()) }
                 client.get("https://127.0.0.1:$tlsPort/health").use { assertEquals(200, it.status.value); assertEquals("OK", it.bodyAsText()) }
                 client.request("HEAD", "http://127.0.0.1:$port/health").use { assertEquals(200, it.status.value); assertEquals(0, it.bodyAsBytes().size) }

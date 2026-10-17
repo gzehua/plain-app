@@ -67,10 +67,8 @@ import kotlin.coroutines.resumeWithException
 internal class IosPlainClient(
     private val spec: PlainHttpClientSpec,
 ) : PlainHttpClient {
-    override val cryptoKey: ByteArray? get() = (spec as? PlainHttpClientSpec.Crypto)?.keyBytes
-
     private val trustAll: Boolean
-        get() = spec !is PlainHttpClientSpec.Default && spec !is PlainHttpClientSpec.Browser
+        get() = spec != PlainHttpClientSpec.Browser
 
     override suspend fun request(req: PlainRequest): PlainResponse {
         // Bounded so a slow consumer blocks the session delegate thread, which
@@ -343,11 +341,6 @@ private fun configurationFor(spec: PlainHttpClientSpec): NSURLSessionConfigurati
         NSURLSessionConfiguration.ephemeralSessionConfiguration
     }
     when (spec) {
-        PlainHttpClientSpec.Default -> {
-            config.setTimeoutIntervalForRequest(PlainHttpTimeouts.DEFAULT_MS / 1000.0)
-            config.setTimeoutIntervalForResource(60.0)
-        }
-
         is PlainHttpClientSpec.Local -> {
             config.setTimeoutIntervalForRequest(spec.timeoutSeconds.toDouble())
             config.setTimeoutIntervalForResource(spec.timeoutSeconds.toDouble())
@@ -358,26 +351,13 @@ private fun configurationFor(spec: PlainHttpClientSpec): NSURLSessionConfigurati
             config.setTimeoutIntervalForResource(60.0)
         }
 
-        PlainHttpClientSpec.Unsafe -> {
-            config.setTimeoutIntervalForRequest(30.0)
-            config.setTimeoutIntervalForResource(300.0)
-        }
-
-        PlainHttpClientSpec.Download -> {
-            config.setTimeoutIntervalForRequest(120.0)
-            config.setTimeoutIntervalForResource(3600.0)
-        }
-
-        PlainHttpClientSpec.PeerStatus, PlainHttpClientSpec.HttpHost -> {
+        PlainHttpClientSpec.HttpHost -> {
             // Long-lived WebSocket: no request timeout, keep-alive handled by ping.
             config.setTimeoutIntervalForRequest(3600.0)
             config.setTimeoutIntervalForResource(3600.0 * 24)
         }
 
-        is PlainHttpClientSpec.Crypto -> {
-            config.setTimeoutIntervalForRequest(spec.timeoutSeconds.toDouble())
-            config.setTimeoutIntervalForResource(spec.timeoutSeconds.toDouble() * 6)
-        }
+
     }
     return config
 }
