@@ -3,7 +3,7 @@ package com.ismartcoding.plain.ui.chat.components
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.ismartcoding.plain.api.graphql.models.PeerRecord
+import com.ismartcoding.plain.api.graphql.models.Peer
 import com.ismartcoding.plain.features.chat.models.getBestIp
 import com.ismartcoding.plain.features.chat.models.getName
 import com.ismartcoding.plain.ui.components.BadgeType
@@ -23,7 +23,7 @@ import com.ismartcoding.plain.ui.base.PStatusBadge
 import org.jetbrains.compose.resources.stringResource
 
 data class PeerMember(
-    val peer: PeerRecord,
+    val peer: Peer,
     val member: ChatChannelMember,
     val isSelf: Boolean = false,
     val isOwner: Boolean = false,

@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -37,6 +37,8 @@ fun NearbyDeviceItem(
     status: NearbyItemStatus,
     bestIp: String,
 ) {
+    var showPair by remember { mutableStateOf(false) }
+    if (showPair) com.ismartcoding.plain.ui.nearby.PairPeerDialog(item) { showPair = false }
     Surface(
         modifier = PlainTheme.getCardModifier(),
         color = Color.Unspecified,
@@ -53,7 +55,7 @@ fun NearbyDeviceItem(
                     )
                 }
                 if (DiscoveryMethod.LAN.name in item.discoveryMethods) {
-                    if (DiscoveryMethod.BLE.name in item.discoveryMethods) HorizontalSpace(2.dp)
+                    if (DiscoveryMethod.BLE.name in item.discoveryMethods) HorizontalSpace(4.dp)
                     Icon(
                         painter = painterResource(UiRes.drawable.ui_drawable_wifi),
                         contentDescription = "Wi-Fi",
@@ -107,7 +109,7 @@ fun NearbyDeviceItem(
                         POutlinedButton(
                             text = stringResource(Res.string.pair),
                             onClick = {
-                                NearbyViewModel.startPairing(item)
+                                showPair = true
                             },
                             buttonSize = ButtonSize.SMALL,
                         )

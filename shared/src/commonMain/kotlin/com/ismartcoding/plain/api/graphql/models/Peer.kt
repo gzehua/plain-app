@@ -10,10 +10,16 @@ data class Peer(
     var id: String,
     var name: String,
     var ip: String,
+    var key: String = "",
+    var publicKey: String = "",
     var status: PeerStatus,
     var port: Int?,
     var deviceType: DeviceType,
     var createdAt: Instant,
     var updatedAt: Instant,
-    var online: Boolean,
-)
+    var token: String = "",
+    var online: Boolean = false,
+    var address: PeerAddress? = null,
+) {
+    fun isPaired(): Boolean = status == PeerStatus.PAIRED
+}

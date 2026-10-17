@@ -9,8 +9,8 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.system.DataType
-import com.ismartcoding.plain.platform.media.isImageSearchModelReady
-import com.ismartcoding.plain.platform.media.searchImagesCombined
+import com.ismartcoding.plain.features.images.search.RustImageModels
+import com.ismartcoding.plain.features.images.search.ImageSearchStatusType
 
 class ImagesViewModel : BaseMediaViewModel<MediaImage>() {
     override val dataType = DataType.IMAGE
@@ -19,15 +19,9 @@ class ImagesViewModel : BaseMediaViewModel<MediaImage>() {
 
     suspend fun loadWithAiSearchAsync(tagsVM: TagsViewModel) = withIO {
         val query = queryText.value.trim()
-        val combined = searchImagesCombined(
-            queryText = query,
-            extraQuery = getQuery(),
-            limit = limit.intValue,
-            offset = 0,
-            sortBy = sortBy.value
-        )
-        useAiSearch.value = query.isNotEmpty() && isImageSearchModelReady()
         offset.intValue = 0
+        val combined = searchMediaAsync(getQuery())
+        useAiSearch.value = query.isNotEmpty() && RustImageModels.snapshot.value.status == ImageSearchStatusType.READY
         _itemsFlow.value = combined
         tagsVM.loadAsync(_itemsFlow.value.map { it.id }.toSet())
         total.intValue = combined.size

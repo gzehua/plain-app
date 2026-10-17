@@ -21,7 +21,6 @@ import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.helpers.StringHelper
 import com.ismartcoding.plain.rust.host.provider.*
 import com.ismartcoding.plain.platform.contacts.ContactDataHelper
-import com.ismartcoding.plain.features.contacts.SourceHelper
 import com.ismartcoding.plain.features.contacts.ContactInput
 
 object ContactMediaStoreHelper {
@@ -146,13 +145,12 @@ object ContactMediaStoreHelper {
         context.contentResolver.applyBatch(ContactsContract.AUTHORITY, operations)
     }
 
-    fun createAsync(contact: ContactInput): String {
+    fun createAsync(contact: ContactInput, accountType: String): String {
         val context = appContext
         val operations = ArrayList<ContentProviderOperation>()
         ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI).apply {
             withValue(ContactsContract.RawContacts.ACCOUNT_NAME, contact.source)
-            val source = SourceHelper.getAll().find { it.name == contact.source }
-            withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, source!!.type)
+            withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, accountType)
             operations.add(build())
         }
 
@@ -223,50 +221,34 @@ object ContactMediaStoreHelper {
         where: ContentWhere,
         limit: Int,
         offset: Int,
-    ): List<ContactFacts> = withIO {
-        val contentMap = ContactDataHelper.getMap(context)
-        val groupMap = com.ismartcoding.plain.features.contacts.GroupHelper.getAll().associateBy { it.id }
-        context.contentResolver.getPagingCursor(
-            uriExternal, getProjection(), where, limit, offset,
-            SortBy(ContactsContract.Data.DISPLAY_NAME_PRIMARY, SortDirection.ASC)
-        )?.map { cursor, cache ->
-            val accountName = cursor.getStringValue(ContactsContract.RawContacts.ACCOUNT_NAME, cache)
-            val rawId = cursor.getStringValue(ContactsContract.Data.RAW_CONTACT_ID, cache)
-            val prefix = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.PREFIX, cache)
-            val givenName = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, cache)
-            val middleName = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME, cache)
-            val familyName = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, cache)
-            val suffix = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.SUFFIX, cache)
-            val photoUri = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.PHOTO_URI, cache)
-            val starred = cursor.getIntValue(ContactsContract.CommonDataKinds.StructuredName.STARRED, cache)
-            val contactId = cursor.getStringValue(ContactsContract.Data.CONTACT_ID, cache)
-            val thumbnailUri = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.PHOTO_THUMBNAIL_URI, cache)
-            val ringtone = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.CUSTOM_RINGTONE, cache)
-            val updatedAt = cursor.getTimeValue(ContactsContract.Data.CONTACT_LAST_UPDATED_TIMESTAMP, cache)
+    ): ContactPageFacts = withIO {
+        com.ismartcoding.plain.platform.contacts.readContactPage(readRows = {
+            context.contentResolver.getPagingCursor(
+                uriExternal, getProjection(), where, limit, offset,
+                SortBy(ContactsContract.Data.DISPLAY_NAME_PRIMARY, SortDirection.ASC)
+            )?.map { cursor, cache ->
+                val accountName = cursor.getStringValue(ContactsContract.RawContacts.ACCOUNT_NAME, cache)
+                val rawId = cursor.getStringValue(ContactsContract.Data.RAW_CONTACT_ID, cache)
+                val prefix = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.PREFIX, cache)
+                val givenName = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, cache)
+                val middleName = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME, cache)
+                val familyName = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, cache)
+                val suffix = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.SUFFIX, cache)
+                val photoUri = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.PHOTO_URI, cache)
+                val starred = cursor.getIntValue(ContactsContract.CommonDataKinds.StructuredName.STARRED, cache)
+                val contactId = cursor.getStringValue(ContactsContract.Data.CONTACT_ID, cache)
+                val thumbnailUri = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.PHOTO_THUMBNAIL_URI, cache)
+                val ringtone = cursor.getStringValue(ContactsContract.CommonDataKinds.StructuredName.CUSTOM_RINGTONE, cache)
+                val updatedAt = cursor.getTimeValue(ContactsContract.Data.CONTACT_LAST_UPDATED_TIMESTAMP, cache)
 
-            val nicknames = contentMap[rawId]?.nicknames ?: arrayListOf()
-            val notes = contentMap[rawId]?.notes ?: arrayListOf()
-            val groups = contentMap[rawId]?.groupIds.orEmpty().mapNotNull { groupMap[it.toString()] }
-            val organizations = contentMap[rawId]?.organizations ?: arrayListOf()
-            val websites = contentMap[rawId]?.websites ?: arrayListOf()
-            val events = contentMap[rawId]?.events ?: arrayListOf()
-            val emails = contentMap[rawId]?.emails ?: arrayListOf()
-            val addresses = contentMap[rawId]?.addresses ?: arrayListOf()
-            val ims = contentMap[rawId]?.ims ?: arrayListOf()
-            val phoneNumbers = contentMap[rawId]?.phoneNumbers ?: arrayListOf()
-            ContactFacts(
-                id = rawId, prefix = prefix, firstName = givenName, middleName = middleName,
-                lastName = familyName, suffix = suffix, nickname = nicknames.firstOrNull().orEmpty(),
-                photoId = photoUri,
-                phoneNumbers = phoneNumbers,
-                emails = emails, addresses = addresses, events = events,
-                websites = websites, ims = ims, source = accountName,
-                starred = starred != 0, contactId = contactId, thumbnailId = thumbnailUri,
-                notes = notes.firstOrNull().orEmpty(), groups = groups.map { ContactGroupFacts(it.id.toString(), it.name) },
-                organization = organizations.firstOrNull()
-                    ?: ContactOrganizationFacts("", ""),
-                ringtone = ringtone, updatedAt = updatedAt.toString(),
-            )
-        } ?: emptyList()
+                ContactFacts(
+                    id = rawId, prefix = prefix, firstName = givenName, middleName = middleName,
+                    lastName = familyName, suffix = suffix, photoId = photoUri, source = accountName,
+                    starred = starred != 0, contactId = contactId, thumbnailId = thumbnailUri,
+                    ringtone = ringtone, updatedAt = updatedAt.toString(),
+                )
+            } ?: emptyList()
+        }, readDetails = { ids -> ContactDataHelper.rows(context, ids) },
+            readGroups = { com.ismartcoding.plain.platform.contacts.GroupHelper.getAll(context) })
     }
 }

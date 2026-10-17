@@ -1,11 +1,10 @@
 package com.ismartcoding.plain.platform.contacts
 
-import com.ismartcoding.plain.api.graphql.models.ContactSource
-import com.ismartcoding.plain.api.graphql.models.ContactGroup
-import com.ismartcoding.plain.features.contacts.GroupHelper
-import com.ismartcoding.plain.features.contacts.SourceHelper
+import com.ismartcoding.plain.platform.permissions.isGranted
 
-actual fun getContactGroups(): List<ContactGroup> = GroupHelper.getAll()
+import com.ismartcoding.plain.api.graphql.models.ContactGroup
+
+internal actual fun getContactGroups(): List<com.ismartcoding.plain.rust.host.provider.ContactGroupFacts> = GroupHelper.getAll()
 
 actual fun createContactGroup(name: String, accountName: String, accountType: String): ContactGroup =
     GroupHelper.create(name, accountName, accountType)
@@ -17,4 +16,9 @@ actual fun updateContactGroup(id: String, name: String): ContactGroup? {
 
 actual fun deleteContactGroup(id: String) = GroupHelper.delete(id)
 
-actual fun getContactSources(): List<ContactSource> = SourceHelper.getAll()
+internal actual fun getContactSources(): List<com.ismartcoding.plain.rust.host.provider.ContactSourceFacts> = SourceHelper.getAll()
+
+internal actual suspend fun readContacts(plan: com.ismartcoding.plain.rust.host.provider.ProviderPlan, limit: Int, offset: Int): com.ismartcoding.plain.rust.host.provider.ContactPageFacts {
+    if (!com.ismartcoding.plain.platform.permissions.Permission.READ_CONTACTS.isGranted()) return com.ismartcoding.plain.rust.host.provider.ContactPageFacts()
+    return com.ismartcoding.plain.platform.media.provider.ContactMediaStoreHelper.searchAsync(com.ismartcoding.plain.appContext, plan.where(), limit, offset)
+}

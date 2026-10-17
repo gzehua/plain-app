@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.features.chat.download.DownloadQueue
 import com.ismartcoding.plain.features.chat.models.MessageImages
-import com.ismartcoding.plain.api.graphql.models.PeerRecord
 import com.ismartcoding.plain.api.graphql.models.Peer
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.chat.VChat
@@ -25,7 +24,7 @@ import com.ismartcoding.plain.ui.chat.VChat
 fun ChatImages(
     items: List<VChat>,
     m: VChat,
-    peer: PeerRecord?,
+    peer: Peer?,
     imageWidthDp: Dp,
     imageWidthPx: Int,
     previewerState: MediaPreviewerState,

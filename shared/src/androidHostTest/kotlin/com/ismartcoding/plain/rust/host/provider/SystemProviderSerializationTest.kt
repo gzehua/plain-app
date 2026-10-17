@@ -7,6 +7,7 @@ import com.ismartcoding.plain.api.graphql.models.AudioItem
 import com.ismartcoding.plain.lib.JsonHelper
 import java.io.File
 import kotlinx.serialization.SerializationException
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -32,21 +33,14 @@ class SystemProviderSerializationTest {
     }
 
     @Test
-    fun contactFactsKeepPublicNamesAndRawDetailTypes() {
-        val facts = ContactFacts(
-            id = "1", prefix = "", firstName = "Ada", middleName = "", lastName = "Lovelace",
-            suffix = "", nickname = "", photoId = "/photo",
-            phoneNumbers = listOf(ContactPhoneFacts("123", 2, "mobile", "+123")),
-            emails = listOf(ContactDetailFacts("recipient@local", 1, "home")),
-            addresses = emptyList(), events = emptyList(), websites = emptyList(), ims = emptyList(),
-            source = "local", starred = true, contactId = "2", thumbnailId = "/thumb", notes = "",
-            groups = listOf(ContactGroupFacts("3", "Friends")), organization = null,
-            ringtone = "", updatedAt = "2026-10-08T00:00:00Z",
-        )
-        assertEquals(
-            """{"id":"1","prefix":"","firstName":"Ada","middleName":"","lastName":"Lovelace","suffix":"","nickname":"","photoId":"/photo","phoneNumbers":[{"value":"123","type":2,"label":"mobile","normalizedNumber":"+123"}],"emails":[{"value":"recipient@local","type":1,"label":"home"}],"addresses":[],"events":[],"websites":[],"ims":[],"source":"local","starred":true,"contactId":"2","thumbnailId":"/thumb","notes":"","groups":[{"id":"3","name":"Friends"}],"organization":null,"ringtone":"","updatedAt":"2026-10-08T00:00:00Z"}""",
-            JsonHelper.jsonEncode(facts),
-        )
+    fun contactProviderCarriesRawPageRowsAndColumns() {
+        val facts = ContactFacts("1", "", "Given", "", "Family", "", "/photo", "local", true, "2", "/thumb", "", "2026-10-08T00:00:00Z")
+        val page = ContactPageFacts(listOf(facts), listOf(ContactDataFacts("1", "vnd.android.cursor.item/im", "value", "", "", "", "6", "custom")), listOf(ContactGroupFacts("3", "Friends")))
+        val encoded = JsonHelper.jsonEncode(page)
+        assertEquals(page, JsonHelper.jsonDecode<ContactPageFacts>(encoded))
+        assertTrue(encoded.contains("\"data5\":\"6\""))
+        assertFalse(encoded.contains("phoneNumbers"))
+        assertFalse(encoded.contains("organization"))
     }
 
     @Test

@@ -104,14 +104,14 @@ class GraphqlModelDecodeTest {
         assertEquals(30000L, info.durationMs)
     }
     @Test
-    fun peerRecordsUseMainCamelCaseFieldsAndKeepDerivedAddress() {
-        val peer = JsonHelper.jsonDecode<PeerRecord>("""{"id":"peer-1","name":"Peer","ip":"127.0.0.1","key":"key","publicKey":"public","status":"PAIRED","port":8080,"deviceType":"PHONE","token":"","createdAt":"2026-10-12T00:00:00Z","updatedAt":"2026-10-12T00:00:00Z","address":{"bestIp":"127.0.0.1","name":"Peer","baseUrl":"https://127.0.0.1:8080","apiUrl":"https://127.0.0.1:8080/peer_graphql","statusWsUrl":"wss://127.0.0.1:8080/peer_status"}}""")
+    fun peerFieldsUseMainCamelCaseFieldsAndKeepDerivedAddress() {
+        val peer = JsonHelper.jsonDecode<Peer>("""{"id":"peer-1","name":"Peer","ip":"127.0.0.1","key":"key","publicKey":"public","status":"PAIRED","port":8080,"deviceType":"PHONE","token":"","createdAt":"2026-10-12T00:00:00Z","updatedAt":"2026-10-12T00:00:00Z","address":{"bestIp":"127.0.0.1","name":"Peer","baseUrl":"https://127.0.0.1:8080","apiUrl":"https://127.0.0.1:8080/peer_graphql","statusWsUrl":"wss://127.0.0.1:8080/peer_status"}}""")
         assertEquals("public", peer.publicKey)
         assertEquals("127.0.0.1", peer.address?.bestIp)
         val encoded = JsonHelper.jsonEncodeToElement(peer).jsonObject
         for (field in listOf("publicKey", "deviceType", "createdAt", "updatedAt")) assertTrue(field in encoded)
         for (field in listOf("public_key", "device_type", "created_at", "updated_at")) assertFalse(field in encoded)
-        assertEquals(peer, JsonHelper.jsonDecodeFromElement<PeerRecord>(JsonHelper.jsonEncodeToElement(peer)))
+        assertEquals(peer, JsonHelper.jsonDecodeFromElement<Peer>(JsonHelper.jsonEncodeToElement(peer)))
     }
 
     @Test
@@ -127,7 +127,7 @@ class GraphqlModelDecodeTest {
 
     @Test
     fun nativeRecordDecodersKeepRejectingIncompleteSnapshots() {
-        assertFailsWith<SerializationException> { JsonHelper.jsonDecode<PeerRecord>("""{"id":"peer-1"}""") }
+        assertFailsWith<SerializationException> { JsonHelper.jsonDecode<Peer>("""{"id":"peer-1"}""") }
         assertFailsWith<SerializationException> { JsonHelper.jsonDecode<ChatChannel>("""{"id":"channel-1"}""") }
     }
 

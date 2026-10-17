@@ -16,7 +16,6 @@ import androidx.navigation.NavHostController
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.chat.download.DownloadQueue
 import com.ismartcoding.plain.features.chat.models.MessageFiles
-import com.ismartcoding.plain.api.graphql.models.PeerRecord
 import com.ismartcoding.plain.api.graphql.models.Peer
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModelBase
@@ -28,7 +27,7 @@ fun ChatFiles(
     items: List<VChat>,
     navController: NavHostController,
     m: VChat,
-    peer: PeerRecord?,
+    peer: Peer?,
     audioQueueVM: AudioQueueViewModelBase,
     previewerState: MediaPreviewerState,
 ) {

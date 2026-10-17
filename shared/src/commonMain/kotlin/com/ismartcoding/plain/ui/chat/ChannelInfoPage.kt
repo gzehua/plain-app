@@ -24,7 +24,7 @@ import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.api.graphql.models.ChatChannel
-import com.ismartcoding.plain.api.graphql.models.PeerRecord
+import com.ismartcoding.plain.api.graphql.models.Peer
 import com.ismartcoding.plain.features.chat.models.getBestIp
 import com.ismartcoding.plain.features.chat.models.getName
 import com.ismartcoding.plain.ui.chat.peer.PeerCacher
@@ -121,7 +121,7 @@ fun ChannelInfoPage(
         }
         addAll(pendingMembers.sortedBy { it.displayName() })
     }
-    val addablePeers: List<PeerRecord> = if (liveChannel?.actions?.canManageMembers == true) {
+    val addablePeers: List<Peer> = if (liveChannel?.actions?.canManageMembers == true) {
         val presentIds = liveChannel.members.map { it.peerId }.toMutableSet().apply {
             ownerPeerId?.let { add(it) }
         }

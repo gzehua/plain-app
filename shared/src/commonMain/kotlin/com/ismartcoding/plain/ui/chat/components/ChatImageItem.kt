@@ -23,10 +23,9 @@ import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.features.chat.download.DownloadQueue
 import com.ismartcoding.plain.features.chat.download.DownloadTask
 import com.ismartcoding.plain.features.chat.models.MessageFile
-import com.ismartcoding.plain.api.graphql.models.PeerRecord
+import com.ismartcoding.plain.api.graphql.models.Peer
 import com.ismartcoding.plain.features.chat.models.getPreviewPath
 import com.ismartcoding.plain.features.downloads.DownloadStatus
-import com.ismartcoding.plain.api.graphql.models.Peer
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.formatDurationMs
 import com.ismartcoding.plain.lib.extensions.isVideoFast
@@ -44,7 +43,7 @@ internal fun ChatImageItem(
     item: MessageFile,
     items: List<VChat>,
     messageId: String,
-    peer: PeerRecord?,
+    peer: Peer?,
     imageWidthDp: Dp,
     imageWidthPx: Int,
     previewerState: MediaPreviewerState,

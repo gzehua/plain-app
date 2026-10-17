@@ -1,12 +1,11 @@
 package com.ismartcoding.plain.platform.contacts
 
-import com.ismartcoding.plain.api.graphql.models.ContactSource
 import com.ismartcoding.plain.api.graphql.models.ContactGroup
 
 /**
  * Returns all contact groups. Empty list on platforms without a contacts provider.
  */
-expect fun getContactGroups(): List<ContactGroup>
+internal expect fun getContactGroups(): List<com.ismartcoding.plain.rust.host.provider.ContactGroupFacts>
 
 /**
  * Create a new contact group with [name] under the account identified by
@@ -28,4 +27,6 @@ expect fun deleteContactGroup(id: String)
 /**
  * Returns all contact sources (accounts). Empty list on unsupported platforms.
  */
-expect fun getContactSources(): List<ContactSource>
+internal expect fun getContactSources(): List<com.ismartcoding.plain.rust.host.provider.ContactSourceFacts>
+
+internal expect suspend fun readContacts(plan: com.ismartcoding.plain.rust.host.provider.ProviderPlan, limit: Int, offset: Int): com.ismartcoding.plain.rust.host.provider.ContactPageFacts

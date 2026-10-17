@@ -179,4 +179,6 @@
     <string name="no_finished_downloads">No finished downloads</string>
     <string name="saved_n_of_m">Saved %1$d of %2$d items</string>
     <string name="saved_to_x">Saved to %1$s</string>
+    <string name="pair_manage_device">Manage device</string>
+    <string name="pair_chat_only">Chat only</string>
 </resources>

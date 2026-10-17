@@ -2,6 +2,7 @@ package com.ismartcoding.plain.tests
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.test.platform.app.InstrumentationRegistry
 import android.os.Environment
@@ -17,7 +18,6 @@ import com.ismartcoding.plain.preferences.SystemPrefsClient
 import com.ismartcoding.plain.preferences.UserPrefs
 import com.ismartcoding.plain.rust.PlainRust
 import java.io.File
-import java.security.SecureRandom
 import java.util.UUID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -53,6 +53,8 @@ class ApiFixtureRustHttpTest {
         val peerId = peerFixture.id
         var channelId = ""
         var clientId = ""
+        var peerCreated = false
+        var rootCreated = false
         val oldAccess = UserPrefs.desktopAccess.value
         UserPrefs.desktopAccess.value = true
         startHttpEngineAsync()
@@ -61,20 +63,21 @@ class ApiFixtureRustHttpTest {
         try {
             SystemPrefsClient.local.updateSystem(SystemCommand.SetApiPermissions(setOf(Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEOS, Permission.READ_MEDIA_AUDIO, Permission.READ_CONTACTS, Permission.WRITE_CONTACTS, Permission.READ_CALL_LOG, Permission.WRITE_CALL_LOG, Permission.READ_SMS, Permission.SEND_SMS, Permission.QUERY_ALL_PACKAGES, Permission.NOTIFICATION_LISTENER).map { it.name }.toSet()))
             assertTrue(root.mkdirs())
+            rootCreated = true
             val session = PlainRust.mainMutate("createSession(name: \"API emulator fixture\") { clientId token }").getValue("createSession").jsonObject
             clientId = session.getValue("clientId").jsonPrimitive.content
-            val randomKey = { Base64.encodeToString(ByteArray(32).also { SecureRandom().nextBytes(it) }, Base64.NO_WRAP) }
-            val peer = JsonHelper.jsonEncodeToElement(mapOf(
-                "id" to peerId,
-                "name" to "API fixture peer",
-                "host" to "127.0.0.1:1",
-                "deviceType" to "OTHER",
-                "token" to randomKey(),
-                "signaturePublicKey" to peerFixture.publicKey,
-                "chatKey" to peerFixture.key,
-            ))
-            check(PlainRust.mainGraphql("mutation(\$input: PeerLoginInput!) { loginPeer(input: \$input) }", mapOf("input" to peer)).getValue("loginPeer").jsonPrimitive.boolean)
-            check(PlainRust.mainQuery("peerRecord(id: ${JsonPrimitive(peerId)}) { id }").getValue("peerRecord").jsonObject.getValue("id").jsonPrimitive.content == peerId)
+            val database = File(appContext.filesDir, "plain.db")
+            check(database.isFile && database.canonicalFile.parentFile == appContext.filesDir.canonicalFile)
+            SQLiteDatabase.openDatabase(database.path, null, SQLiteDatabase.OPEN_READWRITE or SQLiteDatabase.NO_LOCALIZED_COLLATORS).use { db ->
+                check(db.version == 1)
+                val now = java.time.Instant.now().toString()
+                db.execSQL(
+                    "INSERT INTO peers (id,name,ip,key,public_key,status,port,device_type,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                    arrayOf<Any>(peerId, "API fixture peer", "127.0.0.1", peerFixture.key, peerFixture.publicKey, "PAIRED", 1, "OTHER", now, now),
+                )
+                peerCreated = true
+            }
+            check(PlainRust.mainQuery("peers { id }").getValue("peers").jsonArray.count { it.jsonObject.getValue("id").jsonPrimitive.content == peerId } == 1)
             channelId = PlainRust.mainMutate("createChatChannel(name: \"API fixture channel\") { id }").getValue("createChatChannel").jsonObject.getValue("id").jsonPrimitive.content
             val channelKey = PlainRust.mainQuery("chatChannelRecord(id: ${JsonPrimitive(channelId)}) { key }").getValue("chatChannelRecord").jsonObject.getValue("key")
             val app = PlainRust.mainQuery("app { httpPort capabilities }").getValue("app").jsonObject
@@ -97,8 +100,8 @@ class ApiFixtureRustHttpTest {
             stop.delete()
             if (clientId.isNotEmpty()) PlainRust.mainMutate("revokeSession(clientId: ${JsonPrimitive(clientId)})")
             if (channelId.isNotEmpty()) PlainRust.mainMutate("deleteChatChannel(id: ${JsonPrimitive(channelId)})")
-            PlainRust.mainMutate("deletePeer(id: ${JsonPrimitive(peerId)})")
-            root.deleteRecursively()
+            if (peerCreated) PlainRust.mainMutate("deletePeer(id: ${JsonPrimitive(peerId)})")
+            if (rootCreated) root.deleteRecursively()
             SystemPrefsClient.local.updateSystem(SystemCommand.SetApiPermissions(oldPermissions))
             UserPrefs.desktopAccess.value = oldAccess
             stopHttpEngineAsync()

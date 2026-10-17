@@ -16,9 +16,9 @@ object MediaClient {
         ).getValue("audioMetadata"),
     )
 
-    suspend fun embeddedLyrics(path: String): String =
-        PlainRust.mainQuery("embeddedAudioLyrics(path: ${gql(path)})")
-            .getValue("embeddedAudioLyrics").jsonPrimitive.contentOrNull.orEmpty()
+    suspend fun lyricsByPath(path: String): String =
+        PlainRust.mainQuery("audioLyricsByPath(path: ${gql(path)})")
+            .getValue("audioLyricsByPath").jsonPrimitive.contentOrNull.orEmpty()
 
     suspend fun cacheAudioCover(path: String): String? = PlainRust.mainGraphql(
         "mutation CacheAudioCover(\$path: String!) { cacheAudioCover(path: \$path) }",

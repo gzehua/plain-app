@@ -42,7 +42,7 @@ internal actual fun platformDownloadsDirPath(): String = appDir() + "/downloads"
 
 actual fun updateContact(id: String, input: com.ismartcoding.plain.features.contacts.ContactInput) {}
 
-actual fun createContact(input: com.ismartcoding.plain.features.contacts.ContactInput): String = ""
+actual fun createContact(input: com.ismartcoding.plain.features.contacts.ContactInput, accountType: String): String = ""
 
 actual suspend fun deleteContacts(ids: Set<String>) {}
 

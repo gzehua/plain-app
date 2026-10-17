@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.features.contacts
+package com.ismartcoding.plain.platform.contacts
 
 import com.ismartcoding.plain.api.graphql.models.ContactGroup
 import com.ismartcoding.plain.appContext
@@ -12,30 +12,29 @@ import com.ismartcoding.plain.lib.extensions.queryCursor
 import com.ismartcoding.plain.contentResolver
 import java.util.ArrayList
 
-object GroupHelper {
-    fun getAll(): List<ContactGroup> {
-        val context = appContext
-        val groups = ArrayList<ContactGroup>()
+internal object GroupHelper {
+    internal fun getAll(context: android.content.Context = appContext): List<com.ismartcoding.plain.rust.host.provider.ContactGroupFacts> {
+        val groups = ArrayList<com.ismartcoding.plain.rust.host.provider.ContactGroupFacts>()
         val uri = ContactsContract.Groups.CONTENT_URI
         val projection =
             arrayOf(
                 ContactsContract.Groups._ID,
                 ContactsContract.Groups.TITLE,
                 ContactsContract.Groups.SYSTEM_ID,
+                ContactsContract.Groups.AUTO_ADD,
+                ContactsContract.Groups.FAVORITES,
             )
 
-        val selection = "${ContactsContract.Groups.AUTO_ADD} = ? AND ${ContactsContract.Groups.FAVORITES} = ?"
-        val selectionArgs = arrayOf("0", "0")
-        context.contentResolver.queryCursor(uri, projection, selection, selectionArgs)?.forEach { cursor, cache ->
+        context.contentResolver.queryCursor(uri, projection)?.forEach { cursor, cache ->
             val id = cursor.getLongValue(ContactsContract.Groups._ID, cache)
             val title = cursor.getStringValue(ContactsContract.Groups.TITLE, cache)
 
             val systemId = cursor.getStringValue(ContactsContract.Groups.SYSTEM_ID, cache)
-            if (groups.map { it.name }.contains(title) && systemId.isNotEmpty()) {
-                return@forEach
-            }
-
-            groups.add(ContactGroup(id.toString(), title))
+            groups.add(com.ismartcoding.plain.rust.host.provider.ContactGroupFacts(
+                id.toString(), title, systemId,
+                cursor.getStringValue(ContactsContract.Groups.AUTO_ADD, cache) != "0",
+                cursor.getStringValue(ContactsContract.Groups.FAVORITES, cache) != "0",
+            ))
         }
         return groups
     }

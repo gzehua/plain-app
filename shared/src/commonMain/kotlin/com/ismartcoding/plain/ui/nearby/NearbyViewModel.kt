@@ -24,6 +24,7 @@ object NearbyViewModel {
 
     val nearbyDevices = MutableStateFlow<List<NearbyDevice>>(emptyList())
     var isDiscovering = mutableStateOf(false)
+    val pairingStates = mutableStateMapOf<String, kotlinx.serialization.json.JsonObject>()
     val itemStatus = mutableStateMapOf<String, NearbyItemStatus>()
 
 

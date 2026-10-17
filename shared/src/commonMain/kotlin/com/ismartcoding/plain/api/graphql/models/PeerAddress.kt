@@ -3,7 +3,7 @@ package com.ismartcoding.plain.api.graphql.models
 
 
 @kotlinx.serialization.Serializable
-data class PeerRecordAddress(
+data class PeerAddress(
     val bestIp: String,
     val name: String,
     val baseUrl: String,

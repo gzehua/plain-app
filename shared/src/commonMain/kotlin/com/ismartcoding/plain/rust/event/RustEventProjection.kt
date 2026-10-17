@@ -87,6 +87,7 @@ internal object RustEventProjection {
                 com.ismartcoding.plain.features.nearby.RustNearbyDevices.apply(devices)
             }
             EventType.PAIRING_REQUEST_RECEIVED.name -> com.ismartcoding.plain.features.nearby.PairingProjection.request(payload)
+            EventType.PAIRING_STATE_CHANGED.name -> com.ismartcoding.plain.features.nearby.PairingProjection.applyState(JsonHelper.jsonDecode<JsonObject>(payload))
             EventType.PAIRING_STARTED.name -> com.ismartcoding.plain.features.nearby.PairingProjection.started(payload)
             EventType.PAIRING_CANCELED.name -> com.ismartcoding.plain.features.nearby.PairingProjection.canceled(payload)
             EventType.PAIRING_SUCCESS.name -> com.ismartcoding.plain.features.nearby.PairingProjection.success(payload)

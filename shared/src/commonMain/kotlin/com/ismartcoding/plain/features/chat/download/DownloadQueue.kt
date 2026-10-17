@@ -1,14 +1,13 @@
 package com.ismartcoding.plain.features.chat.download
 
 import com.ismartcoding.plain.features.chat.models.MessageFile
-import com.ismartcoding.plain.api.graphql.models.PeerRecord
+import com.ismartcoding.plain.api.graphql.models.Peer
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 import com.ismartcoding.plain.app.events.HDownloadTaskDoneEvent
 import com.ismartcoding.plain.features.downloads.DOWNLOAD_KIND_CHAT
 import com.ismartcoding.plain.features.downloads.DownloadCenter
 import com.ismartcoding.plain.features.downloads.DownloadQueueVersion
 import com.ismartcoding.plain.features.downloads.DownloadStatus
-import com.ismartcoding.plain.api.graphql.models.Peer
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent
@@ -40,7 +39,7 @@ object DownloadQueue {
             }
         }
     }
-    fun addDownloadTask(messageFile: MessageFile, peer: PeerRecord, messageId: String): String {
+    fun addDownloadTask(messageFile: MessageFile, peer: Peer, messageId: String): String {
         submit(buildJsonObject {
             put("action", "enqueue"); put("message_id", messageId); put("id", messageFile.id); put("peer_id", peer.id)
         })

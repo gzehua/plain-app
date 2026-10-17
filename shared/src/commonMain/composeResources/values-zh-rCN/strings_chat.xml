@@ -179,4 +179,6 @@
     <string name="no_finished_downloads">暂无已完成的下载</string>
     <string name="saved_n_of_m">已保存 %1$d/%2$d 项</string>
     <string name="saved_to_x">已保存到 %1$s</string>
+    <string name="pair_manage_device">管理设备</string>
+    <string name="pair_chat_only">仅聊天</string>
 </resources>

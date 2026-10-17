@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.app
 
 import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.api.graphql.models.NetworkStatus
-import com.ismartcoding.plain.api.graphql.models.PeerRecord
+import com.ismartcoding.plain.api.graphql.models.Peer
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.DeviceType
 import com.ismartcoding.plain.rust.PlainRust
@@ -13,14 +13,14 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.*
 
 object LocalDeviceState {
-    val peer = mutableStateOf<PeerRecord?>(null)
+    val peer = mutableStateOf<Peer?>(null)
     private val refreshLock = Mutex()
 
     suspend fun refresh() = refreshLock.withLock {
         try {
             val app = PlainRust.mainQuery("app { clientId deviceName deviceType httpsPort network { ipv4Addresses primaryIpv4 vpnActive } }").getValue("app").jsonObject
             val network = JsonHelper.jsonDecodeFromElement<NetworkStatus>(app.getValue("network"))
-            peer.value = PeerRecord(
+            peer.value = Peer(
                 key = "",
                 publicKey = "",
                 token = "",

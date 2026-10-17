@@ -108,8 +108,8 @@ internal actual fun platformDownloadsDirPath(): String =
 actual fun updateContact(id: String, input: com.ismartcoding.plain.features.contacts.ContactInput) =
     com.ismartcoding.plain.platform.media.provider.ContactMediaStoreHelper.updateAsync(id, input)
 
-actual fun createContact(input: com.ismartcoding.plain.features.contacts.ContactInput): String =
-    com.ismartcoding.plain.platform.media.provider.ContactMediaStoreHelper.createAsync(input)
+actual fun createContact(input: com.ismartcoding.plain.features.contacts.ContactInput, accountType: String): String =
+    com.ismartcoding.plain.platform.media.provider.ContactMediaStoreHelper.createAsync(input, accountType)
 
 actual suspend fun deleteContacts(ids: Set<String>) {
     com.ismartcoding.plain.platform.media.provider.ContactMediaStoreHelper.deleteByIdsAsync(appContext, ids)
@@ -139,7 +139,6 @@ actual fun readSentMmsCandidates(minimumId: Long, launchTimeSec: Long): List<com
 
 actual suspend fun searchMedia(dataType: DataType, plan: ProviderPlan, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> {
     if (dataType == DataType.CALL && !Permission.READ_CALL_LOG.isGranted()) return emptyList()
-    if (dataType == DataType.CONTACT && !Permission.READ_CONTACTS.isGranted()) return emptyList()
     val where = plan.where()
     return when (dataType) {
         DataType.AUDIO -> AudioMediaStoreHelper.searchAsync(appContext, where, limit, offset, sortBy)
@@ -147,7 +146,6 @@ actual suspend fun searchMedia(dataType: DataType, plan: ProviderPlan, limit: In
         DataType.IMAGE -> ImageMediaStoreHelper.searchAsync(appContext, where, limit, offset, sortBy)
         DataType.VIDEO -> VideoMediaStoreHelper.searchAsync(appContext, where, limit, offset, sortBy)
         DataType.CALL -> CallMediaStoreHelper.searchAsync(appContext, where, limit, offset)
-        DataType.CONTACT -> ContactMediaStoreHelper.searchAsync(appContext, where, limit, offset)
         else -> error("Unsupported provider: $dataType")
     }
 }

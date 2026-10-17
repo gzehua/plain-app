@@ -6,4 +6,7 @@ import kotlinx.serialization.Serializable
 internal data class ContactGroupFacts(
     val id: String,
     val name: String,
+    val systemId: String = "",
+    val autoAdd: Boolean = false,
+    val favorites: Boolean = false,
 )

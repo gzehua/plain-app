@@ -4,14 +4,13 @@ import com.ismartcoding.plain.api.graphql.models.Peer
 import kotlinx.coroutines.Job
 
 import com.ismartcoding.plain.features.chat.models.MessageFile
-import com.ismartcoding.plain.api.graphql.models.PeerRecord
 import com.ismartcoding.plain.features.downloads.DOWNLOAD_KIND_CHAT
 import com.ismartcoding.plain.features.downloads.DownloadStatus
 import com.ismartcoding.plain.features.downloads.DownloadTaskHandle
 
 data class DownloadTask(
     val messageFile: MessageFile,
-    val peer: PeerRecord,
+    val peer: Peer,
     val messageId: String,
     override var status: DownloadStatus = DownloadStatus.PENDING,
     override var error: String = "",

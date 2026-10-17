@@ -57,7 +57,7 @@ private fun lyricsPathFor(audioPath: String): String {
 /** Sidecar .lrc file first, lyrics embedded in the audio metadata as fallback. */
 suspend fun loadLyrics(audioPath: String): List<LrcParser.LrcLine> =
     withIO {
-        LrcParser.parse(readTextFile(lyricsPathFor(audioPath)).ifEmpty { MediaClient.embeddedLyrics(audioPath) })
+        LrcParser.parse(readTextFile(lyricsPathFor(audioPath)).ifEmpty { MediaClient.lyricsByPath(audioPath) })
     }
 
 /**

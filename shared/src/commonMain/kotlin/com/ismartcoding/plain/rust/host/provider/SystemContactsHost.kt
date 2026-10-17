@@ -9,12 +9,7 @@ internal object SystemContactsHost {
             val plan = params.providerPlan()
             val offset = params.getValue("offset").jsonPrimitive.int
             val limit = params.getValue("limit").jsonPrimitive.int
-            JsonHelper.jsonEncodeToElement(
-                com.ismartcoding.plain.platform.media.searchMedia(
-                    com.ismartcoding.plain.platform.system.DataType.CONTACT, plan, limit, offset,
-                    com.ismartcoding.plain.features.files.FileSortBy.DATE_DESC,
-                ).filterIsInstance<ContactFacts>()
-            )
+            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.contacts.readContacts(plan, limit, offset))
         }
         "systemContactCount" -> JsonHelper.jsonEncodeToElement(
             com.ismartcoding.plain.platform.media.countMedia(
@@ -28,24 +23,10 @@ internal object SystemContactsHost {
                 params.providerPlan(),
             )
         )
-        "systemContactGroupFacts" -> JsonHelper.jsonEncodeToElement(
-            com.ismartcoding.plain.platform.contacts.getContactGroups().map { group ->
-                ContactGroupFacts(
-                    id = group.id.toString(),
-                    name = group.name,
-                )
-            }
-        )
-        "systemContactSources" -> JsonHelper.jsonEncodeToElement(
-            com.ismartcoding.plain.platform.contacts.getContactSources().map { source ->
-                ContactSourceFacts(
-                    name = source.name,
-                    type = source.type,
-                )
-            }
-        )
+        "systemContactGroupFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.contacts.getContactGroups())
+        "systemContactSources" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.contacts.getContactSources())
         "systemCreateContact" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.createContact(
-            contactInput(params)))
+            contactInput(params), params.getValue("accountType").jsonPrimitive.content))
         "systemUpdateContact" -> {
             com.ismartcoding.plain.platform.media.updateContact(
                 params.getValue("id").jsonPrimitive.content,

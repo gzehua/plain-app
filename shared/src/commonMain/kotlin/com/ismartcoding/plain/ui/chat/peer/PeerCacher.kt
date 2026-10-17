@@ -4,7 +4,7 @@ import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 
 
 import com.ismartcoding.plain.features.chat.ChatCacher
-import com.ismartcoding.plain.api.graphql.models.PeerRecord
+import com.ismartcoding.plain.api.graphql.models.Peer
 import com.ismartcoding.plain.features.chat.peer.transport.PeerTransportType
 import com.ismartcoding.plain.features.nearby.PeerStatus
 import com.ismartcoding.plain.api.graphql.models.ChatItem
@@ -26,16 +26,16 @@ import kotlinx.coroutines.flow.stateIn
 object PeerCacher {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    val peersMap = MutableStateFlow<Map<String, PeerRecord>>(emptyMap())
+    val peersMap = MutableStateFlow<Map<String, Peer>>(emptyMap())
     private val onlineMap = MutableStateFlow<Map<String, Boolean>>(emptyMap())
 
     val currentTransportMap = MutableStateFlow<Map<String, PeerTransportType>>(emptyMap())
 
-    val pairedPeers: StateFlow<List<PeerRecord>> = combine(peersMap, ChatCacher.latestChatMap, onlineMap) { p, c, o ->
+    val pairedPeers: StateFlow<List<Peer>> = combine(peersMap, ChatCacher.latestChatMap, onlineMap) { p, c, o ->
         sortPeers(p.values.filter { it.isPaired() }, c, o)
     }.stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    val unpairedPeers: StateFlow<List<PeerRecord>> = combine(peersMap, ChatCacher.latestChatMap, onlineMap) { p, c, o ->
+    val unpairedPeers: StateFlow<List<Peer>> = combine(peersMap, ChatCacher.latestChatMap, onlineMap) { p, c, o ->
         sortPeers(p.values.filter { it.status == PeerStatus.UNPAIRED }, c, o)
     }.stateIn(scope, SharingStarted.Eagerly, emptyList())
 
@@ -63,7 +63,7 @@ object PeerCacher {
 
     fun getOnlinePeerIds(): Set<String> = onlineMap.value.filterValues { it }.keys.toSet()
 
-    fun getPeer(peerId: String): PeerRecord? = peersMap.value[peerId]
+    fun getPeer(peerId: String): Peer? = peersMap.value[peerId]
 
     fun removePeer(peerId: String) {
         val currentPeers = peersMap.value
@@ -86,12 +86,12 @@ object PeerCacher {
     }
 
     private fun sortPeers(
-        peers: List<PeerRecord>,
+        peers: List<Peer>,
         chatCache: Map<String, ChatItem>,
         onlineMap: Map<String, Boolean>,
-    ): List<PeerRecord> {
+    ): List<Peer> {
         return peers.sortedWith(
-            compareByDescending<PeerRecord> { chatCache[it.id]?.createdAt ?: Instant.DISTANT_PAST }
+            compareByDescending<Peer> { chatCache[it.id]?.createdAt ?: Instant.DISTANT_PAST }
                 .thenByDescending { onlineMap[it.id] == true }
                 .thenByDescending { it.createdAt }
                 .thenBy { it.name.lowercase() },

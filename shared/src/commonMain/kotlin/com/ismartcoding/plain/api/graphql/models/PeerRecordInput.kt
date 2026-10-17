@@ -18,7 +18,7 @@ internal data class PeerRecordInput(
     val updatedAt: Instant,
 ) {
     companion object {
-        fun from(peer: PeerRecord) = PeerRecordInput(
+        fun from(peer: Peer) = PeerRecordInput(
             id = peer.id,
             name = peer.name,
             ip = peer.ip,

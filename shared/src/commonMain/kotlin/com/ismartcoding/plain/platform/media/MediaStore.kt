@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.platform.media
 
-import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
 import com.ismartcoding.plain.db.IData
 import com.ismartcoding.plain.rust.host.provider.ProviderPlan
 import com.ismartcoding.plain.platform.system.DataType
@@ -36,23 +35,6 @@ suspend fun moveMedia(dataType: DataType, ids: Set<String>, destDir: String): Bo
     com.ismartcoding.plain.features.media.actions.MediaActionClient.run(dataType, com.ismartcoding.plain.features.media.actions.MediaAction.MOVE, ids, destDir = destDir) == ids.size
 
 /**
- * Combined image search: filename + optional AI semantic search.
- * If the AI model is not ready or [queryText] is blank, falls back to filename-only search.
- */
-suspend fun searchImagesCombined(
-    queryText: String,
-    extraQuery: String,
-    limit: Int,
-    offset: Int,
-    sortBy: FileSortBy,
-): List<MediaImage> = com.ismartcoding.plain.features.images.search.RustImageSearch.rows(queryText, extraQuery, limit, offset, sortBy)
-
-/**
- * Whether the on-device AI image search model is loaded and ready.
- */
-fun isImageSearchModelReady(): Boolean = com.ismartcoding.plain.features.images.search.RustImageModels.snapshot.value.status == com.ismartcoding.plain.features.images.search.ImageSearchStatusType.READY
-
-/**
  * Returns a URI string for the media item identified by [id] of [dataType],
  * suitable for sharing via the system share sheet. Empty string on failure.
  */
@@ -63,25 +45,6 @@ expect fun getMediaItemUriString(dataType: DataType, id: String): String
  * Used to clean up playlist entries when items are trashed.
  */
 expect suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set<String>
-
-/**
- * Count images matching a combined filename + AI semantic search [queryText]
- * with the additional [extraQuery] filter. Returns 0 on unsupported platforms
- * or when the AI model is not ready.
- */
-suspend fun countImagesCombined(queryText: String, extraQuery: String): Int = com.ismartcoding.plain.features.images.search.RustImageSearch.count(queryText, extraQuery)
-
-
-
-/**
- * Build a snapshot of the current image-search status (model state, indexing progress).
- * Returns a default "unavailable" status on platforms without AI image search.
- */
-
-/**
- * Look up geographic information (province, city, ISP) for a phone [number].
- * Returns null if no match is found or the platform has no lookup capability.
- */
 
 expect suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.features.telephony.sms.SmsDeletionReceipt
 
@@ -141,7 +104,7 @@ expect fun updateContact(id: String, input: com.ismartcoding.plain.features.cont
  * Create a new contact with the values in [input]. Returns the new contact's id,
  * or empty string on failure / unsupported platforms.
  */
-expect fun createContact(input: com.ismartcoding.plain.features.contacts.ContactInput): String
+expect fun createContact(input: com.ismartcoding.plain.features.contacts.ContactInput, accountType: String): String
 
 /**
  * Delete the contacts identified by [ids]. Used by tag-cleanup flow.
