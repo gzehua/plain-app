@@ -42,8 +42,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
-import com.ismartcoding.plain.api.graphql.models.TagHostRelation
+import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.api.graphql.models.TagRelation
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.close
 import com.ismartcoding.plain.ui.components.ControlChipIconButton
@@ -79,8 +79,8 @@ fun MediaPreviewer(
     state: MediaPreviewerState,
     castVM: CastViewModel = viewModel { CastViewModel() },
     tagsVM: TagsViewModel? = null,
-    tagsMap: Map<String, List<TagHostRelation>>? = null,
-    tagsState: List<TagHostRecord> = emptyList(),
+    tagsMap: Map<String, List<TagRelation>>? = null,
+    tagsState: List<Tag> = emptyList(),
     onRenamed: () -> Unit = {},
     deleteAction: (PreviewItem) -> Unit = {},
     onTagsChanged: () -> Unit = {},

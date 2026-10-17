@@ -1,41 +1,36 @@
 package com.ismartcoding.plain.features.tags
 
+import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.api.graphql.models.TagRelation
+import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.platform.system.DataType
+import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.rust.request.gql
 import com.ismartcoding.plain.rust.request.gqlIds
-import com.ismartcoding.plain.rust.request.string
-
-import com.ismartcoding.plain.platform.system.DataType
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
-import com.ismartcoding.plain.api.graphql.models.TagHostRelation
-import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.request.RustContentApi
 import kotlinx.serialization.json.*
 
-internal object RustContentTags {
-    private const val fields = "id name type count createdAt updatedAt"
-    private fun kind(type: Int): DataType = DataType.entries.first { it.value == type }
-    private fun JsonElement.record(): TagHostRecord = JsonHelper.jsonDecodeFromElement<TagHostRecord>(this)
-    suspend fun all(type: DataType): List<TagHostRecord> = RustContentApi.query("tagRecords(type: ${type.name}) { $fields }").getValue("tagRecords").jsonArray.map { it.record() }
-    suspend fun get(id: String): TagHostRecord? = RustContentApi.query("tagRecord(id: ${gql(id)}) { $fields }")["tagRecord"]?.takeUnless { it is JsonNull }?.record()
-    suspend fun save(item: TagHostRecord, create: Boolean): String {
-        val field = if (create) "createTag" else "updateTag"
-        val args = if (create) "type: ${kind(item.type).name}, name: ${gql(item.name)}" else "id: ${gql(item.id)}, name: ${gql(item.name)}"
-        return RustContentApi.mutate("$field($args) { id }").getValue(field).jsonObject.string("id")
+internal object RustContentTags : TagsApi(
+    query = { RustContentApi.query(it) },
+    mutate = { RustContentApi.mutate(it) },
+)
+
+internal open class TagsApi(
+    private val query: suspend (String) -> JsonObject,
+    private val mutate: suspend (String) -> JsonObject,
+) {
+    private fun JsonElement.tag(): Tag = JsonHelper.jsonDecodeFromElement(this)
+    suspend fun all(type: DataType): List<Tag> = query("tags(type: ${type.name}) { $TAG_FIELDS }").getValue("tags").jsonArray.map { it.tag() }
+    suspend fun get(id: String): Tag? = query("tag(id: ${gql(id)}) { $TAG_FIELDS }").getValue("tag").takeUnless { it is JsonNull }?.tag()
+    suspend fun create(type: DataType, name: String): Tag =
+        mutate("createTag(type: ${type.name}, name: ${gql(name)}) { $TAG_FIELDS }").getValue("createTag").tag()
+    suspend fun rename(id: String, name: String): Tag =
+        mutate("updateTag(id: ${gql(id)}, name: ${gql(name)}) { $TAG_FIELDS }").getValue("updateTag").tag()
+    suspend fun delete(id: String) { mutate("deleteTag(id: ${gql(id)})") }
+    suspend fun keys(id: String): List<String> = query("tagKeys(id: ${gql(id)})").getValue("tagKeys").jsonArray.map { it.jsonPrimitive.content }
+    suspend fun relations(keys: Set<String>, type: DataType): List<TagRelation> = query("tagRelations(type: ${type.name}, keys: ${gqlIds(keys)}) { tagId key }")
+        .getValue("tagRelations").let { JsonHelper.jsonDecodeFromElement(it) }
+    suspend fun edit(type: DataType, keys: Collection<String>, add: Collection<String>, remove: Collection<String>) {
+        if (keys.isEmpty() || (add.isEmpty() && remove.isEmpty())) return
+        mutate("updateTagRelations(type: ${type.name}, keys: ${gqlIds(keys)}, addTagIds: ${gqlIds(add)}, removeTagIds: ${gqlIds(remove)})")
     }
-    suspend fun delete(id: String) { RustContentApi.mutate("deleteTag(id: ${gql(id)})") }
-    suspend fun keys(id: String): List<String> = RustContentApi.query("tagKeys(id: ${gql(id)})").getValue("tagKeys").jsonArray.map { it.jsonPrimitive.content }
-    suspend fun intersection(ids: Collection<String>): List<String> = RustContentApi.query("tagIntersection(tagIds: ${gqlIds(ids)})").getValue("tagIntersection").jsonArray.map { it.jsonPrimitive.content }
-    suspend fun relations(keys: Set<String>, type: DataType): List<TagHostRelation> = RustContentApi.query("tagRelationRecords(type: ${type.name}, keys: ${gqlIds(keys)}) { tagId key type title sizeBytes createdAt }")
-        .getValue("tagRelationRecords").let { JsonHelper.jsonDecodeFromElement(it) }
-    suspend fun add(items: List<TagHostRelation>) {
-        val input = items.joinToString(",", "[", "]") { "{ tagId: ${gql(it.tagId)}, key: ${gql(it.key)}, type: ${kind(it.type).name}, title: ${gql(it.title)}, sizeBytes: ${it.sizeBytes} }" }
-        RustContentApi.mutate("addTagRelationRecords(items: $input)")
-    }
-    suspend fun edit(key: String, type: Int, add: Collection<String>, remove: Collection<String>, title: String = "", size: Long = 0) {
-        RustContentApi.mutate("editTagRelationRecords(type: ${kind(type).name}, item: { key: ${gql(key)}, title: ${gql(title)}, sizeBytes: $size }, addTagIds: ${gqlIds(add)}, removeTagIds: ${gqlIds(remove)})")
-    }
-    suspend fun remove(keys: Set<String>, tagIds: Set<String>) { RustContentApi.mutate("removeTagRelationRecords(keys: ${gqlIds(keys)}, tagIds: ${gqlIds(tagIds)})") }
-    suspend fun removeKeys(keys: Set<String>, type: DataType) { RustContentApi.mutate("removeTagRelationKeys(type: ${type.name}, keys: ${gqlIds(keys)})") }
-    suspend fun clearType(type: DataType) { RustContentApi.mutate("clearTagRelationType(type: ${type.name})") }
-    suspend fun clearTag(id: String) { RustContentApi.mutate("clearTagRelationTag(id: ${gql(id)})") }
 }

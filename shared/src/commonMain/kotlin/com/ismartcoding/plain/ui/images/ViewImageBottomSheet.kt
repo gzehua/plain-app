@@ -18,8 +18,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
-import com.ismartcoding.plain.api.graphql.models.TagHostRelation
+import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.api.graphql.models.TagRelation
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.getMimeType
@@ -50,8 +50,8 @@ import org.jetbrains.compose.resources.stringResource
 fun ViewImageBottomSheet(
     imagesVM: ImagesViewModel,
     tagsVM: TagsViewModel,
-    tagsMap: Map<String, List<TagHostRelation>>,
-    tagsState: List<TagHostRecord>,
+    tagsMap: Map<String, List<TagRelation>>,
+    tagsState: List<Tag>,
     dragSelectState: DragSelectState,
 ) {
     val m = imagesVM.selectedItem.value ?: return

@@ -108,10 +108,7 @@ fun QuickNoteCard(
             text = ""
             val id =
                 withIO {
-                    NotesClient.addOrUpdateAsync("") {
-                        title = ""
-                        this.content = content
-                    }.id
+                    NotesClient.save(id = "", title = "", content = content).id
                 }
             onSaved(id)
         }

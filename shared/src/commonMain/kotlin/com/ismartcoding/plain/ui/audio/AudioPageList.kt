@@ -25,7 +25,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.api.graphql.models.Audio
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.ui.base.NoDataColumn
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -50,7 +50,7 @@ internal fun ColumnScope.AudioPageList(
     dragSelectState: DragSelectState, itemsState: List<AudioTrack>,
     audioVM: AudioViewModel, audioQueueVM: AudioQueueViewModel,
     tagsVM: TagsViewModel, castVM: CastViewModel,
-    audioTagsMap: Map<String, List<TagHostRecord>>, isAudioPlaying: Boolean,
+    audioTagsMap: Map<String, List<Tag>>, isAudioPlaying: Boolean,
     topRefreshLayoutState: RefreshLayoutState, paddingValues: PaddingValues,
     extraBottomPadding: Dp = 0.dp,
 ) {

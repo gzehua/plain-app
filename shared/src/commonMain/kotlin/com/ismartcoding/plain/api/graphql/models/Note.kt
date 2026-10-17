@@ -1,13 +1,12 @@
 package com.ismartcoding.plain.api.graphql.models
 
 import com.ismartcoding.plain.lib.TimeHelper
-import com.ismartcoding.plain.lib.generateId
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Note(
-    @kotlinx.serialization.Required override var id: String = generateId(),
+    override var id: String,
     @kotlinx.serialization.Required var title: String = "",
     @kotlinx.serialization.Required var content: String = "",
     @kotlinx.serialization.Required var deletedAt: Instant? = null,

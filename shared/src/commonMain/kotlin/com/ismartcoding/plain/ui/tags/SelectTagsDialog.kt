@@ -18,8 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.db.IData
 import com.ismartcoding.plain.ui.components.ButtonSize
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
-import com.ismartcoding.plain.api.graphql.models.TagHostRelation
+import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.api.graphql.models.TagRelation
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.components.PSelectionChip
 import com.ismartcoding.plain.ui.base.PTextButton
@@ -34,8 +34,8 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun SelectTagsDialog(
     tagsVM: TagsViewModel,
-    tagsState: List<TagHostRecord>,
-    tagsMap: Map<String, List<TagHostRelation>>,
+    tagsState: List<Tag>,
+    tagsMap: Map<String, List<TagRelation>>,
     data: IData,
     onDismiss: () -> Unit,
 ) {

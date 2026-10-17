@@ -13,7 +13,6 @@ import com.ismartcoding.plain.ui.platform.system.isGestureInteractionMode
 import com.ismartcoding.plain.ui.platform.system.hideNavigationBar
 import com.ismartcoding.plain.ui.platform.system.showNavigationBar
 import com.ismartcoding.plain.ui.navigation.PBackHandler
-import com.ismartcoding.plain.features.tags.TagRelationStub
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.notes.NotesClient
 import com.ismartcoding.plain.features.tags.TagsClient
@@ -54,14 +53,11 @@ internal fun NotePageEffects(
                 val isNew = id.value.isEmpty()
                 if (noteVM.content.value == t) return@collectLatest
                 scope.launch(Dispatchers.Default) {
-                    val newItem = NotesClient.addOrUpdateAsync(id.value) {
-                        title = ""
-                        content = t
-                        noteVM.content.value = t
-                    }
+                    noteVM.content.value = t
+                    val newItem = NotesClient.save(id = id.value, title = "", content = t)
                     id.value = newItem.id
                     if (isNew && tagId.isNotEmpty()) {
-                        TagsClient.addTagRelations(arrayListOf(TagRelationStub(id.value).toTagRelation(tagId, DataType.NOTE)))
+                        TagsClient.editTagRelations(DataType.NOTE, listOf(id.value), listOf(tagId), emptyList())
                     }
                     if (isNew) {
                         tagsVM.loadAsync(setOf(id.value))

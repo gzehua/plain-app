@@ -19,8 +19,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
-import com.ismartcoding.plain.api.graphql.models.TagHostRelation
+import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.api.graphql.models.TagRelation
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.file
 import com.ismartcoding.plain.lib.extensions.formatBytes
@@ -71,8 +71,8 @@ import org.jetbrains.compose.resources.stringResource
 fun ViewDocBottomSheet(
     docsVM: DocsViewModel,
     tagsVM: TagsViewModel,
-    tagsMapState: Map<String, List<TagHostRelation>>,
-    tagsState: List<TagHostRecord>,
+    tagsMapState: Map<String, List<TagRelation>>,
+    tagsState: List<Tag>,
     dragSelectState: DragSelectState,
 ) {
     val scope = rememberCoroutineScope()

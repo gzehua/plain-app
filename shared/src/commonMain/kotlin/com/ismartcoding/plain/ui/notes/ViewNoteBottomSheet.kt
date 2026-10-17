@@ -9,8 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
-import com.ismartcoding.plain.api.graphql.models.TagHostRelation
+import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.api.graphql.models.TagRelation
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.ui.base.BottomSpace
@@ -39,8 +39,8 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ViewNoteBottomSheet(
     tagsVM: TagsViewModel,
-    tagsMap: Map<String, List<TagHostRelation>>,
-    tagsState: List<TagHostRecord>,
+    tagsMap: Map<String, List<TagRelation>>,
+    tagsState: List<Tag>,
 ) {
     val m = NotesViewModel.selectedItem.value ?: return
     val onDismiss = {

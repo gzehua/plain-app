@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.db.IData
 import com.ismartcoding.plain.ui.components.ButtonSize
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.components.PSelectionChip
@@ -31,7 +31,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun BatchSelectTagsDialog(
     tagsVM: TagsViewModel,
-    tagsState: List<TagHostRecord>,
+    tagsState: List<Tag>,
     items: List<IData>,
     removeFromTags: Boolean = false,
     onDismiss: () -> Unit,

@@ -2,7 +2,6 @@ package com.ismartcoding.plain.tests
 
 import com.ismartcoding.plain.features.files.FilesClient
 
-import com.ismartcoding.plain.tests.fixtures.ImageEmbeddings
 
 import android.content.ContentValues
 import android.graphics.Bitmap
@@ -11,8 +10,6 @@ import android.os.Environment
 import android.provider.MediaStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.features.tags.TagRelationStub
-import com.ismartcoding.plain.tests.fixtures.imageEmbedding
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.*
 import com.ismartcoding.plain.ui.permissions.*
@@ -45,7 +42,6 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
-import java.nio.ByteBuffer
 import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
@@ -81,11 +77,10 @@ class FileRenameDeleteMediaRustHttpTest {
                 check(it.moveToFirst()); checkNotNull(it.getString(0))
             }
             destinationPath = File(File(sourcePath).parentFile, "renamed.png").path
-            val imageTag = TagsClient.addOrUpdate("") { name = prefix; type = DataType.IMAGE.value }.also { tags.add(it) }
-            val fileTag = TagsClient.addOrUpdate("") { name = prefix; type = DataType.FILE.value }.also { tags.add(it) }
-            TagsClient.editTagRelations(DataType.IMAGE, TagRelationStub(oldId, prefix, 1), listOf(imageTag), emptyList())
-            TagsClient.editTagRelations(DataType.FILE, TagRelationStub(sourcePath, prefix, 1), listOf(fileTag), emptyList())
-            ImageEmbeddings.insertAll(listOf(imageEmbedding(oldId, sourcePath, ByteBuffer.allocate(4).putFloat(1f).array())))
+            val imageTag = TagsClient.create(DataType.IMAGE, prefix).id.also { tags.add(it) }
+            val fileTag = TagsClient.create(DataType.FILE, prefix).id.also { tags.add(it) }
+            TagsClient.editTagRelations(DataType.IMAGE, listOf(oldId), listOf(imageTag), emptyList())
+            TagsClient.editTagRelations(DataType.FILE, listOf(sourcePath), listOf(fileTag), emptyList())
             assertNull(FilesClient.rename(sourcePath, "../escape.png"))
             val collision = File(File(sourcePath).parentFile, "existing.png").apply { writeText("existing") }
             assertNull(FilesClient.rename(sourcePath, collision.name))
@@ -104,18 +99,14 @@ class FileRenameDeleteMediaRustHttpTest {
             if (oldId != moved.id) assertTrue(TagsClient.getTagRelationsByKey(oldId, DataType.IMAGE).isEmpty())
             assertTrue(TagsClient.getTagRelationsByKey(sourcePath, DataType.FILE).isEmpty())
             assertEquals(listOf(fileTag), TagsClient.getTagRelationsByKey(destinationPath, DataType.FILE).map { it.tagId })
-            assertFalse(ImageEmbeddings.getAllIds().any { it in ids })
-            ImageEmbeddings.insertAll(listOf(imageEmbedding(moved.id, destinationPath, ByteBuffer.allocate(4).putFloat(1f).array())))
             assertTrue(FilesClient.delete(destinationPath))
             assertFalse(File(destinationPath).exists())
             assertTrue(TagsClient.getTagRelationsByKey(moved.id, DataType.IMAGE).isEmpty())
             assertTrue(TagsClient.getTagRelationsByKey(destinationPath, DataType.FILE).isEmpty())
-            assertFalse(ImageEmbeddings.getAllIds().any { it in ids })
             assertFalse(FilesClient.delete(destinationPath))
         } finally {
             FileTaskClient.list(0, 1000, "").filter { task -> task.completedOps.any { it.src.startsWith(root.path + "/") } }.forEach { FileTaskClient.remove(it.id) }
             tags.forEach { TagsClient.delete(it) }
-            ImageEmbeddings.deleteByIds(ids.toList())
             uri?.let { resolver.delete(it, null, null) }
             ids.forEach { id -> resolver.delete(Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id), null, null) }
             root.deleteRecursively()

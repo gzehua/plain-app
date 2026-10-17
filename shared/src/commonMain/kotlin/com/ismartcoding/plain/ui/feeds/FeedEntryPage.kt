@@ -52,8 +52,8 @@ import com.ismartcoding.plain.ui.extensions.timeAgo
 import com.ismartcoding.plain.features.feeds.FeedFontScale
 import com.ismartcoding.plain.api.graphql.models.Feed
 import com.ismartcoding.plain.api.graphql.models.FeedEntry
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
-import com.ismartcoding.plain.api.graphql.models.TagHostRelation
+import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.api.graphql.models.TagRelation
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.JsonHelper.jsonEncode
 import com.ismartcoding.plain.ui.markdown.compose.Markdown
@@ -185,8 +185,8 @@ fun FeedEntryPage(
 private fun FeedEntryArticle(
     pageId: String,
     pagerVM: FeedEntryPagerViewModel,
-    tagsState: List<TagHostRecord>,
-    tagsMapState: Map<String, List<TagHostRelation>>,
+    tagsState: List<Tag>,
+    tagsMapState: Map<String, List<TagRelation>>,
     scrollState: LazyListState,
     scrollBehavior: TopAppBarScrollBehavior,
     fontScale: Float,

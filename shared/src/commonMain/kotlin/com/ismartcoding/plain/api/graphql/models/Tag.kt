@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Tag(
-    var id: String,
+    override var id: String,
     var name: String,
     var count: Int,
     var type: Int = 0,
-)
+) : com.ismartcoding.plain.db.IData

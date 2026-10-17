@@ -22,8 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.api.graphql.models.Image
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
-import com.ismartcoding.plain.api.graphql.models.TagHostRelation
+import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.api.graphql.models.TagRelation
 import com.ismartcoding.plain.api.graphql.models.Video
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.formatBytes
@@ -55,8 +55,8 @@ import org.jetbrains.compose.resources.stringResource
 fun ViewMediaBottomSheet(
     m: PreviewItem,
     tagsVM: TagsViewModel? = null,
-    tagsMap: Map<String, List<TagHostRelation>>? = null,
-    tagsState: List<TagHostRecord> = emptyList(),
+    tagsMap: Map<String, List<TagRelation>>? = null,
+    tagsState: List<Tag> = emptyList(),
     onDismiss: () -> Unit = {},
     onRenamedAsync: suspend () -> Unit = {},
     deleteAction: () -> Unit = {},

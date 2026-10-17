@@ -8,7 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.BottomActionButtons
 import com.ismartcoding.plain.ui.components.IconTextSmallButtonDelete
@@ -31,7 +31,7 @@ import org.jetbrains.compose.resources.stringResource
 fun FeedEntriesSelectModeBottomActions(
     feedEntriesVM: FeedEntriesViewModel,
     tagsVM: TagsViewModel,
-    tagsState: List<TagHostRecord>,
+    tagsState: List<Tag>,
 ) {
     var showSelectTagsDialog by remember {
         mutableStateOf(false)

@@ -37,7 +37,7 @@ import com.ismartcoding.plain.app.events.ExportFileEvent
 import com.ismartcoding.plain.app.events.PickFileEvent
 import com.ismartcoding.plain.features.feeds.FeedsClient
 import com.ismartcoding.plain.api.graphql.models.Feed
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.download
 import com.ismartcoding.plain.i18n.settings
@@ -108,7 +108,7 @@ fun FeedEntriesPage(
     })
     val topRefreshLayoutState = rememberRefreshLayoutState { scope.launch { feedEntriesVM.sync() } }
 
-    val applyFilter: (String, FeedEntryFilterType, TagHostRecord?) -> Unit = { newFeedId, filterType, tag ->
+    val applyFilter: (String, FeedEntryFilterType, Tag?) -> Unit = { newFeedId, filterType, tag ->
         feedEntriesVM.feedId.value = newFeedId
         feedEntriesVM.filterType.value = filterType
         feedEntriesVM.tag.value = tag
@@ -116,7 +116,7 @@ fun FeedEntriesPage(
         scope.launch { scrollState.scrollToItem(0) }
         scope.launch(IODispatcher) { feedEntriesVM.loadAsync(tagsVM) }
     }
-    val onSelectDrawerItem: (String, FeedEntryFilterType, TagHostRecord?) -> Unit = { newFeedId, filterType, tag ->
+    val onSelectDrawerItem: (String, FeedEntryFilterType, Tag?) -> Unit = { newFeedId, filterType, tag ->
         applyFilter(newFeedId, filterType, tag)
         scope.launch { drawerState.close() }
     }

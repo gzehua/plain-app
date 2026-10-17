@@ -61,7 +61,6 @@ class FeedSettingsViewModel : ViewModel() {
 
     fun clearAllAsync() {
         viewModelScope.launchSafe {
-            TagsClient.deleteByTypeAsync(DataType.FEED_ENTRY)
             FeedEntriesClient.deleteAllAsync()
         }
     }

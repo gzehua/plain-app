@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.tests.fixtures.ImageEmbeddings
 
 import android.content.ContentValues
 import android.graphics.Bitmap
@@ -8,8 +7,6 @@ import android.net.Uri
 import android.provider.MediaStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.features.tags.TagRelationStub
-import com.ismartcoding.plain.tests.fixtures.imageEmbedding
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.*
 import com.ismartcoding.plain.ui.permissions.*
@@ -42,8 +39,8 @@ import com.ismartcoding.plain.platform.media.getMediaItemUriString
 import com.ismartcoding.plain.platform.media.restoreMedia
 import com.ismartcoding.plain.platform.media.trashMedia
 import java.io.File
-import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.ByteBuffer
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -61,7 +58,6 @@ class MediaActionsRustHttpTest {
         val uris = mutableListOf<Uri>()
         val tagIds = mutableListOf<String>()
         val paths = mutableSetOf<String>()
-        val touchedIds = mutableListOf<String>()
         val videoIds = mutableListOf<String>()
         var playlistId = ""
         var moveDir: File? = null
@@ -93,21 +89,20 @@ class MediaActionsRustHttpTest {
             values.clear(); values.put(MediaStore.MediaColumns.IS_PENDING,0)
             assertEquals(1,resolver.update(uri,values,null,null))
             val id = checkNotNull(uri.lastPathSegment)
-            touchedIds.add(id)
             val path = checkNotNull(resolver.query(uri,arrayOf(MediaStore.MediaColumns.DATA),null,null,null)).use {
                 assertTrue(it.moveToFirst());checkNotNull(it.getString(0))
             }
             paths.add(path)
             return id to path
         }
-        suspend fun tag(type: DataType): String = TagsClient.addOrUpdate("") { name = prefix; this.type = type.value }.also { tagIds.add(it) }
+        suspend fun tag(type: DataType): String = TagsClient.create(type, prefix).id.also { tagIds.add(it) }
         try {
             val (id,path) = create(DataType.AUDIO)
             val audioTag = tag(DataType.AUDIO)
             val videoTag = tag(DataType.VIDEO)
-            TagsClient.editTagRelations(DataType.AUDIO,TagRelationStub(id,"Synthetic",1),listOf(audioTag),emptyList())
-            TagsClient.editTagRelations(DataType.AUDIO,TagRelationStub(missingId,"Synthetic missing",1),listOf(audioTag),emptyList())
-            TagsClient.editTagRelations(DataType.VIDEO,TagRelationStub(id,"Other domain",1),listOf(videoTag),emptyList())
+            TagsClient.editTagRelations(DataType.AUDIO,listOf(id),listOf(audioTag),emptyList())
+            TagsClient.editTagRelations(DataType.AUDIO,listOf(missingId),listOf(audioTag),emptyList())
+            TagsClient.editTagRelations(DataType.VIDEO,listOf(id),listOf(videoTag),emptyList())
             val track = AudioItem(title = "Synthetic", artist = prefix, path = path, durationMs = 1000, mediaId = id)
             playlistId = AudioPlaylistsClient.createPlaylist(prefix).id
             AudioPlaylistsClient.addPlaylistItems(playlistId,listOf(track))
@@ -131,7 +126,7 @@ class MediaActionsRustHttpTest {
             val (videoId,videoPath) = create(DataType.VIDEO)
             videoIds.add(videoId)
             VideoProgressHelper.saveAsync(videoId,5_000_000_001L)
-            TagsClient.editTagRelations(DataType.VIDEO,TagRelationStub(videoId,"Synthetic video",1),listOf(videoTag),emptyList())
+            TagsClient.editTagRelations(DataType.VIDEO,listOf(videoId),listOf(videoTag),emptyList())
             trashMedia(DataType.VIDEO,setOf(videoId))
             assertNull(VideoProgressHelper.getAsync(videoId))
             assertTrue(TagsClient.getTagRelationsByKey(videoId,DataType.VIDEO).isEmpty())
@@ -139,17 +134,14 @@ class MediaActionsRustHttpTest {
             assertFalse(File(videoPath).exists())
             val (imageId,imagePath) = create(DataType.IMAGE)
             val imageTag = tag(DataType.IMAGE)
-            TagsClient.editTagRelations(DataType.IMAGE,TagRelationStub(imageId,"Synthetic image",1),listOf(imageTag),emptyList())
-            ImageEmbeddings.insertAll(listOf(imageEmbedding(imageId,imagePath,ByteBuffer.allocate(512*4).apply { putFloat(1f) }.array())))
+            TagsClient.editTagRelations(DataType.IMAGE,listOf(imageId),listOf(imageTag),emptyList())
             moveDir = File(File(imagePath).parentFile,"$prefix-moved")
             assertEquals(1,MediaActionClient.run(DataType.IMAGE,MediaAction.MOVE,listOf(imageId),destDir=checkNotNull(moveDir).path))
             val movedPath = File(moveDir,File(imagePath).name).path
             assertFalse(File(imagePath).exists())
             assertTrue(File(movedPath).isFile)
             assertEquals(1,TagsClient.getTagRelationsByKey(imageId,DataType.IMAGE).size)
-            assertFalse(ImageEmbeddings.getAllIds().contains(imageId))
             trashMedia(DataType.IMAGE,setOf(imageId))
-            assertFalse(ImageEmbeddings.getAllIds().contains(imageId))
             assertTrue(TagsClient.getTagRelationsByKey(imageId,DataType.IMAGE).isEmpty())
             restoreMedia(DataType.IMAGE,setOf(imageId))
             deleteMedia(DataType.IMAGE,setOf(imageId),false)
@@ -160,7 +152,6 @@ class MediaActionsRustHttpTest {
                 if (playlistId.isNotEmpty()) AudioPlaylistsClient.deletePlaylist(playlistId)
                 tagIds.forEach { TagsClient.delete(it) }
                 videoIds.forEach { VideoProgressHelper.deleteAsync(it) }
-                ImageEmbeddings.deleteByIds(touchedIds)
             } finally {
                 try { uris.forEach { appContext.contentResolver.delete(it,android.os.Bundle().apply { putInt(MediaStore.QUERY_ARG_MATCH_TRASHED,MediaStore.MATCH_INCLUDE) }) } }
                 finally { moveDir?.delete() }

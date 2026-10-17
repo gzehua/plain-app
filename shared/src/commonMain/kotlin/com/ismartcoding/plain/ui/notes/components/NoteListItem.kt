@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.extensions.timeAgo
 import com.ismartcoding.plain.api.graphql.models.Note
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.notes.NotesViewModel
@@ -37,10 +37,10 @@ import com.ismartcoding.plain.ui.theme.listItemTag
 @Composable
 fun NoteListItem(
     m: Note,
-    tags: List<TagHostRecord>,
+    tags: List<Tag>,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
-    onClickTag: (TagHostRecord) -> Unit
+    onClickTag: (Tag) -> Unit
 ) {
     Row {
         if (NotesViewModel.selectMode.value) {

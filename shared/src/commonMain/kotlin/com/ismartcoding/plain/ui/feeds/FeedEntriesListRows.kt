@@ -33,7 +33,7 @@ import coil3.compose.AsyncImage
 import com.ismartcoding.plain.ui.extensions.rememberFilePath
 import com.ismartcoding.plain.ui.extensions.timeAgo
 import com.ismartcoding.plain.features.feeds.displayImage
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -219,11 +219,11 @@ internal fun FeedClusterHeaderRow(
 internal fun FeedClusterEntryRow(
     row: FeedListRow.Entry,
     feedEntriesVM: FeedEntriesViewModel,
-    tags: List<TagHostRecord>,
+    tags: List<Tag>,
     indented: Boolean = true,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
-    onClickTag: (TagHostRecord) -> Unit,
+    onClickTag: (Tag) -> Unit,
 ) {
     val m = row.entry
     val unread = !m.read

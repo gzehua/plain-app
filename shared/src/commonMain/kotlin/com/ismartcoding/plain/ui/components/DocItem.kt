@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.ismartcoding.plain.api.graphql.models.Doc
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.lib.extensions.isPdfFile
@@ -47,8 +47,8 @@ fun DocItem(
     docsVM: DocsViewModel,
     dragSelectState: DragSelectState,
     m: Document,
-    tags: List<TagHostRecord>,
-    onTagClick: (TagHostRecord) -> Unit,
+    tags: List<Tag>,
+    onTagClick: (Tag) -> Unit,
 ) {
     Row {
         if (dragSelectState.selectMode) {

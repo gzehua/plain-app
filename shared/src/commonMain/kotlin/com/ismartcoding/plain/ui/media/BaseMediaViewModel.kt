@@ -14,7 +14,7 @@ import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.app.events.MediaStoreChangedEvent
 import com.ismartcoding.plain.features.tags.TagsClient
 import com.ismartcoding.plain.features.files.FileSortBy
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.helpers.SearchHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.lib.withIO
@@ -29,7 +29,7 @@ import kotlinx.coroutines.flow.update
 abstract class BaseMediaViewModel<T : IData> : ISearchableViewModel<T>, ViewModel() {
     internal val _itemsFlow = MutableStateFlow<List<T>>(emptyList())
     val itemsFlow: StateFlow<List<T>> = _itemsFlow
-    var tag = mutableStateOf<TagHostRecord?>(null)
+    var tag = mutableStateOf<Tag?>(null)
     var trash = mutableStateOf(false)
     var bucketId = mutableStateOf("")
     var showLoading = mutableStateOf(true)

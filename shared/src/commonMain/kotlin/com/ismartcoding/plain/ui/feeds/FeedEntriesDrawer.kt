@@ -30,7 +30,7 @@ import coil3.compose.AsyncImage
 import com.ismartcoding.plain.features.feeds.FeedEntryFilterType
 import com.ismartcoding.plain.ui.extensions.rememberFilePath
 import com.ismartcoding.plain.api.graphql.models.Feed
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -55,9 +55,9 @@ internal fun FeedEntriesDrawerContent(
     feedEntriesVM: FeedEntriesViewModel,
     feedsVM: FeedsViewModel,
     feedsState: List<Feed>,
-    tagsState: List<TagHostRecord>,
+    tagsState: List<Tag>,
     drawerState: DrawerState,
-    onSelect: (feedId: String, filterType: FeedEntryFilterType, tag: TagHostRecord?) -> Unit,
+    onSelect: (feedId: String, filterType: FeedEntryFilterType, tag: Tag?) -> Unit,
     onOpenCatalog: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()

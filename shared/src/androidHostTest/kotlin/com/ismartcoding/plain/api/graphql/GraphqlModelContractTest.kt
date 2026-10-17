@@ -98,7 +98,7 @@ class GraphqlModelContractTest {
             "SmsCounts" to com.ismartcoding.plain.api.graphql.models.SmsCounts.serializer().descriptor,
             "Tag" to com.ismartcoding.plain.api.graphql.models.Tag.serializer().descriptor,
             "TagRelation" to com.ismartcoding.plain.api.graphql.models.TagRelation.serializer().descriptor,
-            "TagRelationStub" to com.ismartcoding.plain.api.graphql.models.TagRelationStub.serializer().descriptor,
+
             "Temperature" to com.ismartcoding.plain.api.graphql.models.Temperature.serializer().descriptor,
             "Video" to com.ismartcoding.plain.api.graphql.models.Video.serializer().descriptor,
             "VideoFileInfo" to com.ismartcoding.plain.api.graphql.models.VideoFileInfo.serializer().descriptor,

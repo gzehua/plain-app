@@ -97,7 +97,7 @@ class ApiFixtureRustHttpTest {
             stop.delete()
             if (clientId.isNotEmpty()) PlainRust.mainMutate("revokeSession(clientId: ${JsonPrimitive(clientId)})")
             if (channelId.isNotEmpty()) PlainRust.mainMutate("deleteChatChannel(id: ${JsonPrimitive(channelId)})")
-            PlainRust.mainMutate("removePeerRecord(id: ${JsonPrimitive(peerId)})")
+            PlainRust.mainMutate("deletePeer(id: ${JsonPrimitive(peerId)})")
             root.deleteRecursively()
             SystemPrefsClient.local.updateSystem(SystemCommand.SetApiPermissions(oldPermissions))
             UserPrefs.desktopAccess.value = oldAccess

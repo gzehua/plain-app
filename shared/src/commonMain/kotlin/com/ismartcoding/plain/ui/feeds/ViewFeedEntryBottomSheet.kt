@@ -15,8 +15,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.extensions.rememberFilePath
 import com.ismartcoding.plain.features.feeds.displayImage
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
-import com.ismartcoding.plain.api.graphql.models.TagHostRelation
+import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.api.graphql.models.TagRelation
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.platform.system.launchUrl
@@ -53,8 +53,8 @@ fun ViewFeedEntryBottomSheet(
     feedEntriesVM: FeedEntriesViewModel,
     feedsVM: FeedsViewModel,
     tagsVM: TagsViewModel,
-    tagsMap: Map<String, List<TagHostRelation>>,
-    tagsState: List<TagHostRecord>,
+    tagsMap: Map<String, List<TagRelation>>,
+    tagsState: List<Tag>,
 ) {
     val m = feedEntriesVM.selectedItem.value ?: return
     val feeds by feedsVM.itemsFlow.collectAsState()

@@ -191,10 +191,11 @@ class ShareActivity : ComponentActivity() {
     private fun saveAsNoteAsync() {
         val text = vm.text ?: return
         lifecycleScope.launch {
-            NotesClient.addOrUpdateAsync("") {
-                title = text.lineSequence().firstOrNull()?.take(50).orEmpty()
-                content = text
-            }
+            NotesClient.save(
+                id = "",
+                title = text.lineSequence().firstOrNull()?.take(50).orEmpty(),
+                content = text,
+            )
             toast(LocaleHelper.getString(Res.string.note_saved))
             finish()
         }

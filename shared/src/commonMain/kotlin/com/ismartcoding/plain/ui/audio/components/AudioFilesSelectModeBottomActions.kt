@@ -12,7 +12,7 @@ import androidx.compose.runtime.setValue
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.media.getMediaItemUriString
@@ -45,7 +45,7 @@ fun AudioFilesSelectModeBottomActions(
     audioVM: AudioViewModel,
     audioQueueVM: AudioQueueViewModel,
     tagsVM: TagsViewModel,
-    tagsState: List<TagHostRecord>,
+    tagsState: List<Tag>,
     dragSelectState: DragSelectState,
     // Generic slot (playlist detail, artist page, ...): when provided, a
     // remove-from-playlist action leads the bar and the slot runs the removal.

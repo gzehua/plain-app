@@ -11,7 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.confirm_to_delete
 import com.ismartcoding.plain.i18n.delete
@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
 fun DocFilesSelectModeBottomActions(
     docsVM: DocsViewModel,
     tagsVM: TagsViewModel,
-    tagsState: List<TagHostRecord>,
+    tagsState: List<Tag>,
     dragSelectState: DragSelectState,
 ) {
     val scope = rememberCoroutineScope()

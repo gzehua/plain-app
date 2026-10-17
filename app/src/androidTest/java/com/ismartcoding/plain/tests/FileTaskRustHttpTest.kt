@@ -27,7 +27,7 @@ import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class FileTaskRustHttpTest {
-    private suspend fun awaitTask(id: String): com.ismartcoding.plain.api.graphql.models.FileHostTask {
+    private suspend fun awaitTask(id: String): com.ismartcoding.plain.api.graphql.models.FileTask {
         while (true) {
             val task = checkNotNull(FileTaskClient.get(id))
             if (task.status == FileTaskStatus.DONE || task.status == FileTaskStatus.ERROR) return task

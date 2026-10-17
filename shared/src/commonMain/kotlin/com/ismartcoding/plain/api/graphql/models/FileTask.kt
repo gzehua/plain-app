@@ -6,7 +6,7 @@ import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class FileHostTask(
+data class FileTask(
     var id: String,
     var clientId: String,
     var type: FileTaskType,
@@ -19,5 +19,5 @@ data class FileHostTask(
     var doneItems: Long,
     var createdAt: Instant,
     var updatedAt: Instant,
-    var completedOps: List<FileHostCompletedOp>,
+    var completedOps: List<FileTaskCompletedOp>,
 )

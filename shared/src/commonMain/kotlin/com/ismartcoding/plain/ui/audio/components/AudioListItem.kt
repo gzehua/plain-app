@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.dlna.sender.RustDlnaSender
 import com.ismartcoding.plain.api.graphql.models.Audio
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.permissions.checkNotificationPermission
 import com.ismartcoding.plain.ui.base.HorizontalSpace
@@ -41,7 +41,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AudioListItem(
     item: AudioTrack, audioVM: AudioViewModel, audioQueueVM: AudioQueueViewModel,
-    tagsVM: TagsViewModel, castVM: CastViewModel, tags: List<TagHostRecord>,
+    tagsVM: TagsViewModel, castVM: CastViewModel, tags: List<Tag>,
     dragSelectState: DragSelectState,
     isCurrentlyPlaying: Boolean = false, isInQueue: Boolean = false,
 ) {

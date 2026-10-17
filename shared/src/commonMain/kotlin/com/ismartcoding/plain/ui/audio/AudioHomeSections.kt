@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.api.graphql.models.AudioArtist
 import com.ismartcoding.plain.api.graphql.models.AudioPlaylist
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.artists
 import com.ismartcoding.plain.i18n.playlists
@@ -33,7 +33,7 @@ internal fun AudioHomeSections(
     audioQueueVM: AudioQueueViewModel,
     tagsVM: TagsViewModel,
     castVM: CastViewModel,
-    audioTagsMap: Map<String, List<TagHostRecord>>,
+    audioTagsMap: Map<String, List<Tag>>,
     isAudioPlaying: Boolean,
     scrollState: LazyListState,
     dragSelectState: DragSelectState,

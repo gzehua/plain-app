@@ -18,7 +18,7 @@ import com.ismartcoding.plain.features.feeds.FeedEntryFilterType
 import com.ismartcoding.plain.features.tags.TagsClient
 import com.ismartcoding.plain.features.feeds.FeedEntriesClient
 import com.ismartcoding.plain.api.graphql.models.FeedEntry
-import com.ismartcoding.plain.api.graphql.models.TagHostRecord
+import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.helpers.SearchHelper
 import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +38,7 @@ class FeedEntriesViewModel :
     var filterType = mutableStateOf(FeedEntryFilterType.DEFAULT)
     var total = mutableIntStateOf(0)
     var totalToday = mutableIntStateOf(0)
-    var tag = mutableStateOf<TagHostRecord?>(null)
+    var tag = mutableStateOf<Tag?>(null)
     var feedId = mutableStateOf<String>("")
     val dataType = DataType.FEED_ENTRY
     var selectedItem = mutableStateOf<FeedEntry?>(null)
