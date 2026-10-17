@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.features.feeds
+package com.ismartcoding.plain.ui.feeds
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -9,12 +9,12 @@ class FeedsCatalogTest {
         """
         [
           {"id":"tech_cn","feeds":[
-            {"name":"少数派","url":"https://sspai.com/feed","site":"sspai.com"},
-            {"name":"爱范儿","url":"https://www.ifanr.com/feed","site":"ifanr.com"}
+            {"name":"First feed","url":"https://example.org/first","site":"example.org"},
+            {"name":"Second feed","url":"https://example.org/second","site":"example.org"}
           ]},
           {"id":"news_en","feeds":[
-            {"name":"BBC News","url":"https://feeds.bbci.co.uk/news/rss.xml","site":"bbc.com"},
-            {"name":"BBC Dup","url":"https://feeds.bbci.co.uk/news/rss.xml","site":"bbc.com"}
+            {"name":"News feed","url":"https://example.org/news","site":"example.org"},
+            {"name":"Duplicate feed","url":"https://example.org/news","site":"example.org"}
           ]}
         ]
         """.trimIndent()
@@ -25,15 +25,15 @@ class FeedsCatalogTest {
         assertEquals(2, categories.size)
         assertEquals("tech_cn", categories[0].id)
         assertEquals(2, categories[0].feeds.size)
-        assertEquals("少数派", categories[0].feeds[0].name)
-        assertEquals("sspai.com", categories[0].feeds[0].site)
+        assertEquals("First feed", categories[0].feeds[0].name)
+        assertEquals("example.org", categories[0].feeds[0].site)
     }
 
     @Test
     fun drops_duplicate_urls_across_rows() {
         val categories = parseCatalog(sampleJson)
         assertEquals(1, categories[1].feeds.size)
-        assertEquals("BBC News", categories[1].feeds[0].name)
+        assertEquals("News feed", categories[1].feeds[0].name)
     }
 
     @Test

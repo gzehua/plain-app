@@ -10,7 +10,7 @@ class GraphqlModelContractTest {
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @Test
     fun baseModelsMatchSchemaWithoutLazyTagFields() {
-        val sdl = java.io.File("apitest/schema.graphqls").readText()
+        val sdl = readMainSchema()
             .replace(Regex("\"\"\"[\\s\\S]*?\"\"\""), "")
         val models: Map<String, SerialDescriptor> = mapOf(
             "ActionResult" to com.ismartcoding.plain.api.graphql.models.ActionResult.serializer().descriptor,
@@ -57,6 +57,7 @@ class GraphqlModelContractTest {
             "DocExtGroup" to com.ismartcoding.plain.api.graphql.models.DocExtGroup.serializer().descriptor,
             "FavoriteFolder" to com.ismartcoding.plain.api.graphql.models.FavoriteFolder.serializer().descriptor,
             "Feed" to com.ismartcoding.plain.api.graphql.models.Feed.serializer().descriptor,
+            "FeedPreview" to com.ismartcoding.plain.api.graphql.models.FeedPreview.serializer().descriptor,
             "FeedEntry" to com.ismartcoding.plain.api.graphql.models.FeedEntry.serializer().descriptor,
             "FeedEntryCount" to com.ismartcoding.plain.api.graphql.models.FeedEntryCount.serializer().descriptor,
             "FeedError" to com.ismartcoding.plain.api.graphql.models.FeedError.serializer().descriptor,

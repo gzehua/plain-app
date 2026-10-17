@@ -1,46 +1,41 @@
 package com.ismartcoding.plain.features.feeds
 
-
-import com.ismartcoding.plain.db.*
 import com.ismartcoding.plain.api.graphql.models.Feed
 import com.ismartcoding.plain.api.graphql.models.FeedEntryCount
-import com.ismartcoding.plain.rust.bridge.*
-import com.ismartcoding.plain.features.feeds.*
-import com.ismartcoding.plain.ui.feeds.*
-import com.ismartcoding.plain.features.files.*
-import com.ismartcoding.plain.ui.files.*
-import com.ismartcoding.plain.features.notes.*
-import com.ismartcoding.plain.ui.notes.*
-import com.ismartcoding.plain.features.tags.*
-import com.ismartcoding.plain.ui.tags.*
-import com.ismartcoding.plain.rust.request.*
-import com.ismartcoding.plain.rust.event.*
-import com.ismartcoding.plain.rust.host.*
-import com.ismartcoding.plain.rust.http.*
-import com.ismartcoding.plain.rust.request.*
-import kotlinx.serialization.json.*
+import com.ismartcoding.plain.api.graphql.models.FeedPreview
+import com.ismartcoding.plain.api.graphql.models.FeedSyncState
+import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.request.gql
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonPrimitive
 
-object FeedsClient {
-    suspend fun getAll(): List<Feed> = RustContentApi.query("feeds { $FEED_FIELDS }").getValue("feeds").jsonArray.map { it.feed() }
-    suspend fun getFeedCounts(): List<FeedEntryCount> = RustContentApi.query("feedEntryCounts { id count }").getValue("feedEntryCounts").let { com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<List<FeedEntryCount>>(it) }
-    suspend fun getById(id: String): Feed? = RustContentApi.query("feed(id: ${gql(id)}) { $FEED_FIELDS }")["feed"]?.takeUnless { it is JsonNull }?.feed()
-    suspend fun getByUrl(url: String): Feed? = getAll().firstOrNull { it.url == url }
-    suspend fun addAsync(updateItem: Feed.() -> Unit): String {
-        val item = Feed().apply(updateItem)
-        val created = RustContentApi.mutate("createFeed(url: ${gql(item.url)}, fetchContent: ${item.fetchContent}) { $FEED_FIELDS }").getValue("createFeed").feed()
-        if (created.name != item.name && item.name.isNotEmpty()) updateAsync(created.id) { name = item.name }
-        return created.id
+internal object FeedsClient : FeedsApi(
+    query = { RustContentApi.query(it) },
+    mutate = { RustContentApi.mutate(it) },
+)
+
+internal open class FeedsApi(
+    private val query: suspend (String) -> JsonObject,
+    private val mutate: suspend (String) -> JsonObject,
+) {
+    suspend fun getAll(withCount: Boolean = false): List<Feed> {
+        val data = query("feeds { $FEED_FIELDS }" + if (withCount) " feedEntryCounts { id count }" else "")
+        val counts = if (withCount) JsonHelper.jsonDecodeFromElement<List<FeedEntryCount>>(data.getValue("feedEntryCounts")).associate { it.id to it.count } else emptyMap()
+        return data.getValue("feeds").jsonArray.map { it.feed().apply { entryCount = counts[id] ?: 0 } }
     }
-    suspend fun updateAsync(id: String, updateItem: Feed.() -> Unit): String {
-        val current = getById(id) ?: error("Feed $id not found")
-        val oldUrl = current.url
-        current.updateItem()
-        if (oldUrl != current.url) RustContentApi.mutate("updateFeedUrl(id: ${gql(id)}, url: ${gql(current.url)}) { id }")
-        RustContentApi.mutate("updateFeed(id: ${gql(id)}, name: ${gql(current.name)}, fetchContent: ${current.fetchContent}) { id }")
-        return id
+    suspend fun getById(id: String): Feed? = query("feed(id: ${gql(id)}) { $FEED_FIELDS }")["feed"]?.takeUnless { it is JsonNull }?.feed()
+    suspend fun preview(url: String): FeedPreview = JsonHelper.jsonDecodeFromElement(query("feedPreview(url: ${gql(url)}) { title }").getValue("feedPreview"))
+    suspend fun create(url: String, name: String, fetchContent: Boolean = false): Feed = mutate("createFeed(url: ${gql(url)}, name: ${gql(name)}, fetchContent: $fetchContent) { $FEED_FIELDS }").getValue("createFeed").feed()
+    suspend fun update(id: String, name: String? = null, url: String? = null, fetchContent: Boolean? = null): Feed {
+        val arguments = listOfNotNull("id: ${gql(id)}", name?.let { "name: ${gql(it)}" }, url?.let { "url: ${gql(it)}" }, fetchContent?.let { "fetchContent: $it" })
+        return mutate("updateFeed(${arguments.joinToString(", ")}) { $FEED_FIELDS }").getValue("updateFeed").feed()
     }
-    suspend fun deleteAsync(ids: Set<String>) { ids.forEach { RustContentApi.mutate("deleteFeed(id: ${gql(it)})") } }
-    suspend fun sync(feedId: String) { RustContentApi.mutate("syncFeeds(id: ${if (feedId.isEmpty()) "null" else gql(feedId)})") }
-    suspend fun syncStates(): List<com.ismartcoding.plain.api.graphql.models.FeedSyncState> =
-        com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(RustContentApi.query("feedSyncStates { feedId taskId revision status error }").getValue("feedSyncStates"))
+    suspend fun deleteAsync(ids: Set<String>) { ids.forEach { mutate("deleteFeed(id: ${gql(it)})") } }
+    suspend fun importAsync(content: String) { mutate("importFeeds(content: ${gql(content)})") }
+    suspend fun exportAsync(): String = mutate("exportFeeds").getValue("exportFeeds").jsonPrimitive.content
+    suspend fun sync(feedId: String) { mutate("syncFeeds(id: ${if (feedId.isEmpty()) "null" else gql(feedId)})") }
+    suspend fun syncStates(): List<FeedSyncState> = JsonHelper.jsonDecodeFromElement(query("feedSyncStates { feedId taskId revision status error }").getValue("feedSyncStates"))
 }

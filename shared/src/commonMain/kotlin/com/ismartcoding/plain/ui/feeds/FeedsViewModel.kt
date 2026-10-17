@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.feeds
 
-import com.ismartcoding.plain.features.feeds.feed
 
 import com.ismartcoding.plain.ui.state.ISelectableViewModel
 import com.ismartcoding.plain.ui.state.launchSafe
@@ -9,19 +8,15 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.platform.system.DataType
-import com.ismartcoding.plain.features.tags.TagsClient
-import com.ismartcoding.plain.features.feeds.FeedEntriesClient
 import com.ismartcoding.plain.features.feeds.FeedsClient
 import com.ismartcoding.plain.api.graphql.models.Feed
 import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.i18n.already_added
 import com.ismartcoding.plain.i18n.error
+import com.ismartcoding.plain.i18n.already_added
+import kotlinx.coroutines.CancellationException
 import com.ismartcoding.plain.i18n.invalid_url
-import com.ismartcoding.plain.lib.extensions.isUrl
-import com.ismartcoding.plain.lib.rss.model.RssChannel
+import com.ismartcoding.plain.api.graphql.models.FeedPreview
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.features.feeds.fetchRssChannel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -38,31 +33,21 @@ class FeedsViewModel : ISelectableViewModel<Feed>, ViewModel() {
     var editName = mutableStateOf("")
     var editFetchContent = mutableStateOf(false)
     var editUrlError = mutableStateOf("")
-    var rssChannel = mutableStateOf<RssChannel?>(null)
+    var feedPreview = mutableStateOf<FeedPreview?>(null)
 
     override var selectMode = mutableStateOf(false)
     override val selectedIds = mutableStateListOf<String>()
 
     fun loadAsync(withCount: Boolean = false) {
         viewModelScope.launchSafe {
-            val countMap = if (withCount) {
-                FeedsClient.getFeedCounts().associate { it.id to it.count }
-            } else {
-                emptyMap()
-            }
-            _itemsFlow.value = FeedsClient.getAll().map {
-                it.entryCount = countMap[it.id] ?: 0
-                it
-            }
+            _itemsFlow.value = FeedsClient.getAll(withCount)
             showLoading.value = false
         }
     }
 
     fun updateFetchContent(id: String, value: Boolean) {
         viewModelScope.launchSafe {
-            FeedsClient.updateAsync(id) {
-                this.fetchContent = value
-            }
+            FeedsClient.update(id, fetchContent = value)
         }
     }
 
@@ -88,11 +73,7 @@ class FeedsViewModel : ISelectableViewModel<Feed>, ViewModel() {
     fun add() {
         editUrlError.value = ""
         viewModelScope.launchSafe {
-            val id = FeedsClient.addAsync {
-                this.url = editUrl.value
-                this.name = editName.value
-                this.fetchContent = editFetchContent.value
-            }
+            FeedsClient.create(editUrl.value, editName.value, editFetchContent.value)
             loadAsync(withCount = true)
             showAddDialog.value = false
         }
@@ -100,50 +81,45 @@ class FeedsViewModel : ISelectableViewModel<Feed>, ViewModel() {
 
     fun fetchChannel() {
         editUrlError.value = ""
-        if (!editUrl.value.isUrl()) {
-            editUrlError.value = LocaleHelper.getString(Res.string.invalid_url)
-            return
-        }
+        val url = editUrl.value
         viewModelScope.launchSafe {
-            if (FeedsClient.getByUrl(editUrl.value) != null) {
-                editUrlError.value = LocaleHelper.getStringAsync(Res.string.already_added)
-                return@launchSafe
-            }
             try {
-                rssChannel.value = fetchRssChannel(editUrl.value)
-                rssChannel.value?.let {
-                    editName.value = it.title ?: ""
-                }
+                val preview = FeedsClient.preview(url)
+                if (!showAddDialog.value || editUrl.value != url) return@launchSafe
+                feedPreview.value = preview
+                editName.value = preview.title
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (e: Exception) {
-                editUrlError.value = e.message ?: LocaleHelper.getStringAsync(Res.string.error)
+                if (showAddDialog.value && editUrl.value == url) editUrlError.value = feedErrorText(e)
             }
         }
     }
 
     fun edit() {
         editUrlError.value = ""
-        if (!editUrl.value.isUrl()) {
-            editUrlError.value = LocaleHelper.getString(Res.string.invalid_url)
-            return
-        }
         viewModelScope.launchSafe {
-            val a = FeedsClient.getByUrl(editUrl.value)
-            if (a != null && a.id != editId.value) {
-                editUrlError.value = LocaleHelper.getStringAsync(Res.string.already_added)
+            try {
+                FeedsClient.update(editId.value, name = editName.value, url = editUrl.value, fetchContent = editFetchContent.value)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (e: Exception) {
+                editUrlError.value = feedErrorText(e)
                 return@launchSafe
-            }
-            FeedsClient.updateAsync(editId.value) {
-                this.name = editName.value
-                this.url = editUrl.value
-                this.fetchContent = editFetchContent.value
             }
             loadAsync(withCount = true)
             showEditDialog.value = false
         }
     }
 
+    private suspend fun feedErrorText(error: Exception): String = when (error.message) {
+        "feed_already_exists" -> LocaleHelper.getStringAsync(Res.string.already_added)
+        "invalid_feed_url" -> LocaleHelper.getStringAsync(Res.string.invalid_url)
+        else -> error.message ?: LocaleHelper.getStringAsync(Res.string.error)
+    }
+
     fun showAddDialog() {
-        rssChannel.value = null
+        feedPreview.value = null
         editUrlError.value = ""
         editUrl.value = ""
         editName.value = ""

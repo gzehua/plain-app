@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.features.feeds
+package com.ismartcoding.plain.ui.feeds
 
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.lib.JsonHelper
@@ -18,8 +18,6 @@ data class CatalogCategory(
     val feeds: List<CatalogFeed>,
 )
 
-// Category ids used by the bundled catalog file; UI titles are string resources
-// keyed by these ids so they translate.
 object CatalogCategoryIds {
     const val TECH_CN = "tech_cn"
     const val DEV_CN = "dev_cn"
@@ -28,8 +26,6 @@ object CatalogCategoryIds {
     const val READS = "reads"
 }
 
-// Parses the bundled catalog JSON. Duplicate urls across categories are
-// dropped defensively so a bad catalog file can never double-subscribe.
 fun parseCatalog(json: String): List<CatalogCategory> =
     JsonHelper.jsonDecode<List<CatalogCategory>>(json).map {
         it.copy(feeds = it.feeds.distinctBy { feed -> feed.url })

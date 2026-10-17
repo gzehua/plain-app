@@ -1,24 +1,12 @@
 package com.ismartcoding.plain
 
+import com.ismartcoding.plain.api.graphql.readMainSchema
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-/**
- * Locks the wire contract of the public GraphQL schema.
- *
- * The schema itself is built by Rust (`plain-server/src/graphql/schemas/public.rs`),
- * which prints its own SDL snapshot and guards it there. This test enforces the
- * structural conventions on the committed
- * snapshot `shared/apitest/schema.graphqls`, so new fields/operations cannot
- * drift from the spec regardless of which side implements them.
- *
- * When this test fails after an intentional schema change, update the snapshot
- * and the convention allowlists only if the spec document was updated with the
- * same decision.
- */
 class ApiContractTest {
-    private val sdl: String = java.io.File("apitest/schema.graphqls").readText()
+    private val sdl: String = readMainSchema()
 
     // Fields that keep a raw String id although the naming rule says ID.
     // Each entry must be justified in the API contract ("deliberate exceptions").
@@ -58,16 +46,12 @@ class ApiContractTest {
 
     @Test
     fun sdlSnapshotCoversTheWholeContract() {
-        // The runtime schema is built in Rust, which prints and guards its own
-        // SDL there. This guards the App-side snapshot against being emptied or
-        // truncated, which would silently turn every check below vacuous.
-        // Counted over all operation fields, not just the ones taking arguments.
         val queries = operationFieldNamesIn("Query")
         val mutations = operationFieldNamesIn("Mutation")
-        if (queries.size != 192 || mutations.size != 291) {
+        if (queries.size != 193 || mutations.size != 291) {
             fail(
-                "shared/apitest/schema.graphqls declares ${queries.size} Query / ${mutations.size} " +
-                    "Mutation operations — the contract has 192 / 291. The snapshot looks truncated or " +
+                "Shared Rust schema fragments declare ${queries.size} Query / ${mutations.size} " +
+                    "Mutation operations — the contract has 193 / 291. The snapshot looks truncated or " +
                     "drifted; every check in this class reads it, so they would pass on an empty file.",
             )
         }
@@ -220,7 +204,7 @@ class ApiContractTest {
         var owner = ""
         sdl.lineSequence().forEach { raw ->
             val line = raw.trim()
-            val typeHeader = Regex("^type (\\w+)( implements.*)? \\{$").find(line)
+            val typeHeader = Regex("^(?:extend )?type (\\w+)( implements.*)? \\{$").find(line)
             val inputHeader = Regex("^input (\\w+) \\{$").find(line)
             if (typeHeader != null) owner = typeHeader.groupValues[1]
             if (inputHeader != null) owner = inputHeader.groupValues[1]
@@ -262,7 +246,7 @@ class ApiContractTest {
         val out = mutableListOf<String>()
         var inOperationBlock = false
         lines.forEach { line ->
-            if (line == "type Query {" || line == "type Mutation {") inOperationBlock = true
+            if (line == "type Query {" || line == "type Mutation {" || line == "extend type Query {" || line == "extend type Mutation {") inOperationBlock = true
             if (line == "}") inOperationBlock = false
             if (inOperationBlock && line.contains("(")) out.add(line.trimEnd(','))
         }
@@ -278,7 +262,7 @@ class ApiContractTest {
         var inside = false
         val out = mutableListOf<String>()
         sdl.lineSequence().map { it.trim() }.forEach { line ->
-            if (line == "type $block {") inside = true
+            if ((line == "type $block {" || line == "extend type $block {")) inside = true
             if (inside && line == "}") inside = false
             if (inside && line.contains("(")) out.add(line.trimEnd(','))
         }
@@ -296,7 +280,7 @@ class ApiContractTest {
         var inDescription = false
         sdl.lineSequence().forEach { raw ->
             val line = raw.trim()
-            if (line == "type $block {") { inside = true; return@forEach }
+            if ((line == "type $block {" || line == "extend type $block {")) { inside = true; return@forEach }
             if (!inside) return@forEach
             if (line == "}") { inside = false; return@forEach }
             // Descriptions span triple-quoted lines and must not be parsed as fields.

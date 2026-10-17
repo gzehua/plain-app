@@ -17,8 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.components.ButtonSize
-import com.ismartcoding.plain.features.feeds.CatalogCategoryIds
-import com.ismartcoding.plain.features.feeds.CatalogFeed
 import com.ismartcoding.plain.api.graphql.models.Feed
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.add_rss_manually

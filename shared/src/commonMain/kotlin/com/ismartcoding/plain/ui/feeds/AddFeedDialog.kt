@@ -48,7 +48,7 @@ fun AddFeedDialog(feedsVM: FeedsViewModel) {
                 )
             },
             text = {
-                if (feedsVM.rssChannel.value == null) {
+                if (feedsVM.feedPreview.value == null) {
                     ClipboardTextField(
                         value = feedsVM.editUrl.value,
                         onValueChange = {
@@ -93,14 +93,14 @@ fun AddFeedDialog(feedsVM: FeedsViewModel) {
                 }
             },
             confirmButton = {
-                val buttonText = if (feedsVM.rssChannel.value == null) Res.string.search else Res.string.add
+                val buttonText = if (feedsVM.feedPreview.value == null) Res.string.search else Res.string.add
                 PFilledButton(
                     text = stringResource(buttonText),
                     buttonSize = ButtonSize.MEDIUM,
                     enabled = feedsVM.editUrl.value.isNotBlank(),
                     onClick = {
                         focusManager.clearFocus()
-                        if (feedsVM.rssChannel.value == null) {
+                        if (feedsVM.feedPreview.value == null) {
                             feedsVM.fetchChannel()
                         } else {
                             feedsVM.add()
