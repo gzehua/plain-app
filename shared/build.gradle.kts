@@ -15,6 +15,7 @@ val enableDeviceTarget = (findProperty("enableDeviceTarget") as? String)?.toBool
 val cargoBinDir = File(System.getenv("CARGO_HOME") ?: "${System.getProperty("user.home")}/.cargo", "bin")
 val rustupExe = cargoBinDir.resolve("rustup")
 val cargoExe = cargoBinDir.resolve("cargo")
+val localCoreOverride = rootProject.file(".cargo/core-dependency-state").exists()
 listOf(rustupExe, cargoExe).forEach {
     require(it.canExecute()) { "Rust tool not found or not executable: ${it.absolutePath}" }
 }
@@ -70,7 +71,7 @@ kotlin {
             environment("CARGO_TARGET_DIR", rustTargetDir.get().asFile.absolutePath)
             environment("PLAIN_ONNX_RUNTIME_DIR", onnxRuntimeDir.get().asFile.absolutePath)
             // iOS frameworks consume only the static archive.
-            commandLine(cargoExe.absolutePath, "rustc", "--locked", "--manifest-path", rootProject.file("plain-rs/Cargo.toml"), "--lib", "--crate-type", "staticlib", "--release", "--target", rustTarget)
+            commandLine(listOfNotNull(cargoExe.absolutePath, "rustc", "--locked".takeUnless { localCoreOverride }, "--manifest-path", rootProject.file("plain-rs/Cargo.toml"), "--lib", "--crate-type", "staticlib", "--release", "--target", rustTarget))
         }
         iosTarget.compilations.getByName("main").cinterops.create("plainPrefs") {
             defFile(rootProject.file("shared/src/nativeInterop/cinterop/plainPrefs.def"))
@@ -124,7 +125,6 @@ kotlin {
         }
         androidMain.dependencies {
             api(libs.androidx.core.ktx)
-            api(libs.kotlin.reflect)
             implementation(libs.zxing.core)
 
             implementation(libs.okhttp)
@@ -171,10 +171,6 @@ kotlin {
 
             // Activity Compose (LocalActivity)
             implementation(libs.compose.activity)
-
-            // Transitions (UI animations)
-            implementation(libs.androidx.transition)
-
 
         }
         iosMain.dependencies {

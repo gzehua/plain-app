@@ -2,20 +2,19 @@
 appcompatVersion="1.8.0"
 coil="3.6.3"
 coreKtxVersion="1.19.1"
-foundationVersion="1.12.1"
+foundationVersion="1.12.2"
 gradle= "9.3.3"
 cameraCoreVersion = "1.6.2"
 compose = "1.12.1"
-composeMultiplatform = "1.12.1"
+composeMultiplatform = "1.12.2"
 activityComposeVersion = "1.13.0"
 composeBom = "2026.09.00"
 coreSplashscreenVersion = "1.2.0"
 exifinterfaceVersion = "1.4.2"
 coreVersion = "3.5.4"
 
-jsonVersion="20260814"
 junitVersion="4.13.2"
-kotlin ="2.4.20"
+kotlin ="2.4.21"
 kotlinxDatetimeVersion="0.8.0"
 atomicfu = "0.33.0"
 kotlinxSerializationJsonVersion="1.11.0"
@@ -24,7 +23,7 @@ ktor = "3.6.0"
 leakcanaryAndroidVersion = "2.14"
 lifecycleViewmodelKtxVersion="2.11.0"
 jetbrainsLifecycleViewmodel = "2.11.0"
-jetbrainsMarkdown = "0.7.16"
+jetbrainsMarkdown = "0.7.18"
 kotlinxCollectionsImmutable = "0.5.2"
 latex = "1.5.6"
 material3="1.9.0"
@@ -33,15 +32,14 @@ navigationCompose="2.9.2"
 navigationComposeVersion = "2.10.2"
 material3Version = "1.4.0"
 okhttpVersion="5.5.0"
-libphonenumberVersion = "9.0.40"
-libphonenumberGeocoderVersion = "3.40"
-libphonenumberCarrierVersion = "2.40"
+libphonenumberVersion = "9.0.41"
+libphonenumberGeocoderVersion = "3.41"
+libphonenumberCarrierVersion = "2.41"
 shizukuVersion = "13.1.5"
-runtimeVersion="1.12.1"
-transitionVersion="1.7.2"
-uiVersion="1.12.1"
+runtimeVersion="1.12.2"
+uiVersion="1.12.2"
 workRuntimeKtxVersion = "2.12.0"
-tinkAndroidVersion = "1.23.0"
+tinkAndroidVersion = "1.24.0"
 playPublisherVersion = "4.1.1"
 pdfiumAndroidVersion = "1.9.5-beta01"
 androidxTestRunner = "1.7.0"
@@ -66,7 +64,6 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" 
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 coil-network-core = { module = "io.coil-kt.coil3:coil-network-core", version.ref = "coil" }
 
-androidx-transition = { module = "androidx.transition:transition", version.ref = "transitionVersion" }
 androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version.ref = "exifinterfaceVersion" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreenVersion" }
@@ -79,7 +76,6 @@ camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = 
 camera-compose = { module = "androidx.camera:camera-compose", version.ref = "cameraCoreVersion" }
 
 # media3
-json = { module = "org.json:json", version.ref = "jsonVersion" }
 junit = { module = "junit:junit", version.ref = "junitVersion" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidxTestRunner" }
 androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidxTestRules" }
@@ -120,7 +116,6 @@ compose-components-resources = { module = "org.jetbrains.compose.components:comp
 # kotlin
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
-kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetimeVersion" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJsonVersion" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesVersion" }

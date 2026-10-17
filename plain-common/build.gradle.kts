@@ -36,7 +36,6 @@ kotlin {
 
         androidMain.dependencies {
             api(libs.androidx.core.ktx)
-            api(libs.kotlin.reflect)
             api(libs.ui)
             implementation(libs.androidx.exifinterface)
             implementation(libs.zxing.core)
@@ -52,7 +51,6 @@ kotlin {
 dependencies {
     add("androidHostTestImplementation", kotlin("test"))
     add("androidHostTestImplementation", libs.junit)
-    add("androidHostTestImplementation", libs.kotlin.reflect)
 }
 
 publishing {

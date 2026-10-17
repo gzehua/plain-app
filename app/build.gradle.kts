@@ -160,6 +160,7 @@ android {
 }
 
 val rustCoreDir = rootProject.file("plain-rs")
+val localCoreOverride = rootProject.file(".cargo/core-dependency-state").exists()
 val rustTargetDir = layout.buildDirectory.dir("rust-target")
 val onnxRuntimeDir = layout.buildDirectory.dir("onnxruntime")
 val rustAbi = providers.gradleProperty("abiFilters").orNull?.split(';')?.singleOrNull() ?: "arm64-v8a"
@@ -216,7 +217,7 @@ val buildPlainRustAndroid by tasks.registering(Exec::class) {
     environment("CC_${rustAndroidTarget.replace('-', '_')}", androidClang.absolutePath)
     environment("AR_${rustAndroidTarget.replace('-', '_')}", File(ndkHost, "bin/llvm-ar").absolutePath)
     environment("CARGO_TARGET_${rustAndroidTarget.uppercase().replace('-', '_')}_AR", File(ndkHost, "bin/llvm-ar").absolutePath)
-    commandLine(cargoExe.absolutePath, "build", "--locked", "--manifest-path", File(rustCoreDir, "Cargo.toml"), "--release", "--target", rustAndroidTarget)
+    commandLine(listOfNotNull(cargoExe.absolutePath, "build", "--locked".takeUnless { localCoreOverride }, "--manifest-path", File(rustCoreDir, "Cargo.toml"), "--release", "--target", rustAndroidTarget))
 }
 
 val packagePlainRustAndroid by tasks.registering(Sync::class) {
@@ -274,7 +275,6 @@ play {
 }
 
 dependencies {
-    testImplementation(libs.json)
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.rules)
@@ -287,11 +287,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
-    implementation(libs.pdfium.android)
-
     implementation(libs.kotlinx.coroutines.android)
-
-    implementation(libs.okhttp)
 
     androidTestImplementation(libs.tink.android)
 
@@ -315,21 +311,6 @@ dependencies {
     implementation(libs.media3.session)
     implementation(libs.media3.dash)
     implementation(libs.media3.hls)
-
-    // CameraX
-    implementation(libs.camera.core)
-    implementation(libs.camera.camera2)
-    implementation(libs.camera.lifecycle)
-    implementation(libs.camera.view)
-    implementation(libs.camera.compose)
-
-    // coil: https://coil-kt.github.io/coil/changelog/
-    implementation(libs.coil)
-    implementation(libs.coil.video)
-    implementation(libs.coil.svg)
-    implementation(libs.coil.gif)
-    implementation(libs.coil.compose)
-    implementation(libs.coil.network.okhttp)
 
     debugImplementation(libs.leakcanary.android)
     debugImplementation(libs.androidx.work.multiprocess)
