@@ -16,6 +16,25 @@ tokio = { version = "1", features = ["rt-multi-thread", "sync"] }
 [target.'cfg(target_os = "android")'.dependencies]
 jni = "0.22"
 
+[profile.dev]
+opt-level = 1
+lto = false
+codegen-units = 16
+incremental = true
+debug = 0
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.dev.package.plain-server]
+opt-level = 1
+
+[profile.dev.package.plain-rs]
+opt-level = 1
+
+[profile.dev.package.plain-inference]
+opt-level = 1
+
 [profile.release]
 opt-level = 3
 lto = "thin"

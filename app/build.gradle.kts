@@ -151,7 +151,6 @@ android {
         "../shared/src/androidTestFixtures/kotlin",
     )
     namespace = "com.ismartcoding.plain"
-    sourceSets.getByName("main").jniLibs.srcDir(layout.buildDirectory.dir("generated/rustJniLibs").get().asFile)
 }
 
 val webBundleDir = providers.gradleProperty("plainWebDist")
@@ -161,7 +160,6 @@ val webBundleDir = providers.gradleProperty("plainWebDist")
 val rustCoreDir = rootProject.file("plain-rs")
 val localCoreOverride = rootProject.file(".cargo/core-dependency-state").exists()
 val rustTargetDir = layout.buildDirectory.dir("rust-target")
-val onnxRuntimeDir = layout.buildDirectory.dir("onnxruntime")
 val rustAbi = providers.gradleProperty("abiFilters").orNull?.split(';')?.singleOrNull() ?: "arm64-v8a"
 val rustAndroidTarget = when (rustAbi) {
     "arm64-v8a" -> "aarch64-linux-android"
@@ -201,68 +199,80 @@ val installRustAndroidTarget by tasks.registering(Exec::class) {
     commandLine(rustupExe.absolutePath, "target", "add", rustAndroidTarget)
 }
 
-val buildPlainRustAndroid by tasks.registering(Exec::class) {
-    dependsOn(installRustAndroidTarget)
-    inputs.file(File(rustCoreDir, "Cargo.toml"))
-    inputs.file(File(rustCoreDir, "Cargo.lock"))
-    inputs.dir(File(rustCoreDir, "src"))
-    outputs.file(rustTargetDir.map { it.file("$rustAndroidTarget/release/libplain_rust.so") })
-    outputs.file(onnxRuntimeDir.map { it.file("libonnxruntime.so") })
-    webBundleDir?.let {
-        inputs.dir(it).withPropertyName("webBundle")
-        environment("PLAIN_WEB_DIST", it.absolutePath)
-    }
-    environment("CARGO_TARGET_DIR", rustTargetDir.get().asFile.absolutePath)
-    environment("ANDROID_HOME", androidSdk.absolutePath)
-    environment("ANDROID_NDK_HOME", androidNdk.absolutePath)
-    environment("PLAIN_ONNX_RUNTIME_DIR", onnxRuntimeDir.get().asFile.absolutePath)
-    environment("CARGO_TARGET_${rustAndroidTarget.uppercase().replace('-', '_')}_LINKER", androidClang.absolutePath)
-    environment("CC_${rustAndroidTarget.replace('-', '_')}", androidClang.absolutePath)
-    environment("AR_${rustAndroidTarget.replace('-', '_')}", File(ndkHost, "bin/llvm-ar").absolutePath)
-    environment("CARGO_TARGET_${rustAndroidTarget.uppercase().replace('-', '_')}_AR", File(ndkHost, "bin/llvm-ar").absolutePath)
-    commandLine(listOfNotNull(cargoExe.absolutePath, "build", "--locked".takeUnless { localCoreOverride }, "--manifest-path", File(rustCoreDir, "Cargo.toml"), "--release", "--target", rustAndroidTarget))
-}
-
-val packagePlainRustAndroid by tasks.registering(Sync::class) {
-    dependsOn(buildPlainRustAndroid)
-    from(rustTargetDir.map { it.file("$rustAndroidTarget/release/libplain_rust.so") })
-    from(onnxRuntimeDir.map { it.file("libonnxruntime.so") })
-    from(File(ndkHost, "sysroot/usr/lib/$libcxxTarget/libc++_shared.so"))
-    into(layout.buildDirectory.dir("generated/rustJniLibs"))
-    eachFile { path = "$rustAbi/$name" }
-    includeEmptyDirs = false
-}
-
-abstract class PackageOnnxRuntimeLicenses @Inject constructor(
+abstract class PackageNativeFiles @Inject constructor(
     private val fileSystem: FileSystemOperations,
 ) : DefaultTask() {
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val licenseFiles: ConfigurableFileCollection
+    abstract val nativeFiles: ConfigurableFileCollection
+
+    @get:Input
+    abstract val relativeDirectory: org.gradle.api.provider.Property<String>
 
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty
 
     @TaskAction
-    fun packageLicenses() {
+    fun packageFiles() {
         fileSystem.sync {
-            from(licenseFiles) { into("onnxruntime") }
+            from(nativeFiles) { into(relativeDirectory.get()) }
             into(outputDirectory)
         }
     }
 }
 
-val packageOnnxRuntimeLicenses by tasks.registering(PackageOnnxRuntimeLicenses::class) {
-    dependsOn(buildPlainRustAndroid)
-    licenseFiles.from(onnxRuntimeDir.map { it.file("LICENSE") }, onnxRuntimeDir.map { it.file("ThirdPartyNotices.txt") })
-    outputDirectory.set(layout.buildDirectory.dir("generated/onnxLicenses"))
+val rustPackages = listOf("debug" to "dev", "release" to "release").associate { (buildType, profile) ->
+    val suffix = buildType.replaceFirstChar { it.uppercase() }
+    val outputProfile = if (profile == "dev") "debug" else profile
+    val runtimeDirectory = layout.buildDirectory.dir("onnxruntime/$buildType")
+    val library = rustTargetDir.map { it.file("$rustAndroidTarget/$outputProfile/libplain_rust.so") }
+    val buildRust = tasks.register<Exec>("buildPlainRustAndroid$suffix") {
+        dependsOn(installRustAndroidTarget)
+        inputs.file(File(rustCoreDir, "Cargo.toml"))
+        inputs.file(File(rustCoreDir, "Cargo.lock"))
+        inputs.dir(File(rustCoreDir, "src"))
+        inputs.property("rustProfile", profile)
+        inputs.property("rustTarget", rustAndroidTarget)
+        outputs.file(library)
+        outputs.file(runtimeDirectory.map { it.file("libonnxruntime.so") })
+        outputs.file(runtimeDirectory.map { it.file("LICENSE") })
+        outputs.file(runtimeDirectory.map { it.file("ThirdPartyNotices.txt") })
+        outputs.upToDateWhen { false }
+        webBundleDir?.let {
+            inputs.dir(it).withPropertyName("webBundle")
+            environment("PLAIN_WEB_DIST", it.absolutePath)
+        }
+        environment("CARGO_TARGET_DIR", rustTargetDir.get().asFile.absolutePath)
+        environment("ANDROID_HOME", androidSdk.absolutePath)
+        environment("ANDROID_NDK_HOME", androidNdk.absolutePath)
+        environment("PLAIN_ONNX_RUNTIME_DIR", runtimeDirectory.get().asFile.absolutePath)
+        environment("CARGO_TARGET_${rustAndroidTarget.uppercase().replace('-', '_')}_LINKER", androidClang.absolutePath)
+        environment("CC_${rustAndroidTarget.replace('-', '_')}", androidClang.absolutePath)
+        environment("AR_${rustAndroidTarget.replace('-', '_')}", File(ndkHost, "bin/llvm-ar").absolutePath)
+        environment("CARGO_TARGET_${rustAndroidTarget.uppercase().replace('-', '_')}_AR", File(ndkHost, "bin/llvm-ar").absolutePath)
+        commandLine(listOfNotNull(cargoExe.absolutePath, "rustc", "--locked".takeUnless { localCoreOverride },
+            "--manifest-path", File(rustCoreDir, "Cargo.toml"), "--lib", "--crate-type", "cdylib",
+            "--profile", profile, "--target", rustAndroidTarget))
+    }
+    val packageRust = tasks.register<PackageNativeFiles>("packagePlainRustAndroid$suffix") {
+        dependsOn(buildRust)
+        nativeFiles.from(library, runtimeDirectory.map { it.file("libonnxruntime.so") },
+            File(ndkHost, "sysroot/usr/lib/$libcxxTarget/libc++_shared.so"))
+        relativeDirectory.set(rustAbi)
+        outputDirectory.set(layout.buildDirectory.dir("generated/rustJniLibs/$buildType"))
+    }
+    val packageLicenses = tasks.register<PackageNativeFiles>("packageOnnxRuntimeLicenses$suffix") {
+        dependsOn(buildRust)
+        nativeFiles.from(runtimeDirectory.map { it.file("LICENSE") }, runtimeDirectory.map { it.file("ThirdPartyNotices.txt") })
+        relativeDirectory.set("onnxruntime")
+        outputDirectory.set(layout.buildDirectory.dir("generated/onnxLicenses/$buildType"))
+    }
+    buildType to (packageRust to packageLicenses)
 }
 androidComponents.onVariants { variant ->
-    variant.sources.assets?.addGeneratedSourceDirectory(packageOnnxRuntimeLicenses, PackageOnnxRuntimeLicenses::outputDirectory)
-}
-
-tasks.matching { it.name.startsWith("merge") && it.name.endsWith("JniLibFolders") }.configureEach {
-    dependsOn(packagePlainRustAndroid)
+    val (nativePackage, licensePackage) = rustPackages.getValue(requireNotNull(variant.buildType))
+    variant.sources.jniLibs?.addGeneratedSourceDirectory(nativePackage, PackageNativeFiles::outputDirectory)
+    variant.sources.assets?.addGeneratedSourceDirectory(licensePackage, PackageNativeFiles::outputDirectory)
 }
 
 tasks.withType<KotlinCompile>().configureEach {
