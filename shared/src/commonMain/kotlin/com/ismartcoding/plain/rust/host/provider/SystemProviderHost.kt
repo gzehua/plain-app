@@ -75,7 +75,6 @@ object SystemProviderHost {
         "systemBatterySample",
         "systemMemoryAvailable",
         "systemCapabilities",
-        "systemLogPath",
         "systemClearMediaCache",
         "systemRelaunchApp" -> SystemAppHost.handle(method, params)
         else -> error("Unsupported provider operation")

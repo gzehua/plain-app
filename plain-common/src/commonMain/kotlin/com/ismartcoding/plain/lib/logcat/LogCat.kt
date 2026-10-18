@@ -54,8 +54,7 @@ object LogCat {
         printer.clearLogAdapters()
     }
 
-    /** Absolute log folder supplied by the host app. */
-    var logFolderPath: String = ""
+    var logFilePath: String = ""
 
     fun logLevel(value: Int): String {
         return when (value) {

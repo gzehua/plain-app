@@ -65,6 +65,8 @@ object RustContentApi {
     }
 
     val directory: String by lazy { dataDirPath() }
+    @Volatile private var logPath: String? = null
+    val logFilePath: String get() = checkNotNull(logPath) { "Rust log path is not initialized" }
     @Volatile private var imageCachePath: String? = null
     @Volatile private var videoCachePath: String? = null
     val cacheDirectory: String by lazy { cacheDirPath() }
@@ -90,6 +92,8 @@ object RustContentApi {
         check(ports.errorCode.isEmpty()) { ports.error }
         require(ports.cacheDir.startsWith('/') && ports.imageCacheDir.startsWith('/') && ports.videoCacheDir.startsWith('/')) { "Rust cache paths required" }
         check(ports.cacheDir == cacheDirectory) { "Rust cache root differs from startup configuration" }
+        require(ports.logFile.startsWith('/')) { "Rust log file path required" }
+        logPath = ports.logFile
         imageCachePath = ports.imageCacheDir
         videoCachePath = ports.videoCacheDir
         kotlinx.coroutines.runBlocking(com.ismartcoding.plain.platform.IODispatcher) { com.ismartcoding.plain.preferences.RustSystemState.refresh() }

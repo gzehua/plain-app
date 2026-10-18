@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.platform.media.call
-import com.ismartcoding.plain.rust.http.request
 
 import com.ismartcoding.plain.rust.http.HttpLogSink
 import com.ismartcoding.plain.rust.http.httpLogSink
@@ -34,8 +32,6 @@ class DiskLogFormatStrategy(private val logStrategy: LogStrategy) : FormatStrate
 
         fun logLevel(value: Int): String = LogCat.logLevel(value)
 
-        fun getLogFolder(): String = appDir() + "/logs"
-
         fun getInstance(): DiskLogFormatStrategy = DiskLogFormatStrategy(DiskLogStrategy())
     }
 }
@@ -45,7 +41,7 @@ expect fun currentDateTimeString(): String
 /**
  * Absolute path to the latest log file (e.g. `<logFolder>/latest.log`).
  */
-fun getLatestLogFilePath(): String = "${DiskLogFormatStrategy.getLogFolder()}/latest.log"
+fun getLatestLogFilePath(): String = com.ismartcoding.plain.rust.request.RustContentApi.logFilePath
 
 /**
  * Initialize disk logging and HTTP request logging.
@@ -54,7 +50,7 @@ fun getLatestLogFilePath(): String = "${DiskLogFormatStrategy.getLogFolder()}/la
  * Idempotent — safe to call multiple times (LogCat.addLogAdapter just appends).
  */
 fun initDiskLogging() {
-    LogCat.logFolderPath = appDir() + "/logs"
+    LogCat.logFilePath = getLatestLogFilePath()
     LogCat.addLogAdapter(
         DiskLogAdapter(
             DiskLogFormatStrategy.getInstance(),

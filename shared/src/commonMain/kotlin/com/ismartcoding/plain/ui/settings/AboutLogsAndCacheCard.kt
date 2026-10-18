@@ -13,7 +13,7 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.lib.extensions.formatBytes
-import com.ismartcoding.plain.platform.system.DiskLogFormatStrategy
+import com.ismartcoding.plain.platform.system.getLatestLogFilePath
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.components.ButtonType
 import com.ismartcoding.plain.features.files.TextFileType
@@ -45,7 +45,7 @@ fun AboutLogsAndCacheCard(
         PListItem(
             modifier = Modifier.clickable {
                 navController.navigateTextFile(
-                    DiskLogFormatStrategy.getLogFolder() + "/latest.log", logsTitle, "", TextFileType.APP_LOG
+                    getLatestLogFilePath(), logsTitle, "", TextFileType.APP_LOG
                 )
             },
             title = stringResource(Res.string.logs),

@@ -52,7 +52,6 @@ internal object SystemAppHost {
             com.ismartcoding.plain.platform.system.clearMediaCache()
             JsonHelper.jsonEncodeToElement(true)
         }
-        "systemLogPath" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.getLatestLogFilePath())
         "systemRelaunchApp" -> {
             com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.app.events.RestartAppEvent())
             JsonHelper.jsonEncodeToElement(true)
