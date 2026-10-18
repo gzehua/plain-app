@@ -79,7 +79,7 @@ object RustContentApi {
     private var collectorsStarted = false
 
     private val startupConfig by lazy {
-        RustHttpServerConfig(isDebugBuild(), webAssetsSource(), startupSystemProperties())
+        RustHttpServerConfig(isDebugBuild(), startupSystemProperties())
     }
 
     fun start() = lock.withLock {

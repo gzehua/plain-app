@@ -2,50 +2,58 @@ package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
+import com.ismartcoding.plain.app.startHttpEngineAsync
+import com.ismartcoding.plain.preferences.UserPrefs
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.zip.ZipFile
 
-/**
- * The Rust HTTP listener cannot read the APK top level, so Rust
- * unpacks the bundle from the assets dir. If the build stops shipping
- * `src/main/resources` under assets, every web route 404s while the host
- * unit tests stay green — `AssetManager` does not exist on the JVM.
- */
 @RunWith(AndroidJUnit4::class)
 class WebBundleAssetsTest {
-
-    private val assets get() = InstrumentationRegistry.getInstrumentation().targetContext.assets
-
     @Test
-    fun theWebBundleIsReadableThroughAssetManager() {
-        val children = assets.list("web")
-        assertNotNull("assets.list(\"web\") returned null — the bundle is not packaged as assets", children)
-        assertTrue(
-            "assets/web is empty — the bundle is only in the APK java-resources top level, " +
-                "so the core cannot unpack it and every web route will 404",
-            children!!.isNotEmpty(),
-        )
-    }
-
-    @Test
-    fun theSpaEntryPointIsPresent() {
-        assets.open("web/index.html").use { stream ->
-            val body = stream.readBytes().decodeToString()
-            assertTrue("web/index.html does not look like the SPA shell", body.contains("<html"))
+    fun webResourcesAreServedByRustWithoutAnApkCopy() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val info = context.applicationInfo
+        for (archive in listOf(info.sourceDir) + info.splitSourceDirs.orEmpty()) {
+            ZipFile(archive).use { zip ->
+                val entries = zip.entries()
+                while (entries.hasMoreElements()) {
+                    val name = entries.nextElement().name
+                    assertFalse("Duplicate Web resource: $name", name.startsWith("web/") || name.startsWith("assets/web/"))
+                }
+            }
+        }
+        val oldAccess = UserPrefs.desktopAccess.value
+        try {
+            UserPrefs.desktopAccess.value = true
+            startHttpEngineAsync()
+            val base = "http://127.0.0.1:${UserPrefs.httpPort.value}"
+            val shell = get("$base/", "text/html")
+            assertTrue(shell.contains("<html"))
+            assertTrue(shell.contains("window.__SERVER_TIME__="))
+            val script = Regex("src=\"(/assets/[^\"]+\\.js)\"").find(shell)?.groupValues?.get(1)
+            assertNotNull("SPA script missing", script)
+            assertTrue(get("$base$script", "application/javascript").isNotEmpty())
+            assertTrue(get("$base/settings", "text/html").contains("window.__SERVER_TIME__="))
+        } finally {
+            UserPrefs.desktopAccess.value = oldAccess
         }
     }
 
-    @Test
-    fun hashedAssetBundlesArePresent() {
-        val assets = assets.list("web/assets")!!
-        assertTrue("web/assets is empty", assets.isNotEmpty())
-        assertTrue(
-            "no hashed JS bundle under web/assets — the SPA cannot boot",
-            assets.any { it.endsWith(".js") },
-        )
+    private fun get(url: String, contentType: String): String {
+        val connection = URL(url).openConnection() as HttpURLConnection
+        connection.connectTimeout = 5000
+        connection.readTimeout = 5000
+        try {
+            assertEquals(200, connection.responseCode)
+            assertTrue(connection.contentType.startsWith(contentType))
+            return connection.inputStream.bufferedReader().use { it.readText() }
+        } finally {
+            connection.disconnect()
+        }
     }
-
-
 }

@@ -142,7 +142,7 @@ android {
             keepDebugSymbols += listOf("**/*.so")
         }
         resources {
-            excludes += listOf("META-INF/*")
+            excludes += listOf("META-INF/*", "web/**")
         }
     }
     sourceSets.getByName("androidTest").kotlin.srcDirs(
@@ -152,12 +152,11 @@ android {
     )
     namespace = "com.ismartcoding.plain"
     sourceSets.getByName("main").jniLibs.srcDir(layout.buildDirectory.dir("generated/rustJniLibs").get().asFile)
-    // The web bundle ships under src/main/resources/web, which Gradle treats
-    // as a Java resources root and copies to the APK top level. The Rust HTTP
-    // listener cannot read that, so RustWebAssets unpacks it through
-    // AssetManager, which only sees src/main/assets.
-    sourceSets.getByName("main").assets.srcDir("src/main/resources")
 }
+
+val webBundleDir = providers.gradleProperty("plainWebDist")
+    .orElse(providers.environmentVariable("PLAIN_WEB_DIST"))
+    .orNull?.let { rootProject.file(it) }
 
 val rustCoreDir = rootProject.file("plain-rs")
 val localCoreOverride = rootProject.file(".cargo/core-dependency-state").exists()
@@ -209,6 +208,10 @@ val buildPlainRustAndroid by tasks.registering(Exec::class) {
     inputs.dir(File(rustCoreDir, "src"))
     outputs.file(rustTargetDir.map { it.file("$rustAndroidTarget/release/libplain_rust.so") })
     outputs.file(onnxRuntimeDir.map { it.file("libonnxruntime.so") })
+    webBundleDir?.let {
+        inputs.dir(it).withPropertyName("webBundle")
+        environment("PLAIN_WEB_DIST", it.absolutePath)
+    }
     environment("CARGO_TARGET_DIR", rustTargetDir.get().asFile.absolutePath)
     environment("ANDROID_HOME", androidSdk.absolutePath)
     environment("ANDROID_NDK_HOME", androidNdk.absolutePath)

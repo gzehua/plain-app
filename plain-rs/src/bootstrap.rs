@@ -7,8 +7,6 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
     let cache_directory = config["systemProperties"]["cacheDir"]
         .as_str()
         .ok_or("Startup cache directory required")?;
-    let web_assets: plain_server::services::web_assets::Source =
-        serde_json::from_value(config["webAssets"].clone()).map_err(|error| error.to_string())?;
     let prefs = crate::prefs()?;
     let directory = std::path::Path::new(data_dir);
     if !directory.is_absolute() {
@@ -33,8 +31,6 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
         {
             core.server
                 .set_build_debug(config["debug"].as_bool().unwrap_or(false));
-            core.runtime
-                .block_on(core.server.set_web_assets(web_assets))?;
             let (http, _) = core.runtime.block_on(
                 core.server.start_public(
                     plain_rs::prefs::user::snapshot(&prefs)
@@ -74,7 +70,6 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             cert,
             key,
             config["debug"].as_bool().unwrap_or(false),
-            web_assets,
         ))?;
         crate::ffi::events::install(&runtime, &server);
         *guard = Some(crate::ffi::server::Core {

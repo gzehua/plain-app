@@ -129,3 +129,5 @@ plain-rs/target/
 
 .cargo/config.toml
 .cargo/core-dependency-state/
+
+/app/src/main/resources/web/

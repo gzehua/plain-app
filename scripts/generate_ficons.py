@@ -3,8 +3,7 @@
 
 Writes the full set into both consumer sources:
   app/src/main/assets/ficons/        (Android, loaded via Coil SVG decoder)
-  ../plain-desktop/public/ficons/    (plain-desktop web source; reaches plain-app
-                                     resources/web/ficons via the user's dist sync)
+  ../plain-desktop/public/ficons/    (frontend source embedded by the Rust server)
 
 Usage: python3 scripts/generate_ficons.py [--review DIR]
   --review DIR also writes review.html + a copy of the set into DIR for visual review.

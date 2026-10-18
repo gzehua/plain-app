@@ -12,6 +12,10 @@ plugins {
 // building for the simulator. Saves ~3-5s of configuration overhead per
 // build. Restore by omitting the flag (default: both targets enabled).
 val enableDeviceTarget = (findProperty("enableDeviceTarget") as? String)?.toBoolean() ?: true
+val webBundleDir = providers.gradleProperty("plainWebDist")
+    .orElse(providers.environmentVariable("PLAIN_WEB_DIST"))
+    .orNull?.let { rootProject.file(it) }
+
 val cargoBinDir = File(System.getenv("CARGO_HOME") ?: "${System.getProperty("user.home")}/.cargo", "bin")
 val rustupExe = cargoBinDir.resolve("rustup")
 val cargoExe = cargoBinDir.resolve("cargo")
@@ -68,6 +72,10 @@ kotlin {
             inputs.file(rootProject.file("plain-rs/Cargo.lock"))
             inputs.dir(rootProject.file("plain-rs/src"))
             outputs.file(rustTargetDir.map { it.file("$rustTarget/release/libplain_rust.a") })
+            webBundleDir?.let {
+                inputs.dir(it).withPropertyName("webBundle")
+                environment("PLAIN_WEB_DIST", it.absolutePath)
+            }
             environment("CARGO_TARGET_DIR", rustTargetDir.get().asFile.absolutePath)
             environment("PLAIN_ONNX_RUNTIME_DIR", onnxRuntimeDir.get().asFile.absolutePath)
             // iOS frameworks consume only the static archive.

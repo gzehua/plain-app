@@ -92,7 +92,6 @@
 				AA0000900000000000000001 /* Sources */,
 				AA0000A0000000000000001 /* Frameworks */,
 				AA0000B0000000000000001 /* Resources */,
-				BB0000C0000000000000001 /* Copy Web Resources */,
 				EE0000C0000000000000001 /* Copy Editor Resources */,
 			);
 			buildRules = (
@@ -170,26 +169,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/..\"\n\n# Use Android Studio JBR if JAVA_HOME is not set or points to invalid path\nif [ -z \"$JAVA_HOME\" ] || [ ! -d \"$JAVA_HOME\" ]; then\n    export JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\"\nfi\n\n# Skip the Gradle call entirely when no Kotlin/source file is newer than the\n# embedded framework. This avoids the ~10s Gradle daemon + configuration-cache\n# warm-up cost on every Xcode build that only touched Swift code.\nFRAMEWORK=\"$SRCROOT/../shared/build/xcode-frameworks/PlainShared.framework\"\nif [ -d \"$FRAMEWORK\" ]; then\n    NEWEST_FW=$(find \"$FRAMEWORK\" -type f -exec stat -f '%m' {} + | sort -rn | head -1)\n    # Check shared and Rust sources before reusing the embedded framework\n    NEWEST_SRC=$(find \"$SRCROOT/../shared/src\" \"$SRCROOT/../shared/build.gradle.kts\" \"$SRCROOT/../plain-rs/src\" \"$SRCROOT/../plain-rs/include\" \"$SRCROOT/../plain-rs/Cargo.toml\" \"$SRCROOT/../plain-rs/Cargo.lock\" -type f 2>/dev/null | xargs stat -f '%m' 2>/dev/null | sort -rn | head -1)\n    if [ -n \"$NEWEST_SRC\" ] && [ -n \"$NEWEST_FW\" ] && [ \"$NEWEST_SRC\" -le \"$NEWEST_FW\" ]; then\n        echo \"Kotlin sources unchanged — skipping Gradle framework build.\"\n        exit 0\n    fi\nfi\n\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
+			shellScript = "cd \"$SRCROOT/..\"\n\n# Use Android Studio JBR if JAVA_HOME is not set or points to invalid path\nif [ -z \"$JAVA_HOME\" ] || [ ! -d \"$JAVA_HOME\" ]; then\n    export JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\"\nfi\n\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
 		};
-		BB0000C0000000000000001 /* Copy Web Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Copy Web Resources";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Copy pre-built web assets (Vue SPA) into the app bundle so the\n# SwiftNIO HTTP server can serve them as static files.\nWEB_SRC=\"$SRCROOT/../app/src/main/resources/web\"\nWEB_DST=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/web\"\n\nif [ ! -d \"$WEB_SRC\" ]; then\n    echo \"warning: web assets not found at $WEB_SRC — web UI will not be available\"\n    exit 0\nfi\n\nrm -rf \"$WEB_DST\"\nmkdir -p \"$WEB_DST\"\ncp -R \"$WEB_SRC/\" \"$WEB_DST/\"\n";
-		};
+
 		EE0000C0000000000000001 /* Copy Editor Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
