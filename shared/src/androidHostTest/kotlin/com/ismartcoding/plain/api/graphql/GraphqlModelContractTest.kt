@@ -102,11 +102,8 @@ class GraphqlModelContractTest {
             "Temperature" to com.ismartcoding.plain.api.graphql.models.Temperature.serializer().descriptor,
             "Video" to com.ismartcoding.plain.api.graphql.models.Video.serializer().descriptor,
             "VideoFileInfo" to com.ismartcoding.plain.api.graphql.models.VideoFileInfo.serializer().descriptor,
-            "SettingsUpdate" to com.ismartcoding.plain.api.graphql.models.SettingsUpdate.serializer().descriptor,
             "SystemSettings" to com.ismartcoding.plain.api.graphql.models.SystemSettings.serializer().descriptor,
-            "SystemSettingsInput" to com.ismartcoding.plain.api.graphql.models.SystemSettingsInput.serializer().descriptor,
             "UserSettings" to com.ismartcoding.plain.api.graphql.models.UserSettings.serializer().descriptor,
-            "UserSettingsInput" to com.ismartcoding.plain.api.graphql.models.UserSettingsInput.serializer().descriptor,
         )
         val schemaWithoutDescriptions = Regex("\"\"\"[\\s\\S]*?\"\"\"").replace(sdl, "")
         val blocks = Regex("""(?:type|input) (\w+)(?:\s+implements\s+\w+)?\s*\{([^}]+)}""").findAll(schemaWithoutDescriptions)

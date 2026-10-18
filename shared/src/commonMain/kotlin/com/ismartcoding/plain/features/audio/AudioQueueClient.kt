@@ -40,7 +40,9 @@ object AudioQueueClient {
     suspend fun add(query: String) { RustContentApi.mutate("addAudioToQueue(query: ${gql(query)})") }
     suspend fun removeQueued(mediaId: String) { RustContentApi.mutate("removeAudioFromQueue(mediaId: ${gql(mediaId)})") }
     suspend fun reorderQueued(mediaIds: List<String>) { RustContentApi.mutate("reorderAudioQueue(mediaIds: ${gqlIds(mediaIds)})") }
-    suspend fun queuedMediaIds(): Set<String> = PlainRust.mainQuery("audioQueuedMediaIds").getValue("audioQueuedMediaIds").jsonArray.map { it.jsonPrimitive.content }.toSet()
+    suspend fun queuedMediaIds(): Set<String> = PlainRust.mainQuery(
+        "audioQueueItems(query: \"\", offset: 0, limit: ${Int.MAX_VALUE}) { mediaId }",
+    ).getValue("audioQueueItems").jsonArray.mapNotNull { it.jsonObject.getValue("mediaId").jsonPrimitive.contentOrNull }.toSet()
 
     suspend fun onStarted(audio: AudioItem, revision: Long) {
         PlainRust.publish(com.ismartcoding.plain.app.events.HostEvent(

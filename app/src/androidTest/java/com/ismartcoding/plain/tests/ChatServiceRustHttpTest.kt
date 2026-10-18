@@ -81,7 +81,7 @@ class ChatServiceRustHttpTest {
             assertEquals(2, card.itemCount)
             assertEquals(source.length() + image.length(), card.totalSize)
             assertTrue(SharesClient.getShare(card.shareId)!!.readOnly)
-            assertEquals(SharesClient.sharedToken(card.shareId), card.urlToken)
+            assertEquals(com.ismartcoding.plain.features.shares.SharedLinkClient.ownLink(card.shareId).token, card.urlToken)
             val staging = File(RustContentApi.directory, "chat-picks")
             assertTrue(staging.listFiles().orEmpty().isEmpty())
         } finally {

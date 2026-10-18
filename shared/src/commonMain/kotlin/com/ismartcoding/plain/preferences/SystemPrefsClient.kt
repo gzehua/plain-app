@@ -10,14 +10,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.jsonObject
 
-/**
- * System settings: the credentials, tokens and identity material Rust owns.
- *
- * These stay on GraphQL because they are low-traffic, must be reachable by
- * remote clients through the same schema, and are written as commands rather
- * than field assignments — unlike [UserPrefs], which writes straight through
- * the native bridge.
- */
 class SystemPrefsClient(private val session: ContentApiSession? = null) {
     private var systemProjection: MutableStateFlow<SystemState>? = null
     private val mutex = Mutex()
@@ -35,10 +27,21 @@ class SystemPrefsClient(private val session: ContentApiSession? = null) {
         systemProjection?.let { it.value = system } ?: run { systemProjection = MutableStateFlow(system) }
     }
 
-    suspend fun updateSystem(command: SystemCommand) = mutex.withLock {
-        val result = RustContentApi.graphql("mutation(\$input: SystemSettingsInput!) { updateSystemSettings(input: \$input) { $SELECTION } }",
-            mapOf("input" to JsonHelper.jsonEncodeToElement<SystemCommand>(command)), session)
-        apply(result.getValue("updateSystemSettings").jsonObject)
+    suspend fun set(key: String, value: kotlinx.serialization.json.JsonElement) = mutex.withLock {
+        RustContentApi.graphql(
+            "mutation(\$key: String!, \$value: JSON!) { setSystemPref(key: \$key, value: \$value) { affectedCount } }",
+            mapOf("key" to JsonHelper.jsonEncodeToElement(key), "value" to value), session,
+        )
+        refreshLocked()
+    }
+
+    suspend fun resetPassword() = reset("resetPassword")
+    suspend fun resetUrlToken() = reset("resetUrlToken")
+    suspend fun resetAdbToken() = reset("resetAdbToken")
+
+    private suspend fun reset(field: String) = mutex.withLock {
+        RustContentApi.graphql("mutation { $field }", session = session)
+        refreshLocked()
     }
 
     suspend fun verifyAdbToken(token: String): Boolean = JsonHelper.jsonDecodeFromElement(

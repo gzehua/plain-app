@@ -13,7 +13,6 @@ import com.ismartcoding.plain.app.stopHttpEngineAsync
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.permissions.Permission
-import com.ismartcoding.plain.preferences.SystemCommand
 import com.ismartcoding.plain.preferences.SystemPrefsClient
 import com.ismartcoding.plain.preferences.UserPrefs
 import com.ismartcoding.plain.rust.PlainRust
@@ -61,7 +60,7 @@ class ApiFixtureRustHttpTest {
         SystemPrefsClient.local.refresh()
         val oldPermissions = SystemPrefsClient.local.system.value.apiPermissions
         try {
-            SystemPrefsClient.local.updateSystem(SystemCommand.SetApiPermissions(setOf(Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEOS, Permission.READ_MEDIA_AUDIO, Permission.READ_CONTACTS, Permission.WRITE_CONTACTS, Permission.READ_CALL_LOG, Permission.WRITE_CALL_LOG, Permission.READ_SMS, Permission.SEND_SMS, Permission.QUERY_ALL_PACKAGES, Permission.NOTIFICATION_LISTENER).map { it.name }.toSet()))
+            SystemPrefsClient.local.set("api_permissions", JsonArray(setOf(Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEOS, Permission.READ_MEDIA_AUDIO, Permission.READ_CONTACTS, Permission.WRITE_CONTACTS, Permission.READ_CALL_LOG, Permission.WRITE_CALL_LOG, Permission.READ_SMS, Permission.SEND_SMS, Permission.QUERY_ALL_PACKAGES, Permission.NOTIFICATION_LISTENER).map { JsonPrimitive(it.name) }))
             assertTrue(root.mkdirs())
             rootCreated = true
             val session = PlainRust.mainMutate("createSession(name: \"API emulator fixture\") { clientId token }").getValue("createSession").jsonObject
@@ -102,7 +101,7 @@ class ApiFixtureRustHttpTest {
             if (channelId.isNotEmpty()) PlainRust.mainMutate("deleteChatChannel(id: ${JsonPrimitive(channelId)})")
             if (peerCreated) PlainRust.mainMutate("deletePeer(id: ${JsonPrimitive(peerId)})")
             if (rootCreated) root.deleteRecursively()
-            SystemPrefsClient.local.updateSystem(SystemCommand.SetApiPermissions(oldPermissions))
+            SystemPrefsClient.local.set("api_permissions", JsonArray(oldPermissions.map(::JsonPrimitive)))
             UserPrefs.desktopAccess.value = oldAccess
             stopHttpEngineAsync()
         }

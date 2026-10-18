@@ -48,10 +48,10 @@ class ApiContractTest {
     fun sdlSnapshotCoversTheWholeContract() {
         val queries = operationFieldNamesIn("Query")
         val mutations = operationFieldNamesIn("Mutation")
-        if (queries.size != 171 || mutations.size != 275) {
+        if (queries.size != 162 || mutations.size != 263) {
             fail(
                 "Shared Rust schema fragments declare ${queries.size} Query / ${mutations.size} " +
-                    "Mutation operations — the contract has 171 / 275. The snapshot looks truncated or " +
+                    "Mutation operations — the contract has 162 / 263. The snapshot looks truncated or " +
                     "drifted; every check in this class reads it, so they would pass on an empty file.",
             )
         }

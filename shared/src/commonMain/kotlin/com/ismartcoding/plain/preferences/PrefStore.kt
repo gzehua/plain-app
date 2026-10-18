@@ -58,8 +58,8 @@ internal object PrefStore {
             val previous = snapshot ?: JsonObject(emptyMap())
             runBlocking(IODispatcher) {
                 RustContentApi.graphql(
-                    "mutation(\$input: UserSettingsInput!) { updateUserSettings(input: \$input) { result { affectedCount } } }",
-                    mapOf("input" to JsonObject(mapOf(key to value))),
+                    "mutation(\$key: String!, \$value: JSON!) { setUserPref(key: \$key, value: \$value) }",
+                    mapOf("key" to JsonHelper.jsonEncodeToElement(userPreferenceKey(key)), "value" to value),
                 )
             }
             val current = JsonObject(previous + (key to value))
