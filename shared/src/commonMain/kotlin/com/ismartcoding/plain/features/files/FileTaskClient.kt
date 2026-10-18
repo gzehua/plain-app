@@ -20,7 +20,6 @@ object FileTaskClient {
             longRunning = wait,
         ).getValue("createFileTask"))
 
-    suspend fun get(id: String): FileTask? = PlainRust.mainQuery("fileTask(id: ${gql(id)}) { $fields }").getValue("fileTask").takeUnless { it is JsonNull }?.let(::parse)
     suspend fun remove(id: String): Boolean = PlainRust.mainMutate("removeFileTask(id: ${gql(id)})").getValue("removeFileTask").jsonPrimitive.boolean
     suspend fun list(offset: Int, limit: Int, query: String): List<FileTask> = PlainRust.mainQuery("fileTasks(offset: $offset, limit: $limit, query: ${gql(query)}) { $fields }").getValue("fileTasks").jsonArray.map(::parse)
     private fun parse(value: JsonElement): FileTask = JsonHelper.jsonDecodeFromElement(value)

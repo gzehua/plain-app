@@ -81,7 +81,7 @@ class FileMoveMediaRustHttpTest {
             TagsClient.editTagRelations(DataType.IMAGE, listOf(oldId), listOf(imageTag), emptyList())
             TagsClient.editTagRelations(DataType.FILE, listOf(sourcePath), listOf(fileTag), emptyList())
             val task = FileTaskClient.execute(FileTaskType.MOVE, listOf(FileTaskOp(sourcePath, target.path))).also { tasks.add(it.id) }
-            val done = checkNotNull(FileTaskClient.get(task.id))
+            val done = checkNotNull(FileTaskClient.list(0, Int.MAX_VALUE, "").find { it.id == task.id })
             assertEquals(done.error, FileTaskStatus.DONE, done.status)
             assertEquals(destinationPath, done.completedOps.single().dst)
             assertFalse(File(sourcePath).exists())

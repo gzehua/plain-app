@@ -29,7 +29,7 @@ import java.util.UUID
 class FileTaskRustHttpTest {
     private suspend fun awaitTask(id: String): com.ismartcoding.plain.api.graphql.models.FileTask {
         while (true) {
-            val task = checkNotNull(FileTaskClient.get(id))
+            val task = checkNotNull(FileTaskClient.list(0, Int.MAX_VALUE, "").find { it.id == id })
             if (task.status == FileTaskStatus.DONE || task.status == FileTaskStatus.ERROR) return task
             delay(100)
         }
@@ -53,7 +53,7 @@ class FileTaskRustHttpTest {
             assertEquals("existing",target.readText())
             assertEquals("synthetic",File(root,"target (1).txt").readText())
             assertEquals(File(root,"target (1).txt").path,done.completedOps[0].dst)
-            assertEquals(done.completedOps,FileTaskClient.get(done.id)!!.completedOps)
+            assertEquals(done.completedOps,FileTaskClient.list(0, Int.MAX_VALUE, "").find { it.id == done.id }!!.completedOps)
             assertFalse(File(root,"target (2).txt").exists())
             assertTrue(FileTaskClient.list(0,0,"").isEmpty())
             val movedRoot = File(root,"moved")
@@ -81,7 +81,7 @@ class FileTaskRustHttpTest {
             try { FileTaskClient.create(FileTaskType.COPY,listOf(FileTaskOp("/system/test",File(root,"forbidden").path))) }
             catch (_: Exception) { rejected = true }
             assertTrue(rejected)
-            val spoofedCaller = runCatching { RustContentApi.query("fileTask(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, id: ${JsonPrimitive(done.id)}) { id }") }
+            val spoofedCaller = runCatching { RustContentApi.query("fileTasks(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, query: \"\", offset: 0, limit: 1) { id }") }
             assertTrue(spoofedCaller.isFailure)
             RustSystemState.setApiPermissions(originalPermissions + "WRITE_EXTERNAL_STORAGE")
             assertEquals(true, RustContentApi.mutate("""copyFile(src: "${source.path}", dst: "${File(root,"public-copy.txt").path}", overwrite: false)""").getValue("copyFile").jsonPrimitive.boolean)

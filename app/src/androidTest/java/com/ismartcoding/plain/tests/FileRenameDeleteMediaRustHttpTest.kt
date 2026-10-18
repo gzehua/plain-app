@@ -89,7 +89,7 @@ class FileRenameDeleteMediaRustHttpTest {
             val renameTask = FileTaskClient.list(0, 1000, "").single { task -> task.completedOps.any { it.src == sourcePath && it.dst == destinationPath } }
             assertEquals(FileTaskType.MOVE, renameTask.type)
             assertEquals(FileTaskStatus.DONE, renameTask.status)
-            assertEquals(FileTaskStatus.DONE, FileTaskClient.get(renameTask.id)!!.status)
+            assertEquals(FileTaskStatus.DONE, FileTaskClient.list(0, Int.MAX_VALUE, "").find { it.id == renameTask.id }!!.status)
             assertFalse(File(sourcePath).exists())
             assertTrue(File(destinationPath).isFile)
             val moved = queryFileTaskMedia(listOf(destinationPath)).single()
