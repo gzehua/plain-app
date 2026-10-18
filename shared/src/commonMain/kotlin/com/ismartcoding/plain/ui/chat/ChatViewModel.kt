@@ -10,7 +10,6 @@ import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.features.chat.models.MessageContent
-import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 import com.ismartcoding.plain.features.chat.ChatStatus
 import com.ismartcoding.plain.api.graphql.models.ChatItem
@@ -43,8 +42,7 @@ import kotlinx.coroutines.sync.withLock
  * the Rust HTTP service.
  *
  * Writers may run on arbitrary dispatchers; [mutex] serializes the
- * persist-then-publish sequence so per-message updates (placeholder insert
- * followed by a final-state update) land on the in-memory list in order.
+ * event projections so per-message updates land on the in-memory list in order.
  */
 object ChatViewModel : ISelectableViewModel<VChat> {
     internal val _itemsFlow = MutableStateFlow<List<VChat>>(emptyList())
@@ -165,12 +163,6 @@ object ChatViewModel : ISelectableViewModel<VChat> {
         launchSafe {
             onResult(ChatClient.sendText(target.value, text).status == ChatStatus.SENT)
         }
-    }
-
-    suspend fun sendFilesImmediate(files: List<MessageFile>, isImageVideo: Boolean): String = withIO {
-        val item = ChatClient.insertFilesImmediate(target.value, files, isImageVideo)
-        publishCreated(target.value, listOf(item), scroll = true)
-        item.id
     }
 
     /**

@@ -13,6 +13,7 @@ import com.ismartcoding.plain.features.chat.ChatStatus
 import com.ismartcoding.plain.features.chat.ChatMessageEditor
 import com.ismartcoding.plain.api.graphql.models.ChatItem
 import com.ismartcoding.plain.features.files.stored.AppFileStore
+import kotlinx.serialization.json.jsonArray
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -32,9 +33,9 @@ class LinkPreviewRustHttpTest {
             val content = MessageContent(MessageType.TEXT, MessageText(url,
                 listOf(LinkPreview(url = url, title = id, imageLocalPath = AppFileStore.toFidUri(image))))).toJSONString()
             val value = com.ismartcoding.plain.rust.PlainRust.mainGraphql(
-                "mutation(\$content:String!){createChatItem(target: \"peer:local\", content: \$content) { id fromId toId channelId content status statusData createdAt updatedAt }}",
+                "mutation(\$content:String!){sendChatItem(target: \"peer:local\", content: \$content) { id fromId toId channelId content status statusData createdAt updatedAt }}",
                 mapOf("content" to kotlinx.serialization.json.JsonPrimitive(content)),
-            ).getValue("createChatItem")
+            ).getValue("sendChatItem").jsonArray.single()
             val chat = com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<ChatItem>(value)
             id = chat.id
             val stale = ChatItem(id = id, toId = "stale", content = MessageContent(MessageType.TEXT, MessageText("stale")).toJSONString())
