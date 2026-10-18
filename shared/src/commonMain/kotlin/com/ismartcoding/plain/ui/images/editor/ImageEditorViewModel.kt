@@ -27,7 +27,7 @@ class ImageEditorViewModel : ViewModel() {
 
     suspend fun loadAsync() = withIO {
         lock.withLock {
-            _itemsFlow.value = ImageEditorProjectsClient.listAsync(LIST_LIMIT)
+            _itemsFlow.value = ImageEditorProjectsClient.listAsync()
             showLoading.value = false
         }
     }
@@ -52,7 +52,4 @@ class ImageEditorViewModel : ViewModel() {
         }
     }
 
-    companion object {
-        private const val LIST_LIMIT = 50
-    }
 }

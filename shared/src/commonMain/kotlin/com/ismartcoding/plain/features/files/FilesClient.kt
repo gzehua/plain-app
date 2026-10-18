@@ -73,7 +73,7 @@ object FilesClient {
 
     private const val fields = "name path permission createdAt updatedAt size isDir childCount mediaId"
     suspend fun rename(path: String, name: String): String? {
-        val value = PlainRust.mainMutate("renameFilePath(path: ${gql(path)}, name: ${gql(name)})").getValue("renameFilePath")
+        val value = PlainRust.mainMutate("renameFile(path: ${gql(path)}, name: ${gql(name)})").getValue("renameFile")
         return if (value is JsonNull) null else value.jsonPrimitive.content
     }
     suspend fun delete(path: String): Boolean = deleteMany(listOf(path)) > 0

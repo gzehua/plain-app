@@ -5,6 +5,7 @@ import com.ismartcoding.plain.features.chat.models.MessageContent
 import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.features.chat.models.MessageFiles
 import com.ismartcoding.plain.features.chat.models.MessageImages
+import com.ismartcoding.plain.features.chat.models.MessageText
 import com.ismartcoding.plain.features.chat.models.MessageType
 import com.ismartcoding.plain.features.chat.models.toJSONString
 import com.ismartcoding.plain.api.graphql.models.ChatItem
@@ -29,7 +30,7 @@ object ChatClient {
             .getValue("sendChatItem").jsonArray.single())
 
     suspend fun sendText(target: ChatTarget, text: String): ChatItem =
-        RustChatStore.decodeGraphql(PlainRust.mainMutate("sendChatText(target: ${gql(target.encodedToId)}, text: ${gql(text)}) { ${RustChatStore.FIELDS} }", longRunning = true).getValue("sendChatText"))
+        sendContent(target, MessageContent(MessageType.TEXT, MessageText(text)))
 
     suspend fun forward(id: String, targets: List<ChatTarget>): List<ChatItem> =
         PlainRust.mainMutate("forwardChatItems(id: ${gql(id)}, targets: ${gqlIds(targets.map { it.encodedToId })}) { ${RustChatStore.FIELDS} }", longRunning = true)

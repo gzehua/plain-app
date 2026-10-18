@@ -32,9 +32,6 @@ navigationCompose="2.9.2"
 navigationComposeVersion = "2.10.2"
 material3Version = "1.4.0"
 okhttpVersion="5.5.0"
-libphonenumberVersion = "9.0.41"
-libphonenumberGeocoderVersion = "3.41"
-libphonenumberCarrierVersion = "2.41"
 shizukuVersion = "13.1.5"
 runtimeVersion="1.12.2"
 uiVersion="1.12.2"
@@ -140,9 +137,6 @@ latex-parser = { module = "io.github.huarangmeng:latex-parser", version.ref = "l
 latex-renderer = { module = "io.github.huarangmeng:latex-renderer", version.ref = "latex" }
 
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttpVersion" }
-libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version.ref = "libphonenumberVersion" }
-libphonenumber-geocoder = { module = "com.googlecode.libphonenumber:geocoder", version.ref = "libphonenumberGeocoderVersion" }
-libphonenumber-carrier = { module = "com.googlecode.libphonenumber:carrier", version.ref = "libphonenumberCarrierVersion" }
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizukuVersion" }
 shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizukuVersion" }
 shizuku-aidl = { module = "dev.rikka.shizuku:aidl", version.ref = "shizukuVersion" }

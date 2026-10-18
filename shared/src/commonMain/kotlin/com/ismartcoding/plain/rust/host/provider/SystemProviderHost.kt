@@ -27,7 +27,6 @@ object SystemProviderHost {
         "systemUpdateContactGroup",
         "systemDeleteContactGroup" -> SystemContactsHost.handle(method, params)
         "systemPhoneLocaleFacts",
-        "systemPhoneMetadata",
         "systemCallFacts",
         "systemCallCount",
         "systemCallIds",

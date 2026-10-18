@@ -24,9 +24,9 @@ object ImageEditorProjectsClient {
     private const val SUMMARY_FIELDS = "id thumbnail canvasWidth canvasHeight layerCount updatedAt"
     private const val FIELDS = "$SUMMARY_FIELDS stateB64 createdAt"
 
-    suspend fun listAsync(limit: Int): List<ImageEditorProjectSummary> =
-        RustContentApi.query("imageEditorProjectItems(offset: 0, limit: $limit, query: \"\") { $SUMMARY_FIELDS }")
-            .getValue("imageEditorProjectItems").jsonArray.map { value ->
+    suspend fun listAsync(): List<ImageEditorProjectSummary> =
+        RustContentApi.query("imageEditorProjects { $SUMMARY_FIELDS }")
+            .getValue("imageEditorProjects").jsonArray.map { value ->
                 val row = value.jsonObject
                 ImageEditorProjectSummary(ID(row.string("id")), row["thumbnail"]?.jsonPrimitive?.contentOrNull,
                     row.getValue("canvasWidth").jsonPrimitive.int, row.getValue("canvasHeight").jsonPrimitive.int,

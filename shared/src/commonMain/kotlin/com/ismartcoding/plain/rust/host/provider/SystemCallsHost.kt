@@ -7,8 +7,6 @@ import kotlinx.serialization.json.*
 internal object SystemCallsHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
         "systemPhoneLocaleFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.contacts.phoneLocaleFacts())
-        "systemPhoneMetadata" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.contacts.phoneMetadata(
-            JsonHelper.jsonDecodeFromElement<com.ismartcoding.plain.features.telephony.calls.PhoneMetadataRequest>(params)))
         "systemCallFacts" -> {
             val plan = params.providerPlan()
             val offset = params.getValue("offset").jsonPrimitive.int

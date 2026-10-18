@@ -38,8 +38,11 @@ object AudioPlaylistsClient {
         .getValue("createAudioPlaylist").audioPlaylist()
     suspend fun renamePlaylist(id: String, name: String) { RustContentApi.mutate("updateAudioPlaylist(id: ${gql(id)}, name: ${gql(name)}) { id }") }
     suspend fun deletePlaylist(id: String) { RustContentApi.mutate("deleteAudioPlaylist(id: ${gql(id)})") }
-    suspend fun addPlaylistItems(playlistId: String, items: List<AudioItem>): Int =
-        PlainRust.mainMutate("addAudioPlaylistMedia(id: ${gql(playlistId)}, mediaIds: ${gqlIds(items.mapNotNull { it.mediaId })})").getValue("addAudioPlaylistMedia").jsonPrimitive.int
+    suspend fun addPlaylistItems(playlistId: String, items: List<AudioItem>) {
+        val ids = items.mapNotNull { it.mediaId }
+        if (ids.isEmpty()) return
+        RustContentApi.mutate("addAudioPlaylistItems(id: ${gql(playlistId)}, query: ${gql("ids:" + ids.joinToString(","))})")
+    }
     suspend fun removePlaylistItem(playlistId: String, mediaId: String) = removePlaylistItems(playlistId,listOf(mediaId))
     suspend fun removePlaylistItems(playlistId: String, mediaIds: Collection<String>) { if (mediaIds.isNotEmpty()) RustContentApi.mutate("removeAudioPlaylistItem(id: ${gql(playlistId)}, query: ${gql("ids:" + mediaIds.joinToString(","))}) { affectedCount }") }
     suspend fun playlistItemsPage(playlistId: String, offset: Int, limit: Int): List<AudioItem> = playlistItemsPageFiltered(playlistId,"",offset,limit)

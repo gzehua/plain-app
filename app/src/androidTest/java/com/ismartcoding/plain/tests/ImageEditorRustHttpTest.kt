@@ -21,7 +21,7 @@ class ImageEditorRustHttpTest {
                 canvasHeight = 200
                 layerCount = 2
             }
-            val summary = ImageEditorProjectsClient.listAsync(50).first { it.id.value == id }
+            val summary = ImageEditorProjectsClient.listAsync().first { it.id.value == id }
             assertEquals(saved.thumbnail, summary.thumbnail)
             assertEquals(100, summary.canvasWidth)
             val updated = ImageEditorProjectsClient.addOrUpdateAsync(id) { stateB64 = "BAU="; layerCount = 3 }
