@@ -5,7 +5,7 @@ import com.ismartcoding.plain.api.graphql.models.ClipboardItem
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
-import com.ismartcoding.plain.rust.request.gqlIds
+import com.ismartcoding.plain.rust.request.selectionQuery
 import kotlinx.serialization.json.*
 
 object ClipboardClient {
@@ -18,17 +18,9 @@ object ClipboardClient {
     suspend fun count(query: String = ""): Int = PlainRust.mainQuery("clipboardItemCount(query: ${gql(query)})")
         .getValue("clipboardItemCount").jsonPrimitive.int
 
-    suspend fun record(text: String, source: String = "", label: String = "", sensitive: Boolean = false): ClipboardItem? {
-        val input = "{ text: ${gql(text)}, source: ${gql(source)}, label: ${gql(label)}, sensitive: $sensitive }"
-        val result = PlainRust.mainMutate("recordClipboard(input: $input) { inserted item { $FIELDS } }")
-            .getValue("recordClipboard").jsonObject
-        return if (result.getValue("inserted").jsonPrimitive.boolean) result.getValue("item").clipboard() else null
-    }
-
     suspend fun deleteByIds(ids: List<String>): Int {
         if (ids.isEmpty()) return 0
-        return PlainRust.mainMutate("deleteClipboardItemsByIds(ids: ${gqlIds(ids)}) { affectedCount }")
-            .getValue("deleteClipboardItemsByIds").jsonObject.getValue("affectedCount").jsonPrimitive.int
+        return delete(selectionQuery(ids.toSet()))
     }
 
     suspend fun delete(query: String): Int = PlainRust.mainMutate("deleteClipboardItems(query: ${gql(query)}) { affectedCount }")

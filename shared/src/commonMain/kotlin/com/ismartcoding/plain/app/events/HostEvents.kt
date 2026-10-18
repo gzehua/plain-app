@@ -94,6 +94,7 @@ enum class EventType {
     MMS_SEND_RESULT,
     UPLOAD_MERGE_RESULT,
     CLIPBOARD_CHANGED,
+    CLIPBOARD_REPORTED,
     // Payload: JSON array of granted permission names — a state snapshot
     // identical to the `app.permissions` GraphQL field (not a change set).
     PERMISSIONS_UPDATED,
@@ -122,12 +123,10 @@ data class PeerStatusData(
     val online: Boolean,
 )
 
-// Payload of CLIPBOARD_CHANGED — docs/clipboard-sync.md (plain-desktop).
 @Serializable
-data class ClipboardChangedData(
+data class ClipboardReportData(
     val text: String,
     val sensitive: Boolean,
-    val time: Long,
 )
 
 // Payload of UPLOAD_MERGE_RESULT — mirrors the desktop local server contract

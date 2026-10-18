@@ -2,6 +2,14 @@ package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.clipboard.ClipboardClient
+import com.ismartcoding.plain.app.events.ClipboardReportData
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.platform.permissions.Permission
+import com.ismartcoding.plain.platform.permissions.isEnabledAsync
+import com.ismartcoding.plain.rust.PlainRust
+import org.junit.Assume.assumeTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -11,18 +19,22 @@ import java.util.UUID
 @RunWith(AndroidJUnit4::class)
 class ClipboardRustHttpTest {
     @Test
-    fun historyUsesRustAndDeduplicatesWithoutWritingRoom() = runBlocking {
+    fun nativeClipboardReportsPersistAndDeduplicateInRust() = runBlocking {
+        assumeTrue(Permission.CLIPBOARD.isEnabledAsync())
         val marker = "clipboard-rust-${UUID.randomUUID()}"
         val text = "$marker 🌍 100%_ \\ \"quoted\""
         val ids = mutableListOf<String>()
         try {
-            val entry = checkNotNull(ClipboardClient.record(text, source = marker, label = "label-$marker", sensitive = true))
+            PlainRust.publish(HostEvent(EventType.CLIPBOARD_REPORTED,
+                JsonHelper.jsonEncode(ClipboardReportData(text, sensitive = true))))
+            val entry = ClipboardClient.getPage(50, 0, marker).single()
             ids += entry.id
             assertEquals(text, entry.text)
-            assertEquals(marker, entry.source)
-            assertEquals("label-$marker", entry.label)
+            assertEquals("", entry.source)
+            assertEquals("", entry.label)
             assertTrue(entry.sensitive)
-            assertNull(ClipboardClient.record(text))
+            PlainRust.publish(HostEvent(EventType.CLIPBOARD_REPORTED,
+                JsonHelper.jsonEncode(ClipboardReportData(text, sensitive = false))))
             assertEquals(1, ClipboardClient.count(marker))
             assertEquals(entry, ClipboardClient.getPage(50, 0, marker).single())
             assertTrue(ClipboardClient.getPage(50, 1, marker).isEmpty())

@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.features
 
-import com.ismartcoding.plain.features.clipboard.ClipboardClient
 
 import android.content.ClipDescription
 import android.content.ClipboardManager
@@ -9,7 +8,7 @@ import android.content.Intent
 import android.os.Build
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.clipboardManager
-import com.ismartcoding.plain.app.events.ClipboardChangedData
+import com.ismartcoding.plain.app.events.ClipboardReportData
 import com.ismartcoding.plain.app.events.ClipboardSyncChangedEvent
 import com.ismartcoding.plain.app.events.WindowFocusChangedEvent
 import com.ismartcoding.plain.app.events.EventType
@@ -18,7 +17,7 @@ import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isEnabledAsync
 import kotlinx.coroutines.CoroutineScope
@@ -32,20 +31,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/**
- * Watches the system clipboard while the HTTP server service is alive.
- *
- * Focused reads (app in foreground, or our transparent floating activity):
- * the primary-clip listener captures changes, gates on [Permission.CLIPBOARD],
- * dedups by content hash (also suppresses loops from desktop writes), persists
- * to the clipboard history table and broadcasts CLIPBOARD_CHANGED(39).
- *
- * Background reads are blocked on Android 10+ unless the app has focus. Same
- * workaround as KDE Connect: with READ_LOGS (adb-granted) a logcat thread watches
- * the system ClipboardService denial log for our package name and launches
- * [ClipboardFloatingActivity], which briefly takes focus so the read succeeds.
- * Without READ_LOGS, sync falls back to "when the app is next focused".
- */
 object ClipboardWatcher {
     private const val MAX_TEXT_LENGTH = 256 * 1024
 
@@ -168,18 +153,10 @@ object ClipboardWatcher {
         }
         val sensitive = Build.VERSION.SDK_INT >= 33 &&
             clip.description.extras?.getBoolean(ClipDescription.EXTRA_IS_SENSITIVE, false) == true
-        val entry = ClipboardClient.record(text, sensitive = sensitive) ?: return
-        if (sensitive) return
-        sendEvent(
+        PlainRust.publish(
             HostEvent(
-                EventType.CLIPBOARD_CHANGED,
-                JsonHelper.jsonEncode(
-                    ClipboardChangedData(
-                        text = text,
-                        sensitive = false,
-                        time = entry.createdAt.toEpochMilliseconds(),
-                    )
-                ),
+                EventType.CLIPBOARD_REPORTED,
+                JsonHelper.jsonEncode(ClipboardReportData(text, sensitive)),
             )
         )
     }
