@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.ismartcoding.plain.ui.markdown.model.State
+import com.ismartcoding.plain.ui.markdown.model.rememberMarkdownState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
@@ -61,37 +65,6 @@ import com.ismartcoding.plain.ui.markdown.utils.getUnescapedTextInNode
 import kotlinx.coroutines.launch
 import org.intellij.markdown.ast.getTextInNode
 import org.intellij.markdown.flavours.gfm.GFMElementTypes
-
-private val IMAGE_MARKDOWN_REGEX = Regex("""!\[.*?]\(([^)\s]+)\)""")
-// Match the `src="..."` (or `src='...'`, or unquoted) attribute of an HTML
-// `<img>` tag. We accept the first `src` we see on each `<img>` and ignore the
-// rest. This mirrors the same lenient parser the markdown library uses in
-// [com.ismartcoding.plain.ui.markdown.utils.HTML_IMG_TAG_REGEX].
-private val HTML_IMG_SRC_REGEX = Regex(
-    """<img\b[^>]*?\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))[^>]*>""",
-    RegexOption.IGNORE_CASE,
-)
-
-private fun extractImageLinksFromMarkdown(markdown: String): List<String> {
-    // Pull every image source URL out of the markdown document, regardless
-    // of which syntax produced it. The two forms — `![alt](src)` and HTML
-    // `<img src="...">` — have to be merged into a single ordered gallery
-    // so the previewer shows images in the order they actually appear in the
-    // note. Each match carries its source-range start offset, which
-    // is a stable tiebreaker that preserves document order across the
-    // two regexes.
-    val markdownLinks = IMAGE_MARKDOWN_REGEX.findAll(markdown)
-        .map { it.range.first to it.groupValues[1] }
-    val htmlImgLinks = HTML_IMG_SRC_REGEX.findAll(markdown)
-        .map { match ->
-            // groups: 0=full, 1="...", 2='...', 3=unquoted — pick the first non-empty.
-            match.range.first to match.groupValues.drop(1).first { it.isNotEmpty() }
-        }
-    return (markdownLinks + htmlImgLinks)
-        .sortedBy { it.first }
-        .map { it.second }
-        .toList()
-}
 
 /**
  * Image transformer that resolves project-internal `app://` and `fid:` URIs to absolute file
@@ -251,14 +224,16 @@ fun rememberMarkdownTextConfig(
  */
 @Composable
 internal fun rememberMarkdownImageTransformer(
-    text: String,
+    parsed: State,
     previewerState: MediaPreviewerState?,
 ): ImageTransformer {
     val scope = rememberCoroutineScope()
-    return remember(text, previewerState) {
+    val imageLinks = remember(parsed) {
+        (parsed as? State.Success)?.let(::extractImageLinksFromMarkdown).orEmpty()
+    }
+    return remember(imageLinks, previewerState) {
         AppImageTransformer(onImageClick = previewerState?.let { state -> { link ->
             scope.launch {
-                val imageLinks = extractImageLinksFromMarkdown(text)
                 val paths = com.ismartcoding.plain.features.files.FilePaths.resolveAll(imageLinks)
                 val items = imageLinks.mapIndexed { index, src -> PreviewItem(src, paths[index]) }
                 MediaPreviewData.items = items
@@ -283,16 +258,18 @@ fun MarkdownText(
     previewerState: MediaPreviewerState? = null,
 ) {
     val config = rememberMarkdownTextConfig(style)
+    val markdownState = rememberMarkdownState(text)
+    val parsed by markdownState.state.collectAsState()
 
     Markdown(
-        content = text,
+        state = parsed,
         modifier = modifier,
         colors = config.colors,
         typography = config.typography,
         padding = config.padding,
         dimens = config.dimens,
         extendedSpans = config.extendedSpans,
-        imageTransformer = rememberMarkdownImageTransformer(text, previewerState),
+        imageTransformer = rememberMarkdownImageTransformer(parsed, previewerState),
         components = config.components,
     )
 

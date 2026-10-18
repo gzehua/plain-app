@@ -286,7 +286,7 @@ private fun FeedEntryArticle(
             padding = config.padding,
             dimens = config.dimens,
             extendedSpans = config.extendedSpans,
-            imageTransformer = rememberMarkdownImageTransformer(content, previewerState),
+            imageTransformer = rememberMarkdownImageTransformer(mdState, previewerState),
             components = config.components,
             loading = { articleBody(null, it) },
             success = { s, _, modifier -> articleBody(s, modifier) },
