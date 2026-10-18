@@ -14,7 +14,3 @@ internal suspend fun refreshOnlineClientIds() {
     setOnlineClientIds(JsonHelper.jsonDecodeFromElement<Set<String>>(result))
 }
 
-suspend fun closeAllWsSessions() {
-    PlainRust.mainMutate("closeAllWebSocketSessions")
-    onlineClientIds.value = emptySet()
-}

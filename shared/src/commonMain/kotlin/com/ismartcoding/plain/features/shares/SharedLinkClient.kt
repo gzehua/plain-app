@@ -31,19 +31,6 @@ object SharedLinkClient {
             longRunning = true,
         ).getValue("browseSharedLink").takeUnless { it is JsonNull }?.let { json.decodeFromJsonElement(it) }
 
-    suspend fun fetchSharedInfo(link: SharedLink, virtualPath: String?): SharedInfoDto =
-        json.decodeFromJsonElement(PlainRust.mainGraphql(
-            "query(\$link: SharedLinkInput!, \$virtualPath: String) { sharedLinkInfo(link: \$link, virtualPath: \$virtualPath) { $INFO_FIELDS } }",
-            mapOf("link" to json.encodeToJsonElement(link), "virtualPath" to (virtualPath?.let(::JsonPrimitive) ?: JsonNull)),
-            longRunning = true,
-        ).getValue("sharedLinkInfo"))
-
-    suspend fun fileUrl(link: SharedLink, urlToken: String, virtualPath: String): String =
-        PlainRust.mainGraphql(
-            "query(\$link: SharedLinkInput!, \$urlToken: String!, \$virtualPath: String!) { sharedFileUrl(link: \$link, urlToken: \$urlToken, virtualPath: \$virtualPath) }",
-            mapOf("link" to json.encodeToJsonElement(link), "urlToken" to JsonPrimitive(urlToken), "virtualPath" to JsonPrimitive(virtualPath)),
-        ).getValue("sharedFileUrl").jsonPrimitive.content
-
     suspend fun cacheFile(link: SharedLink, urlToken: String, entry: SharedFileDto, thumbnail: Boolean = false): String =
         PlainRust.mainGraphql(
             "mutation(\$link: SharedLinkInput!, \$urlToken: String!, \$entry: SharedEntryInput!, \$thumbnail: Boolean!) { cacheSharedFile(link: \$link, urlToken: \$urlToken, entry: \$entry, thumbnail: \$thumbnail) }",
