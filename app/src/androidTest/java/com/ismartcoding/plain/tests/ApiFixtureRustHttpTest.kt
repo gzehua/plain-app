@@ -78,7 +78,7 @@ class ApiFixtureRustHttpTest {
             }
             check(PlainRust.mainQuery("peers { id }").getValue("peers").jsonArray.count { it.jsonObject.getValue("id").jsonPrimitive.content == peerId } == 1)
             channelId = PlainRust.mainMutate("createChatChannel(name: \"API fixture channel\") { id }").getValue("createChatChannel").jsonObject.getValue("id").jsonPrimitive.content
-            val channelKey = PlainRust.mainQuery("chatChannelRecord(id: ${JsonPrimitive(channelId)}) { key }").getValue("chatChannelRecord").jsonObject.getValue("key")
+            val channelKey = PlainRust.mainQuery("chatChannels { id key }").getValue("chatChannels").jsonArray.single { it.jsonObject.getValue("id").jsonPrimitive.content == channelId }.jsonObject.getValue("key")
             val app = PlainRust.mainQuery("app { httpPort capabilities }").getValue("app").jsonObject
             val credentials = JsonHelper.jsonEncode(mapOf(
                 "clientId" to JsonPrimitive(clientId),

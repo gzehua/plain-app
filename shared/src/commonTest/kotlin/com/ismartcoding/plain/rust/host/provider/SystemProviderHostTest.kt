@@ -7,7 +7,7 @@ import kotlin.test.assertTrue
 class SystemProviderHostTest {
     @Test
     fun filePrimitivesReachTheSystemProviderAlongsideSystemOperations() {
-        for (method in listOf("imageDecodeBounds", "systemResourceMimeType", "systemProperties", "systemFileIndexRows")) {
+        for (method in listOf("imageDecodeBounds", "systemFileResource", "systemProperties", "systemFileIndexRows")) {
             assertTrue(SystemProviderHost.accepts(method), method)
         }
     }

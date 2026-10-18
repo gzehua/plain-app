@@ -52,6 +52,18 @@ class RustUploadChunksTest {
         assertTrue(fixture.mutations.first().contains("totalSize: 0"))
     }
 
+    @Test fun selected_export_uris_and_bytes_are_forwarded_to_the_same_rust_merge() = runTest {
+        for (path in listOf("file:///tmp/feed%20export.opml", "content://fixture/selected-export")) {
+            val fixture = Fixture()
+            val bytes = "<opml><title>\u6d4b\u8bd5</title></opml>".encodeToByteArray()
+            assertTrue(fixture.client.replace(path, listOf(bytes).iterator()))
+            assertContentEquals(bytes, fixture.chunks.single())
+            assertTrue(fixture.mutations.first().contains("path: \"$path\""))
+            assertTrue(fixture.mutations.first().contains("replace: true"))
+            assertTrue(fixture.mutations.last().startsWith("deleteChunks"))
+        }
+    }
+
     @Test fun failed_upload_never_starts_a_merge_and_removes_staged_chunks() = runTest {
         val fixture = Fixture()
         fixture.failure = "Fixture write failure"

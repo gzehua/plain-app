@@ -18,9 +18,4 @@ object ChatQueries {
         RustChatStore.count(query)
     }
 
-    suspend fun getIdsAsync(query: String): Set<String> = withIO {
-        if (query.isEmpty()) return@withIO emptySet()
-        RustChatStore.getIds(query)
-    }
-
 }

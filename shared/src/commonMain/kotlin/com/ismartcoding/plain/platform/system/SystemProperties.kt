@@ -49,9 +49,7 @@ internal class StartupSystemProperties(read: () -> Map<String, JsonElement>) {
 }
 
 fun getAppVersion(): String = startupProperties.appVersion()
-fun getAppVersionName(): String = startupProperties.versionName()
 fun getDeviceName(): String = startupProperties.deviceName()
-fun getAppVersionCode(): Long = startupProperties.versionCode()
 fun getOSVersion(): String = startupProperties.osVersion()
 
 internal fun sampleSystemProperties(names: List<String>): Map<String, JsonElement> {

@@ -8,13 +8,11 @@ import android.provider.MediaStore
 import com.ismartcoding.plain.helpers.ContentWhere
 import com.ismartcoding.plain.features.files.SortBy
 import com.ismartcoding.plain.lib.extensions.count
-import com.ismartcoding.plain.lib.extensions.forEach
 import com.ismartcoding.plain.lib.extensions.getLongValue
 import com.ismartcoding.plain.lib.extensions.getPagingCursor
 import com.ismartcoding.plain.lib.extensions.getSearchCursor
 import com.ismartcoding.plain.lib.extensions.getStringValue
 import com.ismartcoding.plain.lib.extensions.map
-import com.ismartcoding.plain.lib.extensions.scanFileByConnection
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.rust.host.provider.MediaBucketItemFacts
 import com.ismartcoding.plain.features.media.MediaType
@@ -49,24 +47,6 @@ abstract class BaseMediaContentHelper {
         )?.map { cursor, cache ->
             cursor.getStringValue(BaseColumns._ID, cache)
         }?.toSet() ?: emptySet()
-    }
-
-    fun getPathsByIdsAsync(
-        context: Context,
-        ids: Set<String>,
-    ): Set<String> {
-        val paths = mutableSetOf<String>()
-        val projection = arrayOf(BaseColumns._ID, MediaStore.MediaColumns.DATA)
-        ids.chunked(500).forEach { chunk ->
-            val where = ContentWhere()
-            where.addIn(BaseColumns._ID, chunk)
-            context.contentResolver.getSearchCursor(uriExternal, projection, where)?.forEach { cursor, cache ->
-                val path = cursor.getStringValue(MediaStore.MediaColumns.DATA, cache)
-                paths.add(path)
-            }
-        }
-
-        return paths
     }
 
     fun getBucketItemFactsAsync(context: Context, where: ContentWhere): List<MediaBucketItemFacts> {

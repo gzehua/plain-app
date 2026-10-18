@@ -1,14 +1,12 @@
 package com.ismartcoding.plain.features.chat.channel
 
 import com.ismartcoding.plain.api.graphql.models.ChatChannel
-import com.ismartcoding.plain.features.chat.peer.GraphQLError
 import com.ismartcoding.plain.features.chat.peer.GraphQLResponse
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 private const val CHANNEL_FIELDS =
@@ -82,6 +80,5 @@ internal suspend fun snapshotChannelsGraphql(): List<ChatChannel> = withIO {
         .let { JsonHelper.jsonDecodeFromElement<List<ChatChannel>>(it) }
 }
 internal suspend fun channelGraphql(id: String): com.ismartcoding.plain.api.graphql.models.ChatChannel? {
-    val value = PlainRust.mainQuery("chatChannelRecord(id: ${gql(id)}) { $CHANNEL_FIELDS }").getValue("chatChannelRecord")
-    return if (value is kotlinx.serialization.json.JsonNull) null else decodeChannel(value)
+    return snapshotChannelsGraphql().firstOrNull { it.id == id }
 }

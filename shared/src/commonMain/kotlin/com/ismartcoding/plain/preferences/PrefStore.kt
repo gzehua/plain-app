@@ -5,7 +5,6 @@ import com.ismartcoding.plain.platform.system.PlatformLock
 import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.rust.request.RustContentApi
 import kotlinx.coroutines.runBlocking
-import com.ismartcoding.plain.rust.bridge.RustPrefsBridge
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
@@ -36,7 +35,7 @@ internal object PrefStore {
     fun load() = refresh()
 
     fun refresh() {
-        val stored = JsonHelper.jsonDecode<JsonObject>(RustPrefsBridge.userSnapshot())
+        val stored = runBlocking(IODispatcher) { readUserSettings() }
         val previous = lock.withLock {
             val previous = snapshot
             snapshot = stored

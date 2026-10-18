@@ -13,7 +13,6 @@ import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.mainActivity
 import com.ismartcoding.plain.appContextValue
 import com.ismartcoding.plain.ui.permissions.Permissions
-import com.ismartcoding.plain.platform.files.FileHelper
 import com.ismartcoding.plain.lib.extensions.hasPermission
 
 private val pNotificationListenerServiceClass: Class<*> by lazy {
@@ -31,7 +30,11 @@ actual fun Permission.isGranted(): Boolean = when {
     // Clipboard access needs no OS runtime permission; the web-side switch
     // (RustSystemState.apiPermissions) is the sole gate.
     this == Permission.CLIPBOARD -> true
-    this == Permission.WRITE_EXTERNAL_STORAGE -> FileHelper.hasStoragePermission(appContext)
+    this == Permission.WRITE_EXTERNAL_STORAGE -> if (com.ismartcoding.plain.platform.isRPlus()) {
+        android.os.Environment.isExternalStorageManager()
+    } else {
+        appContext.hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    }
     this == Permission.POST_NOTIFICATIONS -> {
         if (isTPlus()) appContext.hasPermission(this.toSysPermission())
         else NotificationManagerCompat.from(appContext).areNotificationsEnabled()

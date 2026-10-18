@@ -34,11 +34,6 @@ class YjsEncoder {
         for (b in bytes) buffer.add(b)
     }
 
-    fun writeVarUint8Array(arr: ByteArray) {
-        writeVarUint(arr.size.toLong())
-        for (b in arr) buffer.add(b)
-    }
-
     fun writeFloat32(value: Float) {
         val bits = value.toRawBits()
         writeUint8((bits ushr 24) and 0xFF)

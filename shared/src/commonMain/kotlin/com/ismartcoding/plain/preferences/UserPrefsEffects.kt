@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.preferences
 
 import com.ismartcoding.plain.app.TempData
-import com.ismartcoding.plain.features.dlna.DlnaRendererState
 import com.ismartcoding.plain.app.HttpServerManager
 import com.ismartcoding.plain.platform.media.onScreenMirrorQualityChanged
 import com.ismartcoding.plain.platform.system.setSystemLocale
@@ -31,9 +30,6 @@ internal object UserPrefsEffects {
         if (changed(previous, current, SCREEN_MIRROR_QUALITY)) {
             onScreenMirrorQualityChanged(UserPrefs.screenMirrorQuality.value.mode)
         }
-        if (changed(previous, current, DLNA)) {
-            if (UserPrefs.dlna.value) DlnaRendererState.start() else DlnaRendererState.stop()
-        }
         if (changed(previous, current, LOCALE)) {
             setSystemLocale(UserPrefs.localeValue())
         }
@@ -50,7 +46,6 @@ internal object UserPrefsEffects {
     // schema exposes, so a remote client and this diff agree on what changed.
     private const val DEVICE_NAME = "deviceName"
     private const val SCREEN_MIRROR_QUALITY = "screenMirrorQuality"
-    private const val DLNA = "dlna"
     private const val LOCALE = "locale"
     private const val SERVICE = "service"
 }

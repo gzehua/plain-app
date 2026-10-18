@@ -48,10 +48,14 @@ object FilesClient {
     suspend fun createFile(path: String): FileEntry = write("createFile", path)
     suspend fun writeText(path: String, content: String, overwrite: Boolean): FileEntry = write("writeText", path, content, overwrite)
 
-    suspend fun list(root: String, showHidden: Boolean, sortBy: FileSortBy): List<FileEntry> = read(root, "", null, showHidden, sortBy)["items"]!!.jsonArray.map { decode(it.jsonObject) }
-    suspend fun searchName(text: String, root: String, showHidden: Boolean, sortBy: FileSortBy): List<FileEntry> = read(root, "", text, showHidden, sortBy)["items"]!!.jsonArray.map { decode(it.jsonObject) }
-    suspend fun search(query: String, root: String, sortBy: FileSortBy, offset: Int = 0, limit: Int? = null): List<FileEntry> = read(root, query, null, null, sortBy, offset, limit)["items"]!!.jsonArray.map { decode(it.jsonObject) }
-    suspend fun count(query: String, root: String): Int = read(root, query, null, null, FileSortBy.NAME_ASC, countOnly = true).getValue("count").jsonPrimitive.int
+    suspend fun list(root: String, showHidden: Boolean, sortBy: FileSortBy): List<FileEntry> =
+        read(root, "show_hidden:$showHidden", sortBy)
+
+    suspend fun searchName(text: String, root: String, showHidden: Boolean, sortBy: FileSortBy): List<FileEntry> =
+        read(root, "${literalNameQuery(text)} show_hidden:$showHidden", sortBy)
+
+    suspend fun search(query: String, root: String, sortBy: FileSortBy, offset: Int = 0, limit: Int? = null): List<FileEntry> =
+        read(root, query, sortBy, offset, limit)
 
     suspend fun indexed(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<FileEntry> =
         PlainRust.mainQuery("indexedFiles(query: ${gql(query)}, limit: $limit, offset: $offset, sortBy: ${sortBy.name}) { $fields }").getValue("indexedFiles").jsonArray.map { decode(it.jsonObject) }
@@ -83,8 +87,17 @@ object FilesClient {
         longRunning = true,
     ).getValue("deleteFiles").jsonObject.getValue("affectedCount").jsonPrimitive.int
 
-    private suspend fun read(root: String, query: String, text: String?, showHidden: Boolean?, sortBy: FileSortBy, offset: Int = 0, limit: Int? = null, countOnly: Boolean = false): JsonObject =
-        PlainRust.mainQuery("browseFiles(root: ${gql(root)}, query: ${gql(query)}, text: ${text?.let(::gql) ?: "null"}, showHidden: ${showHidden ?: "null"}, sortBy: ${sortBy.name}, offset: $offset, limit: ${limit ?: Int.MAX_VALUE}, countOnly: $countOnly) { count items { $fields } }").getValue("browseFiles").jsonObject
+    private suspend fun read(root: String, query: String, sortBy: FileSortBy, offset: Int = 0, limit: Int? = null): List<FileEntry> =
+        PlainRust.mainQuery("files(root: ${gql(root)}, query: ${gql(query)}, sortBy: ${sortBy.name}, offset: $offset, limit: ${limit ?: Int.MAX_VALUE}) { $fields }")
+            .getValue("files").jsonArray.map { decode(it.jsonObject) }
+
+    internal fun literalNameQuery(text: String): String = buildString {
+        append("text:=")
+        for (character in text) {
+            if (character == '\\' || character == '\'' || character == '"' || character.isWhitespace()) append('\\')
+            append(character)
+        }
+    }
 
     private suspend fun write(action: String, path: String, content: String = "", overwrite: Boolean = false): FileEntry {
         val target = if (path.startsWith("file://")) Url(path).encodedPath.decodeURLPart() else path

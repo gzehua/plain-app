@@ -51,11 +51,6 @@ expect fun dispatchScreenMirrorControl(input: ScreenMirrorControlInput): Boolean
  */
 expect fun requestScreenMirrorKeyFrame()
 
-/**
- * Returns the screen size used by the accessibility service for coordinate
- * scaling. Returns (0, 0) on unsupported platforms.
- */
-expect fun getAccessibilityScreenSize(): Pair<Int, Int>
 
 /**
  * Force-release any in-flight streamed touch gesture. Called when the last

@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.navigation
 
-import com.ismartcoding.plain.features.chat.RustChatStore
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -13,10 +12,8 @@ import com.ismartcoding.plain.app.events.AudioActionEvent
 import com.ismartcoding.plain.app.events.ConfirmDialogEvent
 import com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent
 import com.ismartcoding.plain.app.events.LoadingDialogEvent
-import com.ismartcoding.plain.app.events.HDownloadTaskDoneEvent
 import com.ismartcoding.plain.ui.components.ToastEvent
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
-import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.ui.chat.PeerViewModel
 import com.ismartcoding.plain.ui.pomodoro.PomodoroViewModel
@@ -31,7 +28,6 @@ import kotlinx.coroutines.launch
 fun MainEventCollector(
     scope: CoroutineScope,
     mainVM: MainViewModel,
-    chatVM: ChatViewModel,
     audioQueueVM: AudioQueueViewModel,
     pomodoroVM: PomodoroViewModel,
     peerVM: PeerViewModel,
@@ -62,16 +58,6 @@ fun MainEventCollector(
                 }
 
                 is com.ismartcoding.plain.app.events.HPomodoroChangedEvent -> pomodoroVM.applySnapshot(event.today)
-
-                is HDownloadTaskDoneEvent -> {
-                    scope.launch(Dispatchers.Default) {
-                        val chat = RustChatStore.getById(event.downloadTask.messageId)
-                        if (chat != null) {
-                            chatVM.update(chat)
-                        }
-                    }
-                }
-
 
                 is HConfirmToAcceptLoginEvent -> {
                     mainVM.pendingLoginEvent.value = event

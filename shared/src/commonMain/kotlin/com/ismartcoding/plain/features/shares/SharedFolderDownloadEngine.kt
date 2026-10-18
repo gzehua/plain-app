@@ -71,8 +71,6 @@ object SharedFolderDownloadEngine {
         is Request.Enqueue -> PlainRust.mainGraphql("mutation(\$input: SharedDownloadInput!) { enqueueSharedDownload(input: \$input) }", mapOf("input" to json.encodeToJsonElement(request.input)), longRunning = true).getValue("enqueueSharedDownload")
         is Request.Control -> {
             val operation = when (request.command) {
-                "pause" -> "pauseSharedDownload"
-                "resume" -> "resumeSharedDownload"
                 "retry" -> "retrySharedDownload"
                 "cancel" -> "cancelSharedDownload"
                 "remove" -> "removeSharedDownload"

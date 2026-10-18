@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.features.nearby
 
 
-import com.ismartcoding.plain.platform.network.ble.client.BleGattClient
 import com.ismartcoding.plain.api.graphql.models.NearbyDevice
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.PlainRust
@@ -12,9 +11,6 @@ private const val NEARBY_DEVICE_FIELDS =
     "id name ips port deviceType version platform lastSeen discoveryMethods bestIp status"
 
 object RustNearbyDevices {
-    internal fun client(id: String): BleGattClient? =
-        com.ismartcoding.plain.platform.network.bleTransport().createScanner().createClient(RustBleServiceData.shortIdOf(id))
-
     @OptIn(kotlin.uuid.ExperimentalUuidApi::class)
     suspend fun observeDiscovery() {
         val token = kotlin.uuid.Uuid.random().toString()

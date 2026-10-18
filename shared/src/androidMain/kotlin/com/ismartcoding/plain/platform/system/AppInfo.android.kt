@@ -4,10 +4,8 @@ import com.ismartcoding.plain.platform.system.DeviceType
 import com.ismartcoding.plain.platform.system.PhoneHelper
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.appContextValue
-import com.ismartcoding.plain.buildType
 import com.ismartcoding.plain.lib.helpers.NetworkHelper
 
-actual fun getBuildType(): String = buildType.ifEmpty { "android" }
 
 actual fun getPlatformName(): String = "android"
 

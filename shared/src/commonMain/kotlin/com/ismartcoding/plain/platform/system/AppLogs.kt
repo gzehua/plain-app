@@ -14,7 +14,7 @@ suspend fun getLogFileSize(): Long =
     PlainRust.mainQuery("appLogFilesSize").getValue("appLogFilesSize").jsonPrimitive.long
 
 suspend fun clearLogsAsync() {
-    PlainRust.mainMutate("clearAppLogFiles")
+    PlainRust.mainMutate("clearAppLogs")
 }
 
 fun exportLogsAsync() {

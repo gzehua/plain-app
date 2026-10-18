@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.preferences
 
+import com.ismartcoding.plain.api.graphql.models.SystemSettings
+
 import com.ismartcoding.plain.rust.request.ContentApiSession
 import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.lib.JsonHelper
@@ -11,9 +13,9 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.jsonObject
 
 class SystemPrefsClient(private val session: ContentApiSession? = null) {
-    private var systemProjection: MutableStateFlow<SystemState>? = null
+    private var systemProjection: MutableStateFlow<SystemSettings>? = null
     private val mutex = Mutex()
-    val system: StateFlow<SystemState> get() = checkNotNull(systemProjection).asStateFlow()
+    val system: StateFlow<SystemSettings> get() = checkNotNull(systemProjection).asStateFlow()
 
     suspend fun refresh() = mutex.withLock { refreshLocked() }
 
@@ -23,7 +25,7 @@ class SystemPrefsClient(private val session: ContentApiSession? = null) {
     }
 
     private fun apply(result: kotlinx.serialization.json.JsonObject) {
-        val system = JsonHelper.jsonDecodeFromElement<SystemState>(result.getValue("systemSettings"))
+        val system = JsonHelper.jsonDecodeFromElement<SystemSettings>(result.getValue("systemSettings"))
         systemProjection?.let { it.value = system } ?: run { systemProjection = MutableStateFlow(system) }
     }
 

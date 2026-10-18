@@ -102,7 +102,15 @@ object UserPrefs {
         return recentSearches.value
     }
 
-    suspend fun clearRecentSearches() = PrefStore.runAction(UserAction.ClearSearches)
+    suspend fun clearRecentSearches() {
+        val result = com.ismartcoding.plain.rust.request.RustContentApi.mutate(
+            "setUserPref(key: \"recent_searches\", value: [])",
+        ).getValue("setUserPref")
+        check(com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<Boolean>(result)) {
+            "Recent searches update was refused"
+        }
+        PrefStore.refresh()
+    }
 
     suspend fun recordRecentSaveDir(directory: String): List<String> {
         PrefStore.runAction(UserAction.RecordSaveDirectory(directory))
@@ -116,7 +124,6 @@ object UserPrefs {
 
     suspend fun clearNotificationApps() = PrefStore.runAction(UserAction.ClearNotificationApps)
 
-    suspend fun deleteVideos(paths: Set<String>) = PrefStore.runAction(UserAction.DeleteVideos(paths.toList()))
 
     fun parseFeatures(value: String): List<String> = value.split('|').filter { it.isNotBlank() }
 

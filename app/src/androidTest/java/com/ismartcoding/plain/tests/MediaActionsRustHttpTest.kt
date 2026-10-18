@@ -42,6 +42,7 @@ import java.io.File
 import java.nio.ByteOrder
 import java.nio.ByteBuffer
 import java.util.UUID
+import kotlin.time.Instant
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -112,13 +113,13 @@ class MediaActionsRustHttpTest {
             try { MediaActionClient.run(DataType.AUDIO,MediaAction.TRASH,listOf(id,missingId)) }
             catch (error: Exception) { failed = error.message?.contains("1 media actions failed (1 completed)") == true }
             assertTrue("Partial failure must be visible",failed)
-            assertTrue(TagsClient.getTagRelationsByKey(id,DataType.AUDIO).isEmpty())
-            assertEquals(1,TagsClient.getTagRelationsByKey(missingId,DataType.AUDIO).size)
-            assertEquals(1,TagsClient.getTagRelationsByKey(id,DataType.VIDEO).size)
+            assertTrue(TagsClient.getTagRelationsByKeys(setOf(id), DataType.AUDIO).isEmpty())
+            assertEquals(1,TagsClient.getTagRelationsByKeys(setOf(missingId), DataType.AUDIO).size)
+            assertEquals(1,TagsClient.getTagRelationsByKeys(setOf(id), DataType.VIDEO).size)
             assertFalse(AudioQueueClient.queuedMediaIds().contains(id))
             assertTrue(AudioQueueClient.playback().path.isNullOrEmpty())
-            assertEquals(0,AudioPlaylistsClient.playlistItemCount(playlistId))
-            assertTrue(AudioHistoryClient.recentPageFiltered(prefix,20,0).isEmpty())
+            assertEquals(0,checkNotNull(AudioPlaylistsClient.playlist(playlistId)).itemCount)
+            assertTrue(TestAudioHistoryClient.recentPageFiltered(prefix,20,0).isEmpty())
             restoreMedia(DataType.AUDIO,setOf(id))
             assertTrue(File(path).isFile)
             deleteMedia(DataType.AUDIO,setOf(id),false)
@@ -128,8 +129,8 @@ class MediaActionsRustHttpTest {
             VideoProgressHelper.saveAsync(videoId,5_000_000_001L)
             TagsClient.editTagRelations(DataType.VIDEO,listOf(videoId),listOf(videoTag),emptyList())
             trashMedia(DataType.VIDEO,setOf(videoId))
-            assertNull(VideoProgressHelper.getAsync(videoId))
-            assertTrue(TagsClient.getTagRelationsByKey(videoId,DataType.VIDEO).isEmpty())
+            assertTrue(VideoProgressHelper.recentAsync(Instant.fromEpochMilliseconds(0)).none { it.mediaId == videoId })
+            assertTrue(TagsClient.getTagRelationsByKeys(setOf(videoId), DataType.VIDEO).isEmpty())
             deleteMedia(DataType.VIDEO,setOf(videoId),true)
             assertFalse(File(videoPath).exists())
             val (imageId,imagePath) = create(DataType.IMAGE)
@@ -140,9 +141,9 @@ class MediaActionsRustHttpTest {
             val movedPath = File(moveDir,File(imagePath).name).path
             assertFalse(File(imagePath).exists())
             assertTrue(File(movedPath).isFile)
-            assertEquals(1,TagsClient.getTagRelationsByKey(imageId,DataType.IMAGE).size)
+            assertEquals(1,TagsClient.getTagRelationsByKeys(setOf(imageId), DataType.IMAGE).size)
             trashMedia(DataType.IMAGE,setOf(imageId))
-            assertTrue(TagsClient.getTagRelationsByKey(imageId,DataType.IMAGE).isEmpty())
+            assertTrue(TagsClient.getTagRelationsByKeys(setOf(imageId), DataType.IMAGE).isEmpty())
             restoreMedia(DataType.IMAGE,setOf(imageId))
             deleteMedia(DataType.IMAGE,setOf(imageId),false)
             assertFalse(File(movedPath).exists())
@@ -151,7 +152,14 @@ class MediaActionsRustHttpTest {
                 AudioQueueClient.clearQueue()
                 if (playlistId.isNotEmpty()) AudioPlaylistsClient.deletePlaylist(playlistId)
                 tagIds.forEach { TagsClient.delete(it) }
-                videoIds.forEach { VideoProgressHelper.deleteAsync(it) }
+                videoIds.forEach { videoId ->
+                    val uri = Uri.parse(getMediaItemUriString(DataType.VIDEO, videoId))
+                    val trashed = checkNotNull(appContext.contentResolver.query(
+                        uri, arrayOf(MediaStore.MediaColumns.IS_TRASHED),
+                        android.os.Bundle().apply { putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE) }, null,
+                    )).use { if (it.moveToFirst()) it.getInt(0) != 0 else null }
+                    if (trashed != null) deleteMedia(DataType.VIDEO, setOf(videoId), trashed)
+                }
             } finally {
                 try { uris.forEach { appContext.contentResolver.delete(it,android.os.Bundle().apply { putInt(MediaStore.QUERY_ARG_MATCH_TRASHED,MediaStore.MATCH_INCLUDE) }) } }
                 finally { moveDir?.delete() }

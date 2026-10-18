@@ -101,5 +101,6 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
     Ok(serde_json::json!({"httpPort":http, "httpsPort":https,
         "logFile":core.server.log_file()?,
         "cacheDir":core.server.cache_paths().root(),"imageCacheDir":core.server.cache_paths().image_cache(),"videoCacheDir":core.server.cache_paths().video_cache(),
+        "sharedPreviewDir":core.server.cache_paths().shared_previews(),
         "generation":core.runtime.block_on(core.server.public_generation()).ok_or("HTTP server stopped during startup")?}).to_string())
 }

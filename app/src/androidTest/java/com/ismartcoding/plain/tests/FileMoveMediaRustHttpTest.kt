@@ -81,7 +81,7 @@ class FileMoveMediaRustHttpTest {
             TagsClient.editTagRelations(DataType.IMAGE, listOf(oldId), listOf(imageTag), emptyList())
             TagsClient.editTagRelations(DataType.FILE, listOf(sourcePath), listOf(fileTag), emptyList())
             val task = FileTaskClient.execute(FileTaskType.MOVE, listOf(FileTaskOp(sourcePath, target.path))).also { tasks.add(it.id) }
-            val done = checkNotNull(FileTaskClient.list(0, Int.MAX_VALUE, "").find { it.id == task.id })
+            val done = checkNotNull(TestFileTaskClient.list(0, Int.MAX_VALUE, "").find { it.id == task.id })
             assertEquals(done.error, FileTaskStatus.DONE, done.status)
             assertEquals(destinationPath, done.completedOps.single().dst)
             assertFalse(File(sourcePath).exists())
@@ -89,12 +89,12 @@ class FileMoveMediaRustHttpTest {
             val moved = queryFileTaskMedia(listOf(destinationPath)).single()
             assertEquals(1, moved.providerType)
             ids.add(moved.id)
-            assertEquals(listOf(imageTag), TagsClient.getTagRelationsByKey(moved.id, DataType.IMAGE).map { it.tagId })
-            if (oldId != moved.id) assertTrue(TagsClient.getTagRelationsByKey(oldId, DataType.IMAGE).isEmpty())
-            assertTrue(TagsClient.getTagRelationsByKey(sourcePath, DataType.FILE).isEmpty())
-            assertEquals(listOf(fileTag), TagsClient.getTagRelationsByKey(destinationPath, DataType.FILE).map { it.tagId })
+            assertEquals(listOf(imageTag), TagsClient.getTagRelationsByKeys(setOf(moved.id), DataType.IMAGE).map { it.tagId })
+            if (oldId != moved.id) assertTrue(TagsClient.getTagRelationsByKeys(setOf(oldId), DataType.IMAGE).isEmpty())
+            assertTrue(TagsClient.getTagRelationsByKeys(setOf(sourcePath), DataType.FILE).isEmpty())
+            assertEquals(listOf(fileTag), TagsClient.getTagRelationsByKeys(setOf(destinationPath), DataType.FILE).map { it.tagId })
         } finally {
-            tasks.forEach { id -> FileTaskClient.remove(id) }
+            tasks.forEach { id -> TestFileTaskClient.remove(id) }
             tags.forEach { TagsClient.delete(it) }
             uri?.let { resolver.delete(it, null, null) }
             ids.forEach { id -> resolver.delete(Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id), null, null) }

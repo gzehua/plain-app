@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.features.permissions.DFeaturePermission
+import com.ismartcoding.plain.platform.permissions.FeaturePermission
 import com.ismartcoding.plain.platform.permissions.Permission
 
 enum class AppFeatureType {
@@ -30,22 +30,22 @@ enum class AppFeatureType {
     MEDIA_FAVORITE,
     IMAGE_EDITOR;
 
-    fun getPermission(): DFeaturePermission? {
+    fun getPermission(): FeaturePermission? {
         return when (this) {
             FILES -> {
-                DFeaturePermission(setOf(Permission.WRITE_EXTERNAL_STORAGE), Permission.WRITE_EXTERNAL_STORAGE)
+                FeaturePermission(setOf(Permission.WRITE_EXTERNAL_STORAGE), Permission.WRITE_EXTERNAL_STORAGE)
             }
 
             CONTACTS -> {
-                DFeaturePermission(setOf(Permission.READ_CONTACTS, Permission.WRITE_CONTACTS), Permission.READ_CONTACTS)
+                FeaturePermission(setOf(Permission.READ_CONTACTS, Permission.WRITE_CONTACTS), Permission.READ_CONTACTS)
             }
 
             SMS -> {
-                DFeaturePermission(setOf(Permission.READ_SMS), Permission.READ_SMS)
+                FeaturePermission(setOf(Permission.READ_SMS), Permission.READ_SMS)
             }
 
             CALLS -> {
-                DFeaturePermission(setOf(Permission.READ_CALL_LOG, Permission.WRITE_CALL_LOG), Permission.READ_CALL_LOG)
+                FeaturePermission(setOf(Permission.READ_CALL_LOG, Permission.WRITE_CALL_LOG), Permission.READ_CALL_LOG)
             }
 
             else -> {

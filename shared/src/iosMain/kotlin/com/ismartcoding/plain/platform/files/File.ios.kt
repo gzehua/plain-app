@@ -207,19 +207,26 @@ actual fun isContentUri(path: String): Boolean = false
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 actual suspend fun readTextFile(path: String): String = withIO {
+    val url = if (path.contains("://")) {
+        NSURL.URLWithString(path)?.takeIf { it.scheme?.equals("file", ignoreCase = true) == true }
+    } else {
+        NSURL.fileURLWithPath(path)
+    } ?: return@withIO ""
+    val localPath = url.path ?: return@withIO ""
+    val accessed = url.startAccessingSecurityScopedResource()
     try {
-        if (!NSFileManager.defaultManager.fileExistsAtPath(path)) {
+        if (!NSFileManager.defaultManager.fileExistsAtPath(localPath)) {
             return@withIO ""
         }
-        val data = NSFileManager.defaultManager.contentsAtPath(path) ?: return@withIO ""
+        val data = NSFileManager.defaultManager.contentsAtPath(localPath) ?: return@withIO ""
         NSString.create(data, NSUTF8StringEncoding)?.toString() ?: ""
+    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
     } catch (e: Exception) {
         ""
+    } finally {
+        if (accessed) url.stopAccessingSecurityScopedResource()
     }
-}
-
-actual suspend fun writeBytesToUri(uriStr: String, bytes: ByteArray): Boolean = withIO {
-    writeBytesToPath(uriStr, bytes)
 }
 
 actual fun getFileNameFromUri(uriStr: String): String? {

@@ -23,7 +23,6 @@ import com.ismartcoding.plain.platform.isSPlus
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.channels.awaitClose
 
 object AndroidBleScanner : BleScanner {
@@ -154,23 +153,14 @@ object AndroidBleScanner : BleScanner {
     @Synchronized
     override fun isScanPaused(): Boolean = pauseCount > 0
 
-    override suspend fun findOne(clientId: String): BleGattClient? {
-        if (!isReadyToUse()) return null
-        // Match by shortId (SHA256(clientId)[0:8] hex) — the scan-exposed
-        // stable identifier. The full clientId is never broadcast.
-        val shortId = RustBleServiceData.shortIdOf(clientId)
-        allDevices.find { it.id.equals(shortId, ignoreCase = true) }?.let { return it }
-        return scan(serviceUuid = BleUuids.SERVICE_UUID).firstOrNull { device ->
-            shortId.equals(device.id, ignoreCase = true)
-        }
-    }
+
 
     @SuppressLint("MissingPermission")
     override fun createClient(shortId: String): BleGattClient? {
         // On Android we can't construct a BleGattClient from a clientId alone —
         // the underlying BluetoothDevice (with its current MAC) must come from
         // a scan result. Return an already-discovered client if we have one;
-        // otherwise the caller must scan via [findOne]. Match by shortId.
+        // otherwise the caller must scan before connecting. Match by shortId.
         return allDevices.find { it.id.equals(shortId, ignoreCase = true) }
     }
 

@@ -17,16 +17,12 @@ import android.os.ParcelUuid
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.platform.network.ble.BleMessage
 import com.ismartcoding.plain.platform.network.ble.RustBleWire
-import com.ismartcoding.plain.features.nearby.RustDiscoveryAdvertisement
 import com.ismartcoding.plain.platform.network.ble.BleUuids
-import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
@@ -43,7 +39,9 @@ class AndroidBleGattServer : BleGattServer {
         appContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
     private val advertisingLock = Any()
-    private var advertisingJob: Job? = null
+    @Volatile private var closed = false
+    private var advertisingRevision = 0L
+    private var advertiseCallback: AdvertiseCallback? = null
     private var advertiser: BluetoothLeAdvertiser? = null
     private var gattServer: BluetoothGattServer? = null
     private val connectedDevices = ConcurrentHashMap<String, android.bluetooth.BluetoothDevice>()
@@ -58,43 +56,50 @@ class AndroidBleGattServer : BleGattServer {
     private val mtus = ConcurrentHashMap<String, Int>()
     private val sending = ConcurrentHashMap<String, kotlinx.coroutines.sync.Mutex>()
 
-    override fun start() {
-        val adapter = bluetoothManager.adapter ?: return
+    override fun start(payload: ByteArray, revision: Long) {
         synchronized(advertisingLock) {
-            advertiser = adapter.bluetoothLeAdvertiser ?: return
-            startAdvertising()
+            check(!closed && revision > advertisingRevision) { "BLE advertiser closed or stale" }
+            require(payload.size == 9)
+            advertisingRevision = revision
+            val adapter = checkNotNull(bluetoothManager.adapter) { "Bluetooth unavailable" }
+            advertiser = checkNotNull(adapter.bluetoothLeAdvertiser) { "BLE advertising unavailable" }
+            openGattServer()
+            startAdvertising(payload)
         }
-        openGattServer()
     }
 
     override fun stop() {
+        synchronized(advertisingLock) {
+            closed = true
+            try { advertiseCallback?.let { advertiser?.stopAdvertising(it) } }
+            catch (error: Exception) { LogCat.e("BLE advertising stop", error) }
+            advertiser = null
+            advertiseCallback = null
+            try { gattServer?.close() }
+            catch (error: Exception) { LogCat.e("BLE GATT close", error) }
+            gattServer = null
+        }
         protocol.clear()
         mtus.clear()
         connectedDevices.clear()
         pendingNotificationAcks.values.forEach { it.complete(false) }
         pendingNotificationAcks.clear()
-        synchronized(advertisingLock) {
-            advertisingJob?.cancel()
-            advertisingJob = null
-            advertiser?.stopAdvertising(advertiseCallback)
-            advertiser = null
-        }
-        try {
-            gattServer?.close()
-        } catch (_: Exception) {
-        }
-        gattServer = null
     }
 
-    override fun refreshAdvertising() {
+    override fun refreshAdvertising(payload: ByteArray, revision: Long) {
         synchronized(advertisingLock) {
-            advertiser?.stopAdvertising(advertiseCallback)
-            startAdvertising()
+            check(!closed && revision > advertisingRevision) { "BLE advertiser closed or stale" }
+            require(payload.size == 9)
+            advertisingRevision = revision
+            advertiseCallback?.let { advertiser?.stopAdvertising(it) }
+            advertiseCallback = null
+            startAdvertising(payload)
         }
     }
 
     @Suppress("DEPRECATION")
     override fun sendNotification(mac: String, charUuid: String, value: ByteArray): Boolean {
+        if (closed) return false
         val requestId = protocol.nearbyRequestId(mac) ?: return false
         val device = connectedDevices[mac] ?: return false
         scope.launch {
@@ -105,25 +110,32 @@ class AndroidBleGattServer : BleGattServer {
         return true
     }
 
-    private fun startAdvertising() {
-        val target = advertiser ?: return
-        advertisingJob?.cancel()
-        advertisingJob = scope.launch {
-            try {
-                val payload = RustDiscoveryAdvertisement.ble()
+    private fun startAdvertising(payload: ByteArray) {
+        val target = checkNotNull(advertiser) { "BLE advertising unavailable" }
+        val settings = AdvertiseSettings.Builder()
+            .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
+            .setConnectable(true).setTimeout(0).build()
+        val uuid = ParcelUuid(UUID.fromString(BleUuids.SERVICE_UUID))
+        val data = AdvertiseData.Builder().setIncludeDeviceName(false).addServiceUuid(uuid).build()
+        val scanResponse = AdvertiseData.Builder().addServiceData(uuid, payload.copyOf()).build()
+        val revision = advertisingRevision
+        val callback = object : AdvertiseCallback() {
+            override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
                 synchronized(advertisingLock) {
-                    if (!isActive || advertiser !== target) return@launch
-                    val settings = AdvertiseSettings.Builder()
-                        .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
-                        .setConnectable(true).setTimeout(0).build()
-                    val uuid = ParcelUuid(UUID.fromString(BleUuids.SERVICE_UUID))
-                    val data = AdvertiseData.Builder().setIncludeDeviceName(false).addServiceUuid(uuid).build()
-                    val scanResponse = AdvertiseData.Builder().addServiceData(uuid, payload).build()
-                    target.startAdvertising(settings, data, scanResponse, advertiseCallback)
+                    if (closed || advertiser !== target || advertisingRevision != revision || advertiseCallback !== this) {
+                        try { target.stopAdvertising(this) }
+                        catch (error: Exception) { LogCat.e("Stale BLE advertising cleanup", error) }
+                    } else LogCat.d("GATT advertising started")
                 }
-            } catch (cancelled: CancellationException) { throw cancelled }
-            catch (error: Exception) { LogCat.e("GATT advertise error: ${error.message}") }
+            }
+            override fun onStartFailure(errorCode: Int) {
+                synchronized(advertisingLock) {
+                    if (!closed && advertiseCallback === this) LogCat.e("GATT advertising failed: $errorCode")
+                }
+            }
         }
+        advertiseCallback = callback
+        target.startAdvertising(settings, data, scanResponse, callback)
     }
 
     private fun openGattServer() {
@@ -132,8 +144,9 @@ class AndroidBleGattServer : BleGattServer {
         } catch (e: Exception) {
             LogCat.e("GATT server open error: ${e.message}")
             null
-        } ?: return
+        } ?: error("BLE GATT server unavailable")
 
+        gattServer = server
         val service = BluetoothGattService(
             UUID.fromString(BleUuids.SERVICE_UUID),
             BluetoothGattService.SERVICE_TYPE_PRIMARY,
@@ -158,18 +171,7 @@ class AndroidBleGattServer : BleGattServer {
             service.addCharacteristic(char)
         }
 
-        server.addService(service)
-        gattServer = server
-    }
-
-    private val advertiseCallback = object : AdvertiseCallback() {
-        override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
-            LogCat.d("GATT advertising started")
-        }
-
-        override fun onStartFailure(errorCode: Int) {
-            LogCat.e("GATT advertising failed: $errorCode")
-        }
+        check(server.addService(service)) { "BLE service registration failed" }
     }
 
     private val gattCallback = object : BluetoothGattServerCallback() {
@@ -178,6 +180,7 @@ class AndroidBleGattServer : BleGattServer {
             status: Int,
             newState: Int,
         ) {
+            if (closed) return
             LogCat.d("[GATT] onConnectionStateChange mac=${device.address} status=$status newState=$newState")
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
@@ -192,7 +195,7 @@ class AndroidBleGattServer : BleGattServer {
             }
         }
 
-        override fun onMtuChanged(device: android.bluetooth.BluetoothDevice, mtu: Int) { mtus[device.address] = mtu }
+        override fun onMtuChanged(device: android.bluetooth.BluetoothDevice, mtu: Int) { if (!closed) mtus[device.address] = mtu }
 
         override fun onCharacteristicReadRequest(
             device: android.bluetooth.BluetoothDevice,
@@ -200,6 +203,7 @@ class AndroidBleGattServer : BleGattServer {
             offset: Int,
             characteristic: BluetoothGattCharacteristic,
         ) {
+            if (closed) return
             // Responses are delivered through notifications.
             gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, ByteArray(0))
         }
@@ -213,6 +217,7 @@ class AndroidBleGattServer : BleGattServer {
             offset: Int,
             value: ByteArray,
         ) {
+            if (closed) return
             val charUuid = characteristic.uuid.toString()
             val mac = device.address
             LogCat.d("[GATT] onWriteRequest mac=$mac charUuid=$charUuid offset=$offset valueSize=${value.size} responseNeeded=$responseNeeded")
@@ -238,6 +243,7 @@ class AndroidBleGattServer : BleGattServer {
             offset: Int,
             value: ByteArray,
         ) {
+            if (closed) return
             val mac = device.address
             val charUuid = descriptor.characteristic.uuid.toString()
             val descUuid = descriptor.uuid.toString()
@@ -278,6 +284,7 @@ class AndroidBleGattServer : BleGattServer {
 
     @Suppress("DEPRECATION")
     override suspend fun sendNotificationBlocking(mac: String, charUuid: String, value: ByteArray): Boolean {
+        if (closed) return false
         val server = gattServer ?: return false
         val device = connectedDevices[mac] ?: return false
         val char = server.getService(UUID.fromString(BleUuids.SERVICE_UUID))

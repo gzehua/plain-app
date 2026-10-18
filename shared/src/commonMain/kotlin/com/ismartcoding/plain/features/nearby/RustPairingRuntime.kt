@@ -32,21 +32,9 @@ object RustPairingRuntime {
     suspend fun currentRequest(id: String, signature: String): Boolean =
         PlainRust.mainQuery("isPairingRequestCurrent(id: ${gql(id)}, signature: ${gql(signature)})").getValue("isPairingRequestCurrent").jsonPrimitive.boolean
 
-    suspend fun receiveRequest(payload: String, address: String) {
-        PlainRust.publish(HostEvent(EventType.PAIRING_REQUEST_REPORTED, pairingRequestReport(payload, address)))
-    }
-    suspend fun receiveCancel(payload: String) {
-        PlainRust.publish(HostEvent(EventType.PAIRING_CANCEL_REPORTED, payload))
-    }
     suspend fun complete(payload: String) {
         PlainRust.publish(HostEvent(EventType.PAIRING_RESPONSE_REPORTED, payload))
     }
     suspend fun respond(request: PairingRequestInput, accepted: Boolean): JsonElement =
         PlainRust.mainGraphql("mutation(\$input: PairingRequestInput!, \$accepted: Boolean!) { respondToPairing(input: \$input, accepted: \$accepted) }", mapOf("input" to JsonHelper.jsonEncodeToElement(request), "accepted" to JsonPrimitive(accepted)), longRunning = true).getValue("respondToPairing")
 }
-
-@kotlinx.serialization.Serializable
-private data class PairingRequestReport(val request: JsonElement, val address: String)
-
-internal fun pairingRequestReport(payload: String, address: String): String =
-    JsonHelper.jsonEncode(PairingRequestReport(Json.parseToJsonElement(payload), address))

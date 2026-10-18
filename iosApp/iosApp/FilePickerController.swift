@@ -47,7 +47,6 @@ final class FilePickerController: NSObject, IosFilePicker {
         DispatchQueue.main.async {
             let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
             let destURL = docsDir.appendingPathComponent(fileName)
-            try? FileManager.default.removeItem(at: destURL)
             IosFilePickerCallback.shared.onExportResult(type: type, uri: destURL.absoluteString)
         }
     }

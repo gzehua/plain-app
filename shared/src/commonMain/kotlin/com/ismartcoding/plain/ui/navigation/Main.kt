@@ -102,7 +102,7 @@ fun Main(
     }
 
     MainEventCollector(
-        scope, mainVM, ChatViewModel, audioQueueVM, pomodoroVM, peerVM, navController,
+        scope, mainVM, audioQueueVM, pomodoroVM, peerVM, navController,
         onConfirmDialog = { confirmDialogEvent = it },
         onLoadingDialog = { loadingDialogEvent = if (it.show) it else null },
         onToast = { toastState = it },

@@ -269,10 +269,6 @@ class AwarePeerLink(
     }
 
     companion object {
-        // Tuned for fast fallback: 2 attempts × 5s + 1 retry gap of 0.5s ≈ 10.5s worst case.
-        // Previously 3 × 10s + 2 × 2s = 34s, which blocked the LAN → Aware → BLE fallback
-        // chain for too long. The PeerTransportPrewarmer pre-warms Aware on ChatPage entry,
-        // so by the time the user sends a message, both sides should already be in sync.
         private const val MAX_BUILD_ATTEMPTS = 1
         private const val ATTEMPT_TIMEOUT_MS = 5_000L
         private const val RETRY_DELAY_MS = 500L

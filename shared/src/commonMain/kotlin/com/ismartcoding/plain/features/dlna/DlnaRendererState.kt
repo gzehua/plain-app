@@ -5,7 +5,8 @@ import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.lib.dlna.DlnaMediaType
 import com.ismartcoding.plain.lib.dlna.PendingCastRequest
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.json.*
 
@@ -33,17 +34,14 @@ object DlnaRendererState {
         apply(RustDlnaReceiver.call(command))
     }
     suspend fun refresh() = command(ReceiverCommand.Snapshot)
-    fun start() { coIO { command(ReceiverCommand.Start(UserPrefs.httpPort.value)) } }
-    fun stop() { coIO { command(ReceiverCommand.Stop) } }
-    fun retry() { coIO { command(ReceiverCommand.Retry(UserPrefs.httpPort.value)) } }
+    fun retry() { coIO { command(ReceiverCommand.Retry) } }
     fun acceptCastRequest(rememberChoice: Boolean) { coIO { command(ReceiverCommand.Accept(rememberChoice)) } }
     fun rejectCastRequest(rememberChoice: Boolean) { coIO { command(ReceiverCommand.Reject(rememberChoice)) } }
-    fun reportPosition(positionMs: Long, durationMs: Long) {
-        coIO { command(ReceiverCommand.Position(positionMs, durationMs)) }
-    }
-    fun seekConsumed() { coIO { command(ReceiverCommand.SeekConsumed) } }
-    fun reportPlaybackState(state: DlnaPlaybackState) { coIO { command(ReceiverCommand.Playback(state)) } }
-    fun reportStopped() { coIO { command(ReceiverCommand.Stopped) } }
+    private fun report(event: HostEvent) { coIO { PlainRust.publish(event) } }
+    fun reportPosition(mediaUri: String, positionMs: Long, durationMs: Long) = report(DlnaPlayerReports.position(mediaUri, positionMs, durationMs))
+    fun seekConsumed(mediaUri: String, positionMs: Long) = report(DlnaPlayerReports.seekConsumed(mediaUri, positionMs))
+    fun reportPlaybackState(mediaUri: String, state: DlnaPlaybackState) = report(DlnaPlayerReports.playback(mediaUri, state))
+    fun reportStopped(mediaUri: String) = report(DlnaPlayerReports.stopped(mediaUri))
 
     internal fun apply(row: JsonObject) {
         val state = JsonHelper.jsonDecodeFromElement<ReceiverSnapshot>(row)

@@ -18,8 +18,6 @@ internal object RustEventProjection {
         com.ismartcoding.plain.ui.feeds.FeedWorkerState.refresh()
         com.ismartcoding.plain.features.videos.VideoProgressHost.restore()
         com.ismartcoding.plain.preferences.Prefs.refresh()
-        com.ismartcoding.plain.features.settings.AppUpdateDownloads.refresh()
-        com.ismartcoding.plain.features.sessions.refreshOnlineClientIds()
         com.ismartcoding.plain.features.chat.download.DownloadQueue.refresh()
         com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine.refresh()
         com.ismartcoding.plain.features.nearby.PairingProjection.reconcile()
@@ -27,13 +25,11 @@ internal object RustEventProjection {
         com.ismartcoding.plain.features.nearby.RustNearbyDevices.apply(devices)
         com.ismartcoding.plain.features.nearby.RustMdnsRuntime.refresh()
         com.ismartcoding.plain.features.dlna.DlnaRendererState.refresh()
-        com.ismartcoding.plain.features.dlna.sender.RustDlnaSender.refresh()
         com.ismartcoding.plain.ui.pomodoro.PomodoroProjection.refresh()
-        com.ismartcoding.plain.features.images.search.RustImageModels.refresh()
-        com.ismartcoding.plain.features.chat.peer.PeerTransportProjection.refresh()
         com.ismartcoding.plain.ui.chat.peer.PeerCacher.refreshOnline()
         com.ismartcoding.plain.ui.chat.peer.PeerCacher.load()
         com.ismartcoding.plain.features.chat.channel.ChannelCacher.load()
+        com.ismartcoding.plain.ui.chat.ChatViewModel.refreshLoaded()
         com.ismartcoding.plain.features.chat.ChatCacher.load()
     }
 
@@ -68,7 +64,7 @@ internal object RustEventProjection {
                 com.ismartcoding.plain.ui.chat.peer.PeerCacher.load()
                 com.ismartcoding.plain.features.chat.ChatCacher.load()
             }
-            EventType.PEER_TRANSPORT_UPDATED.name -> com.ismartcoding.plain.features.chat.peer.PeerTransportProjection.refresh()
+            EventType.PEER_TRANSPORT_UPDATED.name -> com.ismartcoding.plain.features.chat.peer.PeerTransportProjection.apply(JsonHelper.jsonDecode<JsonArray>(payload))
             EventType.PEER_CONNECTIONS_UPDATED.name -> {
                 val obj = JsonHelper.jsonDecode<JsonObject>(payload)
                 val id = obj["id"]?.jsonPrimitive?.contentOrNull
@@ -131,7 +127,6 @@ internal object RustEventProjection {
                 JsonHelper.jsonDecode<JsonElement>(payload).jsonArray.map { it.jsonPrimitive.content }.toSet())
             EventType.PREFS_UPDATED.name -> {
                 com.ismartcoding.plain.preferences.Prefs.refresh()
-                com.ismartcoding.plain.features.settings.AppUpdateDownloads.refresh()
                 com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
             }
             EventType.IMAGE_MODELS_UPDATED.name -> com.ismartcoding.plain.features.images.search.RustImageModels.apply(JsonHelper.jsonDecode<JsonObject>(payload))
@@ -145,6 +140,7 @@ internal object RustEventProjection {
                 sendEvent(HWebRequestReceivedEvent())
             }
             EventType.SHARED_FOLDER_DOWNLOAD_UPDATED.name -> com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine.refresh()
+            EventType.AUDIO_PLAYBACK_UPDATED.name -> com.ismartcoding.plain.rust.host.media.AudioEngineHost.restore(JsonHelper.jsonDecode<JsonObject>(payload))
             EventType.APP_UPDATE_DOWNLOAD_UPDATED.name -> com.ismartcoding.plain.features.settings.AppUpdateDownloads.apply(JsonHelper.jsonDecode(payload))
             EventType.FEED_SYNC_UPDATED.name -> com.ismartcoding.plain.ui.feeds.FeedWorkerState.apply(JsonHelper.jsonDecode<com.ismartcoding.plain.ui.feeds.FeedSyncUpdate>(payload))
             EventType.CONTENT_CHANGED.name -> {

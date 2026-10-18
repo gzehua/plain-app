@@ -2,6 +2,8 @@ package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.images.editor.ImageEditorProjectsClient
+import com.ismartcoding.plain.rust.PlainRust
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -28,7 +30,10 @@ class ImageEditorRustHttpTest {
             assertEquals(saved.createdAt, updated.createdAt)
             assertEquals(saved.thumbnail, updated.thumbnail)
             assertEquals("BAU=", checkNotNull(ImageEditorProjectsClient.getByIdAsync(id)).stateB64)
-            ImageEditorProjectsClient.broadcastUpdate(id, "AQID")
+            PlainRust.mainGraphql(
+                "mutation(\$id: ID!, \$update: String!) { broadcastImageEditorUpdate(id: \$id, update: \$update) }",
+                mapOf("id" to JsonPrimitive(id), "update" to JsonPrimitive("AQID")),
+            )
             ImageEditorProjectsClient.deleteAsync(id)
             assertNull(ImageEditorProjectsClient.getByIdAsync(id))
         } finally {

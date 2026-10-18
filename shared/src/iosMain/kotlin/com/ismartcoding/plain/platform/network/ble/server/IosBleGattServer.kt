@@ -4,9 +4,7 @@ package com.ismartcoding.plain.platform.network.ble.server
 
 import com.ismartcoding.plain.platform.network.ble.BleMessage
 import com.ismartcoding.plain.platform.network.ble.RustBleWire
-import com.ismartcoding.plain.features.nearby.RustDiscoveryAdvertisement
 import com.ismartcoding.plain.platform.network.ble.BleUuids
-import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.toByteArray
 import com.ismartcoding.plain.lib.toNSData
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -16,8 +14,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
@@ -52,7 +48,10 @@ class IosBleGattServer : BleGattServer {
     private val characteristics = mutableMapOf<String, CBMutableCharacteristic>()
     private var serviceAdded = false
     private var advertising = false
-    private var advertisingJob: Job? = null
+    private var servicePending = false
+    private var pendingService: CBMutableService? = null
+    private data class Advertising(val revision: Long = 0, val payload: ByteArray? = null, val closed: Boolean = false)
+    private val desired = MutableStateFlow(Advertising())
 
     private val centralLock = com.ismartcoding.plain.platform.system.PlatformLock()
     private val centrals = mutableMapOf<String, CBCentral>()
@@ -60,41 +59,59 @@ class IosBleGattServer : BleGattServer {
 
     private val notifyAckTimeoutMs = 10_000L
 
-    override fun start() {
+    override fun start(payload: ByteArray, revision: Long) = setAdvertising(payload, revision)
+
+    override fun refreshAdvertising(payload: ByteArray, revision: Long) = setAdvertising(payload, revision)
+
+    private fun setAdvertising(payload: ByteArray, revision: Long) {
+        require(payload.size == 9)
+        var next: Advertising
+        while (true) {
+            val previous = desired.value
+            check(!previous.closed && revision > previous.revision) { "BLE advertiser closed or stale" }
+            next = Advertising(revision, payload.copyOf())
+            if (desired.compareAndSet(previous, next)) break
+        }
+        val command = next
         scope.launch(Dispatchers.Main.immediate) {
-            if (peripheralManager != null) return@launch
-            val del = PeripheralManagerDelegate(this@IosBleGattServer)
-            delegate = del
-            peripheralManager = CBPeripheralManager(del, null)
+            if (desired.value !== command) return@launch
+            val manager = peripheralManager
+            if (manager == null) {
+                val del = PeripheralManagerDelegate(this@IosBleGattServer)
+                delegate = del
+                peripheralManager = CBPeripheralManager(del, null)
+            } else if (serviceAdded && manager.state == CBManagerStatePoweredOn) {
+                manager.stopAdvertising()
+                advertising = false
+                startAdvertising(manager)
+            }
         }
     }
 
     override fun stop() {
+        while (true) {
+            val previous = desired.value
+            if (previous.closed || desired.compareAndSet(previous, previous.copy(payload = null, closed = true))) break
+        }
         protocol.clear()
         centralLock.withLock { centrals.clear() }
+        pendingReadyDeferred.value?.complete(Unit)
         scope.launch(Dispatchers.Main.immediate) {
-            advertisingJob?.cancel()
-            advertisingJob = null
-            val manager = peripheralManager ?: return@launch
-            manager.stopAdvertising()
-            advertising = false
-            if (serviceAdded) { manager.removeAllServices(); serviceAdded = false }
+            val manager = peripheralManager
             peripheralManager = null
             delegate = null
-            characteristics.clear()
-        }
-    }
-
-    override fun refreshAdvertising() {
-        scope.launch(Dispatchers.Main.immediate) {
-            val manager = peripheralManager ?: return@launch
-            manager.stopAdvertising()
             advertising = false
-            startAdvertising(manager)
+            serviceAdded = false
+            servicePending = false
+            pendingService = null
+            characteristics.clear()
+            manager?.stopAdvertising()
+            manager?.removeAllServices()
         }
     }
 
     override fun sendNotification(mac: String, charUuid: String, value: ByteArray): Boolean {
+        if (desired.value.closed) return false
         val requestId = protocol.nearbyRequestId(mac) ?: return false
         if (centralLock.withLock { centrals[mac] } == null) return false
         scope.launch(Dispatchers.Main.immediate) { sendChunkedResponse(mac, charUuid, BleMessage(requestId, RustBleWire.nearby(value))) }
@@ -102,6 +119,7 @@ class IosBleGattServer : BleGattServer {
     }
 
     override suspend fun sendNotificationBlocking(mac: String, charUuid: String, value: ByteArray): Boolean {
+        if (desired.value.closed) return false
         val manager = peripheralManager ?: return false
         val char = characteristics[charUuid] ?: return false
         val central = centralLock.withLock { centrals[mac] } ?: return false
@@ -111,6 +129,7 @@ class IosBleGattServer : BleGattServer {
         // Wait for `peripheralManagerIsReadyToUpdateSubscribers` and retry.
         var attempts = 0
         while (attempts < 10) {
+            if (desired.value.closed || peripheralManager !== manager) return false
             val deferred = CompletableDeferred<Unit>()
             // Stash the deferred so the delegate can complete it.
             pendingReadyDeferred.value = deferred
@@ -163,47 +182,62 @@ class IosBleGattServer : BleGattServer {
         }
 
         service.setCharacteristics(charList)
+        pendingService = service
         manager.addService(service)
     }
 
     private fun startAdvertising(manager: CBPeripheralManager) {
-        advertisingJob?.cancel()
-        advertisingJob = scope.launch(Dispatchers.Main.immediate) {
-            try {
-                val payload = RustDiscoveryAdvertisement.ble()
-                if (!isActive || peripheralManager !== manager) return@launch
-                val uuid = CBUUID.UUIDWithString(BleUuids.SERVICE_UUID)
-                val serviceDataMap: Map<Any?, Any?> = mapOf(uuid to payload.toNSData())
-                manager.startAdvertising(mapOf<Any?, Any?>(
-                    platform.CoreBluetooth.CBAdvertisementDataServiceUUIDsKey to listOf(uuid),
-                    platform.CoreBluetooth.CBAdvertisementDataServiceDataKey to serviceDataMap,
-                ))
-                advertising = true
-            } catch (cancelled: CancellationException) { throw cancelled }
-            catch (error: Exception) { LogCat.e("BLE advertise error: ${error.message}") }
-        }
+        val command = desired.value
+        if (command.closed || peripheralManager !== manager) return
+        val payload = command.payload ?: return
+        val uuid = CBUUID.UUIDWithString(BleUuids.SERVICE_UUID)
+        val serviceDataMap: Map<Any?, Any?> = mapOf(uuid to payload.toNSData())
+        manager.startAdvertising(mapOf<Any?, Any?>(
+            platform.CoreBluetooth.CBAdvertisementDataServiceUUIDsKey to listOf(uuid),
+            platform.CoreBluetooth.CBAdvertisementDataServiceDataKey to serviceDataMap,
+        ))
+        advertising = true
     }
 
-    internal fun onManagerReady() {
-        val manager = peripheralManager ?: return
-        if (!serviceAdded) {
+    internal fun onManagerReady(manager: CBPeripheralManager) {
+        if (desired.value.closed || peripheralManager !== manager) return
+        if (manager.state != CBManagerStatePoweredOn) {
+            serviceAdded = false
+            servicePending = false
+            advertising = false
+            pendingService = null
+            characteristics.clear()
+            return
+        }
+        if (!serviceAdded && !servicePending) {
+            servicePending = true
             setupService(manager)
         }
     }
 
-    internal fun onServiceAdded(error: NSError?) {
+    internal fun onServiceAdded(manager: CBPeripheralManager, service: CBService, error: NSError?) {
+        if (desired.value.closed || peripheralManager !== manager || pendingService !== service) return
+        pendingService = null
+        servicePending = false
         if (error != null) {
             LogCat.e("BLE GATT server add service failed: ${error.localizedDescription}")
             return
         }
         serviceAdded = true
-        val manager = peripheralManager ?: return
-        if (!advertising) {
-            startAdvertising(manager)
+        if (!advertising) startAdvertising(manager)
+    }
+
+    internal fun onAdvertisingStarted(manager: CBPeripheralManager, error: NSError?) {
+        if (desired.value.closed || peripheralManager !== manager) {
+            manager.stopAdvertising()
+            return
         }
+        if (error != null) LogCat.e("BLE advertising failed: ${error.localizedDescription}")
+        else LogCat.d("BLE advertising started successfully")
     }
 
     internal fun onReadRequest(manager: CBPeripheralManager, request: CBATTRequest) {
+        if (desired.value.closed || peripheralManager !== manager) return
         // Responses are now delivered via chunked notifications. Reply with
         // an empty value so legacy Read Requests still get a success status.
         request.value = ByteArray(0).toNSData()
@@ -211,6 +245,7 @@ class IosBleGattServer : BleGattServer {
     }
 
     internal fun onWriteRequests(manager: CBPeripheralManager, requests: List<CBATTRequest>) {
+        if (desired.value.closed || peripheralManager !== manager) return
         for (request in requests) {
             manager.respondToRequest(request, CBATTErrorSuccess)
             val charUuid = request.characteristic.UUID.UUIDString
@@ -250,17 +285,11 @@ private class PeripheralManagerDelegate(
 
     override fun peripheralManagerDidUpdateState(peripheral: CBPeripheralManager) {
         LogCat.d("BLE peripheral manager state: ${peripheral.state}")
-        if (peripheral.state == CBManagerStatePoweredOn) {
-            server.onManagerReady()
-        }
+        server.onManagerReady(peripheral)
     }
 
     override fun peripheralManagerDidStartAdvertising(peripheral: CBPeripheralManager, error: NSError?) {
-        if (error != null) {
-            LogCat.e("BLE advertising failed: ${error.localizedDescription}")
-        } else {
-            LogCat.d("BLE advertising started successfully")
-        }
+        server.onAdvertisingStarted(peripheral, error)
     }
 
     override fun peripheralManager(peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFromCharacteristic: platform.CoreBluetooth.CBCharacteristic) {
@@ -272,7 +301,7 @@ private class PeripheralManagerDelegate(
         didAddService: CBService,
         error: NSError?,
     ) {
-        server.onServiceAdded(error)
+        server.onServiceAdded(peripheral, didAddService, error)
     }
 
     override fun peripheralManager(

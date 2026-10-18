@@ -30,7 +30,6 @@ internal object RustDlnaSender {
     private const val fields = "version devices { id hostAddress name } currentDevice { id hostAddress name } items { path title albumArt artist durationMs audio } currentUri playing progressMs durationMs supportsCallback"
     suspend fun call(command: CastCommand) {
         val operation = when (command) {
-            CastCommand.Snapshot -> null
             CastCommand.StartScan -> "startDlnaScan"
             CastCommand.StopScan -> "stopDlnaScan"
             is CastCommand.Select -> "selectDlnaDevice(id: ${gql(command.id)})"
@@ -46,15 +45,10 @@ internal object RustDlnaSender {
             is CastCommand.Reorder -> "reorderDlnaItems(from: ${command.from}, to: ${command.to})"
             CastCommand.Clear -> "clearDlnaItems"
         }
-        val row = if (operation == null) {
-            PlainRust.mainQuery("dlnaSenderState { $fields }").getValue("dlnaSenderState")
-        } else {
-            PlainRust.mainMutate("$operation { $fields }").getValue(operation.substringBefore('('))
-        }
+        val row = PlainRust.mainMutate("$operation { $fields }").getValue(operation.substringBefore('('))
         apply(row.jsonObject)
     }
     private fun input(item: CastItem): String = "{path: ${gql(item.path)}, title: ${gql(item.title)}, albumArt: ${gql(item.albumArt)}, artist: ${gql(item.artist)}, durationMs: ${item.durationMs}, audio: ${item.audio}}"
-    suspend fun refresh() = call(CastCommand.Snapshot)
     fun addItem(item: IMedia) { coIO { call(CastCommand.Add(CastItem.from(item))) } }
     fun removeItem(item: IMedia) { coIO { call(CastCommand.Remove(item.path)) } }
     fun startScan() { coIO { call(CastCommand.StartScan) } }

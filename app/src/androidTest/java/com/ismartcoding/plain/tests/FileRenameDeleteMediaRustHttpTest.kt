@@ -86,26 +86,26 @@ class FileRenameDeleteMediaRustHttpTest {
             assertNull(FilesClient.rename(sourcePath, collision.name))
             assertEquals("existing", collision.readText())
             assertEquals(destinationPath, FilesClient.rename(sourcePath, "renamed.png"))
-            val renameTask = FileTaskClient.list(0, 1000, "").single { task -> task.completedOps.any { it.src == sourcePath && it.dst == destinationPath } }
+            val renameTask = TestFileTaskClient.list(0, 1000, "").single { task -> task.completedOps.any { it.src == sourcePath && it.dst == destinationPath } }
             assertEquals(FileTaskType.MOVE, renameTask.type)
             assertEquals(FileTaskStatus.DONE, renameTask.status)
-            assertEquals(FileTaskStatus.DONE, FileTaskClient.list(0, Int.MAX_VALUE, "").find { it.id == renameTask.id }!!.status)
+            assertEquals(FileTaskStatus.DONE, TestFileTaskClient.list(0, Int.MAX_VALUE, "").find { it.id == renameTask.id }!!.status)
             assertFalse(File(sourcePath).exists())
             assertTrue(File(destinationPath).isFile)
             val moved = queryFileTaskMedia(listOf(destinationPath)).single()
             assertEquals(1, moved.providerType)
             ids.add(moved.id)
-            assertEquals(listOf(imageTag), TagsClient.getTagRelationsByKey(moved.id, DataType.IMAGE).map { it.tagId })
-            if (oldId != moved.id) assertTrue(TagsClient.getTagRelationsByKey(oldId, DataType.IMAGE).isEmpty())
-            assertTrue(TagsClient.getTagRelationsByKey(sourcePath, DataType.FILE).isEmpty())
-            assertEquals(listOf(fileTag), TagsClient.getTagRelationsByKey(destinationPath, DataType.FILE).map { it.tagId })
+            assertEquals(listOf(imageTag), TagsClient.getTagRelationsByKeys(setOf(moved.id), DataType.IMAGE).map { it.tagId })
+            if (oldId != moved.id) assertTrue(TagsClient.getTagRelationsByKeys(setOf(oldId), DataType.IMAGE).isEmpty())
+            assertTrue(TagsClient.getTagRelationsByKeys(setOf(sourcePath), DataType.FILE).isEmpty())
+            assertEquals(listOf(fileTag), TagsClient.getTagRelationsByKeys(setOf(destinationPath), DataType.FILE).map { it.tagId })
             assertTrue(FilesClient.delete(destinationPath))
             assertFalse(File(destinationPath).exists())
-            assertTrue(TagsClient.getTagRelationsByKey(moved.id, DataType.IMAGE).isEmpty())
-            assertTrue(TagsClient.getTagRelationsByKey(destinationPath, DataType.FILE).isEmpty())
+            assertTrue(TagsClient.getTagRelationsByKeys(setOf(moved.id), DataType.IMAGE).isEmpty())
+            assertTrue(TagsClient.getTagRelationsByKeys(setOf(destinationPath), DataType.FILE).isEmpty())
             assertFalse(FilesClient.delete(destinationPath))
         } finally {
-            FileTaskClient.list(0, 1000, "").filter { task -> task.completedOps.any { it.src.startsWith(root.path + "/") } }.forEach { FileTaskClient.remove(it.id) }
+            TestFileTaskClient.list(0, 1000, "").filter { task -> task.completedOps.any { it.src.startsWith(root.path + "/") } }.forEach { TestFileTaskClient.remove(it.id) }
             tags.forEach { TagsClient.delete(it) }
             uri?.let { resolver.delete(it, null, null) }
             ids.forEach { id -> resolver.delete(Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id), null, null) }

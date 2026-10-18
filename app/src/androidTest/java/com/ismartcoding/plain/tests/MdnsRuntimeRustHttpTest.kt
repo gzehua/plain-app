@@ -6,6 +6,8 @@ import com.ismartcoding.plain.features.nearby.RustMdnsRuntime
 import kotlin.uuid.Uuid
 import kotlin.uuid.ExperimentalUuidApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
@@ -13,23 +15,27 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class MdnsRuntimeRustHttpTest {
+    private suspend fun awaitReceiver() = withTimeout(10_000) {
+        while (!RustMdnsRuntime.snapshot().getValue("receiver").jsonPrimitive.boolean) delay(50)
+    }
     @OptIn(ExperimentalUuidApi::class)
     @Test
     fun closedPhysicalLeaseCannotAcquireAfterReleaseOrReplaceTheCurrentOwner() = runBlocking {
-        RustContentApi.mutate("startMdnsReceiver { receiver }")
+        awaitReceiver()
         val closed = Uuid.random().toString()
-        fun physical(acquire: Boolean, lease: String) = com.ismartcoding.plain.features.nearby.MdnsMulticastHost.handle(buildJsonObject {
+        fun physical(acquire: Boolean, lease: String) = com.ismartcoding.plain.rust.host.network.MdnsMulticastHost.handle(buildJsonObject {
             put("acquire", acquire); put("lease", lease)
         }).boolean
         assertTrue(physical(false, closed))
         assertFalse(physical(true, closed))
         assertFalse(physical(true, Uuid.random().toString()))
-        assertTrue(RustContentApi.mutate("startMdnsReceiver { receiver }").getValue("startMdnsReceiver").jsonObject.getValue("receiver").jsonPrimitive.boolean)
+        assertTrue(RustMdnsRuntime.snapshot().getValue("receiver").jsonPrimitive.boolean)
     }
 
     @OptIn(ExperimentalUuidApi::class)
     @Test
     fun rustControlsReceiverAndScannerWithActualAndroidMulticastPermission() = runBlocking {
+        awaitReceiver()
         suspend fun snapshot() = RustMdnsRuntime.snapshot()
         val before = snapshot()
         val debugToken = Uuid.random().toString()
@@ -51,7 +57,6 @@ class MdnsRuntimeRustHttpTest {
             assertTrue(snapshot().getValue("revision").jsonPrimitive.long >= stopped.getValue("revision").jsonPrimitive.long)
             RustMdnsRuntime.debugStart(debugToken)
             assertTrue(snapshot().getValue("capturing").jsonPrimitive.boolean)
-            RustContentApi.mutate("browseMdns { revision }")
             val captured = RustMdnsRuntime.snapshot()
             val packets = RustMdnsRuntime.packets(captured, false)
             assertEquals(captured.getValue("running").jsonPrimitive.boolean, RustMdnsRuntime.running)
@@ -61,14 +66,13 @@ class MdnsRuntimeRustHttpTest {
             assertTrue(RustMdnsRuntime.services(captured).all { it.serviceType == "_plainapp._tcp.local" })
             RustContentApi.mutate("stopDiscovery")
             assertTrue(discovering())
-            RustMdnsRuntime.debugStop(debugToken)
-            RustContentApi.mutate("startMdnsReceiver { receiver }")
+            RustMdnsRuntime.debugStop(debugToken).await()
             val cleaned = snapshot()
             assertFalse(cleaned.getValue("scanning").jsonPrimitive.boolean)
             assertFalse(cleaned.getValue("capturing").jsonPrimitive.boolean)
             assertTrue(RustMdnsRuntime.packets(cleaned, false).isEmpty())
         } finally {
-            RustMdnsRuntime.debugStop(debugToken)
+            RustMdnsRuntime.debugStop(debugToken).await()
             RustContentApi.mutate(if (before.getValue("manualScanning").jsonPrimitive.boolean) "startDiscovery" else "stopDiscovery")
         }
     }

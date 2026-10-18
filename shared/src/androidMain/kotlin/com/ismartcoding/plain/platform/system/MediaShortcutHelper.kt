@@ -7,13 +7,13 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.media.MediaMetadataRetriever
 import android.media.ThumbnailUtils
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import com.ismartcoding.plain.app.Constants
 import com.ismartcoding.plain.app.AppIntents
+import com.ismartcoding.plain.features.media.MediaClient
 import com.ismartcoding.plain.lib.extensions.isAudioFast
 import com.ismartcoding.plain.ui.media.thumbnail.ThumbnailGenerator
 import com.ismartcoding.plain.ui.components.DialogHelper
@@ -89,7 +89,13 @@ object MediaShortcutHelper {
             ThumbnailGenerator.getBitmapAsync(context, File(path), ICON_SIZE, ICON_SIZE, centerCrop = true)
         }.getOrNull()
         if (bitmap == null && path.isAudioFast()) {
-            bitmap = runCatching { extractEmbeddedArtwork(path) }.getOrNull()
+            bitmap = try {
+                loadAudioArtwork(path)
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                null
+            }
         }
         bitmap ?: return null
         val square = runCatching { ThumbnailUtils.extractThumbnail(bitmap, ICON_SIZE, ICON_SIZE) }
@@ -102,23 +108,17 @@ object MediaShortcutHelper {
         }
     }
 
-    private fun extractEmbeddedArtwork(path: String): Bitmap? {
-        val retriever = MediaMetadataRetriever()
-        try {
-            retriever.setDataSource(path)
-            val art = retriever.embeddedPicture ?: return null
-            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            BitmapFactory.decodeByteArray(art, 0, art.size, bounds)
-            var sample = 1
-            while (bounds.outWidth / (sample * 2) >= ICON_SIZE && bounds.outHeight / (sample * 2) >= ICON_SIZE) {
-                sample *= 2
-            }
-            return BitmapFactory.decodeByteArray(
-                art, 0, art.size,
-                BitmapFactory.Options().apply { inSampleSize = sample },
-            )
-        } finally {
-            runCatching { retriever.release() }
+    private suspend fun loadAudioArtwork(path: String): Bitmap? {
+        val cover = MediaClient.cacheAudioCover(path) ?: return null
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(cover, bounds)
+        var sample = 1
+        while (bounds.outWidth / (sample * 2) >= ICON_SIZE && bounds.outHeight / (sample * 2) >= ICON_SIZE) {
+            sample *= 2
         }
+        return BitmapFactory.decodeFile(
+            cover,
+            BitmapFactory.Options().apply { inSampleSize = sample },
+        )
     }
 }

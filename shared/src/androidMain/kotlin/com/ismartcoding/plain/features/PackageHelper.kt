@@ -121,21 +121,6 @@ object PackageHelper {
         )
     }
 
-    fun cacheAppLabels() {
-        try {
-            val appInfos = packageManager.getInstalledApplications(0)
-            appInfos.forEach { appInfo ->
-                try {
-                    appLabelCache[appInfo.packageName] = packageManager.getApplicationLabel(appInfo).toString()
-                } catch (ex: Exception) {
-                    LogCat.d(ex.toString())
-                }
-            }
-        } catch (ex: Exception) {
-            LogCat.d(ex.toString())
-        }
-    }
-
     private fun getLabel(packageInfo: ApplicationInfo): String {
         val key = packageInfo.packageName
         if (!appLabelCache.containsKey(key)) {

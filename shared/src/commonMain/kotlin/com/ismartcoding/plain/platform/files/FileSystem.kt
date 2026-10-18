@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.platform.files
 
-import com.ismartcoding.plain.features.files.DStorageStatsItem
 
 /**
  * Path to the primary internal storage (e.g. /storage/emulated/0).
@@ -26,20 +25,14 @@ expect fun getUsbDiskPaths(): List<String>
 /**
  * Storage stats for internal storage.
  */
-expect fun getInternalStorageStats(): DStorageStatsItem
+expect fun getInternalStorageStats(): StorageStats
 
 /**
  * Storage stats for the SD card.
  */
-expect fun getSDCardStorageStats(): DStorageStatsItem
+expect fun getSDCardStorageStats(): StorageStats
 
 /**
  * Storage stats for each USB storage device.
  */
-expect fun getUSBStorageStats(): List<DStorageStatsItem>
-
-/**
- * Canonical absolute path of [path] (resolving symlinks). Falls back to the
- * input path on platforms without a canonical notion.
- */
-expect fun getCanonicalPath(path: String): String
+expect fun getUSBStorageStats(): List<StorageStats>

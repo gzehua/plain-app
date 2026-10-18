@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.audio.*
+import com.ismartcoding.plain.rust.host.media.AudioEngineHost
 import com.ismartcoding.plain.ui.audio.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
@@ -32,7 +33,7 @@ class AudioNativeRustHttpTest {
         suspend fun playback() = com.ismartcoding.plain.rust.PlainRust.mainQuery("audioPlayback { path positionMs revision }").getValue("audioPlayback").jsonObject
         try {
             com.ismartcoding.plain.rust.PlainRust.mainMutate("audioPlayPath(path: ${JsonPrimitive(file.absolutePath)}) {path positionMs revision}")
-            assertTrue(AudioHistoryClient.recentPageFiltered(file.name,20,0).isEmpty())
+            assertTrue(TestAudioHistoryClient.recentPageFiltered(file.name,20,0).isEmpty())
             assertTrue(AudioQueueClient.queuedMediaIds().isEmpty())
             assertNull(AudioQueueClient.playback().mediaId)
             withTimeout(5_000) {
@@ -46,7 +47,7 @@ class AudioNativeRustHttpTest {
             AudioCommands.command("PLAY")
             delay(300)
             assertTrue(playback().getValue("positionMs").jsonPrimitive.long >= paused)
-            assertTrue(AudioHistoryClient.recentPageFiltered(file.name,20,0).isEmpty())
+            assertTrue(TestAudioHistoryClient.recentPageFiltered(file.name,20,0).isEmpty())
         } finally {
             try {
                 AudioCommands.command("CLEAR")

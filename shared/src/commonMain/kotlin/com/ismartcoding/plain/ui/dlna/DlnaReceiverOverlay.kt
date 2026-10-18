@@ -119,7 +119,7 @@ private fun DlnaMediaPlayerOverlay() {
     val hasMedia = mediaUri.isNotEmpty() && playbackState != DlnaPlaybackState.NO_MEDIA_PRESENT
     if (!hasMedia) return
 
-    val exitAction = { DlnaRendererState.reportStopped() }
+    val exitAction = { DlnaRendererState.reportStopped(mediaUri) }
     PBackHandler { exitAction() }
     when (mediaType) {
         DlnaMediaType.AUDIO -> DlnaReceiverAudioPlayerContent(onExit = exitAction)

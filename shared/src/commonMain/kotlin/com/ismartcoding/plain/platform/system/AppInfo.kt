@@ -4,10 +4,6 @@ import com.ismartcoding.plain.rust.http.request
 
 import com.ismartcoding.plain.platform.system.DeviceType
 
-/**
- * Build flavor + variant identifier (e.g. "fdroid-debug", "google-release").
- */
-expect fun getBuildType(): String
 
 /**
  * Platform name for protocol headers: "android" or "ios".

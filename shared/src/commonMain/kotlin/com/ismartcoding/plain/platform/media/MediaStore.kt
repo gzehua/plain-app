@@ -40,11 +40,6 @@ suspend fun moveMedia(dataType: DataType, ids: Set<String>, destDir: String): Bo
  */
 expect fun getMediaItemUriString(dataType: DataType, id: String): String
 
-/**
- * Returns the file paths for the media items of [dataType] identified by [ids].
- * Used to clean up playlist entries when items are trashed.
- */
-expect suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set<String>
 
 expect suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.features.telephony.sms.SmsDeletionReceipt
 
@@ -58,11 +53,6 @@ expect fun sendSmsParts(request: com.ismartcoding.plain.features.telephony.sms.S
  */
 expect fun call(number: String, showDialer: Boolean)
 
-/**
- * Returns the MIME type for a file extension (e.g. "image/png").
- * Returns "application/octet-stream" if unknown.
- */
-expect fun mimeTypeFromExtension(extension: String): String
 
 /**
  * Launch the platform's default SMS/MMS app with the supplied [number], [body]

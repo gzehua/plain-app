@@ -32,7 +32,6 @@ object MainAppHelper {
         CrashHandler.install(app)
         SingletonImageLoader.setSafe { context -> newImageLoader(context) }
         Prefs.load()
-        com.ismartcoding.plain.rust.request.RustContentApi.start()
 
         // Disk logging + HTTP request logging (debug=VERBOSE, release=WARN)
         initDiskLogging()

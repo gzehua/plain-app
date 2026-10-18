@@ -46,10 +46,7 @@ class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
     suspend fun addAsync(items: List<AudioTrack>) {
         val audio = items.map { it.toPlaylistAudio() }
         AudioQueueClient.enqueue(audio)
-        if (selectedPath.value.isEmpty()) {
-            setCurrentPlaying(audio.firstOrNull())
-        }
-        refreshWindow()
+        loadAsync()
     }
 
     suspend fun playSingleAsync(audio: AudioItem) {
@@ -74,8 +71,7 @@ class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
         refreshWindow()
     }
 
-    private suspend fun setCurrentPlaying(audio: AudioItem?) {
-        if (audio == null || !audio.mediaId.isNullOrEmpty()) AudioQueueClient.setCurrent(audio?.mediaId)
+    private fun setCurrentPlaying(audio: AudioItem?) {
         selectedPath.value = audio?.path.orEmpty()
         selectedMediaId.value = audio?.mediaId
     }

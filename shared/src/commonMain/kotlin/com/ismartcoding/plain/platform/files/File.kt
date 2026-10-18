@@ -88,14 +88,6 @@ expect fun isContentUri(path: String): Boolean
 expect suspend fun readTextFile(path: String): String
 
 /**
- * Write [bytes] to the file at [uriStr]. On Android [uriStr] may be a
- * `content://` URI (resolved via `ContentResolver.openOutputStream`) or a
- * filesystem path; on iOS it must be a filesystem path. Returns true on
- * success, false on failure.
- */
-expect suspend fun writeBytesToUri(uriStr: String, bytes: ByteArray): Boolean
-
-/**
  * Returns the display name of the file at [uriStr] (e.g. via
  * `OpenableColumns.DISPLAY_NAME` on Android), or null if it cannot be
  * determined. Used to surface a friendly file name after export.

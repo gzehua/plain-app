@@ -1,58 +1,93 @@
 package com.ismartcoding.plain.platform.network.ble
 
 import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.platform.network.BleAvailability
+import com.ismartcoding.plain.platform.network.bleAvailabilityFlow
 import com.ismartcoding.plain.platform.network.ble.server.BleGattServer
 import com.ismartcoding.plain.platform.network.bleTransport
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.launch
+import com.ismartcoding.plain.platform.system.PlatformLock
+import com.ismartcoding.plain.rust.PlainRust
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.serialization.json.*
+import kotlin.io.encoding.Base64
 
-/**
- * Owns the BLE GATT *server* used for pairing broadcasts and Nearby
- * notifications. Discovery scanning lives in
- * [com.ismartcoding.plain.features.nearby.BleScanDriver], whose session is owned by
- * Rust.
- */
 object PairingTransport {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private var server: BleGattServer? = null
-    private var awareObserverJob: Job? = null
+    private val lock = PlatformLock()
+    private var current: Connection? = null
 
-    fun startAdvertising() {
-        if (server != null) return
-        val s = bleTransport().createServer()
-        s.start()
-        server = s
-        startAwareObserver()
+    fun connect(createServer: () -> BleGattServer = { bleTransport().createServer() }): Connection = lock.withLock {
+        current?.closeLocked()
+        Connection(createServer).also { current = it }
     }
 
-    fun stopAdvertising() {
-        awareObserverJob?.cancel()
-        awareObserverJob = null
-        server?.stop()
-        server = null
+    fun isAdvertising(): Boolean = lock.withLock { current?.server != null }
+
+    fun sendNotification(mac: String, charUuid: String, value: String): Boolean = lock.withLock {
+        current?.server?.sendNotification(mac, charUuid, value.encodeToByteArray()) ?: false
     }
 
-    /** Whether the GATT server (advertising) is currently running. */
-    fun isAdvertising(): Boolean = server != null
+    class Connection internal constructor(private val createServer: () -> BleGattServer) {
+        @OptIn(kotlin.uuid.ExperimentalUuidApi::class)
+        internal val lease = kotlin.uuid.Uuid.random().toString()
+        internal var server: BleGattServer? = null
+        private var closed = false
+        private var revision = 0L
 
-    fun refreshAdvertising() {
-        server?.refreshAdvertising()
-    }
-
-    fun sendNotification(mac: String, charUuid: String, value: String): Boolean {
-        return server?.sendNotification(mac, charUuid, value.encodeToByteArray()) ?: false
-    }
-
-    private fun startAwareObserver() {
-        if (awareObserverJob?.isActive == true) return
-        awareObserverJob = scope.launch {
-            TempData.awareRunning.drop(1).collect {
-                refreshAdvertising()
+        fun handle(params: JsonObject): JsonElement {
+            val active = params.getValue("active").jsonPrimitive.boolean
+            val nextRevision = params.getValue("revision").jsonPrimitive.long
+            val bytes = Base64.decode(params.getValue("bytes").jsonPrimitive.content)
+            require(nextRevision > 0 && if (active) bytes.size == 9 else bytes.isEmpty())
+            return lock.withLock {
+                check(!closed && current === this && params.getValue("lease").jsonPrimitive.content == lease) { "BLE advertising connection replaced" }
+                if (nextRevision <= revision) return@withLock JsonPrimitive(false)
+                revision = nextRevision
+                if (!active) {
+                    val running = server
+                    server = null
+                    running?.stop()
+                } else {
+                    val running = server
+                    if (running == null) {
+                        val created = createServer()
+                        try { created.start(bytes, nextRevision); server = created }
+                        catch (error: Exception) { created.stop(); throw error }
+                    } else {
+                        try { running.refreshAdvertising(bytes, nextRevision) }
+                        catch (error: Exception) { server = null; running.stop(); throw error }
+                    }
+                }
+                JsonPrimitive(true)
             }
+        }
+
+        suspend fun observeFacts() {
+            combine(bleAvailabilityFlow, TempData.awareRunning) { available, aware ->
+                buildJsonObject { put("available", available == BleAvailability.READY); put("awareRunning", aware); put("lease", lease) }
+            }.collect { facts ->
+                if (!lock.withLock { !closed && current === this }) return@collect
+                try { PlainRust.publish(HostEvent(EventType.BLE_ADVERTISING_FACTS_REPORTED, facts.toString())) }
+                catch (cancelled: CancellationException) { throw cancelled }
+                catch (error: Exception) { LogCat.e("BLE advertising facts", error) }
+            }
+        }
+
+        fun close() = lock.withLock {
+            closeLocked()
+            if (current === this) current = null
+        }
+
+        internal fun closeLocked() {
+            closed = true
+            val running = server
+            server = null
+            try { running?.stop() }
+            catch (error: Exception) { LogCat.e("BLE advertising cleanup", error) }
         }
     }
 }

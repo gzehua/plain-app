@@ -1,19 +1,34 @@
 package com.ismartcoding.plain.features.media.actions
 
-import com.ismartcoding.plain.api.graphql.models.MediaActionOutcome
-import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
-import com.ismartcoding.plain.rust.request.gqlIds
+import com.ismartcoding.plain.rust.request.selectionQuery
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 object MediaActionClient {
     suspend fun run(type: DataType, action: MediaAction, ids: Collection<String>, fromTrash: Boolean = false, destDir: String = ""): Int {
-        val result = JsonHelper.jsonDecodeFromElement<MediaActionOutcome>(PlainRust.mainMutate(
-            "mediaAction(type: ${type.name}, action: ${action.name}, ids: ${gqlIds(ids)}, fromTrash: $fromTrash, destDir: ${gql(destDir)}) { affectedCount failedIds }",
+        require(type in setOf(DataType.AUDIO, DataType.VIDEO, DataType.IMAGE, DataType.DOC)) { "Unsupported media type" }
+        if (ids.isEmpty()) return 0
+        val method = mediaActionMethod(action)
+        val query = mediaActionSelection(ids, fromTrash || action == MediaAction.RESTORE)
+        val destination = if (action == MediaAction.MOVE) ", destDir: ${gql(destDir)}" else ""
+        return PlainRust.mainMutate(
+            "$method(type: ${type.name}, query: ${gql(query)}$destination) { affectedCount }",
             longRunning = true,
-        ).getValue("mediaAction"))
-        check(result.failedIds.isEmpty()) { "${action.name}: ${result.failedIds.size} media actions failed (${result.affectedCount} completed)" }
-        return result.affectedCount
+        ).getValue(method).jsonObject.getValue("affectedCount").jsonPrimitive.int
     }
+}
+
+internal fun mediaActionMethod(action: MediaAction): String = when (action) {
+    MediaAction.TRASH -> "trashMediaItems"
+    MediaAction.RESTORE -> "restoreMediaItems"
+    MediaAction.DELETE -> "deleteMediaItems"
+    MediaAction.MOVE -> "moveMediaItems"
+}
+
+internal fun mediaActionSelection(ids: Collection<String>, fromTrash: Boolean): String {
+    return "${selectionQuery(ids)} trash:$fromTrash"
 }

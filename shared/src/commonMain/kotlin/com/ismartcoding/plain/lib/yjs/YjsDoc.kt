@@ -297,21 +297,6 @@ class YjsDoc(data: ByteArray) {
         return extractValue(item)
     }
 
-    fun debugInfo(): String {
-        val sb = StringBuilder()
-        sb.appendLine("=== YjsDoc Debug ===")
-        sb.appendLine("items: ${items.size}")
-        sb.appendLine("rootTypes: ${rootTypes.keys}")
-        for ((key, rt) in rootTypes) {
-            sb.appendLine("  rootType[$key]: typeRef=${rt.typeRef}, mapEntries=${rt.mapEntries.keys}, arrayItems=${rt.arrayItems.size}")
-        }
-        sb.appendLine("--- First 10 items ---")
-        for (item in items.take(10)) {
-            sb.appendLine("  [${item.id.first},${item.id.second}] parentYKey=${item.parentYKey} parentId=${item.parentId} parentSub=${item.parentSub} origin=${item.origin} right=${item.right} content=${item.content::class.simpleName} deleted=${item.deleted}")
-        }
-        return sb.toString()
-    }
-
     fun getCanvasSize(): CanvasSize {
         val w = (getMetaValue("canvasWidth") as? Number)?.toInt() ?: 1920
         val h = (getMetaValue("canvasHeight") as? Number)?.toInt() ?: 1080
@@ -335,12 +320,6 @@ class YjsDoc(data: ByteArray) {
             if (item.content.typeRef != 1) return@mapNotNull null // not a Y.Map
             readLayer(item.id)
         }
-    }
-
-    fun getImageSrc(layerId: String): String? {
-        val imagesType = rootTypes["images"] ?: return null
-        val item = imagesType.mapEntries[layerId] ?: return null
-        return extractValue(item) as? String
     }
 
     private fun readLayer(layerItemId: Pair<Long, Long>): EditorLayer? {

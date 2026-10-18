@@ -12,10 +12,6 @@ object RustSmsQuery {
     suspend fun search(query: String, limit: Int, offset: Int): List<Sms> =
         JsonHelper.jsonDecodeFromElement(PlainRust.mainQuery("sms(query: ${gql(query)}, offset: $offset, limit: $limit) { $MESSAGE_FIELDS }").getValue("sms"))
 
-    suspend fun ids(query: String): Set<String> =
-        PlainRust.mainQuery("smsIds(query: ${gql(query)})")
-            .getValue("smsIds").jsonArray.map { it.jsonPrimitive.content }.toSet()
-
     suspend fun count(query: String): Int =
         PlainRust.mainQuery("smsCount(query: ${gql(query)})").getValue("smsCount").jsonPrimitive.int
 

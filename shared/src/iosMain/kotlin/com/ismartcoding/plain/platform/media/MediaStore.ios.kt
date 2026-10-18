@@ -10,7 +10,6 @@ import kotlinx.cinterop.useContents
 
 actual fun getMediaItemUriString(dataType: DataType, id: String): String = ""
 
-actual suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set<String> = emptySet()
 
 actual suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.features.telephony.sms.SmsDeletionReceipt =
     throw UnsupportedOperationException("SMS provider is unavailable")
@@ -20,7 +19,6 @@ actual fun sendSmsParts(request: com.ismartcoding.plain.features.telephony.sms.S
 
 actual fun call(number: String, showDialer: Boolean) {}
 
-actual fun mimeTypeFromExtension(extension: String): String = "application/octet-stream"
 
 actual fun launchDefaultSmsApp(
     number: String,

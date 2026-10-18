@@ -35,7 +35,6 @@ import com.ismartcoding.plain.ui.resources.music2 as ui_drawable_music2
 import com.ismartcoding.plain.i18n.no_lyrics
 import com.ismartcoding.plain.lib.LrcParser
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.platform.files.readTextFile
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -43,22 +42,8 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 
-/**
- * Sibling .lrc file path for an audio file path. content:// URIs have no
- * sibling file, return them unchanged so the read fails softly.
- */
-private fun lyricsPathFor(audioPath: String): String {
-    if (audioPath.startsWith("content://")) return audioPath
-    val dot = audioPath.lastIndexOf('.')
-    val slash = audioPath.lastIndexOf('/')
-    return if (dot > slash) audioPath.substring(0, dot) + ".lrc" else "$audioPath.lrc"
-}
-
-/** Sidecar .lrc file first, lyrics embedded in the audio metadata as fallback. */
 suspend fun loadLyrics(audioPath: String): List<LrcParser.LrcLine> =
-    withIO {
-        LrcParser.parse(readTextFile(lyricsPathFor(audioPath)).ifEmpty { MediaClient.lyricsByPath(audioPath) })
-    }
+    withIO { LrcParser.parse(MediaClient.lyricsByPath(audioPath)) }
 
 /**
  * Auto-scrolling lyrics view. [lines] is the parsed LRC content (null while

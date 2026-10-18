@@ -16,12 +16,3 @@ interface IosShareController {
     fun shareFiles(paths: List<String>, mimeTypes: List<String>)
     fun openFileExternal(path: String)
 }
-
-/**
- * Whether [path] points to a remote URL (http/https). Used to decide whether
- * the share controller downloads the content first or hands the local file
- * directly to `UIActivityViewController`.
- */
-fun isRemoteUrl(path: String): Boolean =
-    path.startsWith("http://", ignoreCase = true) ||
-        path.startsWith("https://", ignoreCase = true)

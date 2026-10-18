@@ -7,7 +7,6 @@ import kotlinx.serialization.SerialName
 @kotlinx.serialization.json.JsonClassDiscriminator("action")
 @Serializable
 internal sealed class CastCommand {
-    @Serializable @SerialName("snapshot") data object Snapshot : CastCommand()
     @Serializable @SerialName("startScan") data object StartScan : CastCommand()
     @Serializable @SerialName("stopScan") data object StopScan : CastCommand()
     @Serializable @SerialName("select") data class Select(val id: String) : CastCommand()

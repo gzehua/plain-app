@@ -10,6 +10,4 @@ object RustBleServiceData {
         return JsonHelper.jsonDecode(checkNotNull(RustBleBridge.call(9, 0, 0, 0, 0, false, data)).decodeToString())
     }
 
-    fun shortIdOf(clientId: String): String =
-        checkNotNull(RustBleBridge.call(10, 0, 0, 0, 0, false, clientId.encodeToByteArray())).decodeToString()
 }

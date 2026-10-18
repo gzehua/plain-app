@@ -48,9 +48,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.*
 import kotlin.concurrent.Volatile
 
-/** A refusal or transport failure from the local Rust core. */
-class RustApiException(message: String, cause: Throwable? = null) : Exception(message, cause)
-
 object RustContentApi {
     private val lock = PlatformLock()
     private val client by lazy { createPlainHttpClient(PlainHttpClientSpec.Local()) }
@@ -69,9 +66,11 @@ object RustContentApi {
     val logFilePath: String get() = checkNotNull(logPath) { "Rust log path is not initialized" }
     @Volatile private var imageCachePath: String? = null
     @Volatile private var videoCachePath: String? = null
+    @Volatile private var sharedPreviewPath: String? = null
     val cacheDirectory: String by lazy { cacheDirPath() }
     val videoCacheDirectory: String get() = checkNotNull(videoCachePath) { "Rust video cache is not initialized" }
     val imageCacheDirectory: String get() = checkNotNull(imageCachePath) { "Rust image cache is not initialized" }
+    val sharedPreviewDirectory: String get() = checkNotNull(sharedPreviewPath) { "Rust shared preview cache is not initialized" }
 
     @Volatile internal var httpGeneration: Long = 0L
         private set
@@ -93,9 +92,11 @@ object RustContentApi {
         require(ports.cacheDir.startsWith('/') && ports.imageCacheDir.startsWith('/') && ports.videoCacheDir.startsWith('/')) { "Rust cache paths required" }
         check(ports.cacheDir == cacheDirectory) { "Rust cache root differs from startup configuration" }
         require(ports.logFile.startsWith('/')) { "Rust log file path required" }
+        require(ports.sharedPreviewDir.startsWith('/')) { "Rust shared preview cache path required" }
         logPath = ports.logFile
         imageCachePath = ports.imageCacheDir
         videoCachePath = ports.videoCacheDir
+        sharedPreviewPath = ports.sharedPreviewDir
         kotlinx.coroutines.runBlocking(com.ismartcoding.plain.platform.IODispatcher) { com.ismartcoding.plain.preferences.RustSystemState.refresh() }
         localSession = ContentApiSession(
             "http://127.0.0.1:${ports.httpPort}",

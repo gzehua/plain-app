@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.platform.files
 
-import com.ismartcoding.plain.platform.system.appCacheDir
-
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 
 import com.ismartcoding.plain.i18n.*
@@ -164,16 +162,9 @@ object ShareHelper {
         email: String = "",
         subject: String = "",
     ) {
-        val fileToShare = if (displayName.isNotEmpty() && displayName != file.name) {
-            val tempDir = File(File(appCacheDir()), "share_temp").apply { mkdirs() }
-            tempDir.listFiles()?.forEach { it.delete() }
-            File(tempDir, displayName).also { file.copyTo(it, overwrite = true) }
-        } else {
-            file
-        }
         // Check if the file can be accessed by FileProvider
-        if (!isFileAccessibleByProvider(fileToShare)) {
-            val errorMessage = if (fileToShare.absolutePath.startsWith("/apex/")) {
+        if (!isFileAccessibleByProvider(file)) {
+            val errorMessage = if (file.absolutePath.startsWith("/apex/")) {
                 LocaleHelper.getString(Res.string.cannot_share_system_component)
             } else {
                 LocaleHelper.getString(Res.string.cannot_share_system_file)
@@ -183,8 +174,13 @@ object ShareHelper {
         }
         try {
             val intent = Intent(Intent.ACTION_SEND)
-            intent.type = resolveShareMimeType(context, fileToShare, mimeType)
-            intent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(context, AppIntents.AUTHORITY, fileToShare))
+            intent.type = resolveShareMimeType(context, file, mimeType.ifBlank { displayName.getMimeType() })
+            val uri = if (displayName.isNotEmpty()) {
+                FileProvider.getUriForFile(context, AppIntents.AUTHORITY, file, displayName)
+            } else {
+                FileProvider.getUriForFile(context, AppIntents.AUTHORITY, file)
+            }
+            intent.putExtra(Intent.EXTRA_STREAM, uri)
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             if (email.isNotEmpty()) {
                 intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
@@ -243,42 +239,6 @@ object ShareHelper {
             shareUri(context, uris[0])
         } else {
             shareFileUris(context, uris)
-        }
-    }
-
-    fun openPathWith(
-        context: Context,
-        path: String,
-    ) {
-        val file = File(path)
-        if (!isFileAccessibleByProvider(file)) {
-            val errorMessage = if (file.absolutePath.startsWith("/apex/")) {
-                LocaleHelper.getString(Res.string.cannot_open_system_component)
-            } else {
-                LocaleHelper.getString(Res.string.cannot_open_system_file)
-            }
-            DialogHelper.showErrorMessage(errorMessage)
-            return
-        }
-        
-        try {
-            val intent = Intent()
-            intent.action = Intent.ACTION_VIEW
-            intent.addCategory(Intent.CATEGORY_DEFAULT)
-            val uri = FileProvider.getUriForFile(context, AppIntents.AUTHORITY, file)
-            val mimeType = path.getMimeType()
-            intent.setDataAndType(uri, mimeType)
-            intent.putExtra("mimeType", mimeType)
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            val chooserIntent = Intent.createChooser(intent, LocaleHelper.getString(Res.string.open_with))
-            chooserIntent.putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, getExcludeComponentNames(context).toTypedArray())
-            // context may be the Application context, so FLAG_ACTIVITY_NEW_TASK is required
-            chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(chooserIntent)
-        } catch (e: IllegalArgumentException) {
-            DialogHelper.showErrorMessage(LocaleHelper.getString(Res.string.cannot_open_file_not_accessible))
-        } catch (e: Exception) {
-            DialogHelper.showErrorMessage(e.message ?: LocaleHelper.getString(Res.string.unknown_error))
         }
     }
 }

@@ -1,12 +1,14 @@
 package com.ismartcoding.plain.preferences
 
+import com.ismartcoding.plain.api.graphql.models.SystemSettings
+
 import com.ismartcoding.plain.features.settings.PasswordType
 import com.ismartcoding.plain.platform.permissions.Permission
 import kotlinx.coroutines.flow.StateFlow
 import com.ismartcoding.plain.lib.JsonHelper
 
 object RustSystemState {
-    val state: StateFlow<SystemState> get() = SystemPrefsClient.local.system
+    val state: StateFlow<SystemSettings> get() = SystemPrefsClient.local.system
     private suspend inline fun <reified T> set(key: String, value: T) = SystemPrefsClient.local.set(key, JsonHelper.jsonEncodeToElement(value))
 
     suspend fun refresh() = Prefs.refresh()

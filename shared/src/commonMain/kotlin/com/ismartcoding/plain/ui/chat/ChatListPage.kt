@@ -26,7 +26,6 @@ import com.ismartcoding.plain.platform.system.DeviceType
 import com.ismartcoding.plain.ui.platform.system.getIcon
 import com.ismartcoding.plain.app.events.PermissionsResultEvent
 import com.ismartcoding.plain.app.events.RequestPermissionsEvent
-import com.ismartcoding.plain.app.events.StartNearbyServiceEvent
 import com.ismartcoding.plain.features.bluetooth.client.BluetoothPermissionResultEvent
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.channels
@@ -46,7 +45,6 @@ import com.ismartcoding.plain.platform.network.wifiAwarePermission
 import com.ismartcoding.plain.platform.system.Capability
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.network.ensureBlePermissionAsync
-import com.ismartcoding.plain.platform.network.isBleReady
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.platform.system.openAppSettings
 import com.ismartcoding.plain.preferences.*
@@ -106,9 +104,6 @@ fun ChatListPage(
         Channel.sharedFlow.collect { event ->
             when (event) {
                 is BluetoothPermissionResultEvent -> {
-                    if (isBleReady()) {
-                        sendEvent(StartNearbyServiceEvent())
-                    }
                     if (pendingNearbyRequest && !awareReady) {
                         pendingNearbyRequest = false
                         awarePermission?.let { sendEvent(RequestPermissionsEvent(it)) }
@@ -121,10 +116,6 @@ fun ChatListPage(
                     if (!event.map.containsKey(key)) return@collect
                     val granted = permission.isGranted()
                     awareReady = granted
-                    if (granted) {
-                        PeerStatusClient.ensureAwareStarted()
-                        sendEvent(StartNearbyServiceEvent())
-                    }
                 }
             }
         }

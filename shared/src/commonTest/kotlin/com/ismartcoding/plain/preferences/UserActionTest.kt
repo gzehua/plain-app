@@ -11,11 +11,9 @@ class UserActionTest {
         val cases = listOf(
             UserAction.RecordSearch("term") to "recordRecentSearch(query: \"term\") { affectedCount }",
             UserAction.RemoveSearch("term") to "removeRecentSearch(query: \"term\") { affectedCount }",
-            UserAction.ClearSearches to "clearRecentSearches { affectedCount }",
             UserAction.RecordSaveDirectory("/files") to "recordRecentSaveDirectory(path: \"/files\") { affectedCount }",
             UserAction.ToggleNotificationApp("package") to "toggleNotificationApp(packageName: \"package\") { affectedCount }",
             UserAction.SetNotificationMode("allowlist") to "setNotificationFilterMode(mode: \"allowlist\") { affectedCount }",
-            UserAction.DeleteVideos(listOf("/one", "/two")) to "deletePlaylistVideos(paths: [\"/one\",\"/two\"]) { affectedCount }",
             UserAction.ClearNotificationApps to "clearNotificationFilterApps { affectedCount }",
         )
         cases.forEach { (action, selection) -> assertEquals(selection, action.selection()) }

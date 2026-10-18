@@ -74,33 +74,12 @@ pub extern "C" fn plain_prefs_string_free(pointer: *mut c_char) {
     }
 }
 
-/// The whole user-settings store as JSON, Rust defaults already merged.
-///
-/// One call seeds every App-side settings flow, so startup does not need a
-/// per-key round trip and the Kotlin defaults never become a second source of
-/// truth. Keys are the serde camelCase field names — the same names the
-/// GraphQL schema uses.
-fn user_snapshot() -> Result<String, String> {
-    let prefs = prefs()?;
-    let settings = plain_rs::prefs::user::snapshot(&prefs).map_err(|e| e.to_string())?;
-    serde_json::to_string(&settings).map_err(|e| e.to_string())
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn plain_prefs_user_snapshot() -> *mut c_char {
-    match user_snapshot() {
-        Ok(json) => c_string(json),
-        Err(error) => c_string(format!("ERROR:{error}")),
-    }
-}
-
 #[cfg(target_os = "android")]
 mod android {
     use super::*;
     use jni::EnvUnowned;
     use jni::errors::ThrowRuntimeExAndDefault;
     use jni::objects::{JObject, JString};
-    use jni::sys::jstring;
 
     #[derive(Debug)]
     enum BridgeError {
@@ -139,18 +118,5 @@ mod android {
             Ok(())
         })
         .resolve::<ThrowRuntimeExAndDefault>();
-    }
-
-    #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustPrefsBridge_userSnapshotNative(
-        mut env: EnvUnowned<'_>,
-        _: JObject<'_>,
-    ) -> jstring {
-        env.with_env(|env| -> BridgeResult<_> {
-            let json = user_snapshot().map_err(BridgeError::Prefs)?;
-            Ok(env.new_string(json)?)
-        })
-        .resolve::<ThrowRuntimeExAndDefault>()
-        .into_raw()
     }
 }

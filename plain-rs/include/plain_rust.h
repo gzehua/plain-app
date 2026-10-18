@@ -12,7 +12,6 @@ PlainBleBuffer plain_ble_call(int32_t action, uint64_t handle, uint32_t id, uint
 void plain_ble_buffer_free(PlainBleBuffer buffer);
 
 char *plain_prefs_open(const char *data_dir, const char *cache_dir);
-char *plain_prefs_user_snapshot(void);
 void plain_prefs_string_free(char *pointer);
 
 

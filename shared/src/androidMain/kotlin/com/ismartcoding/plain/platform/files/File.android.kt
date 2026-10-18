@@ -2,6 +2,7 @@ package com.ismartcoding.plain.platform.files
 
 import com.ismartcoding.plain.rust.http.copyTo
 
+import com.ismartcoding.plain.features.files.FilesClient
 import com.ismartcoding.plain.features.files.extension
 
 import com.ismartcoding.plain.api.graphql.models.File as FileEntry
@@ -9,7 +10,6 @@ import com.ismartcoding.plain.api.graphql.models.File as FileEntry
 import android.graphics.Bitmap
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.app.AppHelper
-import com.ismartcoding.plain.platform.files.FileHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.isHeifHeader
@@ -42,7 +42,18 @@ actual fun writeBytesToPath(path: String, bytes: ByteArray): Boolean {
 }
 
 actual suspend fun saveFileToDownloads(path: String, fileName: String): String = withIO {
-    FileHelper.copyFileToDownloads(path, fileName)
+    try {
+        FilesClient.copyToDirectory(
+            path,
+            com.ismartcoding.plain.helpers.PathHelper.getPlainPublicDir(android.os.Environment.DIRECTORY_DOWNLOADS).absolutePath,
+            fileName.ifEmpty { path.getFilenameFromPath() },
+        )
+    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+    } catch (error: Exception) {
+        com.ismartcoding.plain.lib.logcat.LogCat.e("Save to downloads failed", error)
+        ""
+    }
 }
 
 actual fun fileToUriString(path: String): String = File(path).toUri().toString()
@@ -141,22 +152,10 @@ actual suspend fun readTextFile(path: String): String = withIO {
             val filePath = if (path.startsWith("file://")) Uri.parse(path).path else path
             File(filePath ?: path).readText()
         }
+    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
     } catch (e: Exception) {
         ""
-    }
-}
-
-actual suspend fun writeBytesToUri(uriStr: String, bytes: ByteArray): Boolean = withIO {
-    try {
-        if (uriStr.startsWith("content://")) {
-            val uri = Uri.parse(uriStr)
-            appContext.contentResolver.openOutputStream(uri)?.use { it.write(bytes) } != null
-        } else {
-            File(uriStr).writeBytes(bytes)
-            true
-        }
-    } catch (_: Exception) {
-        false
     }
 }
 

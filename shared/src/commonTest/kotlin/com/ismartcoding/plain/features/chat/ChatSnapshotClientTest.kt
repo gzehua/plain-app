@@ -1,0 +1,46 @@
+package com.ismartcoding.plain.features.chat
+
+import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.rust.request.gql
+import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlin.test.*
+import kotlin.time.Instant
+
+class ChatSnapshotClientTest {
+    private fun chat(id: String) = ChatItem(
+        id = id, fromId = "peer", toId = "me", content = "{}", status = ChatStatus.SENT,
+        createdAt = Instant.parse("2026-01-01T00:00:00Z"), updatedAt = Instant.parse("2026-01-01T00:00:00Z"),
+    )
+
+    @Test
+    fun batchesExistingChatItemSelectionsAndDeduplicatesIdsWithoutAnExtraApi() = runTest {
+        val ids = (0 until 130).map { "message-$it" }
+        val sizes = mutableListOf<Int>()
+        val snapshot = readChatSnapshot(ids + ids.first()) { selection ->
+            val size = selection.split("chatItem(").size - 1
+            sizes += size
+            JsonObject((0 until size).associate { "message$it" to JsonNull })
+        }
+        assertEquals(listOf(128, 2), sizes)
+        assertEquals(ids, snapshot.keys.toList())
+        assertTrue(snapshot.values.all { it == null })
+        assertTrue(readChatSnapshot(emptyList()) { error("No request for empty UI state") }.isEmpty())
+    }
+
+    @Test
+    fun preservesLiteralIdsAndRequiresAnExplicitAliasResult() = runTest {
+        val id = "quoted\"\nidentifier"
+        val snapshot = readChatSnapshot(listOf(id)) { selection ->
+            assertTrue(selection.contains("chatItem(id:${gql(id)})"))
+            JsonObject(mapOf("message0" to JsonHelper.jsonEncodeToElement(chat(id))))
+        }
+        assertEquals(id, snapshot.getValue(id)?.id)
+        assertFailsWith<NoSuchElementException> { readChatSnapshot(listOf(id)) { JsonObject(emptyMap()) } }
+        assertFailsWith<IllegalArgumentException> {
+            readChatSnapshot(listOf(id)) { JsonObject(mapOf("message0" to JsonHelper.jsonEncodeToElement(chat("other")))) }
+        }
+    }
+}

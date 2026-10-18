@@ -7,34 +7,12 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.OpenableColumns
-import android.provider.Settings
-import androidx.annotation.CheckResult
 import com.ismartcoding.plain.helpers.ContentWhere
 import com.ismartcoding.plain.platform.files.OpenableFile
 import com.ismartcoding.plain.features.files.SortBy
 import com.ismartcoding.plain.platform.isQPlus
 import com.ismartcoding.plain.platform.isRPlus
 import com.ismartcoding.plain.lib.logcat.LogCat
-
-fun ContentResolver.getSystemScreenTimeout(): Int {
-    return try {
-        Settings.System.getInt(this, Settings.System.SCREEN_OFF_TIMEOUT)
-    } catch (e: Settings.SettingNotFoundException) {
-        LogCat.e("Error getting screen timeout", e)
-        5000 * 60 // default 5 minutes
-    }
-}
-
-@CheckResult
-fun ContentResolver.setSystemScreenTimeout(timeout: Int): Boolean {
-    return try {
-        Settings.System.putInt(this, Settings.System.SCREEN_OFF_TIMEOUT, timeout)
-        true
-    } catch (e: SecurityException) {
-        LogCat.e("Error writing screen timeout", e)
-        false
-    }
-}
 
 fun ContentResolver.count(uri: Uri, where: ContentWhere): Int {
     return try {

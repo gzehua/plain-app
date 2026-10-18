@@ -46,7 +46,5 @@ object TempData {
         return com.ismartcoding.plain.app.HttpServerManager.serverState.value == com.ismartcoding.plain.features.settings.HttpServerState.ON
     }
 
-    fun canDLNAAccess(): Boolean {
-        return UserPrefs.dlna.value
-    }
+
 }

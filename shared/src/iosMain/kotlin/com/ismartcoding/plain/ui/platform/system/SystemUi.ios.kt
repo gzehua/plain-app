@@ -45,8 +45,6 @@ actual fun setSystemBarsVisible(visible: Boolean) {
     IosPlatformRegistry.setImmersive(enabled = !visible)
 }
 
-@Composable
-actual fun rememberWindowInsetsController(): Any = Unit
 
 actual fun applySystemBarAppearanceForDarkTheme(useDarkTheme: Boolean) {
     // iOS: status bar appearance is controlled via UIViewController.preferredStatusBarStyle.

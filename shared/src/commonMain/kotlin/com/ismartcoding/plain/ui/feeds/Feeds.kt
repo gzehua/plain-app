@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.feeds
 
 import com.ismartcoding.plain.platform.files.getFileNameFromUri
 import com.ismartcoding.plain.platform.files.readTextFile
-import com.ismartcoding.plain.platform.files.writeBytesToUri
+import com.ismartcoding.plain.features.files.FilesClient
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 
 import androidx.compose.runtime.Composable
@@ -12,21 +12,12 @@ import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.app.events.ExportFileResultEvent
 import com.ismartcoding.plain.app.events.PickFileResultEvent
 import com.ismartcoding.plain.features.feeds.FeedsClient
-import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.ui.components.DialogHelper
 import com.ismartcoding.plain.ui.feeds.FeedsViewModel
+import kotlinx.coroutines.CancellationException
 
-/**
- * Side-effect handler for the Feeds page: listens for OPML pick/export events
- * on the global [Channel.sharedFlow] and dispatches them through [FeedsClient].
- *
- * File I/O goes through the low-level URI expects ([readTextFile],
- * [writeBytesToUri], [getFileNameFromUri]); the event-handling structure is
- * identical across platforms. iOS does not emit pick/export events today, so
- * the collectors remain dormant but structurally unified.
- */
 @Composable
 fun FeedsPageEffects(feedsVM: FeedsViewModel) {
     LaunchedEffect(Channel.sharedFlow) {
@@ -34,29 +25,37 @@ fun FeedsPageEffects(feedsVM: FeedsViewModel) {
             when (event) {
                 is PickFileResultEvent -> {
                     if (event.tag != PickFileTag.FEED) return@collect
-                    val content = readTextFile(event.uris.first())
                     DialogHelper.showLoading()
-                    withIO {
-                        try {
-                            FeedsClient.importAsync(content)
-                            feedsVM.loadAsync(withCount = true)
-                            DialogHelper.hideLoading()
-                        } catch (ex: Exception) {
-                            DialogHelper.hideLoading()
-                            DialogHelper.showMessage(ex)
-                        }
+                    try {
+                        val content = readTextFile(event.uris.first())
+                        FeedsClient.importAsync(content)
+                        feedsVM.loadAsync(withCount = true)
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        DialogHelper.showMessage(error)
+                    } finally {
+                        DialogHelper.hideLoading()
                     }
                 }
 
                 is ExportFileResultEvent -> {
                     if (event.type != ExportFileType.OPML) return@collect
-                    val opml = withIO { FeedsClient.exportAsync() }
-                    writeBytesToUri(event.uri, opml.encodeToByteArray())
-                    val fileName = getFileNameFromUri(event.uri) ?: ""
-                    DialogHelper.showConfirmDialog(
-                        "",
-                        LocaleHelper.getStringFAsync(Res.string.exported_to, fileName),
-                    )
+                    try {
+                        val opml = FeedsClient.exportAsync()
+                        check(FilesClient.writeChunks(event.uri, listOf(opml.encodeToByteArray()).iterator())) {
+                            "Unable to write selected OPML file"
+                        }
+                        val fileName = getFileNameFromUri(event.uri) ?: ""
+                        DialogHelper.showConfirmDialog(
+                            "",
+                            LocaleHelper.getStringFAsync(Res.string.exported_to, fileName),
+                        )
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        DialogHelper.showMessage(error)
+                    }
                 }
             }
         }

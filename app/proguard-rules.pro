@@ -44,7 +44,6 @@
 -keepclassmembers,allowoptimization enum com.ismartcoding.plain.platform.system.AppFeatureType { public static final com.ismartcoding.plain.platform.system.AppFeatureType *; }
 -keepclassmembers,allowoptimization enum com.ismartcoding.plain.platform.system.AppChannelType { public static final com.ismartcoding.plain.platform.system.AppChannelType *; }
 -keepclassmembers,allowoptimization enum com.ismartcoding.plain.platform.system.DataType { public static final com.ismartcoding.plain.platform.system.DataType *; }
--keepclassmembers,allowoptimization enum com.ismartcoding.plain.features.media.MediaDataType { public static final com.ismartcoding.plain.features.media.MediaDataType *; }
 -keepclassmembers,allowoptimization enum com.ismartcoding.plain.features.audio.MediaPlayMode { public static final com.ismartcoding.plain.features.audio.MediaPlayMode *; }
 -keepclassmembers,allowoptimization enum com.ismartcoding.plain.enums.PackageType { public static final com.ismartcoding.plain.enums.PackageType *; }
 -keepclassmembers,allowoptimization enum com.ismartcoding.plain.features.web.WebSettingsFeature { public static final com.ismartcoding.plain.features.web.WebSettingsFeature *; }

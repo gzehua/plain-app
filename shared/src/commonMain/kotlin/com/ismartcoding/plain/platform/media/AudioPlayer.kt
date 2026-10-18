@@ -43,8 +43,6 @@ fun audioPlay() = AudioCommands.submit("PLAY")
 
 fun restartAudioIfPlaying() = AudioCommands.submit("RESTART")
 
-fun playAudioFromPath(path: String) = AudioCommands.playPath(path)
-
 fun playAudioWithNotificationCheck(path: String) {
     checkNotificationPermission(Res.string.audio_notification_prompt) {
         AudioCommands.playPath(path)
@@ -58,8 +56,6 @@ fun audioJustPlayWithNotificationCheck(audio: AudioItem) {
         AudioCommands.playTrack(audio)
     }
 }
-
-fun audioClear() = AudioCommands.submit("CLEAR")
 
 fun audioSkipToPrevious() = AudioCommands.submit("PREVIOUS")
 

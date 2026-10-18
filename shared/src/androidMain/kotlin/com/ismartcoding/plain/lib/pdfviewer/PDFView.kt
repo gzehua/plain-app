@@ -28,7 +28,6 @@ import com.ismartcoding.plain.lib.pdfviewer.listener.OnPageErrorListener
 import com.ismartcoding.plain.lib.pdfviewer.listener.OnPageScrollListener
 import com.ismartcoding.plain.lib.pdfviewer.listener.OnRenderListener
 import com.ismartcoding.plain.lib.pdfviewer.listener.OnTapListener
-import com.ismartcoding.plain.lib.pdfviewer.source.AssetSource
 import com.ismartcoding.plain.lib.pdfviewer.source.ByteArraySource
 import com.ismartcoding.plain.lib.pdfviewer.source.DocumentSource
 import com.ismartcoding.plain.lib.pdfviewer.source.FileSource
@@ -1095,11 +1094,6 @@ class PDFView(context: Context, set: AttributeSet? = null) : RelativeLayout(cont
         } else {
             pdfFile!!.getPageLinks(page)
         }
-    }
-
-    /** Use an asset file as the pdf source  */
-    fun fromAsset(assetName: String): Configurator {
-        return Configurator(AssetSource(assetName))
     }
 
     /** Use a file as the pdf source  */

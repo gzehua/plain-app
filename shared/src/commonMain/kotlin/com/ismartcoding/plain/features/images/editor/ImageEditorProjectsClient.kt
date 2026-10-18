@@ -50,9 +50,5 @@ object ImageEditorProjectsClient {
         RustContentApi.mutate("deleteImageEditorProject(id: ${gql(id)})")
     }
 
-    suspend fun broadcastUpdate(pid: String, updateB64: String) {
-        RustContentApi.mutate("broadcastImageEditorUpdate(id: ${gql(pid)}, update: ${gql(updateB64)})")
-    }
-
     private fun JsonElement.project(): ImageEditorProject = JsonHelper.jsonDecodeFromElement<ImageEditorProject>(this)
 }

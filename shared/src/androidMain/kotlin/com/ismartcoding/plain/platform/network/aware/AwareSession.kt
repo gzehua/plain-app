@@ -75,8 +75,6 @@ class AwareSession {
         LogCat.d("[AWARE] invalidatePeerHandle peer=$peerId")
     }
 
-    suspend fun awaitReady(): WifiAwareSession = ready.await()
-
     suspend fun awaitPeerHandle(peerId: String): PeerHandle {
         discoveredPeers[peerId]?.let { handle ->
             val age = System.currentTimeMillis() - (discoveredAt[peerId] ?: 0L)
@@ -200,10 +198,6 @@ class AwareSession {
             ready.cancel()
         }
         ready = newReady()
-    }
-
-    fun markStale() {
-        stop()
     }
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.CHANGE_WIFI_STATE])

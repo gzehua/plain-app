@@ -6,7 +6,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.features.files.FileSortBy
-import com.ismartcoding.plain.features.files.PathKind
 import com.ismartcoding.plain.preferences.RustSystemState
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
@@ -52,8 +51,8 @@ class FileBrowseRustHttpTest {
             suspend fun field(selection: String): JsonElement =
                 RustContentApi.query(selection).values.first()
             assertEquals(true, field("""pathExists(path: "${root.path}")""").jsonPrimitive.boolean)
-            assertEquals(PathKind.DIR, field("""pathKind(path: "${root.path}")""").jsonPrimitive.content)
-            assertEquals(PathKind.FILE, field("""pathKind(path: "${File(root, "a.txt").path}")""").jsonPrimitive.content)
+            assertEquals("DIR", field("""pathKind(path: "${root.path}")""").jsonPrimitive.content)
+            assertEquals("FILE", field("""pathKind(path: "${File(root, "a.txt").path}")""").jsonPrimitive.content)
             assertEquals(1L, field("""fileInfo(path: "${File(root, "a.txt").path}") { size }""").jsonObject["size"]!!.jsonPrimitive.long)
             assertEquals(false, field("""pathExists(path: ".")""").jsonPrimitive.boolean)
             assertEquals(false, field("""pathExists(path: "/system")""").jsonPrimitive.boolean)

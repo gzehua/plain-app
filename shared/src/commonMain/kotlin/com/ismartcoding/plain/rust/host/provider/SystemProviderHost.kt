@@ -55,7 +55,6 @@ object SystemProviderHost {
         "systemFileIndexId",
         "systemFileIndexRows",
         "systemFileIndexCount",
-        "systemResourceMimeType",
         "systemMountFacts",
         "imageDecodeBounds" -> SystemFilesHost.handle(method, params)
         "systemMediaBucketItemFacts",

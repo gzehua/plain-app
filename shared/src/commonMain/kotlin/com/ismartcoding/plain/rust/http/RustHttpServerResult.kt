@@ -12,6 +12,7 @@ internal data class RustHttpServerResult(
     val cacheDir: String = "",
     val imageCacheDir: String = "",
     val videoCacheDir: String = "",
+    val sharedPreviewDir: String = "",
     val errorCode: String = "",
     val error: String = "",
 )

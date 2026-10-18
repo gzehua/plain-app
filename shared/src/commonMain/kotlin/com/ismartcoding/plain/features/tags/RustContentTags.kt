@@ -20,7 +20,6 @@ internal open class TagsApi(
 ) {
     private fun JsonElement.tag(): Tag = JsonHelper.jsonDecodeFromElement(this)
     suspend fun all(type: DataType): List<Tag> = query("tags(type: ${type.name}) { $TAG_FIELDS }").getValue("tags").jsonArray.map { it.tag() }
-    suspend fun get(id: String): Tag? = query("tag(id: ${gql(id)}) { $TAG_FIELDS }").getValue("tag").takeUnless { it is JsonNull }?.tag()
     suspend fun create(type: DataType, name: String): Tag =
         mutate("createTag(type: ${type.name}, name: ${gql(name)}) { $TAG_FIELDS }").getValue("createTag").tag()
     suspend fun rename(id: String, name: String): Tag =

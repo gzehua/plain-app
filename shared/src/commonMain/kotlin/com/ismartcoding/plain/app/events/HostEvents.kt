@@ -42,9 +42,12 @@ enum class EventType {
     NETWORK_INTERFACES_CHANGED,
     NETWORK_CHANGED,
     BLE_ADVERTISEMENT_REPORTED,
+    BLE_SCAN_STATE_REPORTED,
+    BLE_ADVERTISING_FACTS_REPORTED,
     IMAGE_INDEX_UPDATED,
     WEB_LOGIN_COMPLETED,
     WEB_SOCKET_REGISTERED,
+    AUDIO_PLAYBACK_UPDATED,
     AUDIO_PROGRESS_REPORTED,
     AUDIO_STARTED_REPORTED,
     AUDIO_LIBRARY_UPDATED,
@@ -103,6 +106,10 @@ enum class EventType {
     PEER_TRANSPORT_UPDATED,
     SHARED_FOLDER_DOWNLOAD_UPDATED,
     DLNA_RENDERER_UPDATED,
+    DLNA_POSITION_REPORTED,
+    DLNA_PLAYBACK_REPORTED,
+    DLNA_SEEK_CONSUMED_REPORTED,
+    DLNA_STOPPED_REPORTED,
     ONLINE_CLIENTS_UPDATED,
     WEB_REQUEST_RECEIVED,
     WEB_LOGIN_REQUESTED,
@@ -118,38 +125,14 @@ enum class EventType {
 
 
 @Serializable
-data class PeerStatusData(
-    val id: String,
-    val online: Boolean,
-)
-
-@Serializable
 data class ClipboardReportData(
     val text: String,
     val sensitive: Boolean,
 )
 
-// Payload of UPLOAD_MERGE_RESULT — mirrors the desktop local server contract
-// (docs/upload-async-merge.md in plain-desktop).
-@Serializable
-data class UploadMergeResultData(
-    val fileId: String,
-    val ok: Boolean,
-    val value: String? = null,
-    val mergedSize: Long? = null,
-    val error: String? = null,
-)
-
 @Serializable
 data class SmsProviderChangedData(
     val uris: List<String>,
-)
-
-@Serializable
-data class SmsSendResultData(
-    val requestId: String?,
-    val success: Boolean,
-    val resultCode: Int,
 )
 
 object SendResultCodes {

@@ -57,13 +57,6 @@ actual fun getMediaItemUriString(dataType: DataType, id: String): String = when 
     else -> ""
 }
 
-actual suspend fun getMediaPathsByIds(dataType: DataType, ids: Set<String>): Set<String> = when (dataType) {
-    DataType.AUDIO -> AudioMediaStoreHelper.getPathsByIdsAsync(appContext, ids)
-    DataType.VIDEO -> VideoMediaStoreHelper.getPathsByIdsAsync(appContext, ids)
-    DataType.IMAGE -> ImageMediaStoreHelper.getPathsByIdsAsync(appContext, ids)
-    DataType.DOC -> DocMediaStoreHelper.getPathsByIdsAsync(appContext, ids)
-    else -> emptySet()
-}
 
 actual fun divideSmsText(body: String, subscriptionId: Int?): List<String> = SmsHelper.divideText(body, subscriptionId)
 actual fun sendSmsParts(request: com.ismartcoding.plain.features.telephony.sms.SmsDispatchRequest) = SmsHelper.sendParts(request)
@@ -71,8 +64,6 @@ actual fun sendSmsParts(request: com.ismartcoding.plain.features.telephony.sms.S
 actual fun call(number: String, showDialer: Boolean) =
     com.ismartcoding.plain.platform.media.provider.CallMediaStoreHelper.call(appContext, number, showDialer)
 
-actual fun mimeTypeFromExtension(extension: String): String =
-    android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
 
 actual fun launchDefaultSmsApp(
     number: String,

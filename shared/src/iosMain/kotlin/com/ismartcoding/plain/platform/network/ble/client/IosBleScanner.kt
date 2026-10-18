@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withTimeoutOrNull
 import platform.CoreBluetooth.CBCentralManager
 import platform.CoreBluetooth.CBCentralManagerDelegateProtocol
@@ -174,21 +173,12 @@ object IosBleScanner : BleScanner {
         return nsData.toByteArray()
     }
 
-    override suspend fun findOne(clientId: String): BleGattClient? {
-        if (!isReadyToUse()) return null
-        // Match by shortId (SHA256(clientId)[0:8] hex) — the scan-exposed
-        // stable identifier. The full clientId is never broadcast.
-        val shortId = RustBleServiceData.shortIdOf(clientId)
-        allDevices[shortId]?.let { return it }
-        return scan(BleUuids.SERVICE_UUID).firstOrNull { device ->
-            device.id.equals(shortId, ignoreCase = true)
-        }
-    }
+
 
     /**
      * On iOS we can't construct a client from a clientId alone — the underlying
      * [CBPeripheral] must come from a scan result. Return an already-discovered
-     * client if we have one; otherwise the caller must scan via [findOne].
+     * client if we have one; otherwise the caller must scan before connecting.
      * Match by shortId.
      */
     override fun createClient(shortId: String): BleGattClient? {

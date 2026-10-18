@@ -13,7 +13,6 @@ import android.view.WindowManager
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.window.DialogWindowProvider
@@ -105,11 +104,6 @@ actual fun setSystemBarsVisible(visible: Boolean) {
     }
 }
 
-@Composable
-actual fun rememberWindowInsetsController(): Any {
-    val window = with(LocalActivity.current as Activity) { return@with window }
-    return remember { WindowCompat.getInsetsController(window, window.decorView) }
-}
 
 actual fun applySystemBarAppearanceForDarkTheme(useDarkTheme: Boolean) {
     val activity = com.ismartcoding.plain.mainActivity ?: return

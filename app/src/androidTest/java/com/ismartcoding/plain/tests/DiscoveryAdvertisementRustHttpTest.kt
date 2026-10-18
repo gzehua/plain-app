@@ -46,6 +46,7 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import kotlinx.coroutines.runBlocking
+import java.security.MessageDigest
 
 @RunWith(AndroidJUnit4::class)
 class DiscoveryAdvertisementRustHttpTest {
@@ -61,7 +62,7 @@ class DiscoveryAdvertisementRustHttpTest {
         val payload = RustDiscoveryAdvertisement.ble()
         assertEquals(9, payload.size)
         val parts = RustBleServiceData.decode(payload)!!
-        assertEquals(RustBleServiceData.shortIdOf(reply.id), parts.shortId)
+        assertEquals(expectedShortId(reply.id), parts.shortId)
         assertEquals(reply.awareSupported, parts.awareSupported)
         assertEquals(reply.awareRunning, parts.awareRunning)
     }
@@ -75,6 +76,13 @@ class DiscoveryAdvertisementRustHttpTest {
         assertEquals(parts, RustBleServiceData.decode(bytes + byteArrayOf(42)))
         assertNull(RustBleServiceData.decode(null))
         for (size in 0 until 9) assertNull(RustBleServiceData.decode(bytes.copyOf(size)))
-        assertEquals("f16d05ec6b29248d", RustBleServiceData.shortIdOf("fixture"))
+        assertEquals("f16d05ec6b29248d", expectedShortId("fixture"))
     }
+
+    private fun expectedShortId(clientId: String): String =
+        MessageDigest.getInstance("SHA-256")
+            .digest(clientId.toByteArray(Charsets.UTF_8))
+            .take(8)
+            .joinToString("") { (it.toInt() and 0xff).toString(16).padStart(2, '0') }
+
 }

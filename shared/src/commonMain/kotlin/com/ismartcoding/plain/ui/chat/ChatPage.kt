@@ -40,7 +40,6 @@ import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.ui.chat.peer.PeerCacher
-import com.ismartcoding.plain.features.chat.peer.PeerTransportPrewarmer
 import com.ismartcoding.plain.features.chat.ChatChannelStatus
 import com.ismartcoding.plain.features.nearby.PeerStatus
 import com.ismartcoding.plain.i18n.*
@@ -129,13 +128,7 @@ fun ChatPage(
         scope.launch(Dispatchers.Default) {
             chatVM.initializeTargetAsync(id)
             chatVM.fetchAsync(chatVM.target.value.toId)
-            // Pre-warm peer transports (BLE address + Aware status) so the
-            // first message send doesn't waste time on transport discovery.
-            // Only relevant for peer chats, not channels.
-            val target = chatVM.target.value
-            if (target.type == ChatTargetType.PEER && target.toId != "local") {
-                PeerTransportPrewarmer.prewarm(target.toId)
-            }
+
         }
     }
 

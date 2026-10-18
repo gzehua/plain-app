@@ -4,9 +4,7 @@ package com.ismartcoding.plain.platform.files
 
 import com.ismartcoding.plain.platform.system.appDir
 
-import com.ismartcoding.plain.features.files.DStorageStatsItem
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.toKString
 import platform.Foundation.NSFileSystemFreeSize
 import platform.Foundation.NSFileSystemSize
 import platform.Foundation.NSFileManager
@@ -19,24 +17,19 @@ actual fun getSDCardPath(): String = ""
 
 actual fun getUsbDiskPaths(): List<String> = emptyList()
 
-actual fun getInternalStorageStats(): DStorageStatsItem {
+actual fun getInternalStorageStats(): StorageStats {
     val path = appDir()
     return try {
         val attrs = NSFileManager.defaultManager.attributesOfFileSystemForPath(path, null)
-            ?: return DStorageStatsItem(0, 0)
+            ?: return StorageStats(0, 0)
         val total = (attrs[NSFileSystemSize] as? Long) ?: 0L
         val free = (attrs[NSFileSystemFreeSize] as? Long) ?: 0L
-        DStorageStatsItem(total, free)
+        StorageStats(total, free)
     } catch (e: Exception) {
-        DStorageStatsItem(0, 0)
+        StorageStats(0, 0)
     }
 }
 
-actual fun getSDCardStorageStats(): DStorageStatsItem = DStorageStatsItem(0, 0)
+actual fun getSDCardStorageStats(): StorageStats = StorageStats(0, 0)
 
-actual fun getUSBStorageStats(): List<DStorageStatsItem> = emptyList()
-
-actual fun getCanonicalPath(path: String): String {
-    val resolved = platform.posix.realpath(path, null) ?: return path
-    return try { resolved.toKString() } finally { platform.posix.free(resolved) }
-}
+actual fun getUSBStorageStats(): List<StorageStats> = emptyList()

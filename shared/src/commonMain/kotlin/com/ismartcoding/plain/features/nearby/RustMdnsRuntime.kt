@@ -47,14 +47,12 @@ object RustMdnsRuntime {
         }
         return reply
     }
-    fun startReceiver() { enqueue(Request.Receiver) }
     suspend fun debugStart(token: String) = enqueue(Request.DebugStart(token)).await()
-    fun debugStop(token: String) { enqueue(Request.DebugStop(token)) }
+    fun debugStop(token: String) = enqueue(Request.DebugStop(token))
     suspend fun snapshot(): JsonObject = PlainRust.mainQuery("mdnsState { $STATE_FIELDS }").getValue("mdnsState").jsonObject.also { apply(it) }
     private const val STATE_FIELDS = "runtimeId revision receiver running scanning published manualScanning debugSessionCount capturing services { serviceType instanceName instanceFqdn hostname port txtRecords ips ipv6 complete } packetsIn { time direction srcIp srcPort dstIp dstPort size summary detail } packetsOut { time direction srcIp srcPort dstIp dstPort size summary detail }"
     private suspend fun call(request: Request): JsonObject {
         val operation = when (request) {
-            Request.Receiver -> "startMdnsReceiver"
             is Request.DebugStart -> "acquireMdnsDebugSession(token: ${gql(request.token)})"
             is Request.DebugStop -> "releaseMdnsDebugSession(token: ${gql(request.token)})"
         }
@@ -62,7 +60,6 @@ object RustMdnsRuntime {
     }
 
     private sealed interface Request {
-        data object Receiver : Request
         data class DebugStart(val token: String) : Request
         data class DebugStop(val token: String) : Request
     }

@@ -43,7 +43,6 @@ fun initIosApp() {
 
     com.ismartcoding.plain.platform.system.setupIosImageLoader()
     Prefs.load()
-    com.ismartcoding.plain.rust.request.RustContentApi.start()
 
     // Disk logging + HTTP request logging (debug=VERBOSE, release=WARN)
     initDiskLogging()

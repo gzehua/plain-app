@@ -41,8 +41,18 @@ object MediaClient {
         return if (info is JsonNull) null else JsonHelper.jsonDecodeFromElement(info)
     }
 
-    suspend fun durationMs(path: String): Long = PlainRust.mainQuery(
-        "mediaDurationMs(path: ${gql(path)})"
-    ).getValue("mediaDurationMs").jsonPrimitive.long
+    suspend fun durationMs(path: String): Long = readMediaDurationMs(path) { document, variables ->
+        PlainRust.mainGraphql(document, variables)
+    }
+}
 
+internal suspend fun readMediaDurationMs(
+    path: String,
+    query: suspend (String, Map<String, JsonElement>) -> JsonObject,
+): Long {
+    val data = query(
+        "query(\$path:String!,\$name:String!){fileInfo(path:\$path,fileName:\$name){data{... on AudioFileInfo{durationMs}}}}",
+        mapOf("path" to JsonPrimitive(path), "name" to JsonPrimitive("audio.mp3")),
+    ).getValue("fileInfo").jsonObject.getValue("data")
+    return if (data is JsonNull) 0L else data.jsonObject.getValue("durationMs").jsonPrimitive.long
 }

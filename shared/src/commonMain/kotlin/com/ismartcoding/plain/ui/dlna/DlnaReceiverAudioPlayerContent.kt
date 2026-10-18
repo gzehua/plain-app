@@ -101,13 +101,15 @@ fun DlnaReceiverAudioPlayerContent(onExit: () -> Unit) {
             else -> {}
         }
     }
-    LaunchedEffect(seekTargetMs) {
-        seekTargetMs?.let { state.seekTo(it) }
+    LaunchedEffect(mediaUri, seekTargetMs) {
+        val uri = mediaUri
+        seekTargetMs?.let { state.seekTo(it); DlnaRendererState.seekConsumed(uri, it) }
     }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(mediaUri) {
+        val uri = mediaUri
         while (true) {
             state.updateTime()
-            DlnaRendererState.reportPosition(state.currentTime, state.totalTime)
+            DlnaRendererState.reportPosition(uri, state.currentTime, state.totalTime)
             delay(1.seconds)
         }
     }
@@ -126,6 +128,7 @@ fun DlnaReceiverAudioPlayerContent(onExit: () -> Unit) {
         val wasPlaying = state.isPlaying
         state.togglePlay()
         DlnaRendererState.reportPlaybackState(
+            mediaUri,
             if (wasPlaying) DlnaPlaybackState.PAUSED else DlnaPlaybackState.PLAYING,
         )
     }

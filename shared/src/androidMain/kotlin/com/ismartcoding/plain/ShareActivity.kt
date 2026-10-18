@@ -4,7 +4,9 @@ import com.ismartcoding.plain.app.AppIntents
 import com.ismartcoding.plain.app.Constants
 import com.ismartcoding.plain.app.IntentExtras
 
-import com.ismartcoding.plain.platform.system.appCacheDir
+import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.PlainRust
+import kotlinx.serialization.json.JsonPrimitive
 
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
@@ -23,7 +25,8 @@ import com.ismartcoding.plain.features.chat.sendPickedAttachments
 import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.ui.theme.DarkTheme
 import com.ismartcoding.plain.features.notes.NotesClient
-import com.ismartcoding.plain.platform.files.FileHelper
+import com.ismartcoding.plain.features.files.FilesClient
+import com.ismartcoding.plain.platform.files.saveFileToDownloads
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.cannot_get_content
 import com.ismartcoding.plain.i18n.note_saved
@@ -174,9 +177,14 @@ class ShareActivity : ComponentActivity() {
         lifecycleScope.launch {
             val saved = withContext(Dispatchers.IO) {
                 infos.count { info ->
-                    runCatching {
-                        FileHelper.copyFileToDownloads(this@ShareActivity, Uri.parse(info.uri)).isNotEmpty()
-                    }.getOrDefault(false)
+                    try {
+                        saveFileToDownloads(info.uri, info.name).isNotEmpty()
+                    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        LogCat.e("Save shared content failed", error)
+                        false
+                    }
                 }
             }
             if (saved > 0) {
@@ -204,9 +212,19 @@ class ShareActivity : ComponentActivity() {
     private fun openTextAsFile() {
         val text = vm.text ?: return
         lifecycleScope.launch(Dispatchers.IO) {
-            val f = shareOpenFile("shared_text_${System.currentTimeMillis()}.txt")
-            f.writeText(text)
-            withContext(Dispatchers.Main) { openInMain(Uri.fromFile(f), "text/plain") }
+            try {
+                val f = shareOpenFile("shared_text_${System.currentTimeMillis()}.txt")
+                PlainRust.mainGraphql(
+                    "mutation(\$directory:String!,\$path:String!,\$content:String!){createDir(path:\$directory){path} writeTextFile(path:\$path,content:\$content,overwrite:true){path}}",
+                    mapOf("directory" to JsonPrimitive(checkNotNull(f.parent)), "path" to JsonPrimitive(f.path), "content" to JsonPrimitive(text)),
+                )
+                withContext(Dispatchers.Main) { openInMain(Uri.fromFile(f), "text/plain") }
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                LogCat.e("Prepare shared text failed", error)
+                withContext(Dispatchers.Main) { toast(LocaleHelper.getString(Res.string.cannot_get_content)) }
+            }
         }
     }
 
@@ -220,12 +238,13 @@ class ShareActivity : ComponentActivity() {
     }
 
     private fun shareOpenFile(name: String): File =
-        File(File(File(appCacheDir()), "share_open").apply { mkdirs() }, name.replace('/', '_'))
+        File(RustContentApi.sharedPreviewDirectory, name.replace('/', '_'))
 
     private suspend fun copyToShareOpenCache(uri: Uri, name: String): File {
         val f = shareOpenFile(name.ifBlank { "file_${System.currentTimeMillis()}" })
-        FileHelper.copyFile(this, uri, f.absolutePath)
-        return f
+        val saved = FilesClient.copyToDirectory(uri.toString(), checkNotNull(f.parent), f.name)
+        check(saved.isNotEmpty()) { "Unable to copy shared content" }
+        return File(saved)
     }
 
     private fun finishWithErrorToast() {

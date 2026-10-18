@@ -3,6 +3,7 @@ package com.ismartcoding.plain.ui.chat
 import com.ismartcoding.plain.features.chat.ChatClient
 import com.ismartcoding.plain.features.chat.ChatMessageReceiver
 import com.ismartcoding.plain.features.chat.RustChatStore
+import com.ismartcoding.plain.features.chat.readChatSnapshot
 import com.ismartcoding.plain.features.chat.ShareSendClient
 
 import androidx.compose.runtime.mutableStateListOf
@@ -179,6 +180,25 @@ object ChatViewModel : ISelectableViewModel<VChat> {
                 _scrollToLatest.trySend(previousTopId)
             } else {
                 _itemsFlow.update { items.map { VChat.from(it) } + it.filterNot { existing -> items.any { incoming -> incoming.id == existing.id } } }
+            }
+        }
+    }
+
+    internal suspend fun refreshLoaded(
+        read: suspend (List<String>) -> Map<String, ChatItem?> = { readChatSnapshot(it) },
+    ) {
+        val previous = _itemsFlow.value
+        if (previous.isEmpty()) return
+        val target = _target.value
+        val updates = read(previous.map { it.id })
+        val before = previous.associateBy { it.id }
+        mutex.withLock {
+            if (_target.value != target) return
+            _itemsFlow.update { current ->
+                current.mapNotNull { item ->
+                    if (before[item.id] !== item || !updates.containsKey(item.id)) item
+                    else updates[item.id]?.let { VChat.from(it) }
+                }
             }
         }
     }

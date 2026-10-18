@@ -56,12 +56,6 @@ expect fun exitImmersiveFullscreen()
  */
 expect fun setSystemBarsVisible(visible: Boolean)
 
-/**
- * Returns the platform's window insets controller for the current window.
- * On Android this returns a `WindowInsetsControllerCompat`; on iOS it returns `Unit`.
- */
-@Composable
-expect fun rememberWindowInsetsController(): Any
 
 /**
  * Apply the platform's system bar appearance based on the dark theme state.

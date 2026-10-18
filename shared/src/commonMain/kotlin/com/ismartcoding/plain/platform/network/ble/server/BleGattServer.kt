@@ -1,9 +1,9 @@
 package com.ismartcoding.plain.platform.network.ble.server
 
 interface BleGattServer {
-    fun start()
+    fun start(payload: ByteArray, revision: Long)
     fun stop()
-    fun refreshAdvertising()
+    fun refreshAdvertising(payload: ByteArray, revision: Long)
 
     fun sendNotification(mac: String, charUuid: String, value: ByteArray): Boolean
 

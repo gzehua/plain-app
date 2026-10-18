@@ -8,6 +8,18 @@ import kotlin.test.fail
 class ApiContractTest {
     private val sdl: String = readMainSchema()
 
+    @Test
+    fun userPreferenceSnapshotSelectsEveryExistingTypedSetting() {
+        val expected = mutableSetOf<String>()
+        forEachTypedField { (owner, name, _) -> if (owner == "UserSettings") expected.add(name) }
+        val selected = Regex("[A-Za-z_][A-Za-z0-9_]*")
+            .findAll(com.ismartcoding.plain.preferences.USER_SETTINGS_SELECTION)
+            .map { it.value }.toList()
+        assertEquals("userSettings", selected.first())
+        assertEquals(expected, selected.drop(1).toSet())
+        assertEquals(expected.size, selected.size - 1)
+    }
+
     // Fields that keep a raw String id although the naming rule says ID.
     // Each entry must be justified in the API contract ("deliberate exceptions").
     private val stringIdAllowlist = setOf(
@@ -48,10 +60,10 @@ class ApiContractTest {
     fun sdlSnapshotCoversTheWholeContract() {
         val queries = operationFieldNamesIn("Query")
         val mutations = operationFieldNamesIn("Mutation")
-        if (queries.size != 154 || mutations.size != 251) {
+        if (queries.size != 137 || mutations.size != 233) {
             fail(
                 "Shared Rust schema fragments declare ${queries.size} Query / ${mutations.size} " +
-                    "Mutation operations — the contract has 154 / 251. The snapshot looks truncated or " +
+                    "Mutation operations — the contract has 137 / 233. The snapshot looks truncated or " +
                     "drifted; every check in this class reads it, so they would pass on an empty file.",
             )
         }

@@ -1,21 +1,20 @@
 package com.ismartcoding.plain.api.graphql.models
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class SystemSettings(
-    var password: String,
-    var passwordType: Int,
-    var authTwoFactor: Boolean,
-    var rotateUrlTokenOnRestart: Boolean,
-    var adbToken: String,
-    var updateInfo: JsonElement,
-    var urlToken: String,
-    var apiPermissions: List<String>,
-    var onboardingCompleted: Boolean,
-    var clientId: String,
-    var mdnsHostname: String,
-    var signaturePublicKey: String,
-    var appUpdateAvailable: Boolean = false,
+    val password: String,
+    val passwordType: Int,
+    val authTwoFactor: Boolean,
+    val rotateUrlTokenOnRestart: Boolean,
+    val adbToken: String,
+    val updateInfo: UpdateInfo,
+    val appUpdateAvailable: Boolean = false,
+    val urlToken: String,
+    val apiPermissions: Set<String>,
+    val onboardingCompleted: Boolean,
+    val clientId: String,
+    val mdnsHostname: String,
+    val signaturePublicKey: String,
 )

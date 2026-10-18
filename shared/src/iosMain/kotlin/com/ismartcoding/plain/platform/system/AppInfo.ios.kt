@@ -12,11 +12,6 @@ import platform.UIKit.UIUserInterfaceIdiomPad
 import platform.UIKit.UIUserInterfaceIdiomPhone
 import platform.UIKit.UIUserInterfaceIdiomTV
 
-actual fun getBuildType(): String {
-    val bundle = NSBundle.mainBundle
-    val identifier = bundle.bundleIdentifier ?: ""
-    return if (identifier.contains("fdroid")) "fdroid" else if (identifier.contains("github")) "github" else "google"
-}
 
 actual fun getPlatformName(): String = "ios"
 

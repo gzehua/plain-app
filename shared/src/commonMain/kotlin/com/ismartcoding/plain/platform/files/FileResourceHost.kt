@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.platform.files
 
 import com.ismartcoding.plain.platform.getContentTypeForPath
-import com.ismartcoding.plain.rust.http.request
 
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*

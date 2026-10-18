@@ -4,8 +4,6 @@ import com.ismartcoding.plain.features.images.search.HImageIndexProgressEvent
 import com.ismartcoding.plain.features.images.search.HImageSearchStatusChangedEvent
 
 import com.ismartcoding.plain.api.graphql.models.PairingRequestInput
-import com.ismartcoding.plain.platform.network.ble.PairingTransport
-import com.ismartcoding.plain.features.nearby.RustMdnsRuntime
 import com.ismartcoding.plain.ui.state.ActionSourceType
 import com.ismartcoding.plain.ui.state.ActionType
 import com.ismartcoding.plain.features.audio.AudioAction
@@ -25,7 +23,6 @@ import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.media.audioPause
 import com.ismartcoding.plain.features.settings.AppUpdateDownloads
-import com.ismartcoding.plain.platform.network.isBluetoothAdvertiseReady
 import com.ismartcoding.plain.platform.media.restartAudioIfPlaying
 import com.ismartcoding.plain.platform.notifications.sendChatMessageNotification
 import com.ismartcoding.plain.platform.network.setBluetoothCanContinue
@@ -116,7 +113,6 @@ class SleepTimerEvent(val durationMs: Long) : ChannelEvent()
 
 class CancelSleepTimerEvent : ChannelEvent()
 
-class StartNearbyServiceEvent : ChannelEvent()
 
 data class ChatMessageNotificationEvent(
     val targetId: String,
@@ -186,13 +182,6 @@ object AppEvents {
 
                     is StartHttpServerEvent -> {
                         startHttpServerService()
-                    }
-
-                    is StartNearbyServiceEvent -> {
-                        RustMdnsRuntime.startReceiver()
-                        if (isBluetoothAdvertiseReady()) {
-                            PairingTransport.startAdvertising()
-                        }
                     }
 
                     is DownloadUpdateEvent -> {

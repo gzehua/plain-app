@@ -25,7 +25,6 @@ open class NotesApi internal constructor(
     suspend fun search(query: String, limit: Int, offset: Int): List<Note> = this.query("notes(query: ${gql(query)}, limit: $limit, offset: $offset) { $NOTE_FIELDS }").getValue("notes").jsonArray.map { it.note() }
     suspend fun getById(id: String): Note? = query("note(id: ${gql(id)}) { $NOTE_FIELDS }")["note"]?.takeUnless { it is JsonNull }?.note()
     suspend fun getIdsAsync(query: String): Set<String> = ids(query)
-    suspend fun getTrashedIdsAsync(query: String): Set<String> = ids("$query trash:true")
     private suspend fun ids(query: String): Set<String> = this.query("notes(query: ${gql(query)}, limit: ${Int.MAX_VALUE}, offset: 0) { id }").getValue("notes").jsonArray.map { it.jsonObject.string("id") }.toSet()
     suspend fun save(id: String, title: String, content: String): Note {
         val input = "{ title: ${gql(title)}, content: ${gql(content)} }"
