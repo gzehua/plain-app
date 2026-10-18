@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.features.audio
 
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.api.graphql.models.AudioPlayback
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.api.graphql.models.AudioItem
@@ -34,7 +36,7 @@ object AudioQueueClient {
     suspend fun reorderQueued(mediaIds: List<String>) { RustContentApi.mutate("reorderAudioQueue(mediaIds: ${gqlIds(mediaIds)})") }
     suspend fun queuedMediaIds(): Set<String> = PlainRust.mainQuery(
         "audioQueueItems(query: \"\", offset: 0, limit: ${Int.MAX_VALUE}) { mediaId }",
-    ).getValue("audioQueueItems").jsonArray.mapNotNull { it.jsonObject.getValue("mediaId").jsonPrimitive.contentOrNull }.toSet()
+    ).getValue("audioQueueItems").let { JsonHelper.jsonDecodeFromElement<List<QueuedMediaId>>(it) }.mapNotNull { it.mediaId }.toSet()
 
     suspend fun onStarted(audio: AudioItem, revision: Long) {
         PlainRust.publish(com.ismartcoding.plain.app.events.HostEvent(
@@ -56,3 +58,6 @@ object AudioQueueClient {
         RustContentApi.query("audioQueueItems(offset: $offset, limit: $limit, query: ${gql(query)}) { $AUDIO_TRACK_FIELDS }")
             .getValue("audioQueueItems").jsonArray.map { it.audioTrack() }
 }
+
+@Serializable
+private data class QueuedMediaId(val mediaId: String?)

@@ -8,9 +8,9 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @JsonClassDiscriminator("action")
 @Serializable
 internal sealed class ReceiverCommand {
-    @Serializable @SerialName("removeRule") data class RemoveRule(val ip: String, val allowed: Boolean) : ReceiverCommand()
-    @Serializable @SerialName("snapshot") data object Snapshot : ReceiverCommand()
-    @Serializable @SerialName("retry") data object Retry : ReceiverCommand()
-    @Serializable @SerialName("accept") data class Accept(val remember: Boolean) : ReceiverCommand()
-    @Serializable @SerialName("reject") data class Reject(val remember: Boolean) : ReceiverCommand()
+    @Serializable @SerialName("REMOVE_RULE") data class RemoveRule(val ip: String, val allowed: Boolean) : ReceiverCommand()
+    @Serializable @SerialName("SNAPSHOT") data object Snapshot : ReceiverCommand()
+    @Serializable @SerialName("RETRY") data object Retry : ReceiverCommand()
+    @Serializable @SerialName("ACCEPT") data class Accept(val remember: Boolean) : ReceiverCommand()
+    @Serializable @SerialName("REJECT") data class Reject(val remember: Boolean) : ReceiverCommand()
 }

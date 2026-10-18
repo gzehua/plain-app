@@ -12,7 +12,6 @@ class UserActionTest {
             UserAction.RecordSearch("term") to "recordRecentSearch(query: \"term\") { affectedCount }",
             UserAction.RemoveSearch("term") to "removeRecentSearch(query: \"term\") { affectedCount }",
             UserAction.RecordSaveDirectory("/files") to "recordRecentSaveDirectory(path: \"/files\") { affectedCount }",
-            UserAction.ToggleNotificationApp("package") to "toggleNotificationApp(packageName: \"package\") { affectedCount }",
             UserAction.SetNotificationMode("allowlist") to "setNotificationFilterMode(mode: \"allowlist\") { affectedCount }",
             UserAction.ClearNotificationApps to "clearNotificationFilterApps { affectedCount }",
         )

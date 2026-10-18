@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.features.audio
 
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.api.graphql.models.AudioOverview
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.features.media.MediaCatalogClient
@@ -18,11 +20,17 @@ object AudioOverviewClient {
 
     internal fun updatesOverview(type: String, payload: String): Boolean = when (type) {
         EventType.AUDIO_LIBRARY_UPDATED.name -> true
-        EventType.MEDIA_LIBRARY_UPDATED.name -> JsonHelper.jsonDecode<JsonObject>(payload)["types"]?.jsonArray?.any { it.jsonPrimitive.intOrNull == DataType.AUDIO.value } == true
-        EventType.MEDIA_SCAN_PROGRESS.name -> when (JsonHelper.jsonDecode<JsonObject>(payload)["state"]?.jsonPrimitive?.content) {
+        EventType.MEDIA_LIBRARY_UPDATED.name -> JsonHelper.jsonDecode<MediaLibraryUpdate>(payload).types?.contains(DataType.AUDIO.value) == true
+        EventType.MEDIA_SCAN_PROGRESS.name -> when (JsonHelper.jsonDecode<MediaScanUpdate>(payload).state) {
             "IDLE", "FAILED", "STOPPED", "PAUSED" -> true
             else -> false
         }
         else -> false
     }
 }
+
+@Serializable
+private data class MediaLibraryUpdate(val types: List<Int>? = null)
+
+@Serializable
+private data class MediaScanUpdate(val state: String? = null)

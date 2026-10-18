@@ -1,22 +1,36 @@
 package com.ismartcoding.plain.rust.host
 
+import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.platform.files.decodeThumbnailBytes
 import com.ismartcoding.plain.rust.bridge.RustCoreBridge
 import kotlinx.serialization.json.*
 
 internal object ThumbnailHost {
     suspend fun decode(params: JsonObject): JsonElement {
-        val path = params.getValue("path").jsonPrimitive.content
-        val bytes = decodeThumbnailBytes(path,
-            params.getValue("width").jsonPrimitive.int,
-            params.getValue("height").jsonPrimitive.int,
-            params.getValue("centerCrop").jsonPrimitive.boolean,
-            params.getValue("mediaId").jsonPrimitive.content,
-            params.getValue("fileName").jsonPrimitive.content,
+        val request = JsonHelper.jsonDecodeFromElement<ThumbnailRequest>(params)
+        val bytes = decodeThumbnailBytes(request.path,
+            request.width,
+            request.height,
+            request.centerCrop,
+            request.mediaId,
+            request.fileName,
         ) ?: return JsonNull
-        val token = params.getValue("outputToken").jsonPrimitive.content
+        val token = request.outputToken
         val error = RustCoreBridge.send("thumbnail", token, bytes)
         check(error.isEmpty()) { error }
         return JsonPrimitive(true)
     }
 }
+
+@Serializable
+private data class ThumbnailRequest(
+    val path: String,
+    val width: Int,
+    val height: Int,
+    val centerCrop: Boolean,
+    val mediaId: String,
+    val fileName: String,
+    val outputToken: String,
+)

@@ -1,0 +1,499 @@
+use super::values::{c_string, input};
+use plain_server::native::management::NativeManagement;
+use std::ffi::c_char;
+use tokio::runtime::Handle;
+
+fn parts() -> Result<(Handle, NativeManagement), String> {
+    super::server::with_core(|core| {
+        core.server
+            .native_management()
+            .map(|management| (core.runtime.handle().clone(), management))
+    })?
+}
+
+macro_rules! reply {
+    ($result:expr) => {
+        match $result {
+            Ok(value) => serde_json::json!({"value":value}).to_string(),
+            Err(error) => serde_json::json!({"error":error}).to_string(),
+        }
+    };
+}
+
+fn port(value: i32) -> Result<Option<u16>, String> {
+    if value == -1 {
+        return Ok(None);
+    }
+    u16::try_from(value)
+        .map(Some)
+        .map_err(|_| "Invalid server port".into())
+}
+
+fn restart_http_server(http_port: i32, https_port: i32) -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.restart_http_server(port(http_port)?, port(https_port)?))
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_restart_http_server(http_port: i32, https_port: i32) -> *mut c_char {
+    c_string(restart_http_server(http_port, https_port))
+}
+
+fn regenerate_tls_certificate() -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.regenerate_tls_certificate())
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_regenerate_tls_certificate() -> *mut c_char {
+    c_string(regenerate_tls_certificate())
+}
+
+fn import_tls_certificate_pem(certificate_pem: String, private_key_pem: String) -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.import_tls_certificate_pem(certificate_pem, private_key_pem))
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_import_tls_certificate_pem(
+    certificate_pem: *const c_char,
+    private_key_pem: *const c_char,
+) -> *mut c_char {
+    let result = (|| -> Result<String, String> {
+        let certificate_pem = input(certificate_pem)?;
+        let private_key_pem = input(private_key_pem)?;
+        Ok(import_tls_certificate_pem(certificate_pem, private_key_pem))
+    })();
+    c_string(result.unwrap_or_else(|error| reply!(Err::<(), String>(error))))
+}
+
+fn import_tls_certificate_pkcs12(data: Vec<u8>, password: String) -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.import_tls_certificate_pkcs12(data, password))
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn plain_import_tls_certificate_pkcs12(
+    data: *const u8,
+    data_len: usize,
+    password: *const c_char,
+) -> *mut c_char {
+    let result = (|| -> Result<String, String> {
+        let data = if data_len == 0 {
+            Vec::new()
+        } else {
+            if data.is_null() {
+                return Err("Null certificate bytes".to_owned());
+            }
+            unsafe { std::slice::from_raw_parts(data, data_len) }.to_vec()
+        };
+        let password = input(password)?;
+        Ok(import_tls_certificate_pkcs12(data, password))
+    })();
+    c_string(result.unwrap_or_else(|error| reply!(Err::<(), String>(error))))
+}
+
+fn create_session(name: String) -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        let _ = runtime;
+        management.create_session(name)
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_create_session(name: *const c_char) -> *mut c_char {
+    let result = (|| -> Result<String, String> {
+        let name = input(name)?;
+        Ok(create_session(name))
+    })();
+    c_string(result.unwrap_or_else(|error| reply!(Err::<(), String>(error))))
+}
+
+fn confirm_web_login(request_id: String, allowed: bool) -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.confirm_web_login(request_id, allowed))
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_confirm_web_login(request_id: *const c_char, allowed: bool) -> *mut c_char {
+    let result = (|| -> Result<String, String> {
+        let request_id = input(request_id)?;
+        Ok(confirm_web_login(request_id, allowed))
+    })();
+    c_string(result.unwrap_or_else(|error| reply!(Err::<(), String>(error))))
+}
+
+fn stage_app_restore(path: String) -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.stage_app_restore(path))
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_stage_app_restore(path: *const c_char) -> *mut c_char {
+    let result = (|| -> Result<String, String> {
+        let path = input(path)?;
+        Ok(stage_app_restore(path))
+    })();
+    c_string(result.unwrap_or_else(|error| reply!(Err::<(), String>(error))))
+}
+
+fn export_app_backup() -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.export_app_backup())
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_export_app_backup() -> *mut c_char {
+    c_string(export_app_backup())
+}
+
+fn create_crash_report(report: String) -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.create_crash_report(report))
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_create_crash_report(report: *const c_char) -> *mut c_char {
+    let result = (|| -> Result<String, String> {
+        let report = input(report)?;
+        Ok(create_crash_report(report))
+    })();
+    c_string(result.unwrap_or_else(|error| reply!(Err::<(), String>(error))))
+}
+
+fn verify_adb_token(token: String) -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        let _ = runtime;
+        management.verify_adb_token(token)
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_verify_adb_token(token: *const c_char) -> *mut c_char {
+    let result = (|| -> Result<String, String> {
+        let token = input(token)?;
+        Ok(verify_adb_token(token))
+    })();
+    c_string(result.unwrap_or_else(|error| reply!(Err::<(), String>(error))))
+}
+
+fn start_app_update_download() -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.start_app_update_download())
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_start_app_update_download() -> *mut c_char {
+    c_string(start_app_update_download())
+}
+
+fn cancel_app_update_download() -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.cancel_app_update_download())
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_cancel_app_update_download() -> *mut c_char {
+    c_string(cancel_app_update_download())
+}
+
+fn check_app_update(automatic: bool) -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.check_app_update(automatic))
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_check_app_update(automatic: bool) -> *mut c_char {
+    c_string(check_app_update(automatic))
+}
+
+fn system_settings() -> String {
+    reply!((|| {
+        let (_, management) = parts()?;
+        management.system_settings()
+    })())
+}
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_system_settings() -> *mut c_char {
+    c_string(system_settings())
+}
+
+fn user_settings() -> String {
+    reply!((|| {
+        let (_, management) = parts()?;
+        management.user_settings()
+    })())
+}
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_user_settings() -> *mut c_char {
+    c_string(user_settings())
+}
+
+fn toggle_notification_app(package_name: String) -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.toggle_notification_app(package_name))
+    })())
+}
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_toggle_notification_app(package_name: *const c_char) -> *mut c_char {
+    c_string(match input(package_name) {
+        Ok(package_name) => toggle_notification_app(package_name),
+        Err(error) => reply!(Err::<(), String>(error)),
+    })
+}
+
+#[cfg(target_os = "android")]
+mod android {
+    use super::*;
+    use jni::{
+        EnvUnowned,
+        errors::ThrowRuntimeExAndDefault,
+        objects::{JByteArray, JObject, JString},
+        sys::{jboolean, jint, jstring},
+    };
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_restartHttpServerNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        http_port: jint,
+        https_port: jint,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = restart_http_server(http_port, https_port);
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_regenerateTlsCertificateNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = regenerate_tls_certificate();
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_importTlsCertificatePemNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        certificate_pem: JString<'_>,
+        private_key_pem: JString<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = import_tls_certificate_pem(
+                certificate_pem.to_string(),
+                private_key_pem.to_string(),
+            );
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_importTlsCertificatePkcs12Native(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        data: JByteArray<'_>,
+        password: JString<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result =
+                import_tls_certificate_pkcs12(env.convert_byte_array(&data)?, password.to_string());
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_createSessionNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        name: JString<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = create_session(name.to_string());
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_confirmWebLoginNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        request_id: JString<'_>,
+        allowed: jboolean,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = confirm_web_login(request_id.to_string(), allowed);
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_stageAppRestoreNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        path: JString<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = stage_app_restore(path.to_string());
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_exportAppBackupNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = export_app_backup();
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_createCrashReportNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        report: JString<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = create_crash_report(report.to_string());
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_verifyAdbTokenNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        token: JString<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = verify_adb_token(token.to_string());
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_startAppUpdateDownloadNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = start_app_update_download();
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_cancelAppUpdateDownloadNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = cancel_app_update_download();
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_checkAppUpdateNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        automatic: jboolean,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            let result = check_app_update(automatic);
+            env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_systemSettingsNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> { env.new_string(system_settings()) })
+            .resolve::<ThrowRuntimeExAndDefault>()
+            .into_raw()
+    }
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_userSettingsNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> { env.new_string(user_settings()) })
+            .resolve::<ThrowRuntimeExAndDefault>()
+            .into_raw()
+    }
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_toggleNotificationAppNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        package_name: JString<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            env.new_string(toggle_notification_app(package_name.to_string()))
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+}
+
+#[cfg(test)]
+#[path = "../../tests/unit/ffi/management.rs"]
+mod tests;

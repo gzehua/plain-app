@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.settings
 
+import com.ismartcoding.plain.rust.request.NativeManagementClient
+
 import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.layout.Column
@@ -18,12 +20,9 @@ import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.features.files.TextFileType
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.rust.request.RustContentApi
-import com.ismartcoding.plain.rust.request.gql
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.jsonPrimitive
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.navigation.navigateTextFile
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
@@ -59,8 +58,7 @@ fun CrashReportDialog(
                     scope.launch {
                         saving = true
                         try {
-                            val path = RustContentApi.mutate("createCrashReport(report: ${gql(crashReport)})")
-                                .getValue("createCrashReport").jsonPrimitive.content
+                            val path = NativeManagementClient.createCrashReport(crashReport)
                             navController?.navigateTextFile(path, type = TextFileType.CRASH_REPORT)
                             onDismiss()
                         } catch (error: CancellationException) {

@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.pomodoro
 
+import kotlinx.serialization.Serializable
+import com.ismartcoding.plain.api.graphql.models.PomodoroToday
+
 import com.ismartcoding.plain.api.graphql.models.PomodoroState
 
 import com.ismartcoding.plain.app.events.HPomodoroChangedEvent
@@ -20,10 +23,10 @@ internal object PomodoroProjection {
     }
 
     suspend fun apply(payload: String) {
-        val event = JsonHelper.jsonDecode<JsonObject>(payload)
-        val today = event.getValue("today").today()
+        val event = JsonHelper.jsonDecode<PomodoroAction>(payload)
+        val today = event.today
         sendEvent(HPomodoroChangedEvent(today))
-        val completed = event["completedState"]?.jsonPrimitive?.contentOrNull ?: return
+        val completed = event.completedState ?: return
         val state = PomodoroState.valueOf(completed)
         try {
             showPomodoroNotification(state, today.state)
@@ -41,3 +44,6 @@ internal object PomodoroProjection {
         }
     }
 }
+
+@Serializable
+private data class PomodoroAction(val today: PomodoroToday, val completedState: String? = null)

@@ -24,10 +24,10 @@ class MainGraphqlRustHttpTest {
         try {
             UserPrefs.service.value = true
             UserPrefs.desktopAccess.value = true
-            val created = PlainRust.mainGraphql("mutation(\$name:String!){createSession(name:\$name){clientId token}}", mapOf("name" to JsonPrimitive(name))).getValue("createSession").jsonObject
-            val clientId = created.getValue("clientId").jsonPrimitive.content
+            val created = RustSessionStore.create(name)
+            val clientId = created.clientId
             id = clientId
-            val token = created.getValue("token").jsonPrimitive.content
+            val token = created.token
             assertTrue(token.isNotEmpty())
             val app = PlainRust.mainQuery("app { httpPort urlToken capabilities }").getValue("app").jsonObject
             assertEquals(getDeviceCapabilities().map { it.name }.toSet(), app.getValue("capabilities").jsonArray.map { it.jsonPrimitive.content }.toSet())
@@ -35,12 +35,16 @@ class MainGraphqlRustHttpTest {
             val schema = "__schema { queryType { name } mutationType { name } }"
             assertEquals(PlainRust.mainQuery(schema), PlainRust.mainQuery(schema, remote))
             assertEquals(app.getValue("urlToken"), PlainRust.mainQuery("app { urlToken }", remote).getValue("app").jsonObject.getValue("urlToken"))
-            val localPrefs = PlainRust.mainQuery("systemPrefs").getValue("systemPrefs").jsonObject
-            val remotePrefs = PlainRust.mainQuery("systemPrefs", remote).getValue("systemPrefs").jsonObject
-            assertEquals(app.getValue("urlToken"), localPrefs.getValue("url_token"))
-            for (key in listOf("password", "url_token", "adb_token", "dev_token")) assertFalse(remotePrefs.containsKey(key))
+            com.ismartcoding.plain.preferences.RustSystemState.refresh()
+            assertEquals(app.getValue("urlToken").jsonPrimitive.content, com.ismartcoding.plain.preferences.RustSystemState.state.value.urlToken)
+            for (selection in listOf("systemPrefs", "systemSettings { password }", "userSettings { service }")) {
+                for (session in listOf(null, remote)) {
+                    val failure = runCatching { PlainRust.mainQuery(selection, session) }.exceptionOrNull()
+                    assertNotNull(failure)
+                    assertTrue(failure.toString().contains("Unknown field"))
+                }
+            }
             assertTrue(runCatching { PlainRust.mainQuery("sessions { token }", remote) }.isFailure)
-            assertTrue(runCatching { PlainRust.mainQuery("systemSettings { password }", remote) }.isFailure)
             assertTrue(PlainRust.mainQuery("sessions { clientId }", remote).getValue("sessions").jsonArray.any { it.jsonObject.getValue("clientId").jsonPrimitive.content == clientId })
             assertTrue(PlainRust.mainGraphql("mutation(\$id:String!,\$name:String!){renameSession(clientId:\$id,name:\$name)}", mapOf("id" to JsonPrimitive(clientId), "name" to JsonPrimitive("$name renamed")), remote).getValue("renameSession").jsonPrimitive.boolean)
             assertEquals("$name renamed", RustSessionStore.list().single { it.clientId == clientId }.name)

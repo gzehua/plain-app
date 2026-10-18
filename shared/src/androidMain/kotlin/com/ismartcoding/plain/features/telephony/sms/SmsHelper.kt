@@ -22,6 +22,7 @@ import com.ismartcoding.plain.lib.extensions.queryCursor
 import com.ismartcoding.plain.platform.telephony.getSims
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import com.ismartcoding.plain.smsManager
 import com.ismartcoding.plain.appContext
@@ -228,19 +229,20 @@ object SmsHelper {
         return textByMmsId
     }
 
-    private fun JsonElement.where(): ContentWhere = ContentWhere().apply {
-        jsonObject.getValue("clauses").jsonArray.forEach { add(it.jsonPrimitive.content) }
-        args.addAll(jsonObject.getValue("args").jsonArray.map { it.jsonPrimitive.content })
-    }
     suspend fun facts(context: Context, method: String, params: JsonObject): JsonElement = withIO {
         if (context.checkSelfPermission(Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
             throw SecurityException("READ_SMS permission revoked")
         }
         if (method == "systemMmsTextFacts") return@withIO JsonHelper.jsonEncodeToElement(mmsTextFacts(context))
         if (method == "systemSmsConversationFacts") return@withIO SmsConversationHelper.facts(context, params)
-        val plans = if (method == "systemSmsRowsFacts" || method == "systemSmsThreadFacts") params.getValue("plans").jsonObject else params
-        val smsWhere = plans.getValue("sms").where()
-        val mmsWhere = plans["mms"]?.takeUnless { it is JsonNull }?.where()
+        val request = if (method == "systemSmsRowsFacts" || method == "systemSmsThreadFacts") {
+            JsonHelper.jsonDecodeFromElement<SmsFactsRequest>(params)
+        } else {
+            SmsFactsRequest(JsonHelper.jsonDecodeFromElement<SmsQueryPlans>(params))
+        }
+        val plans = request.plans
+        val smsWhere = plans.sms.where()
+        val mmsWhere = plans.mms?.where()
         when (method) {
             "systemSmsThreadFacts" -> {
                 val hits=mutableListOf<Pair<String,String>>()
@@ -270,7 +272,7 @@ object SmsHelper {
                 JsonHelper.jsonEncodeToElement(smsIds + mmsIds)
             }
             "systemSmsRowsFacts" -> {
-                val limit = params.getValue("limit").jsonPrimitive.long
+                val limit = requireNotNull(request.limit)
                 require(limit in 1..4294967294L)
                 val sms = context.contentResolver.queryCursor(smsUri, getProjection(), smsWhere.toSelection(), smsWhere.args.toTypedArray(), "${Telephony.Sms.DATE} DESC LIMIT $limit")
                     ?.map { cursor, cache -> cursorToSmsMessage(cursor, cache) }.orEmpty()
@@ -279,7 +281,7 @@ object SmsHelper {
                         Telephony.Mms.MESSAGE_BOX, Telephony.Mms.READ, Telephony.Mms.SUBSCRIPTION_ID), where.toSelection(), where.args.toTypedArray(), "${Telephony.Mms.DATE} DESC LIMIT $limit")
                         ?.map { cursor, cache -> cursorToMmsMessage(context, cursor, cache) }
                 }.orEmpty()
-                val threadId = plans.getValue("threadId").jsonPrimitive.content
+                val threadId = requireNotNull(plans.threadId)
                 JsonHelper.jsonEncodeToElement(SmsRowsFacts(
                     items = sms + mms,
                     canonicalAddresses = if (threadId.isNotEmpty()) getCanonicalAddressesForThread(context, threadId) else emptyList(),
@@ -288,5 +290,19 @@ object SmsHelper {
             }
             else -> error("Unsupported SMS facts")
         }
+    }
+}
+
+@Serializable
+private data class SmsFactsRequest(val plans: SmsQueryPlans, val limit: Long? = null)
+
+@Serializable
+private data class SmsQueryPlans(val sms: SmsWhere, val mms: SmsWhere? = null, val threadId: String? = null)
+
+@Serializable
+private data class SmsWhere(val clauses: List<String>, val args: List<String>) {
+    fun where(): ContentWhere = ContentWhere().also { where ->
+        clauses.forEach { where.add(it) }
+        where.args.addAll(args)
     }
 }

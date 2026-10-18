@@ -105,7 +105,6 @@ class FileRenameDeleteMediaRustHttpTest {
             assertTrue(TagsClient.getTagRelationsByKeys(setOf(destinationPath), DataType.FILE).isEmpty())
             assertFalse(FilesClient.delete(destinationPath))
         } finally {
-            TestFileTaskClient.list(0, 1000, "").filter { task -> task.completedOps.any { it.src.startsWith(root.path + "/") } }.forEach { TestFileTaskClient.remove(it.id) }
             tags.forEach { TagsClient.delete(it) }
             uri?.let { resolver.delete(it, null, null) }
             ids.forEach { id -> resolver.delete(Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id), null, null) }

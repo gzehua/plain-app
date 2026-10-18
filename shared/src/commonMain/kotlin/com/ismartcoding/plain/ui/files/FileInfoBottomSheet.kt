@@ -24,7 +24,7 @@ import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.lib.extensions.getMimeType
 import com.ismartcoding.plain.platform.system.formatDateTime
-import com.ismartcoding.plain.platform.files.getFileIconPath
+import com.ismartcoding.plain.ui.media.fileIconData
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.CopyIconButton
 import com.ismartcoding.plain.ui.base.PCard
@@ -79,7 +79,7 @@ fun FileInfoBottomSheet(filesVM: FilesViewModel) {
                     PSheetHeader(
                         thumbnail = {
                             PSheetHeaderThumb(
-                                model = if (file.isDir) getFileIconPath("folder") else getFileIconPath(file.path.getFilenameExtension()),
+                                model = if (file.isDir) fileIconData("folder") else fileIconData(file.path.getFilenameExtension()),
                                 fallbackIcon = UiRes.drawable.ui_drawable_file,
                             )
                         },

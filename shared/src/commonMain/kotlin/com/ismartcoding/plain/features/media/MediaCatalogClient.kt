@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.features.media
 
+import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
 import com.ismartcoding.plain.api.graphql.models.Doc as Document
 import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
@@ -61,12 +64,11 @@ object MediaCatalogClient {
         return PlainRust.mainQuery("$field(query: ${gql(query)})").getValue(field).jsonPrimitive.int
     }
     suspend fun docExtGroups(query: String): List<Pair<String, Int>> =
-        PlainRust.mainQuery("docExtGroups(query: ${gql(query)}) { ext count }").getValue("docExtGroups").jsonArray.map {
-            it.jsonObject.let { row -> row.text("ext") to row.int("count") }
-        }
+        JsonHelper.jsonDecodeFromElement<List<DocExtensionGroup>>(PlainRust.mainQuery("docExtGroups(query: ${gql(query)}) { ext count }").getValue("docExtGroups")).map { it.ext to it.count }
     suspend fun buckets(dataType: DataType): List<com.ismartcoding.plain.api.graphql.models.MediaBucket> =
         com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(PlainRust.mainQuery("mediaBuckets(type: ${dataType.name}) { id name itemCount size topItemPaths }").getValue("mediaBuckets"))
 
-    private fun JsonObject.text(key: String): String = getValue(key).jsonPrimitive.content
-    private fun JsonObject.int(key: String): Int = getValue(key).jsonPrimitive.int
 }
+
+@Serializable
+private data class DocExtensionGroup(val ext: String, val count: Int)

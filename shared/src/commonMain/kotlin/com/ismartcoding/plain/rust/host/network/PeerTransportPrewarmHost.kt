@@ -22,9 +22,10 @@ object PeerTransportPrewarmHost {
             Capabilities(isBleReady(), isWifiAwareSupported)
         )
         "peerTransportPrewarmScan" -> {
-            val device = withTimeoutOrNull(params.getValue("timeoutMs").jsonPrimitive.long) {
+            val request = JsonHelper.jsonDecodeFromElement<PrewarmScanRequest>(params)
+            val device = withTimeoutOrNull(request.timeoutMs) {
                 bleTransport().createScanner().scan(BleUuids.SERVICE_UUID).firstOrNull {
-                    it.id == params.getValue("shortId").jsonPrimitive.content
+                    it.id == request.shortId
                 }
             }
             device?.let {
@@ -34,3 +35,6 @@ object PeerTransportPrewarmHost {
         else -> error("Unknown peer prewarm operation")
     }
 }
+
+@Serializable
+private data class PrewarmScanRequest(val shortId: String, val timeoutMs: Long)

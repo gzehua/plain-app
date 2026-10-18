@@ -1,12 +1,12 @@
 package com.ismartcoding.plain.features.sessions
 
+import com.ismartcoding.plain.rust.request.NativeManagementClient
+
 import com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent
-import com.ismartcoding.plain.rust.request.RustContentApi
-import com.ismartcoding.plain.rust.request.gql
 
 object RustWebLogin {
     private suspend fun decide(requestId: String, allowed: Boolean) {
-        RustContentApi.mutate("confirmWebLogin(requestId: ${gql(requestId)}, allowed: $allowed)")
+        NativeManagementClient.confirmWebLogin(requestId, allowed)
     }
     suspend fun cancel(requestId: String) { decide(requestId, false) }
     suspend fun resetPassword(): String = com.ismartcoding.plain.preferences.RustSystemState.resetPassword()

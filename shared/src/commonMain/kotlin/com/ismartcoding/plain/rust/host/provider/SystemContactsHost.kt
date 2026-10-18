@@ -1,15 +1,17 @@
 package com.ismartcoding.plain.rust.host.provider
 
+import com.ismartcoding.plain.rust.host.*
+import kotlinx.serialization.Serializable
+import com.ismartcoding.plain.features.contacts.ContactInput
+
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
 
 internal object SystemContactsHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
         "systemContactFacts" -> {
-            val plan = params.providerPlan()
-            val offset = params.getValue("offset").jsonPrimitive.int
-            val limit = params.getValue("limit").jsonPrimitive.int
-            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.contacts.readContacts(plan, limit, offset))
+            val request = JsonHelper.jsonDecodeFromElement<ProviderPageRequest>(params)
+            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.contacts.readContacts(request.plan, request.limit, request.offset))
         }
         "systemContactCount" -> JsonHelper.jsonEncodeToElement(
             com.ismartcoding.plain.platform.media.countMedia(
@@ -25,35 +27,47 @@ internal object SystemContactsHost {
         )
         "systemContactGroupFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.contacts.getContactGroups())
         "systemContactSources" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.contacts.getContactSources())
-        "systemCreateContact" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.createContact(
-            contactInput(params), params.getValue("accountType").jsonPrimitive.content))
+        "systemCreateContact" -> {
+            val request = JsonHelper.jsonDecodeFromElement<CreateContactRequest>(params)
+            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.createContact(request.input, request.accountType))
+        }
         "systemUpdateContact" -> {
+            val request = JsonHelper.jsonDecodeFromElement<UpdateContactRequest>(params)
             com.ismartcoding.plain.platform.media.updateContact(
-                params.getValue("id").jsonPrimitive.content,
-                contactInput(params),
+                request.id, request.input,
             )
             JsonHelper.jsonEncodeToElement(true)
         }
-        "systemCreateContactGroup" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.contacts.createContactGroup(
-            params.getValue("name").jsonPrimitive.content,
-            params.getValue("accountName").jsonPrimitive.content,
-            params.getValue("accountType").jsonPrimitive.content,
+        "systemCreateContactGroup" -> {
+            val request = JsonHelper.jsonDecodeFromElement<CreateContactGroupRequest>(params)
+            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.contacts.createContactGroup(
+                request.name, request.accountName, request.accountType,
             ).id.toString())
+        }
         "systemUpdateContactGroup" -> {
+            val request = JsonHelper.jsonDecodeFromElement<UpdateContactGroupRequest>(params)
             com.ismartcoding.plain.platform.contacts.updateContactGroup(
-                params.getValue("id").jsonPrimitive.content,
-                params.getValue("name").jsonPrimitive.content,
+                request.id, request.name,
             )
             JsonHelper.jsonEncodeToElement(true)
         }
         "systemDeleteContactGroup" -> {
-            com.ismartcoding.plain.platform.contacts.deleteContactGroup(params.getValue("id").jsonPrimitive.content)
+            com.ismartcoding.plain.platform.contacts.deleteContactGroup(JsonHelper.jsonDecodeFromElement<IdRequest>(params).id)
             JsonHelper.jsonEncodeToElement(true)
         }
         else -> error("Unsupported provider operation")
     }
 
-    private fun contactInput(params: JsonObject): com.ismartcoding.plain.features.contacts.ContactInput =
-        JsonHelper.jsonDecodeFromElement(params.getValue("input"))
-
 }
+
+@Serializable
+private data class CreateContactRequest(val input: ContactInput, val accountType: String)
+
+@Serializable
+private data class UpdateContactRequest(val id: String, val input: ContactInput)
+
+@Serializable
+private data class CreateContactGroupRequest(val name: String, val accountName: String, val accountType: String)
+
+@Serializable
+private data class UpdateContactGroupRequest(val id: String, val name: String)

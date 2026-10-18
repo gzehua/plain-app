@@ -9,25 +9,23 @@ import kotlin.test.assertFailsWith
 
 class UserSettingsClientTest {
     @Test
-    fun readsOneExistingMainSchemaSnapshotAndPreservesJsonValues() = runTest {
+    fun readsOneNativeSnapshotAndPreservesJsonValues() = runTest {
         val expected = Json.parseToJsonElement("""{"httpPort":8080,"deviceName":"Fixture","feedAutoRefreshIntervalSec":2345,"recentSearches":["second","first"],"notificationFilter":{"mode":"allowlist","apps":[]}}""") as JsonObject
         var requests = 0
-        val result = readUserSettings { selection ->
+        val result = readUserSettings {
             requests++
-            assertEquals(USER_SETTINGS_SELECTION, selection)
-            JsonObject(mapOf("userSettings" to expected))
+            expected
         }
         assertEquals(expected, result)
         assertEquals(1, requests)
     }
 
     @Test
-    fun propagatesFailureWithoutRetryOrFallingBackToANativeSnapshot() = runTest {
+    fun propagatesFailureWithoutRetryOrFallback() = runTest {
         var requests = 0
         assertFailsWith<IllegalStateException> {
             readUserSettings { requests++; error("read failed") }
         }
         assertEquals(1, requests)
-        assertFailsWith<NoSuchElementException> { readUserSettings { JsonObject(emptyMap()) } }
     }
 }

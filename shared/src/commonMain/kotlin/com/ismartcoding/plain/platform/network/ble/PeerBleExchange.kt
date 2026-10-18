@@ -22,8 +22,9 @@ object PeerBleExchange {
 
     suspend fun exchange(params: JsonObject): JsonElement {
         check(isBleReady()) { "BLE not ready" }
-        val shortId = params.getValue("shortId").jsonPrimitive.content
-        val request = Base64Lenient.decode(params.getValue("request").jsonPrimitive.content)
+        val input = JsonHelper.jsonDecodeFromElement<ExchangeRequest>(params)
+        val shortId = input.shortId
+        val request = Base64Lenient.decode(input.request)
         val scanner = bleTransport().createScanner()
         val client = scanner.createClient(shortId)
             ?: withTimeoutOrNull(10_000) { scanner.scan(BleUuids.SERVICE_UUID).first { it.id == shortId }; scanner.createClient(shortId) }
@@ -40,3 +41,6 @@ object PeerBleExchange {
         }
     }
 }
+
+@Serializable
+private data class ExchangeRequest(val shortId: String, val request: String)

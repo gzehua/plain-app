@@ -5,8 +5,6 @@ import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.lib.dlna.DlnaMediaType
 import com.ismartcoding.plain.lib.dlna.PendingCastRequest
-import com.ismartcoding.plain.app.events.HostEvent
-import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.json.*
 
@@ -37,11 +35,6 @@ object DlnaRendererState {
     fun retry() { coIO { command(ReceiverCommand.Retry) } }
     fun acceptCastRequest(rememberChoice: Boolean) { coIO { command(ReceiverCommand.Accept(rememberChoice)) } }
     fun rejectCastRequest(rememberChoice: Boolean) { coIO { command(ReceiverCommand.Reject(rememberChoice)) } }
-    private fun report(event: HostEvent) { coIO { PlainRust.publish(event) } }
-    fun reportPosition(mediaUri: String, positionMs: Long, durationMs: Long) = report(DlnaPlayerReports.position(mediaUri, positionMs, durationMs))
-    fun seekConsumed(mediaUri: String, positionMs: Long) = report(DlnaPlayerReports.seekConsumed(mediaUri, positionMs))
-    fun reportPlaybackState(mediaUri: String, state: DlnaPlaybackState) = report(DlnaPlayerReports.playback(mediaUri, state))
-    fun reportStopped(mediaUri: String) = report(DlnaPlayerReports.stopped(mediaUri))
 
     internal fun apply(row: JsonObject) {
         val state = JsonHelper.jsonDecodeFromElement<ReceiverSnapshot>(row)

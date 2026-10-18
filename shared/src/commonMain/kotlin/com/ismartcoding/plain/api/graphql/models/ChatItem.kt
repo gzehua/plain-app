@@ -34,15 +34,15 @@ data class ChatItem(
     companion object {
         fun parseContent(content: String): MessageContent {
             return try {
-                val obj = JsonHelper.json.parseToJsonElement(content).jsonObject
-                val typeStr = obj["type"]?.jsonPrimitive?.content ?: ""
+                val envelope = JsonHelper.jsonDecode<MessagePayload>(content)
+                val typeStr = envelope.type
                 val message = MessageContent(MessageType.entries.firstOrNull { it.name == typeStr } ?: MessageType.TEXT)
-                val valueJson = obj["value"]?.takeIf { it !is JsonNull }?.toString() ?: ""
+                val value = envelope.value
                 when (message.type) {
-                    MessageType.TEXT -> message.value = JsonHelper.json.decodeFromString<MessageText>(valueJson)
-                    MessageType.IMAGES -> message.value = JsonHelper.json.decodeFromString<MessageImages>(valueJson)
-                    MessageType.FILES -> message.value = JsonHelper.json.decodeFromString<MessageFiles>(valueJson)
-                    MessageType.SHARE -> message.value = JsonHelper.json.decodeFromString<MessageShare>(valueJson)
+                    MessageType.TEXT -> message.value = JsonHelper.jsonDecodeFromElement<MessageText>(value)
+                    MessageType.IMAGES -> message.value = JsonHelper.jsonDecodeFromElement<MessageImages>(value)
+                    MessageType.FILES -> message.value = JsonHelper.jsonDecodeFromElement<MessageFiles>(value)
+                    MessageType.SHARE -> message.value = JsonHelper.jsonDecodeFromElement<MessageShare>(value)
                 }
                 message
             } catch (_: Exception) {
@@ -53,3 +53,6 @@ data class ChatItem(
         }
     }
 }
+
+@Serializable
+private data class MessagePayload(val type: String = "", val value: JsonElement = JsonNull)

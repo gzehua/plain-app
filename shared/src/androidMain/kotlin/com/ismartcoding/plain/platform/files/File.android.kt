@@ -9,7 +9,6 @@ import com.ismartcoding.plain.api.graphql.models.File as FileEntry
 
 import android.graphics.Bitmap
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.app.AppHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.isHeifHeader
@@ -58,8 +57,6 @@ actual suspend fun saveFileToDownloads(path: String, fileName: String): String =
 
 actual fun fileToUriString(path: String): String = File(path).toUri().toString()
 
-actual fun getFileIconPath(extension: String): String =
-    AppHelper.getFileIconPath(extension)
 
 actual fun fileExists(path: String): Boolean = File(path).exists()
 

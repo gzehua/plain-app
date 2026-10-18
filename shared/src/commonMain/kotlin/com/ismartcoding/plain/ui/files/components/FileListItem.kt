@@ -53,7 +53,7 @@ import com.ismartcoding.plain.ui.media.FileEntryThumb
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.platform.media.TransformImageView
 import com.ismartcoding.plain.ui.media.viewer.previewer.TransformItemState
-import com.ismartcoding.plain.platform.files.getFileIconPath
+import com.ismartcoding.plain.ui.media.fileIconData
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.platform.media.audioIsPlayingFlow
 import com.ismartcoding.plain.platform.media.audioPlayerProgress

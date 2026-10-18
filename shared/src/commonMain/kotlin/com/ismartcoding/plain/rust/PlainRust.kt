@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.rust
 
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.rust.bridge.RustCoreBridge
 import com.ismartcoding.plain.rust.bridge.RustDispatchers
 import com.ismartcoding.plain.rust.event.HostEventCapabilities
@@ -18,11 +20,8 @@ import com.ismartcoding.plain.rust.http.postText
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
-import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 object PlainRust {
     private val client by lazy { createPlainHttpClient(PlainHttpClientSpec.Local()) }
@@ -78,9 +77,9 @@ object PlainRust {
     }
 
     private fun unwrap(response: JsonObject): JsonObject {
-        val errors = response["errors"] as? JsonArray
-        check(errors.isNullOrEmpty()) { errors?.joinToString { error -> error.jsonObject["message"]?.jsonPrimitive?.content ?: "Rust API error" } ?: "Rust API error" }
-        return response.getValue("data").jsonObject
+        val envelope = JsonHelper.jsonDecodeFromElement<GraphqlEnvelope>(response)
+        check(envelope.errors.isNullOrEmpty()) { envelope.errors?.joinToString { it.message ?: "Rust API error" } ?: "Rust API error" }
+        return requireNotNull(envelope.data) { "Rust API response missing data" }
     }
 
     // ── Core lifecycle and native streams ────────────────────────────────
@@ -132,3 +131,9 @@ object PlainRust {
         return com.ismartcoding.plain.features.sessions.onlineClientIds.value.size
     }
 }
+
+@Serializable
+private data class GraphqlEnvelope(val data: JsonObject? = null, val errors: List<GraphqlError>? = null)
+
+@Serializable
+private data class GraphqlError(val message: String? = null)

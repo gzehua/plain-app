@@ -8,11 +8,20 @@ import com.ismartcoding.plain.features.chat.models.MessageType
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 import kotlin.time.Instant
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ChatRecoveryTest {
+    @BeforeTest
+    fun setup() { Dispatchers.setMain(StandardTestDispatcher()) }
+
     private fun chat(id: String, text: String) = ChatItem(
         id = id, fromId = "peer", toId = "me", status = ChatStatus.SENT,
         content = JsonHelper.jsonEncode(MessageContent(MessageType.TEXT, MessageText(text))),
@@ -21,7 +30,7 @@ class ChatRecoveryTest {
     private fun text() = (ChatViewModel.itemsFlow.value.single().value as MessageText).text
 
     @AfterTest
-    fun cleanup() { ChatViewModel._itemsFlow.value = emptyList() }
+    fun cleanup() { ChatViewModel._itemsFlow.value = emptyList(); Dispatchers.resetMain() }
 
     @Test
     fun recoveryRefreshesOnlyLoadedMessagesAndAppliesCommittedUpdatesAndDeletions() = runTest {

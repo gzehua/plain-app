@@ -3,7 +3,6 @@ package com.ismartcoding.plain.rust.host.media
 import com.ismartcoding.plain.api.graphql.models.AudioItem
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.*
 import com.ismartcoding.plain.platform.media.AudioPlayer
 import com.ismartcoding.plain.platform.media.audioPlayer
 import com.ismartcoding.plain.lib.JsonHelper
@@ -11,7 +10,23 @@ import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
+
+@Serializable
+private data class AudioEngineCommand(
+    val action: String,
+    val playback: AudioEnginePlayback,
+    val speed: Float,
+    val newTrack: Boolean,
+    val track: AudioItem? = null,
+)
+
+@Serializable
+private data class AudioEnginePlayback(
+    val revision: Long,
+    val positionMs: Long,
+)
 
 object AudioEngineHost {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -36,8 +51,7 @@ object AudioEngineHost {
                 delay(1_000)
                 try {
                     val report = withContext(Dispatchers.Main) { mutex.withLock { report(engine()) } }
-                    val path = report.string("path")
-                    if (path.isNotEmpty() && report.getValue("revision").jsonPrimitive.long >= 0) {
+                    if (report.path.isNotEmpty() && report.revision >= 0) {
                         PlainRust.publish(com.ismartcoding.plain.app.events.HostEvent(com.ismartcoding.plain.app.events.EventType.AUDIO_PROGRESS_REPORTED, JsonHelper.jsonEncode(report)))
                     }
                 } catch (cancelled: CancellationException) { throw cancelled }
@@ -46,9 +60,10 @@ object AudioEngineHost {
         }
     }
     suspend fun restore(value: JsonObject) {
-        value["error"]?.jsonPrimitive?.contentOrNull?.let { error(it) }
-        val restoredRevision = value.getValue("revision").jsonPrimitive.long
-        val position = value.getValue("positionMs").jsonPrimitive.long
+        val restored = JsonHelper.jsonDecodeFromElement<AudioRestoreReport>(value)
+        restored.error?.let { error(it) }
+        val restoredRevision = requireNotNull(restored.revision)
+        val position = requireNotNull(restored.positionMs)
         require(restoredRevision >= 0 && position >= 0)
         withContext(Dispatchers.Main) {
             mutex.withLock {
@@ -64,18 +79,18 @@ object AudioEngineHost {
         "audioEngineCommand" -> withContext(Dispatchers.Main) {
             mutex.withLock {
                 val player = engine()
-                val playback = params.getValue("playback").jsonObject
-                val requestedRevision = playback.getValue("revision").jsonPrimitive.long
-                val position = playback.getValue("positionMs").jsonPrimitive.long
-                val speed = params.getValue("speed").jsonPrimitive.float
+                val command = JsonHelper.jsonDecodeFromElement<AudioEngineCommand>(params)
+                val requestedRevision = command.playback.revision
+                val position = command.playback.positionMs
+                val speed = command.speed
                 require(position >= 0 && requestedRevision >= 0 && speed.isFinite() && speed > 0)
-                val action = params.string("action")
+                val action = command.action
                 player.bindRevision(requestedRevision)
                 var loaded = false
                 when (action) {
                     "PLAY", "SEEK" -> {
-                        val track = JsonHelper.jsonDecodeFromElement<AudioItem>(params.getValue("track"))
-                        if (action == "PLAY" && !params.getValue("newTrack").jsonPrimitive.boolean && player.currentPath == track.path) {
+                        val track = requireNotNull(command.track) { "Audio track required for $action" }
+                        if (action == "PLAY" && !command.newTrack && player.currentPath == track.path) {
                             player.seekTo(position)
                             player.setPlaybackSpeed(speed)
                             player.play()
@@ -90,12 +105,22 @@ object AudioEngineHost {
                     else -> error("Unknown audio engine command: $action")
                 }
                 revision = requestedRevision
-                JsonObject(report(player) + ("loaded" to JsonPrimitive(loaded))).let { reported -> if (action == "PLAY" || action == "SEEK") JsonObject(reported + ("positionMs" to JsonPrimitive(position))) else reported }
+                val reported = report(player)
+                JsonHelper.jsonEncodeToElement(AudioEngineReport(
+                    reported.path, if (action == "PLAY" || action == "SEEK") position else reported.positionMs, reported.revision, loaded,
+                ))
             }
         }
         else -> error("Unknown audio engine method: $method")
     }
-    private fun report(player: AudioPlayer): JsonObject = buildJsonObject {
-        put("path", player.currentPath); put("positionMs", player.progress.coerceAtLeast(0)); put("revision", revision)
-    }
+    private fun report(player: AudioPlayer) = AudioProgressReport(player.currentPath, player.progress.coerceAtLeast(0), revision)
 }
+
+@Serializable
+private data class AudioRestoreReport(val revision: Long? = null, val positionMs: Long? = null, val error: String? = null)
+
+@Serializable
+private data class AudioProgressReport(val path: String, val positionMs: Long, val revision: Long)
+
+@Serializable
+private data class AudioEngineReport(val path: String, val positionMs: Long, val revision: Long, val loaded: Boolean)

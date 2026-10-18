@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.features.sessions.RustSessionStore
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.database.sqlite.SQLiteDatabase
@@ -63,8 +64,8 @@ class ApiFixtureRustHttpTest {
             SystemPrefsClient.local.set("api_permissions", JsonArray(setOf(Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEOS, Permission.READ_MEDIA_AUDIO, Permission.READ_CONTACTS, Permission.WRITE_CONTACTS, Permission.READ_CALL_LOG, Permission.WRITE_CALL_LOG, Permission.READ_SMS, Permission.SEND_SMS, Permission.QUERY_ALL_PACKAGES, Permission.NOTIFICATION_LISTENER).map { JsonPrimitive(it.name) }))
             assertTrue(root.mkdirs())
             rootCreated = true
-            val session = PlainRust.mainMutate("createSession(name: \"API emulator fixture\") { clientId token }").getValue("createSession").jsonObject
-            clientId = session.getValue("clientId").jsonPrimitive.content
+            val session = RustSessionStore.create("API emulator fixture")
+            clientId = session.clientId
             val database = File(appContext.filesDir, "plain.db")
             check(database.isFile && database.canonicalFile.parentFile == appContext.filesDir.canonicalFile)
             SQLiteDatabase.openDatabase(database.path, null, SQLiteDatabase.OPEN_READWRITE or SQLiteDatabase.NO_LOCALIZED_COLLATORS).use { db ->
@@ -82,7 +83,7 @@ class ApiFixtureRustHttpTest {
             val app = PlainRust.mainQuery("app { httpPort capabilities }").getValue("app").jsonObject
             val credentials = JsonHelper.jsonEncode(mapOf(
                 "clientId" to JsonPrimitive(clientId),
-                "token" to session.getValue("token"),
+                "token" to JsonPrimitive(session.token),
                 "port" to app.getValue("httpPort"),
                 "capabilities" to app.getValue("capabilities"),
                 "testRoot" to JsonPrimitive(root.path),

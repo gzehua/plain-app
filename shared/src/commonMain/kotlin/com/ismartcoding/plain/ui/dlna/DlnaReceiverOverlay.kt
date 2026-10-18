@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.lib.dlna.DlnaMediaType
 import com.ismartcoding.plain.features.dlna.DlnaPlaybackState
+import com.ismartcoding.plain.features.dlna.DlnaPlayerReports
 import com.ismartcoding.plain.features.dlna.DlnaRendererState
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.features.files.RemoteFiles
@@ -119,7 +120,7 @@ private fun DlnaMediaPlayerOverlay() {
     val hasMedia = mediaUri.isNotEmpty() && playbackState != DlnaPlaybackState.NO_MEDIA_PRESENT
     if (!hasMedia) return
 
-    val exitAction = { DlnaRendererState.reportStopped(mediaUri) }
+    val exitAction = { DlnaPlayerReports.reportStopped(mediaUri) }
     PBackHandler { exitAction() }
     when (mediaType) {
         DlnaMediaType.AUDIO -> DlnaReceiverAudioPlayerContent(onExit = exitAction)

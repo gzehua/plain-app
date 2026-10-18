@@ -1,12 +1,18 @@
 package com.ismartcoding.plain.rust.host.network
 
+import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.platform.network.ble.PairingTransport
 import com.ismartcoding.plain.platform.network.ble.BleUuids
 import kotlinx.serialization.json.*
 
 object PairingNotificationHost {
-    fun handle(params: JsonObject): JsonElement = JsonPrimitive(PairingTransport.sendNotification(
-        params.getValue("address").jsonPrimitive.content, BleUuids.NEARBY_CHAR_UUID,
-        params.getValue("body").jsonPrimitive.content,
-    ))
+    fun handle(params: JsonObject): JsonElement {
+        val request = JsonHelper.jsonDecodeFromElement<PairingNotificationRequest>(params)
+        return JsonPrimitive(PairingTransport.sendNotification(request.address, BleUuids.NEARBY_CHAR_UUID, request.body))
+    }
 }
+
+@Serializable
+private data class PairingNotificationRequest(val address: String, val body: String)

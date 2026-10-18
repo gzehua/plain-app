@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.ismartcoding.plain.features.dlna.DlnaPlaybackState
+import com.ismartcoding.plain.features.dlna.DlnaPlayerReports
 import com.ismartcoding.plain.features.dlna.DlnaRendererState
 import com.ismartcoding.plain.ui.platform.media.VideoPlayerSurface
 import com.ismartcoding.plain.ui.platform.system.enterPipMode
@@ -82,13 +83,13 @@ fun DlnaReceiverVideoPlayerContent(onExit: () -> Unit) {
     }
     LaunchedEffect(mediaUri, seekTargetMs) {
         val uri = mediaUri
-        seekTargetMs?.let { state.seekTo(it); DlnaRendererState.seekConsumed(uri, it) }
+        seekTargetMs?.let { state.seekTo(it); DlnaPlayerReports.reportSeekConsumed(uri, it) }
     }
     LaunchedEffect(mediaUri) {
         val uri = mediaUri
         while (true) {
             state.updateTime()
-            DlnaRendererState.reportPosition(uri, state.currentTime, state.totalTime)
+            DlnaPlayerReports.reportPosition(uri, state.currentTime, state.totalTime)
             delay(500)
         }
     }
@@ -115,7 +116,7 @@ fun DlnaReceiverVideoPlayerContent(onExit: () -> Unit) {
     val onPlayPause = {
         val wasPlaying = state.isPlaying
         state.togglePlay()
-        DlnaRendererState.reportPlaybackState(
+        DlnaPlayerReports.reportPlaybackState(
             mediaUri,
             if (wasPlaying) DlnaPlaybackState.PAUSED else DlnaPlaybackState.PLAYING,
         )

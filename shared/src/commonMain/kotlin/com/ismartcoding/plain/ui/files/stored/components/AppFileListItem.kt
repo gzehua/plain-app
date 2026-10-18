@@ -44,7 +44,7 @@ import com.ismartcoding.plain.platform.media.audioPlayerProgress
 import com.ismartcoding.plain.platform.media.audioSeekTo
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.platform.media.getExtensionFromMimeType
-import com.ismartcoding.plain.platform.files.getFileIconPath
+import com.ismartcoding.plain.ui.media.fileIconData
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.platform.media.TransformImageView
@@ -146,7 +146,7 @@ fun AppFileListItem(
                     )
                 } else {
                     AsyncImage(
-                        model = getFileIconPath(extension),
+                        model = fileIconData(extension),
                         modifier = Modifier.size(40.dp),
                         contentDescription = fileName,
                     )

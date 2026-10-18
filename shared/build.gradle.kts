@@ -120,6 +120,7 @@ kotlin {
             // ktor-io only (ByteReadChannel streaming) — no HTTP client dependency from ktor
             implementation(libs.ktor.io)
             implementation(libs.coil.compose)
+            implementation(libs.coil.svg)
 
             // Vendored multiplatform-markdown-renderer (lib/markdown/) depends on these.
             api(libs.jetbrains.markdown)
@@ -142,7 +143,6 @@ kotlin {
             implementation(libs.androidx.exifinterface)
             implementation(libs.androidx.appcompat)
             implementation(libs.coil)
-            implementation(libs.coil.svg)
             implementation(libs.coil.gif)
             implementation(libs.coil.video)
             implementation(libs.coil.network.okhttp)

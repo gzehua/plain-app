@@ -28,4 +28,4 @@ data class ProviderPlan(
     }
 }
 
-internal fun JsonObject.providerPlan(): ProviderPlan = JsonHelper.jsonDecodeFromElement(getValue("plan"))
+internal fun JsonObject.providerPlan(): ProviderPlan = JsonHelper.jsonDecodeFromElement<ProviderPlanRequest>(this).plan

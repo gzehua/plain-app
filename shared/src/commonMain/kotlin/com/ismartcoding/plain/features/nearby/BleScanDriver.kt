@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.features.nearby
 
+import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.platform.network.ble.RustBleWire
 import com.ismartcoding.plain.platform.network.ble.BleServices
 import com.ismartcoding.plain.platform.network.ble.BleUuids
@@ -14,10 +17,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.put
 import kotlin.io.encoding.Base64
 
 @OptIn(kotlin.uuid.ExperimentalUuidApi::class)
@@ -49,12 +48,13 @@ object BleScanDriver {
     }
 
     suspend fun read(params: JsonObject): JsonElement {
-        val shortId = params.getValue("shortId").jsonPrimitive.content
-        val request = Base64.decode(params.getValue("request").jsonPrimitive.content)
+        val input = JsonHelper.jsonDecodeFromElement<ScanReadRequest>(params)
+        val shortId = input.shortId
+        val request = Base64.decode(input.request)
         val scanner = bleTransport().createScanner()
         val device = scanner.createClient(shortId) ?: return JsonObject(emptyMap())
         val payload = readReply(scanner, device, request)
-        return buildJsonObject { put("payload", payload?.let(::JsonPrimitive) ?: JsonPrimitive(null as String?)) }
+        return JsonHelper.jsonEncodeToElement(ScanReadReply(payload))
     }
 
     private suspend fun readReply(scanner: BleScanner, device: BleGattClient, request: ByteArray): String? {
@@ -77,3 +77,9 @@ object BleScanDriver {
         }
     }
 }
+
+@Serializable
+private data class ScanReadRequest(val shortId: String, val request: String)
+
+@Serializable
+private data class ScanReadReply(val payload: String?)

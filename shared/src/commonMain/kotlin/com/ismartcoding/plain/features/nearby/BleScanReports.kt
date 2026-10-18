@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.features.nearby
 
+import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.rust.PlainRust
@@ -7,9 +10,15 @@ import kotlinx.serialization.json.*
 
 object BleScanReports {
     suspend fun scanState(id: String, active: Boolean) {
-        PlainRust.publish(HostEvent(EventType.BLE_SCAN_STATE_REPORTED, buildJsonObject { put("scanId", id); put("active", active) }.toString()))
+        PlainRust.publish(HostEvent(EventType.BLE_SCAN_STATE_REPORTED, JsonHelper.jsonEncode(ScanState(id, active))))
     }
     suspend fun scanSeen(id: String, shortId: String) {
-        PlainRust.publish(HostEvent(EventType.BLE_ADVERTISEMENT_REPORTED, buildJsonObject { put("scanId", id); put("shortId", shortId) }.toString()))
+        PlainRust.publish(HostEvent(EventType.BLE_ADVERTISEMENT_REPORTED, JsonHelper.jsonEncode(ScanSeen(id, shortId))))
     }
 }
+
+@Serializable
+private data class ScanState(val scanId: String, val active: Boolean)
+
+@Serializable
+private data class ScanSeen(val scanId: String, val shortId: String)

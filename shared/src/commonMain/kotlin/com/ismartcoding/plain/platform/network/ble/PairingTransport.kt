@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.platform.network.ble
 
+import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HostEvent
@@ -39,12 +42,13 @@ object PairingTransport {
         private var revision = 0L
 
         fun handle(params: JsonObject): JsonElement {
-            val active = params.getValue("active").jsonPrimitive.boolean
-            val nextRevision = params.getValue("revision").jsonPrimitive.long
-            val bytes = Base64.decode(params.getValue("bytes").jsonPrimitive.content)
+            val request = JsonHelper.jsonDecodeFromElement<AdvertisingRequest>(params)
+            val active = request.active
+            val nextRevision = request.revision
+            val bytes = Base64.decode(request.bytes)
             require(nextRevision > 0 && if (active) bytes.size == 9 else bytes.isEmpty())
             return lock.withLock {
-                check(!closed && current === this && params.getValue("lease").jsonPrimitive.content == lease) { "BLE advertising connection replaced" }
+                check(!closed && current === this && request.lease == lease) { "BLE advertising connection replaced" }
                 if (nextRevision <= revision) return@withLock JsonPrimitive(false)
                 revision = nextRevision
                 if (!active) {
@@ -68,10 +72,10 @@ object PairingTransport {
 
         suspend fun observeFacts() {
             combine(bleAvailabilityFlow, TempData.awareRunning) { available, aware ->
-                buildJsonObject { put("available", available == BleAvailability.READY); put("awareRunning", aware); put("lease", lease) }
+                AdvertisingFacts(available == BleAvailability.READY, aware, lease)
             }.collect { facts ->
                 if (!lock.withLock { !closed && current === this }) return@collect
-                try { PlainRust.publish(HostEvent(EventType.BLE_ADVERTISING_FACTS_REPORTED, facts.toString())) }
+                try { PlainRust.publish(HostEvent(EventType.BLE_ADVERTISING_FACTS_REPORTED, JsonHelper.jsonEncode(facts))) }
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) { LogCat.e("BLE advertising facts", error) }
             }
@@ -91,3 +95,9 @@ object PairingTransport {
         }
     }
 }
+
+@Serializable
+private data class AdvertisingRequest(val active: Boolean, val revision: Long, val bytes: String, val lease: String)
+
+@Serializable
+private data class AdvertisingFacts(val available: Boolean, val awareRunning: Boolean, val lease: String)

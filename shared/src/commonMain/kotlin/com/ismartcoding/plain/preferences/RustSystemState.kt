@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.api.graphql.models.SystemSettings
+import com.ismartcoding.plain.rust.request.NativeManagementClient
+
 
 import com.ismartcoding.plain.features.settings.PasswordType
 import com.ismartcoding.plain.platform.permissions.Permission
@@ -24,5 +25,5 @@ object RustSystemState {
     suspend fun completeOnboarding() = set("onboarding_completed", true)
     suspend fun setMdnsHostname(hostname: String) = set("mdns_hostname", hostname)
     suspend fun patchUpdate(patch: UpdateInfoPatch) = set("update_info", patch)
-    suspend fun verifyAdbToken(token: String): Boolean = SystemPrefsClient.local.verifyAdbToken(token)
+    suspend fun verifyAdbToken(token: String): Boolean = NativeManagementClient.verifyAdbToken(token)
 }

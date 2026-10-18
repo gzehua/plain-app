@@ -30,7 +30,7 @@ import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
 import com.ismartcoding.plain.lib.extensions.getMimeType
 import com.ismartcoding.plain.ui.platform.media.addMediaShortcut
 import com.ismartcoding.plain.platform.system.formatDateTime
-import com.ismartcoding.plain.platform.files.getFileIconPath
+import com.ismartcoding.plain.ui.media.fileIconData
 import com.ismartcoding.plain.platform.system.openFileExternal
 import com.ismartcoding.plain.platform.system.shareFile
 import com.ismartcoding.plain.ui.base.BottomSpace
@@ -115,7 +115,7 @@ fun ViewDocBottomSheet(
                     PSheetHeader(
                         thumbnail = {
                             PSheetHeaderThumb(
-                                model = getFileIconPath(m.extension),
+                                model = fileIconData(m.extension),
                                 fallbackIcon = UiRes.drawable.ui_drawable_file,
                             )
                         },
@@ -176,7 +176,7 @@ fun ViewDocBottomSheet(
                                 title = stringResource(Res.string.add_to_home),
                                 start = {
                                     AsyncImage(
-                                        model = getFileIconPath(m.extension),
+                                        model = fileIconData(m.extension),
                                         contentDescription = null,
                                         modifier = Modifier.size(24.dp),
                                     )

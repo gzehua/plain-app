@@ -14,12 +14,4 @@ internal object RustDlnaReceiver {
     }
 }
 
-internal fun ReceiverCommand.input(): JsonObject {
-    val values = JsonHelper.jsonEncodeToElement<ReceiverCommand>(this).jsonObject.toMutableMap()
-    for (name in listOf("action")) {
-        values[name]?.jsonPrimitive?.content?.let { value ->
-            values[name] = JsonPrimitive(value.replace(Regex("([a-z])([A-Z])"), "$1_$2").uppercase())
-        }
-    }
-    return JsonObject(values)
-}
+internal fun ReceiverCommand.input(): JsonObject = JsonHelper.jsonEncodeToElement<ReceiverCommand>(this).jsonObject

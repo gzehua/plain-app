@@ -2,11 +2,9 @@ package com.ismartcoding.plain.features.telephony.sms
 
 import com.ismartcoding.plain.helpers.FilterField
 import kotlin.time.Instant
+import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.Serializable
 
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.long
 import android.content.Context
 import android.provider.BaseColumns
 import android.provider.Telephony
@@ -24,8 +22,9 @@ import com.ismartcoding.plain.platform.telephony.getSims
 
 object SmsConversationHelper {
     suspend fun facts(context: Context, params: kotlinx.serialization.json.JsonObject): kotlinx.serialization.json.JsonElement = withIO {
-        val ids=params["ids"]?.takeUnless { it is kotlinx.serialization.json.JsonNull }?.jsonArray?.map { it.jsonPrimitive.content }
-        val beforeDates=params["beforeDates"]?.jsonObject.orEmpty()
+        val request = JsonHelper.jsonDecodeFromElement<SmsConversationsRequest>(params)
+        val ids = request.ids
+        val beforeDates = request.beforeDates
         val items=mutableListOf<SmsConversationRowFacts>()
         val recipientIds=mutableMapOf<String,List<String>>()
         (ids?.chunked(400) ?: listOf(emptyList())).forEach { batch ->
@@ -53,7 +52,7 @@ object SmsConversationHelper {
             items = rows,
             ownNumbers = own,
             snippetCandidates = beforeDates.mapValues { (id, value) ->
-                getSnippetsBeforeDate(context, id, value.jsonPrimitive.long)
+                getSnippetsBeforeDate(context, id, value)
             },
         ))
     }
@@ -119,3 +118,6 @@ object SmsConversationHelper {
     }
 
 }
+
+@Serializable
+private data class SmsConversationsRequest(val ids: List<String>? = null, val beforeDates: Map<String, Long> = emptyMap())

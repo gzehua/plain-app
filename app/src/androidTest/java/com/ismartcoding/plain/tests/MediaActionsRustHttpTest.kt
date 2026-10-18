@@ -108,7 +108,7 @@ class MediaActionsRustHttpTest {
             playlistId = AudioPlaylistsClient.createPlaylist(prefix).id
             AudioPlaylistsClient.addPlaylistItems(playlistId,listOf(track))
             AudioQueueClient.enqueue(listOf(track))
-            AudioQueueClient.setCurrent(id)
+            assertEquals(id, checkNotNull(AudioQueueClient.resolveNext(true)).mediaId)
             var failed = false
             try { MediaActionClient.run(DataType.AUDIO,MediaAction.TRASH,listOf(id,missingId)) }
             catch (error: Exception) { failed = error.message?.contains("1 media actions failed (1 completed)") == true }

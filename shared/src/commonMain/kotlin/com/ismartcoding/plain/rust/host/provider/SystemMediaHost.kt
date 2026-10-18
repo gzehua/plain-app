@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.rust.host.provider
 
-
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
 import kotlinx.serialization.Serializable
@@ -9,27 +8,33 @@ import com.ismartcoding.plain.platform.media.mediaStoreRevision
 
 internal object SystemMediaHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
-        "systemMediaBucketItemFacts" -> JsonHelper.jsonEncodeToElement(
-            com.ismartcoding.plain.platform.system.mediaBucketItemFacts(mediaDataType(params), params.providerPlan()))
+        "systemMediaBucketItemFacts" -> {
+            val request = JsonHelper.jsonDecodeFromElement<MediaPlanRequest>(params)
+            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.mediaBucketItemFacts(
+                com.ismartcoding.plain.platform.system.DataType.valueOf(request.dataType), request.plan))
+        }
         "systemMediaRows" -> {
-            val includeRevision = params["includeRevision"]?.jsonPrimitive?.booleanOrNull == true
+            val request = JsonHelper.jsonDecodeFromElement<MediaRowsRequest>(params)
+            val includeRevision = request.includeRevision == true
             val before = if (includeRevision) mediaStoreRevision() else null
             val items = com.ismartcoding.plain.platform.media.searchMedia(
-                mediaDataType(params),
-                params.providerPlan(),
-                params.getValue("limit").jsonPrimitive.int,
-                params.getValue("offset").jsonPrimitive.int,
-                fileSortBy(params),
+                com.ismartcoding.plain.platform.system.DataType.valueOf(request.dataType),
+                request.plan, request.limit, request.offset,
+                com.ismartcoding.plain.features.files.FileSortBy.valueOf(request.sortBy),
             )
             val rows = items.map { mediaFacts(it) }
             if (includeRevision) JsonHelper.jsonEncodeToElement(MediaRowsFacts(rows, before, mediaStoreRevision()))
             else JsonHelper.jsonEncodeToElement(rows)
         }
-        "systemMediaCount" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.countMedia(
-            mediaDataType(params), params.providerPlan()))
+        "systemMediaCount" -> {
+            val request = JsonHelper.jsonDecodeFromElement<MediaPlanRequest>(params)
+            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.countMedia(
+                com.ismartcoding.plain.platform.system.DataType.valueOf(request.dataType), request.plan))
+        }
         "systemMediaIdsFacts" -> {
-            val type = mediaDataType(params)
-            val plan = params.providerPlan()
+            val request = JsonHelper.jsonDecodeFromElement<MediaPlanRequest>(params)
+            val type = com.ismartcoding.plain.platform.system.DataType.valueOf(request.dataType)
+            val plan = request.plan
             JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.getMediaIds(type, plan))
         }
         else -> error("Unsupported provider operation")
@@ -88,8 +93,6 @@ internal object SystemMediaHost {
         width = width, height = height, rotation = rotation,
     ))
 
-    private fun fileSortBy(params: JsonObject) =
-        com.ismartcoding.plain.features.files.FileSortBy.valueOf(params.getValue("sortBy").jsonPrimitive.content)
 }
 
 @Serializable

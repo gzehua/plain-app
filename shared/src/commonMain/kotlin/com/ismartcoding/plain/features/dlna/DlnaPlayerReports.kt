@@ -2,10 +2,18 @@ package com.ismartcoding.plain.features.dlna
 
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.lib.coIO
+import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
 internal object DlnaPlayerReports {
+    private fun report(event: HostEvent) { coIO { PlainRust.publish(event) } }
+    fun reportPosition(mediaUri: String, positionMs: Long, durationMs: Long) = report(position(mediaUri, positionMs, durationMs))
+    fun reportSeekConsumed(mediaUri: String, positionMs: Long) = report(seekConsumed(mediaUri, positionMs))
+    fun reportPlaybackState(mediaUri: String, state: DlnaPlaybackState) = report(playback(mediaUri, state))
+    fun reportStopped(mediaUri: String) = report(stopped(mediaUri))
+
     fun position(mediaUri: String, positionMs: Long, durationMs: Long) =
         HostEvent(EventType.DLNA_POSITION_REPORTED, JsonHelper.jsonEncode(Position(mediaUri, positionMs, durationMs)))
 

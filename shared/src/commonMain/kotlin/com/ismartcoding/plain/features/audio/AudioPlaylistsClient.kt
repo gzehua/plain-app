@@ -22,7 +22,7 @@ object AudioPlaylistsClient {
 
     suspend fun playlist(id: String): AudioPlaylist? = playlists().firstOrNull { it.first.id == id }?.first
     suspend fun playlists(): List<Pair<AudioPlaylist, Int>> = RustContentApi.query("audioPlaylists { $AUDIO_PLAYLIST_FIELDS }")
-        .getValue("audioPlaylists").jsonArray.map { it.audioPlaylist() to it.jsonObject.getValue("itemCount").jsonPrimitive.int }
+        .getValue("audioPlaylists").let { JsonHelper.jsonDecodeFromElement<List<AudioPlaylist>>(it) }.map { it to it.itemCount }
     suspend fun createPlaylist(name: String): AudioPlaylist = RustContentApi.mutate("createAudioPlaylist(name: ${gql(name)}) { $AUDIO_PLAYLIST_FIELDS }")
         .getValue("createAudioPlaylist").audioPlaylist()
     suspend fun renamePlaylist(id: String, name: String) { RustContentApi.mutate("updateAudioPlaylist(id: ${gql(id)}, name: ${gql(name)}) { id }") }

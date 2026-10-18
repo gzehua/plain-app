@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.features.nearby
 
+import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.api.graphql.models.PairingRequestInput
 import com.ismartcoding.plain.ui.nearby.NearbyItemStatus
 import com.ismartcoding.plain.ui.nearby.NearbyViewModel
@@ -13,32 +16,33 @@ object PairingProjection {
     }
 
     internal fun applySnapshot(before: Map<String, JsonObject>, states: List<JsonObject>) {
-        val generations = states.map { it.getValue("generation").jsonPrimitive.content }.toSet()
+        val generations = states.map { it.pairingState().generation }.toSet()
         val removed = mutableSetOf<String>()
         before.forEach { (generation, state) ->
             if (generation !in generations && NearbyViewModel.pairingStates[generation] == state) {
                 NearbyViewModel.pairingStates.remove(generation)
-                state["deviceId"]?.jsonPrimitive?.contentOrNull?.let(removed::add)
+                state.pairingState().deviceId?.let(removed::add)
             }
         }
         states.forEach(::applyState)
         removed.forEach { id ->
-            if (NearbyViewModel.pairingStates.values.none { it["deviceId"]?.jsonPrimitive?.contentOrNull == id } && NearbyViewModel.itemStatus[id] in setOf(NearbyItemStatus.STARTING, NearbyItemStatus.PAIRING)) NearbyViewModel.itemStatus.remove(id)
+            if (NearbyViewModel.pairingStates.values.none { it.pairingState().deviceId == id } && NearbyViewModel.itemStatus[id] in setOf(NearbyItemStatus.STARTING, NearbyItemStatus.PAIRING)) NearbyViewModel.itemStatus.remove(id)
         }
     }
 
     fun applyState(value: JsonObject) {
-        val id = value["deviceId"]?.jsonPrimitive?.contentOrNull ?: return
-        val generation = value.getValue("generation").jsonPrimitive.content
+        val state = value.pairingState()
+        val id = state.deviceId ?: return
+        val generation = state.generation
         val phases = listOf("STARTING", "PASSWORD_REQUIRED", "AUTHENTICATING", "PAIRING", "WAITING_CONFIRMATION", "COMMITTING", "SUCCEEDED", "FAILED", "CANCELLED")
-        val previous = NearbyViewModel.pairingStates[generation]?.get("phase")?.jsonPrimitive?.content
-        val next = value["phase"]?.jsonPrimitive?.content
+        val previous = NearbyViewModel.pairingStates[generation]?.pairingState()?.phase
+        val next = state.phase
         if (previous != null && phases.indexOf(next) >= 0 && phases.indexOf(previous) > phases.indexOf(next)) return
         NearbyViewModel.pairingStates[generation] = value
         val active = NearbyViewModel.pairingStates.values.firstOrNull {
-            it["deviceId"]?.jsonPrimitive?.contentOrNull == id && it["phase"]?.jsonPrimitive?.content !in setOf("SUCCEEDED", "FAILED", "CANCELLED")
+            it.pairingState().let { state -> state.deviceId == id && state.phase !in terminalPhases }
         }
-        NearbyViewModel.itemStatus[id] = when ((active ?: value)["phase"]?.jsonPrimitive?.content) {
+        NearbyViewModel.itemStatus[id] = when ((active ?: value).pairingState().phase) {
             "SUCCEEDED" -> NearbyItemStatus.PAIRED
             "FAILED", "CANCELLED" -> NearbyItemStatus.UNPAIRED
             "STARTING" -> NearbyItemStatus.STARTING
@@ -47,12 +51,12 @@ object PairingProjection {
     }
 
     suspend fun started(payload: String) {
-        val value = Json.parseToJsonElement(payload).jsonObject
-        val id = value.getValue("deviceId").jsonPrimitive.content
-        val generation = value.getValue("generation").jsonPrimitive.content
+        val value = JsonHelper.jsonDecode<PairingStarted>(payload)
+        val id = value.deviceId
+        val generation = value.generation
         if (!NearbyViewModel.pairingStates.containsKey(generation)) reconcile()
-        val state = NearbyViewModel.pairingStates[generation] ?: return
-        if (state["deviceId"]?.jsonPrimitive?.contentOrNull != id || state["phase"]?.jsonPrimitive?.content in terminalPhases) return
+        val state = NearbyViewModel.pairingStates[generation]?.pairingState() ?: return
+        if (state.deviceId != id || state.phase in terminalPhases) return
         NearbyViewModel.itemStatus[id] = NearbyItemStatus.PAIRING
     }
 
@@ -64,14 +68,13 @@ object PairingProjection {
 
     private val terminalPhases = setOf("SUCCEEDED", "FAILED", "CANCELLED")
     private fun hasActive(id: String): Boolean = NearbyViewModel.pairingStates.values.any {
-        it["deviceId"]?.jsonPrimitive?.contentOrNull == id && it["phase"]?.jsonPrimitive?.content !in terminalPhases
+        it.pairingState().let { state -> state.deviceId == id && state.phase !in terminalPhases }
     }
     private suspend fun reconcileUnknown(id: String) {
-        if (NearbyViewModel.pairingStates.values.none { it["deviceId"]?.jsonPrimitive?.contentOrNull == id }) reconcile()
+        if (NearbyViewModel.pairingStates.values.none { it.pairingState().deviceId == id }) reconcile()
     }
     suspend fun canceled(payload: String) {
-        val value = Json.parseToJsonElement(payload).jsonObject
-        val id = value.getValue("deviceId").jsonPrimitive.content
+        val id = JsonHelper.jsonDecode<PairingDeviceEvent>(payload).deviceId
         if (hasActive(id)) return
         reconcileUnknown(id)
         if (hasActive(id)) return
@@ -80,22 +83,30 @@ object PairingProjection {
     }
 
     suspend fun success(payload: String) {
-        val value = Json.parseToJsonElement(payload).jsonObject
-        val peer = com.ismartcoding.plain.features.chat.peer.RustPeerStore.getById(value.getValue("deviceId").jsonPrimitive.content) ?: return
-        if (!peer.isPaired() || peer.key != value.getValue("key").jsonPrimitive.content) return
+        val value = JsonHelper.jsonDecode<PairingSucceeded>(payload)
+        val peer = com.ismartcoding.plain.features.chat.peer.RustPeerStore.getById(value.deviceId) ?: return
+        if (!peer.isPaired() || peer.key != value.key) return
         com.ismartcoding.plain.features.chat.peer.PeerManager.load()
         NearbyViewModel.handlePairingSuccess(peer.id)
         com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.app.events.HPairingSuccessEvent(
-            peer.id, peer.name, value.getValue("ip").jsonPrimitive.content, peer.key,
+            peer.id, peer.name, value.ip, peer.key,
         ))
     }
 
     suspend fun timeout(payload: String) {
-        val value = Json.parseToJsonElement(payload).jsonObject
-        val id = value.getValue("deviceId").jsonPrimitive.content
+        val id = JsonHelper.jsonDecode<PairingDeviceEvent>(payload).deviceId
         if (hasActive(id)) return
         reconcileUnknown(id)
         if (hasActive(id)) return
         NearbyViewModel.itemStatus.remove(id)
     }
 }
+
+@Serializable
+private data class PairingStarted(val deviceId: String, val generation: String)
+
+@Serializable
+private data class PairingDeviceEvent(val deviceId: String)
+
+@Serializable
+private data class PairingSucceeded(val deviceId: String, val key: String, val ip: String)

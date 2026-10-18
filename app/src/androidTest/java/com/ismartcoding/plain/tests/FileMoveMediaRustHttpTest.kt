@@ -94,7 +94,6 @@ class FileMoveMediaRustHttpTest {
             assertTrue(TagsClient.getTagRelationsByKeys(setOf(sourcePath), DataType.FILE).isEmpty())
             assertEquals(listOf(fileTag), TagsClient.getTagRelationsByKeys(setOf(destinationPath), DataType.FILE).map { it.tagId })
         } finally {
-            tasks.forEach { id -> TestFileTaskClient.remove(id) }
             tags.forEach { TagsClient.delete(it) }
             uri?.let { resolver.delete(it, null, null) }
             ids.forEach { id -> resolver.delete(Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id), null, null) }

@@ -28,7 +28,7 @@ import coil3.compose.AsyncImage
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.getFilenameExtension
-import com.ismartcoding.plain.platform.files.getFileIconPath
+import com.ismartcoding.plain.ui.media.fileIconData
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PBottomSheetTopAppBar
 import com.ismartcoding.plain.ui.base.PFilledButton
@@ -242,7 +242,7 @@ private fun Thumbnail(file: ShareFile) {
         )
     } else {
         AsyncImage(
-            model = getFileIconPath(file.name.getFilenameExtension()),
+            model = fileIconData(file.name.getFilenameExtension()),
             contentDescription = null,
             modifier = Modifier.size(56.dp),
         )

@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.rust.host.provider
 
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.api.graphql.models.Call as PhoneCall
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
@@ -8,12 +10,10 @@ internal object SystemCallsHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
         "systemPhoneLocaleFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.contacts.phoneLocaleFacts())
         "systemCallFacts" -> {
-            val plan = params.providerPlan()
-            val offset = params.getValue("offset").jsonPrimitive.int
-            val limit = params.getValue("limit").jsonPrimitive.int
+            val request = JsonHelper.jsonDecodeFromElement<ProviderPageRequest>(params)
             JsonHelper.jsonEncodeToElement(
                 com.ismartcoding.plain.platform.media.searchMedia(
-                    com.ismartcoding.plain.platform.system.DataType.CALL, plan, limit, offset,
+                    com.ismartcoding.plain.platform.system.DataType.CALL, request.plan, request.limit, request.offset,
                     com.ismartcoding.plain.features.files.FileSortBy.DATE_DESC,
                 ).filterIsInstance<PhoneCall>().map(::callFacts)
             )
@@ -31,9 +31,9 @@ internal object SystemCallsHost {
             )
         )
         "systemMakeCall" -> {
+            val request = JsonHelper.jsonDecodeFromElement<MakeCallRequest>(params)
             com.ismartcoding.plain.platform.media.call(
-                params.getValue("number").jsonPrimitive.content,
-                params.getValue("showDialer").jsonPrimitive.boolean,
+                request.number, request.showDialer,
             )
             JsonHelper.jsonEncodeToElement(true)
         }
@@ -45,3 +45,6 @@ internal object SystemCallsHost {
         startedAt = call.startedAt.toString(), durationSec = call.durationSec, type = call.typeCode, accountId = call.accountId,
     )
 }
+
+@Serializable
+private data class MakeCallRequest(val number: String, val showDialer: Boolean)

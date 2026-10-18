@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.ui.platform.media.TransformImageView
-import com.ismartcoding.plain.platform.files.getFileIconPath
+import com.ismartcoding.plain.ui.media.fileIconData
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.media.viewer.previewer.TransformItemState
 
@@ -99,7 +99,7 @@ private fun RemoteThumbImage(
 @Composable
 private fun FileTypeIcon(name: String, isDir: Boolean) {
     AsyncImage(
-        model = if (isDir) getFileIconPath("folder") else getFileIconPath(name.getFilenameExtension()),
+        model = if (isDir) fileIconData("folder") else fileIconData(name.getFilenameExtension()),
         modifier = Modifier.size(48.dp).padding(0.dp),
         alignment = Alignment.Center,
         contentDescription = name,

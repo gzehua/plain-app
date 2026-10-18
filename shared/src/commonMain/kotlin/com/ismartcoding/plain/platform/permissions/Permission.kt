@@ -90,7 +90,7 @@ fun Permission.grant(): Boolean {
 
 /**
  * Whether the user handed this permission to the web client. The list already
- * arrives with [com.ismartcoding.plain.api.graphql.models.SystemSettings] over the prefs
+ * arrives with [com.ismartcoding.plain.preferences.SystemSettings] over the prefs
  * bridge, so this is a local read — the core has nothing to add.
  */
 suspend fun Permission.isEnabledAsync(): Boolean =

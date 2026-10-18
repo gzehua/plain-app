@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.nearby
 
+import com.ismartcoding.plain.features.nearby.pairingState
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
@@ -26,7 +28,7 @@ fun PairPeerDialog(device: NearbyDevice, onDismiss: () -> Unit) {
     var disposed by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     val state = generation?.let { NearbyViewModel.pairingStates[it] }
-    val phase = state?.get("phase")?.jsonPrimitive?.content
+    val phase = state?.pairingState()?.phase
     val terminal = phase in setOf("SUCCEEDED", "FAILED", "CANCELLED")
     DisposableEffect(Unit) {
         onDispose {
@@ -70,7 +72,7 @@ fun PairPeerDialog(device: NearbyDevice, onDismiss: () -> Unit) {
                     }
                 }
                 if (generation != null && !terminal && phase != "PASSWORD_REQUIRED") Text(stringResource(Res.string.pending))
-                (error ?: state?.get("error")?.jsonPrimitive?.contentOrNull)?.let { Text(it) }
+                (error ?: state?.pairingState()?.error)?.let { Text(it) }
             }
         },
         confirmButton = {
@@ -85,7 +87,7 @@ fun PairPeerDialog(device: NearbyDevice, onDismiss: () -> Unit) {
                             withContext(NonCancellable) {
                                 if (generation == null) {
                                     val result = RustPairingRuntime.start(device, mode)
-                                    val value = result.getValue("generation").jsonPrimitive.content
+                                    val value = result.pairingState().generation
                                     generation = value
                                     if (disposed) RustPairingRuntime.cancelGeneration(value)
                                 }

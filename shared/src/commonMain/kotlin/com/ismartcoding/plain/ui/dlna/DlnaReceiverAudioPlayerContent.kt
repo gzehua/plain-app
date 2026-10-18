@@ -40,6 +40,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import com.ismartcoding.plain.features.dlna.DlnaPlaybackState
+import com.ismartcoding.plain.features.dlna.DlnaPlayerReports
 import com.ismartcoding.plain.features.dlna.DlnaRendererState
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.platform.system.exitImmersiveFullscreen
@@ -103,13 +104,13 @@ fun DlnaReceiverAudioPlayerContent(onExit: () -> Unit) {
     }
     LaunchedEffect(mediaUri, seekTargetMs) {
         val uri = mediaUri
-        seekTargetMs?.let { state.seekTo(it); DlnaRendererState.seekConsumed(uri, it) }
+        seekTargetMs?.let { state.seekTo(it); DlnaPlayerReports.reportSeekConsumed(uri, it) }
     }
     LaunchedEffect(mediaUri) {
         val uri = mediaUri
         while (true) {
             state.updateTime()
-            DlnaRendererState.reportPosition(uri, state.currentTime, state.totalTime)
+            DlnaPlayerReports.reportPosition(uri, state.currentTime, state.totalTime)
             delay(1.seconds)
         }
     }
@@ -127,7 +128,7 @@ fun DlnaReceiverAudioPlayerContent(onExit: () -> Unit) {
     val onPlayPause = {
         val wasPlaying = state.isPlaying
         state.togglePlay()
-        DlnaRendererState.reportPlaybackState(
+        DlnaPlayerReports.reportPlaybackState(
             mediaUri,
             if (wasPlaying) DlnaPlaybackState.PAUSED else DlnaPlaybackState.PLAYING,
         )

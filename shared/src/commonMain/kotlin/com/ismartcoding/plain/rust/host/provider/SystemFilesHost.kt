@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.rust.host.provider
 
+import com.ismartcoding.plain.rust.host.*
+
 import com.ismartcoding.plain.api.graphql.models.File as FileEntry
 
 import com.ismartcoding.plain.lib.JsonHelper
@@ -7,11 +9,17 @@ import kotlinx.serialization.json.*
 
 internal object SystemFilesHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
-        "systemFileIndexId" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.fileIndexId(params.getValue("path").jsonPrimitive.content))
+        "systemFileIndexId" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.fileIndexId(JsonHelper.jsonDecodeFromElement<PathRequest>(params).path))
         "systemFileIndexCount" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.fileIndexCount(params.providerPlan()))
-        "systemFileIndexRows" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.fileIndexRows(params.providerPlan(), params.getValue("limit").jsonPrimitive.int, params.getValue("offset").jsonPrimitive.int, com.ismartcoding.plain.features.files.FileSortBy.valueOf(params.getValue("sortBy").jsonPrimitive.content)).map(::fileFacts))
+        "systemFileIndexRows" -> {
+            val request = JsonHelper.jsonDecodeFromElement<FileIndexRowsRequest>(params)
+            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.fileIndexRows(
+                request.plan, request.limit, request.offset,
+                com.ismartcoding.plain.features.files.FileSortBy.valueOf(request.sortBy),
+            ).map(::fileFacts))
+        }
         "systemMountFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.files.storageVolumeFacts())
-        "imageDecodeBounds" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.readImageBounds(params.getValue("path").jsonPrimitive.content))
+        "imageDecodeBounds" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.readImageBounds(JsonHelper.jsonDecodeFromElement<PathRequest>(params).path))
         else -> error("Unsupported provider operation")
     }
 

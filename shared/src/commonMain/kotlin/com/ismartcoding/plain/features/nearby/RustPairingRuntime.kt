@@ -26,8 +26,8 @@ object RustPairingRuntime {
     ).getValue("pairDevice").jsonObject
     suspend fun cancelGeneration(generation: String): JsonElement = PlainRust.mainMutate("cancelPairing(generation: ${gql(generation)})", longRunning = true).getValue("cancelPairing")
     suspend fun cancel(id: String): JsonElement {
-        val attempt = states().map { it.jsonObject }.lastOrNull { it["deviceId"]?.jsonPrimitive?.contentOrNull == id && it["phase"]?.jsonPrimitive?.content !in setOf("SUCCEEDED", "FAILED", "CANCELLED") } ?: return JsonPrimitive(false)
-        return cancelGeneration(attempt.getValue("generation").jsonPrimitive.content)
+        val attempt = JsonHelper.jsonDecodeFromElement<List<PairingState>>(states()).lastOrNull { it.deviceId == id && it.phase !in setOf("SUCCEEDED", "FAILED", "CANCELLED") } ?: return JsonPrimitive(false)
+        return cancelGeneration(attempt.generation)
     }
     suspend fun currentRequest(id: String, signature: String): Boolean =
         PlainRust.mainQuery("isPairingRequestCurrent(id: ${gql(id)}, signature: ${gql(signature)})").getValue("isPairingRequestCurrent").jsonPrimitive.boolean

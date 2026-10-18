@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.rust.host.provider
 
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.features.telephony.sms.MmsLaunchRequest
 import com.ismartcoding.plain.features.telephony.sms.MmsProviderRequest
 import com.ismartcoding.plain.lib.JsonHelper
@@ -8,8 +10,10 @@ import kotlinx.serialization.json.*
 internal object SystemSmsHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
         "systemMmsTextFacts", "systemSmsCountFacts", "systemSmsRowsFacts", "systemSmsIdsFacts", "systemSmsConversationFacts", "systemSmsThreadFacts" -> com.ismartcoding.plain.platform.system.systemSmsFacts(method, params)
-        "systemDivideSmsText" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.divideSmsText(
-            params.getValue("body").jsonPrimitive.content, params["subscriptionId"]?.takeUnless { it is JsonNull }?.jsonPrimitive?.int))
+        "systemDivideSmsText" -> {
+            val request = JsonHelper.jsonDecodeFromElement<DivideSmsTextRequest>(params)
+            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.divideSmsText(request.body, request.subscriptionId))
+        }
         "systemSendSmsParts" -> {
             com.ismartcoding.plain.platform.media.sendSmsParts(JsonHelper.jsonDecodeFromElement(params))
             JsonHelper.jsonEncodeToElement(true)
@@ -39,3 +43,6 @@ internal object SystemSmsHost {
         else -> error("Unsupported provider operation")
     }
 }
+
+@Serializable
+private data class DivideSmsTextRequest(val body: String, val subscriptionId: Int? = null)

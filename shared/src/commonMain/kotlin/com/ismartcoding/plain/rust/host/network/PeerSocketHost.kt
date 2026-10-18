@@ -14,30 +14,47 @@ object PeerSocketHost {
 
     suspend fun handle(method: String, params: JsonObject): JsonElement {
         if (method == "peerTransportSocketCloseAll") { disconnect(); return JsonPrimitive(true) }
-        val token = params.getValue("token").jsonPrimitive.content
-        if (method == "peerTransportSocketOpen") {
-            handles.open(token, params.getValue("peerId").jsonPrimitive.content)
-            return JsonPrimitive(true)
-        }
-        if (method == "peerTransportSocketClose") { handles.close(token); return JsonPrimitive(true) }
-        val socket = handles.socket(token)
         return when (method) {
+            "peerTransportSocketOpen" -> {
+                val request = JsonHelper.jsonDecodeFromElement<SocketOpenRequest>(params)
+                handles.open(request.token, request.peerId)
+                JsonPrimitive(true)
+            }
+            "peerTransportSocketClose" -> {
+                val request = JsonHelper.jsonDecodeFromElement<SocketTokenRequest>(params)
+                handles.close(request.token)
+                JsonPrimitive(true)
+            }
             "peerTransportSocketRead" -> {
-                val length = params.getValue("length").jsonPrimitive.int
-                require(length in 1..32768)
-                val bytes = socket.read(length)
+                val request = JsonHelper.jsonDecodeFromElement<SocketReadRequest>(params)
+                require(request.length in 1..32768)
+                val bytes = handles.socket(request.token).read(request.length)
                 JsonHelper.jsonEncodeToElement(ReadResult(bytes != null && bytes.isEmpty(), bytes?.let { Base64.encode(it) }))
             }
             "peerTransportSocketWrite" -> {
-                val bytes = Base64.decode(params.getValue("bytes").jsonPrimitive.content)
+                val request = JsonHelper.jsonDecodeFromElement<SocketWriteRequest>(params)
+                val bytes = Base64.decode(request.bytes)
                 require(bytes.size <= 32768)
-                socket.write(bytes)
+                handles.socket(request.token).write(bytes)
                 JsonPrimitive(bytes.size)
             }
             else -> error("Unknown socket operation")
         }
     }
+
     fun disconnectPeer(peerId: String) = handles.closePeer(peerId)
 
     fun disconnect() = handles.closeAll()
 }
+
+@Serializable
+private data class SocketTokenRequest(val token: String)
+
+@Serializable
+private data class SocketOpenRequest(val token: String, val peerId: String)
+
+@Serializable
+private data class SocketReadRequest(val token: String, val length: Int)
+
+@Serializable
+private data class SocketWriteRequest(val token: String, val bytes: String)

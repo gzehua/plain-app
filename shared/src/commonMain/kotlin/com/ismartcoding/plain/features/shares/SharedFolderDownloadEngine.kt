@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.features.shares
 
+import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
 import com.ismartcoding.plain.features.downloads.*
@@ -15,7 +16,6 @@ object SharedFolderDownloadEngine {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val intents = Channel<Request>(128)
     private val stateLock = Mutex()
-    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     private val version = DownloadQueueVersion()
 
     init {
@@ -43,24 +43,24 @@ object SharedFolderDownloadEngine {
         if (!it) LogCat.e("Shared download request capacity exceeded")
     }
     suspend fun refresh() = stateLock.withLock {
-        val snapshot = call(Request.Snapshot).jsonObject
-        val current = snapshot.getValue("revision").jsonPrimitive.long
-        if (!version.accept(snapshot.getValue("runtimeId").jsonPrimitive.content, current)) return@withLock
-        val tasks = snapshot.getValue("tasks").jsonArray.map { value ->
-            val row = value.jsonObject
-            fun str(key: String) = row.getValue(key).jsonPrimitive.content
-            fun number(key: String) = row.getValue(key).jsonPrimitive.long
+        val snapshot = JsonHelper.jsonDecodeFromElement<SharedDownloadSnapshot>(call(Request.Snapshot))
+        if (!version.accept(snapshot.runtimeId, snapshot.revision)) return@withLock
+        val tasks = snapshot.tasks.map { row ->
             SharedFolderBatchTask(
-                str("id"), str("messageId"), ShareBatchType.valueOf(str("type")), str("title"), str("targetDir"),
-                json.decodeFromJsonElement(row.getValue("link")), str("urlToken"), json.decodeFromJsonElement(row.getValue("entries")), str("zipName"),
+                row.id, row.messageId, ShareBatchType.valueOf(row.type), row.title, row.targetDir,
+                row.link, row.urlToken, row.entries, row.zipName,
             ).apply {
-                status = DownloadStatus.valueOf(str("status")); error = str("error")
-                downloadedSize = number("downloadedSize"); totalSize = number("totalSize"); downloadSpeed = number("downloadSpeed")
-                totalFiles = number("totalFiles").toInt(); doneFiles = number("doneFiles").toInt(); failedFiles = number("failedFiles").toInt()
-                currentFile = str("currentFile"); packing = row.getValue("packing").jsonPrimitive.boolean
-                failures = row.getValue("failures").jsonArray.map { item ->
-                    DownloadFailure(item.jsonObject.getValue("path").jsonPrimitive.content, item.jsonObject.getValue("error").jsonPrimitive.content)
-                }.toMutableList()
+                status = DownloadStatus.valueOf(row.status)
+                error = row.error
+                downloadedSize = row.downloadedSize
+                totalSize = row.totalSize
+                downloadSpeed = row.downloadSpeed
+                totalFiles = row.totalFiles.toInt()
+                doneFiles = row.doneFiles.toInt()
+                failedFiles = row.failedFiles.toInt()
+                currentFile = row.currentFile
+                packing = row.packing
+                failures = row.failures.map { DownloadFailure(it.path, it.error) }.toMutableList()
             }
         }
         DownloadCenter.replaceExternal(DOWNLOAD_KIND_SHARE, tasks)
@@ -68,7 +68,7 @@ object SharedFolderDownloadEngine {
     private const val QUEUE_FIELDS = "runtimeId revision tasks { id messageId type title targetDir link { host port sharedId token pageUrl } urlToken entries { name virtualPath isDir size mimeType hasThumb } zipName generation status error downloadedSize totalSize downloadSpeed totalFiles doneFiles failedFiles currentFile packing failures { path error } }"
     private suspend fun call(request: Request): JsonElement = when (request) {
         Request.Snapshot -> PlainRust.mainQuery("sharedDownloadQueue { $QUEUE_FIELDS }").getValue("sharedDownloadQueue")
-        is Request.Enqueue -> PlainRust.mainGraphql("mutation(\$input: SharedDownloadInput!) { enqueueSharedDownload(input: \$input) }", mapOf("input" to json.encodeToJsonElement(request.input)), longRunning = true).getValue("enqueueSharedDownload")
+        is Request.Enqueue -> PlainRust.mainGraphql("mutation(\$input: SharedDownloadInput!) { enqueueSharedDownload(input: \$input) }", mapOf("input" to JsonHelper.jsonEncodeToElement(request.input)), longRunning = true).getValue("enqueueSharedDownload")
         is Request.Control -> {
             val operation = when (request.command) {
                 "retry" -> "retrySharedDownload"
@@ -97,3 +97,33 @@ internal data class SharedDownloadInput(
     val targetDir: String,
     val zipName: String,
 )
+
+@Serializable
+private data class SharedDownloadSnapshot(val runtimeId: String, val revision: Long, val tasks: List<SharedDownloadRow>)
+
+@Serializable
+private data class SharedDownloadRow(
+    val id: String,
+    val messageId: String,
+    val type: String,
+    val title: String,
+    val targetDir: String,
+    val link: SharedLink,
+    val urlToken: String,
+    val entries: List<SharedFileDto>,
+    val zipName: String,
+    val status: String,
+    val error: String,
+    val downloadedSize: Long,
+    val totalSize: Long,
+    val downloadSpeed: Long,
+    val totalFiles: Long,
+    val doneFiles: Long,
+    val failedFiles: Long,
+    val currentFile: String,
+    val packing: Boolean,
+    val failures: List<SharedDownloadFailure>,
+)
+
+@Serializable
+private data class SharedDownloadFailure(val path: String, val error: String)

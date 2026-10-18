@@ -15,18 +15,16 @@ class VideoProgressRustHttpTest {
     @Test
     fun videoPositionUsesRustAndRetainsLongMilliseconds() = runBlocking {
         val id = "video-rust-${UUID.randomUUID()}"
-        try {
-            val row = VideoProgressHelper.saveAsync(id, 3_000_000_123)
-            assertEquals(3_000_000_123, checkNotNull(VideoProgressHelper.getAsync(id)).positionMs)
-            assertTrue(VideoProgressHelper.recentAsync(Clock.System.now() - 1.days).any { it.mediaId == id && it.updatedAt == row.updatedAt })
-            assertTrue(runCatching { VideoProgressHelper.saveAsync(id, -1) }.isFailure)
-            assertEquals(3_000_000_123, checkNotNull(VideoProgressHelper.getAsync(id)).positionMs)
-            VideoProgressHelper.saveAsync(id, 0)
-            assertEquals(0L, checkNotNull(VideoProgressHelper.getAsync(id)).positionMs)
-            VideoProgressHelper.deleteAsync(id)
-            assertNull(VideoProgressHelper.getAsync(id))
-        } finally {
-            VideoProgressHelper.deleteAsync(id)
-        }
+        val since = Clock.System.now() - 1.days
+        suspend fun current() = VideoProgressHelper.recentAsync(since).single { it.mediaId == id }
+        val row = VideoProgressHelper.saveAsync(id, 3_000_000_123)
+        assertEquals(3_000_000_123, current().positionMs)
+        assertEquals(row.updatedAt, current().updatedAt)
+        assertTrue(runCatching { VideoProgressHelper.saveAsync(id, -1) }.isFailure)
+        assertEquals(3_000_000_123, current().positionMs)
+        VideoProgressHelper.recordPlayAsync(id, 456)
+        assertEquals(456L, current().positionMs)
+        VideoProgressHelper.saveAsync(id, 0)
+        assertEquals(0L, current().positionMs)
     }
 }

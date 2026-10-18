@@ -9,15 +9,10 @@ class ApiContractTest {
     private val sdl: String = readMainSchema()
 
     @Test
-    fun userPreferenceSnapshotSelectsEveryExistingTypedSetting() {
-        val expected = mutableSetOf<String>()
-        forEachTypedField { (owner, name, _) -> if (owner == "UserSettings") expected.add(name) }
-        val selected = Regex("[A-Za-z_][A-Za-z0-9_]*")
-            .findAll(com.ismartcoding.plain.preferences.USER_SETTINGS_SELECTION)
-            .map { it.value }.toList()
-        assertEquals("userSettings", selected.first())
-        assertEquals(expected, selected.drop(1).toSet())
-        assertEquals(expected.size, selected.size - 1)
+    fun internalPreferenceSnapshotsAreNotGraphqlRoots() {
+        for (name in listOf("systemPrefs", "systemSettings", "userSettings", "toggleNotificationApp", "cycleAudioPlayMode")) {
+            if (Regex("(?m)^\\s*$name(?:\\(|:)").containsMatchIn(sdl)) fail("Internal operation exposed: $name")
+        }
     }
 
     // Fields that keep a raw String id although the naming rule says ID.
@@ -60,10 +55,10 @@ class ApiContractTest {
     fun sdlSnapshotCoversTheWholeContract() {
         val queries = operationFieldNamesIn("Query")
         val mutations = operationFieldNamesIn("Mutation")
-        if (queries.size != 137 || mutations.size != 233) {
+        if (queries.size != 132 || mutations.size != 219) {
             fail(
                 "Shared Rust schema fragments declare ${queries.size} Query / ${mutations.size} " +
-                    "Mutation operations — the contract has 137 / 233. The snapshot looks truncated or " +
+                    "Mutation operations — the contract has 132 / 219. The snapshot looks truncated or " +
                     "drifted; every check in this class reads it, so they would pass on an empty file.",
             )
         }
@@ -187,7 +182,7 @@ class ApiContractTest {
     @Test
     fun legacyShapesAreGone() {
                 forbiddenPattern("prefsPath|prefEntries|deletePrefEntry|setPref|deletePref") {
-                    "legacy preference operations must not return; use userPrefs/systemPrefs and setUserPref/removeUserPref: $it"
+                    "legacy preference operations must not return; use userPrefs and setUserPref/removeUserPref: $it"
                 }
         forbiddenPattern("restoreImageSearch") { "Image model restoration belongs to shared Rust startup: $it" }
         forbiddenPattern("peerAwareConfig|PeerAwareConfig") { "Aware SDK parameters belong to shared Rust platform requests: $it" }

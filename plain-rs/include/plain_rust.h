@@ -27,4 +27,22 @@ char *plain_resource_close(const char *id, bool failed);
 char *plain_events_next(const char *stream);
 char *plain_events_send(const char *action, const char *message, const uint8_t *bytes, size_t len);
 
+char *plain_restart_http_server(int32_t http_port, int32_t https_port);
+char *plain_regenerate_tls_certificate(void);
+char *plain_import_tls_certificate_pem(const char *certificate_pem, const char *private_key_pem);
+char *plain_import_tls_certificate_pkcs12(const uint8_t *data, size_t data_len, const char *password);
+char *plain_create_session(const char *name);
+char *plain_confirm_web_login(const char *request_id, bool allowed);
+char *plain_stage_app_restore(const char *path);
+char *plain_export_app_backup(void);
+char *plain_create_crash_report(const char *report);
+char *plain_file_icon(const char *extension);
+char *plain_system_settings(void);
+char *plain_user_settings(void);
+char *plain_toggle_notification_app(const char *package_name);
+char *plain_verify_adb_token(const char *token);
+char *plain_start_app_update_download(void);
+char *plain_cancel_app_update_download(void);
+char *plain_check_app_update(bool automatic);
+
 #endif

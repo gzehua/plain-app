@@ -29,7 +29,6 @@ expect fun fileToUriString(path: String): String
 /**
  * Returns the asset path for the icon representing the given file extension.
  */
-expect fun getFileIconPath(extension: String): String
 
 /**
  * Whether a file exists at the given [path].

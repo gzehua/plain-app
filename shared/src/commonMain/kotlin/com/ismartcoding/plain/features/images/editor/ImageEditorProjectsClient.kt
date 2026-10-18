@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.features.images.editor
 
+import kotlinx.serialization.Serializable
+import kotlin.time.Instant
+
 import com.ismartcoding.plain.util.ID
 import com.ismartcoding.plain.features.images.editor.ImageEditorProjectSummary
 import com.ismartcoding.plain.api.graphql.models.ImageEditorProject
@@ -17,7 +20,6 @@ import com.ismartcoding.plain.rust.request.*
 import com.ismartcoding.plain.rust.event.*
 import com.ismartcoding.plain.rust.host.*
 import com.ismartcoding.plain.rust.http.*
-import com.ismartcoding.plain.rust.request.*
 import kotlinx.serialization.json.*
 
 object ImageEditorProjectsClient {
@@ -26,11 +28,8 @@ object ImageEditorProjectsClient {
 
     suspend fun listAsync(): List<ImageEditorProjectSummary> =
         RustContentApi.query("imageEditorProjects { $SUMMARY_FIELDS }")
-            .getValue("imageEditorProjects").jsonArray.map { value ->
-                val row = value.jsonObject
-                ImageEditorProjectSummary(ID(row.string("id")), row["thumbnail"]?.jsonPrimitive?.contentOrNull,
-                    row.getValue("canvasWidth").jsonPrimitive.int, row.getValue("canvasHeight").jsonPrimitive.int,
-                    row.getValue("layerCount").jsonPrimitive.int, row.instant("updatedAt"))
+            .getValue("imageEditorProjects").let { JsonHelper.jsonDecodeFromElement<List<ProjectSummary>>(it) }.map { row ->
+                ImageEditorProjectSummary(ID(row.id), row.thumbnail, row.canvasWidth, row.canvasHeight, row.layerCount, row.updatedAt)
             }
 
     suspend fun getByIdAsync(id: String): ImageEditorProject? =
@@ -52,3 +51,6 @@ object ImageEditorProjectsClient {
 
     private fun JsonElement.project(): ImageEditorProject = JsonHelper.jsonDecodeFromElement<ImageEditorProject>(this)
 }
+
+@Serializable
+private data class ProjectSummary(val id: String, val thumbnail: String?, val canvasWidth: Int, val canvasHeight: Int, val layerCount: Int, val updatedAt: Instant)

@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.platform.system
 
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
@@ -54,15 +56,15 @@ object BackgroundExecution {
         val finished = CompletableDeferred<Boolean>()
         val observer = launch(start = CoroutineStart.UNDISPATCHED) {
             val event = PlainRust.events.first { event ->
-                event.type == "BACKGROUND_EXECUTION_FINISHED" && JsonHelper.jsonDecode<JsonObject>(event.payload)["id"]?.jsonPrimitive?.content == id
+                event.type == "BACKGROUND_EXECUTION_FINISHED" && JsonHelper.jsonDecode<ExecutionResult>(event.payload).id == id
             }
-            finished.complete(JsonHelper.jsonDecode<JsonObject>(event.payload).getValue("success").jsonPrimitive.boolean)
+            finished.complete(requireNotNull(JsonHelper.jsonDecode<ExecutionResult>(event.payload).success))
         }
         try {
             withGrant(
-                grant = { PlainRust.publish(HostEvent(EventType.BACKGROUND_EXECUTION_GRANTED, buildJsonObject { put("id", id); put("deadlineMs", deadlineMs) }.toString())) },
+                grant = { PlainRust.publish(HostEvent(EventType.BACKGROUND_EXECUTION_GRANTED, JsonHelper.jsonEncode(ExecutionGrant(id, deadlineMs)))) },
                 awaitCompletion = { finished.await() },
-                revoke = { PlainRust.publish(HostEvent(EventType.BACKGROUND_EXECUTION_REVOKED, buildJsonObject { put("id", id) }.toString())) },
+                revoke = { PlainRust.publish(HostEvent(EventType.BACKGROUND_EXECUTION_REVOKED, JsonHelper.jsonEncode(ExecutionRevocation(id)))) },
             )
         } finally {
             withContext(NonCancellable) { observer.cancelAndJoin() }
@@ -92,3 +94,12 @@ object BackgroundExecution {
 }
 
 internal expect suspend fun scheduleBackgroundWake(atMs: Long?)
+
+@Serializable
+private data class ExecutionResult(val id: String? = null, val success: Boolean? = null)
+
+@Serializable
+private data class ExecutionGrant(val id: String, val deadlineMs: Long)
+
+@Serializable
+private data class ExecutionRevocation(val id: String)

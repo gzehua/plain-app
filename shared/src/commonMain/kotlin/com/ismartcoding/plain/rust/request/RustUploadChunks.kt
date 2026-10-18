@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.rust.request
 
+import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.bridge.RustCoreBridge
 import com.ismartcoding.plain.rust.bridge.RustDispatchers
@@ -55,13 +58,13 @@ internal class UploadChunksClient(
             if (buffered > 0) upload(buffer.copyOf(buffered))
             if (index == 0L) upload(ByteArray(0))
             var status = mutate("mergeChunks(fileId: ${gql(id)}, totalChunks: $index, path: ${gql(path)}, replace: true, totalSize: $size) { status error }")
-                .getValue("mergeChunks").jsonObject
-            while (status.getValue("status").jsonPrimitive.content in setOf("STARTED", "MERGING")) {
+                .getValue("mergeChunks").let { JsonHelper.jsonDecodeFromElement<MergeResult>(it) }
+            while (status.status in setOf("STARTED", "MERGING")) {
                 delay(100)
-                status = query("mergeStatus(fileId: ${gql(id)}) { status error }").getValue("mergeStatus").jsonObject
+                status = query("mergeStatus(fileId: ${gql(id)}) { status error }").getValue("mergeStatus").let { JsonHelper.jsonDecodeFromElement<MergeResult>(it) }
             }
-            check(status.getValue("status").jsonPrimitive.content == "DONE") {
-                status["error"]?.jsonPrimitive?.contentOrNull ?: "Upload merge did not complete"
+            check(status.status == "DONE") {
+                status.error ?: "Upload merge did not complete"
             }
             return true
         } finally {
@@ -72,3 +75,6 @@ internal class UploadChunksClient(
         }
     }
 }
+
+@Serializable
+private data class MergeResult(val status: String, val error: String? = null)

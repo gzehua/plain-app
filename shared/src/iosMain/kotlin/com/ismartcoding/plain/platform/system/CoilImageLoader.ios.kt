@@ -6,6 +6,7 @@ import com.ismartcoding.plain.rust.http.PlainResponse
 import com.ismartcoding.plain.rust.http.createBrowserHttpClient
 import com.ismartcoding.plain.rust.http.request
 
+import coil3.svg.SvgDecoder
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -33,6 +34,7 @@ import okio.Path.Companion.toPath
 fun newImageLoader(context: PlatformContext): ImageLoader =
     ImageLoader.Builder(context)
         .components {
+            add(SvgDecoder.Factory(true))
             add(NetworkFetcher.Factory(networkClient = { IosNetworkClient() }))
         }
         .memoryCache {

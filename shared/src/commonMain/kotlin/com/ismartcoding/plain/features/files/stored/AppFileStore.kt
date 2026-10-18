@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.features.files.stored
 
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.api.graphql.models.AppFile
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.withIO
@@ -12,7 +14,6 @@ import com.ismartcoding.plain.features.notes.*
 import com.ismartcoding.plain.ui.notes.*
 import com.ismartcoding.plain.features.tags.*
 import com.ismartcoding.plain.ui.tags.*
-import com.ismartcoding.plain.rust.request.*
 import com.ismartcoding.plain.rust.request.*
 import com.ismartcoding.plain.ui.files.stored.VAppFile
 import kotlinx.coroutines.CancellationException
@@ -49,12 +50,15 @@ object AppFileStore {
 
     suspend fun page(offset: Int, limit: Int, query: String = ""): List<VAppFile> =
         RustContentApi.query("appFiles(offset: $offset, limit: $limit, query: ${gql(query)}) { $FIELDS }")
-            .getValue("appFiles").jsonArray.map { VAppFile(it.file(), it.jsonObject.string("fileName")) }
+            .getValue("appFiles").let { JsonHelper.jsonDecodeFromElement<List<AppFile>>(it) }.map { VAppFile(it, it.fileName) }
     suspend fun count(query: String = ""): Int = RustContentApi.query("appFileCount(query: ${gql(query)})").getValue("appFileCount").jsonPrimitive.int
     suspend fun displayName(id: String): String = RustContentApi.query("appFiles(offset: 0, limit: 1, query: ${gql("text:$id")}) { fileName }")
-        .getValue("appFiles").jsonArray.firstOrNull()?.jsonObject?.string("fileName").orEmpty()
+        .getValue("appFiles").let { JsonHelper.jsonDecodeFromElement<List<AppFileName>>(it) }.firstOrNull()?.fileName.orEmpty()
     suspend fun release(id: String) {
         RustContentApi.mutate("releaseAppFile(fileId: ${gql(id.substringBefore('.'))})")
     }
     private fun JsonElement.file(): AppFile = JsonHelper.jsonDecodeFromElement<AppFile>(this)
 }
+
+@Serializable
+private data class AppFileName(val fileName: String)

@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.rust.event
 
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.rust.request.ContentApiSession
 
 import com.ismartcoding.plain.app.events.EventType
@@ -56,7 +58,7 @@ internal object RustEventProjection {
                 com.ismartcoding.plain.app.onRustHttpServerFailed(failure.generation, failure.message)
             }
             EventType.PEER_UPDATED.name -> {
-                val id = JsonHelper.jsonDecode<JsonObject>(payload).getValue("id").jsonPrimitive.content
+                val id = JsonHelper.jsonDecode<PeerIdEvent>(payload).id
                 com.ismartcoding.plain.ui.chat.peer.PeerCacher.refreshPeer(id)
             }
             EventType.PEER_STATUS_UPDATED.name -> {
@@ -66,9 +68,9 @@ internal object RustEventProjection {
             }
             EventType.PEER_TRANSPORT_UPDATED.name -> com.ismartcoding.plain.features.chat.peer.PeerTransportProjection.apply(JsonHelper.jsonDecode<JsonArray>(payload))
             EventType.PEER_CONNECTIONS_UPDATED.name -> {
-                val obj = JsonHelper.jsonDecode<JsonObject>(payload)
-                val id = obj["id"]?.jsonPrimitive?.contentOrNull
-                val online = obj["online"]?.jsonPrimitive?.booleanOrNull
+                val event = JsonHelper.jsonDecode<PeerConnectionEvent>(payload)
+                val id = event.id
+                val online = event.online
                 if (id != null && online != null) {
                     com.ismartcoding.plain.ui.chat.peer.PeerCacher.setOnline(id, online)
                 } else {
@@ -89,8 +91,8 @@ internal object RustEventProjection {
             EventType.PAIRING_SUCCESS.name -> com.ismartcoding.plain.features.nearby.PairingProjection.success(payload)
             EventType.PAIRING_FAILED.name -> com.ismartcoding.plain.features.nearby.PairingProjection.timeout(payload)
             EventType.MESSAGE_CREATED.name -> {
-                JsonHelper.jsonDecode<JsonElement>(payload).jsonArray.forEach { value ->
-                    com.ismartcoding.plain.features.chat.RustChatStore.getById(value.jsonObject.getValue("id").jsonPrimitive.content)?.let { item ->
+                JsonHelper.jsonDecode<List<PeerIdEvent>>(payload).forEach { value ->
+                    com.ismartcoding.plain.features.chat.RustChatStore.getById(value.id)?.let { item ->
                         if (item.fromId == "me") {
                             val target = if (item.channelId.isNullOrEmpty()) com.ismartcoding.plain.features.chat.data.ChatTarget.parseId("peer:" + item.toId)
                                 else com.ismartcoding.plain.features.chat.data.ChatTarget.parseId("channel:" + item.channelId)
@@ -104,7 +106,7 @@ internal object RustEventProjection {
                 }
             }
             EventType.MESSAGE_DELETED.name -> {
-                val target = JsonHelper.jsonDecode<JsonElement>(payload).jsonPrimitive.content
+                val target = JsonHelper.jsonDecode<String>(payload)
                 if (target.startsWith("ids=")) com.ismartcoding.plain.ui.chat.ChatViewModel.onMessagesDeleted(target.removePrefix("ids=").split(',').filter { it.isNotEmpty() }.toSet())
                 else com.ismartcoding.plain.ui.chat.ChatViewModel.onConversationCleared(target)
                 com.ismartcoding.plain.features.chat.ChatCacher.load()
@@ -114,8 +116,8 @@ internal object RustEventProjection {
                 com.ismartcoding.plain.features.chat.channel.ChannelSystemMessageReceiver.applyCommitted(result)
             }
             EventType.MESSAGE_UPDATED.name -> {
-                val items = JsonHelper.jsonDecode<JsonElement>(payload).jsonArray.mapNotNull { value ->
-                    com.ismartcoding.plain.features.chat.RustChatStore.getById(value.jsonObject.getValue("id").jsonPrimitive.content)
+                val items = JsonHelper.jsonDecode<List<PeerIdEvent>>(payload).mapNotNull { value ->
+                    com.ismartcoding.plain.features.chat.RustChatStore.getById(value.id)
                 }
                 items.forEach { com.ismartcoding.plain.ui.chat.ChatViewModel.update(it) }
                 com.ismartcoding.plain.features.chat.ChatCacher.load()
@@ -124,7 +126,7 @@ internal object RustEventProjection {
                 com.ismartcoding.plain.features.chat.download.DownloadQueue.refresh()
             }
             EventType.ONLINE_CLIENTS_UPDATED.name -> com.ismartcoding.plain.features.sessions.setOnlineClientIds(
-                JsonHelper.jsonDecode<JsonElement>(payload).jsonArray.map { it.jsonPrimitive.content }.toSet())
+                JsonHelper.jsonDecode<Set<String>>(payload))
             EventType.PREFS_UPDATED.name -> {
                 com.ismartcoding.plain.preferences.Prefs.refresh()
                 com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
@@ -157,3 +159,9 @@ internal object RustEventProjection {
         }
     }
 }
+
+@Serializable
+private data class PeerIdEvent(val id: String)
+
+@Serializable
+private data class PeerConnectionEvent(val id: String? = null, val online: Boolean? = null)

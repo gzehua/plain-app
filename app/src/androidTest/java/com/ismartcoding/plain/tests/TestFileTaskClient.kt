@@ -6,7 +6,6 @@ import com.ismartcoding.plain.features.files.FileTaskOp
 import com.ismartcoding.plain.api.graphql.models.FileTask
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
 import kotlinx.serialization.json.*
 
 internal object TestFileTaskClient {
@@ -22,6 +21,6 @@ internal object TestFileTaskClient {
             longRunning = wait,
         ).getValue("createFileTask"))
 
-    suspend fun list(offset: Int, limit: Int, query: String): List<FileTask> = PlainRust.mainQuery("fileTasks(offset: $offset, limit: $limit, query: ${gql(query)}) { $fields }").getValue("fileTasks").jsonArray.map(::parse)
+    suspend fun list(offset: Int, limit: Int, query: String): List<FileTask> = PlainRust.mainQuery("fileTasks(offset: $offset, limit: $limit, query: ${JsonHelper.jsonEncode(query)}) { $fields }").getValue("fileTasks").jsonArray.map(::parse)
     private fun parse(value: JsonElement): FileTask = JsonHelper.jsonDecodeFromElement(value)
 }

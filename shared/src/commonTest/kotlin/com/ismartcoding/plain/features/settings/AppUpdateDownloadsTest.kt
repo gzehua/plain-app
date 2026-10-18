@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.settings
 
-import com.ismartcoding.plain.api.graphql.models.AppUpdateDownload
+import com.ismartcoding.plain.features.settings.AppUpdateDownload
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

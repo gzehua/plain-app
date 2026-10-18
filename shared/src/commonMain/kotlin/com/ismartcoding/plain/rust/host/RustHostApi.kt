@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.rust.host
 
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.bridge.RustCoreBridge
 import com.ismartcoding.plain.rust.host.provider.ImageCatalogHost
@@ -63,10 +65,10 @@ internal object RustHostApi {
                                         method == "fileTaskScan" || method == "fileTaskMediaSnapshot" -> com.ismartcoding.plain.rust.host.provider.FileTaskHost.handle(method,params)
                                         (method == "mediaProviderRows" || method == "mediaProviderWrite") -> handleMediaProvider(method, params)
                                         method.startsWith("imageCatalog") -> ImageCatalogHost.handle(method, params)
-                                        method == "audioLibraryResolve" -> JsonHelper.jsonEncodeToElement(audioLibraryResolve(
-                                            params.getValue("ids").jsonArray.map { it.jsonPrimitive.content },
-                                            params.getValue("paths").jsonArray.map { it.jsonPrimitive.content },
-                                        ))
+                                        method == "audioLibraryResolve" -> {
+                                            val input = JsonHelper.jsonDecodeFromElement<AudioLibraryResolveRequest>(params)
+                                            JsonHelper.jsonEncodeToElement(audioLibraryResolve(input.ids, input.paths))
+                                        }
                                         else -> error("Unknown Rust host operation: $method")
                                     }
                                     RustHostReply(request.id, result = result)
@@ -101,3 +103,6 @@ internal object RustHostApi {
         try { block() } catch (error: Exception) { LogCat.e("$name cleanup", error) }
     }
 }
+
+@Serializable
+private data class AudioLibraryResolveRequest(val ids: List<String>, val paths: List<String>)

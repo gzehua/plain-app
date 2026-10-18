@@ -27,7 +27,7 @@ import com.ismartcoding.plain.lib.extensions.isPdfFile
 import com.ismartcoding.plain.lib.extensions.isTextFile
 import com.ismartcoding.plain.platform.files.fileToUriString
 import com.ismartcoding.plain.platform.system.formatDateTime
-import com.ismartcoding.plain.platform.files.getFileIconPath
+import com.ismartcoding.plain.ui.media.fileIconData
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
@@ -91,7 +91,7 @@ fun DocItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 AsyncImage(
-                    model =  getFileIconPath(m.title.getFilenameExtension()),
+                    model =  fileIconData(m.title.getFilenameExtension()),
                     contentDescription = m.title,
                     modifier = Modifier
                         .size(24.dp),

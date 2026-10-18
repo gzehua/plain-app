@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.rust.host.provider
 
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.permissions.isGranted
@@ -21,10 +23,11 @@ internal object SystemScreenMirrorHost {
             ))
         }
         "systemStartScreenMirror" -> {
+            val request = JsonHelper.jsonDecodeFromElement<StartScreenMirrorRequest>(params)
             com.ismartcoding.plain.platform.media.applyScreenMirrorQualityPreference()
             sendEvent(
                 com.ismartcoding.plain.app.events.HStartScreenMirrorEvent(
-                    params.getValue("audio").jsonPrimitive.boolean
+                    request.audio
                 )
             )
             JsonHelper.jsonEncodeToElement(true)
@@ -47,11 +50,18 @@ internal object SystemScreenMirrorHost {
             JsonHelper.jsonEncodeToElement(true)
         }
         "systemUpdateScreenMirrorQuality" -> {
+            val request = JsonHelper.jsonDecodeFromElement<ScreenMirrorQualityRequest>(params)
             com.ismartcoding.plain.preferences.Prefs.refresh()
-            val mode = com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode.valueOf(params.getValue("mode").jsonPrimitive.content)
+            val mode = com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode.valueOf(request.mode)
             com.ismartcoding.plain.platform.media.onScreenMirrorQualityChanged(mode)
             JsonHelper.jsonEncodeToElement(true)
         }
         else -> error("Unsupported provider operation")
     }
 }
+
+@Serializable
+private data class StartScreenMirrorRequest(val audio: Boolean)
+
+@Serializable
+private data class ScreenMirrorQualityRequest(val mode: String)

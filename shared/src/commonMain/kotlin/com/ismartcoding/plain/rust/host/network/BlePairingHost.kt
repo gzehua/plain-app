@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.rust.host.network
 
+import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.serialization.Serializable
+
 import com.ismartcoding.plain.platform.network.ble.BlePairConnection
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -13,16 +16,17 @@ object BlePairingHost {
     private val closed = linkedSetOf<String>()
 
     suspend fun handle(method: String, params: JsonObject): JsonElement {
-        val generation = params.getValue("generation").jsonPrimitive.content
         return when (method) {
             "blePairConnect" -> {
+                val request = JsonHelper.jsonDecodeFromElement<BleConnectRequest>(params)
+                val generation = request.generation
                 val operation = currentCoroutineContext()[Job]
                 val entry = mutex.withLock {
                     if (generation in closed || handles.containsKey(generation) || handles.size >= 2) return JsonPrimitive(false)
                     Handle(operation).also { handles[generation] = it }
                 }
                 val device = com.ismartcoding.plain.platform.network.bleTransport().createScanner()
-                    .createClient(params.getValue("shortId").jsonPrimitive.content) ?: return JsonPrimitive(false)
+                    .createClient(request.shortId) ?: return JsonPrimitive(false)
                 val connection = BlePairConnection(device)
                 val installed = mutex.withLock {
                     if (handles[generation] !== entry) false else { entry.connection = connection; true }
@@ -30,9 +34,16 @@ object BlePairingHost {
                 if (!installed) { connection.close(); return JsonPrimitive(false) }
                 JsonPrimitive(connection.connect())
             }
-            "blePairSend" -> JsonPrimitive(connection(generation).send(params.getValue("body").jsonPrimitive.content))
-            "blePairWait" -> connection(generation).wait(params.getValue("timeoutMs").jsonPrimitive.long.coerceIn(1, 1_000))
+            "blePairSend" -> {
+                val request = JsonHelper.jsonDecodeFromElement<BleSendRequest>(params)
+                JsonPrimitive(connection(request.generation).send(request.body))
+            }
+            "blePairWait" -> {
+                val request = JsonHelper.jsonDecodeFromElement<BleWaitRequest>(params)
+                connection(request.generation).wait(request.timeoutMs.coerceIn(1, 1_000))
+            }
             "blePairClose" -> {
+                val generation = JsonHelper.jsonDecodeFromElement<BleGenerationRequest>(params).generation
                 val entry = mutex.withLock {
                     closed.add(generation)
                     while (closed.size > 128) closed.remove(closed.first())
@@ -58,3 +69,15 @@ object BlePairingHost {
         }
     }
 }
+
+@Serializable
+private data class BleGenerationRequest(val generation: String)
+
+@Serializable
+private data class BleConnectRequest(val generation: String, val shortId: String)
+
+@Serializable
+private data class BleSendRequest(val generation: String, val body: String)
+
+@Serializable
+private data class BleWaitRequest(val generation: String, val timeoutMs: Long)

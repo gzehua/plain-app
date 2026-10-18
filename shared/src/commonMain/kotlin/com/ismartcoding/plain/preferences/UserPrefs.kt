@@ -118,7 +118,7 @@ object UserPrefs {
     }
 
     suspend fun toggleNotificationApp(packageName: String) =
-        PrefStore.runAction(UserAction.ToggleNotificationApp(packageName))
+        com.ismartcoding.plain.rust.request.NativeManagementClient.toggleNotificationApp(packageName).also { PrefStore.refresh() }
 
     suspend fun setNotificationMode(mode: String) = PrefStore.runAction(UserAction.SetNotificationMode(mode))
 

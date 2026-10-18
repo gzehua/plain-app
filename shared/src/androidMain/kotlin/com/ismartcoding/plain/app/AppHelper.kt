@@ -5,11 +5,8 @@ import android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
 import android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE
 import android.content.Context
 import android.content.Intent
-import com.ismartcoding.plain.appContext
-import java.io.File
 
 object AppHelper {
-    private val fileIcons = mutableSetOf<String>()
 
     fun relaunch(context: Context) {
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
@@ -25,20 +22,4 @@ object AppHelper {
         return (appProcessInfo.importance == IMPORTANCE_FOREGROUND || appProcessInfo.importance == IMPORTANCE_VISIBLE)
     }
 
-    fun getFileIconPath(extension: String): String {
-        if (fileIcons.isEmpty()) {
-            cacheIconKeys(appContext)
-        }
-        if (!fileIcons.contains(extension)) {
-            return "file:///android_asset/ficons/default.svg"
-        }
-
-        return "file:///android_asset/ficons/$extension.svg"
-    }
-
-    private fun cacheIconKeys(context: Context) {
-        context.assets.list("ficons")?.forEach {
-            fileIcons.add(it.substringBefore("."))
-        }
-    }
 }

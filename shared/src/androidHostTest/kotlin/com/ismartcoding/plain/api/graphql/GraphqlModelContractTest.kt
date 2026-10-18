@@ -102,8 +102,6 @@ class GraphqlModelContractTest {
             "Temperature" to com.ismartcoding.plain.api.graphql.models.Temperature.serializer().descriptor,
             "Video" to com.ismartcoding.plain.api.graphql.models.Video.serializer().descriptor,
             "VideoFileInfo" to com.ismartcoding.plain.api.graphql.models.VideoFileInfo.serializer().descriptor,
-            "SystemSettings" to com.ismartcoding.plain.api.graphql.models.SystemSettings.serializer().descriptor,
-            "UserSettings" to com.ismartcoding.plain.api.graphql.models.UserSettings.serializer().descriptor,
         )
         val schemaWithoutDescriptions = Regex("\"\"\"[\\s\\S]*?\"\"\"").replace(sdl, "")
         val blocks = Regex("""(?:type|input) (\w+)(?:\s+implements\s+\w+)?\s*\{([^}]+)}""").findAll(schemaWithoutDescriptions)
@@ -120,7 +118,11 @@ class GraphqlModelContractTest {
                 assertEquals(false, fields.getValue("tags"), "$name.tags remains a non-null GraphQL field")
                 assertEquals(false, actual.containsKey("tags"), "$name.tags must be resolved separately")
             }
-            val expected = fields.filterKeys { it != "tags" || name !in lazyTags }
+            if (name == "ChatChannel") {
+                assertEquals(false, fields.getValue("key"), "The trusted native key remains in the schema")
+                assertEquals(false, actual.containsKey("key"), "The UI model must not hydrate the channel key")
+            }
+            val expected = fields.filterKeys { (it != "tags" || name !in lazyTags) && (name != "ChatChannel" || it != "key") }
             if (expected != actual) mismatches.add("$name expected=$expected actual=$actual")
         }
         assertEquals(emptyList<String>(), mismatches)

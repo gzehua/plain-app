@@ -15,7 +15,6 @@ import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.confirm_to_delete
 import com.ismartcoding.plain.i18n.delete
-import com.ismartcoding.plain.platform.isRPlus
 import com.ismartcoding.plain.platform.system.shareFiles
 import com.ismartcoding.plain.ui.base.BottomActionButtons
 import com.ismartcoding.plain.ui.components.IconTextSmallButtonDelete

@@ -84,7 +84,6 @@ actual suspend fun copyFileToUri(path: String, uriStr: String): Boolean = withIO
 
 actual fun fileToUriString(path: String): String = path
 
-actual fun getFileIconPath(extension: String): String = ""
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun fileExists(path: String): Boolean =

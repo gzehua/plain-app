@@ -26,7 +26,12 @@ object AudioCommands {
         PlainRust.mainMutate("audioCommand(action: $action, positionMs: $positionMs, speed: $speed) { path positionMs revision }")
     }
     fun submit(action: String, positionMs: Long = 0, speed: Float = 1f) = submit { command(action, positionMs, speed) }
-    fun cycleMode() = submit { PlainRust.mainMutate("cycleAudioPlayMode") }
+    fun cycleMode() = submit {
+        val current = AudioQueueClient.playback().mode
+        val modes = MediaPlayMode.entries
+        val next = modes[(modes.indexOf(current) + 1) % modes.size]
+        PlainRust.mainMutate("updateAudioPlayMode(mode: ${next.name})")
+    }
     fun playTrack(audio: AudioItem) = submit {
         if (!audio.mediaId.isNullOrEmpty()) {
             PlainRust.mainMutate("audioPlayTrack(mediaId: ${gql(audio.mediaId!!)}) { path positionMs revision }")

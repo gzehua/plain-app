@@ -16,7 +16,7 @@ import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.ui.platform.media.TransformImageView
-import com.ismartcoding.plain.platform.files.getFileIconPath
+import com.ismartcoding.plain.ui.media.fileIconData
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.media.viewer.previewer.TransformItemState
 
@@ -48,7 +48,7 @@ fun ChatFileThumbnail(
             )
         } else {
             AsyncImage(
-                model = getFileIconPath(fileName.getFilenameExtension()),
+                model = fileIconData(fileName.getFilenameExtension()),
                 modifier = Modifier.size(48.dp),
                 alignment = Alignment.Center,
                 contentDescription = fileName,

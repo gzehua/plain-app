@@ -1,15 +1,15 @@
 package com.ismartcoding.plain.platform.files
 
+import com.ismartcoding.plain.rust.request.NativeManagementClient
+
 import com.ismartcoding.plain.platform.system.Capability
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.coMain
-import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException
-import kotlinx.serialization.json.jsonPrimitive
 
 fun backup(uriStr: String) = exportBackup { path ->
     check(copyFileToUri(path, uriStr)) { "Unable to write selected backup file" }
@@ -25,7 +25,7 @@ private fun exportBackup(save: suspend (String) -> String) {
         DialogHelper.showLoading()
         var archive: String? = null
         try {
-            val path = PlainRust.mainMutate("exportAppBackup", longRunning = true).getValue("exportAppBackup").jsonPrimitive.content
+            val path = NativeManagementClient.exportAppBackup()
             archive = path
             val destination = save(path)
             DialogHelper.showConfirmDialog("", LocaleHelper.getStringFAsync(Res.string.exported_to, destination))
@@ -44,11 +44,7 @@ fun restore(uriStr: String) {
     coMain {
         DialogHelper.showLoading()
         try {
-            PlainRust.mainGraphql(
-                "mutation(\$path:String!){stageAppRestore(path:\$path)}",
-                mapOf("path" to kotlinx.serialization.json.JsonPrimitive(uriStr)),
-                longRunning = true,
-            )
+            NativeManagementClient.stageAppRestore(uriStr)
             val message = LocaleHelper.getStringAsync(Res.string.app_restore_ready)
             if (Capability.APP_RELAUNCH in getDeviceCapabilities()) {
                 DialogHelper.showConfirmDialog("", message) {
