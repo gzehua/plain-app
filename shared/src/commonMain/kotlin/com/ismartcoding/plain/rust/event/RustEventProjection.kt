@@ -138,6 +138,10 @@ internal object RustEventProjection {
                 sendEvent(com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent(
                     facts.clientId, facts.request, facts.requestId, facts.clientIp))
             }
+            EventType.WEB_LOGIN_CLOSED.name -> {
+                val facts = JsonHelper.jsonDecode<com.ismartcoding.plain.features.sessions.WebLoginClosedFacts>(payload)
+                sendEvent(com.ismartcoding.plain.app.events.HWebLoginClosedEvent(facts.requestId))
+            }
             EventType.WEB_REQUEST_RECEIVED.name -> {
                 sendEvent(HWebRequestReceivedEvent())
             }

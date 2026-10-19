@@ -10,6 +10,7 @@ internal data class PairingState(
     val deviceId: String? = null,
     val phase: String? = null,
     val error: String? = null,
+    val verificationCode: String? = null,
 )
 
 internal fun JsonObject.pairingState(): PairingState = JsonHelper.jsonDecodeFromElement(this)

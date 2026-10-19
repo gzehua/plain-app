@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AuthRequest(
-    val password: String,
+    val password: String = "",
     val browserName: String,
     val browserVersion: String,
     val osName: String,
@@ -13,4 +13,5 @@ data class AuthRequest(
     val isMobile: Boolean,
     val ecdhPublicKey: String = "",
     val peer: AuthPeer? = null,
+    val verificationCode: String = "",
 )

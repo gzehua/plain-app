@@ -122,6 +122,12 @@ fun LoginRequestPage(
                     title = stringResource(Res.string.ip_address),
                     value = clientIp,
                 )
+                if (request.verificationCode.isNotEmpty()) {
+                    PListItem(
+                        title = stringResource(Res.string.login_compare_code),
+                        value = request.verificationCode,
+                    )
+                }
             }
         }
         item {
@@ -141,7 +147,7 @@ fun LoginRequestPage(
                         allowing = true
                         scope.launchSafe(onDone = { allowing = false }) {
                             com.ismartcoding.plain.features.sessions.RustWebLogin.complete(event)
-                            navController.popBackStack()
+                            navController.popBackStack<com.ismartcoding.plain.ui.navigation.Routing.LoginRequest>(inclusive = true)
                         }
                     },
                 )
@@ -157,7 +163,7 @@ fun LoginRequestPage(
                         denying = true
                         scope.launchSafe(onDone = { denying = false }) {
                             com.ismartcoding.plain.features.sessions.RustWebLogin.cancel(event.requestId)
-                            navController.popBackStack()
+                            navController.popBackStack<com.ismartcoding.plain.ui.navigation.Routing.LoginRequest>(inclusive = true)
                         }
                     },
                 )

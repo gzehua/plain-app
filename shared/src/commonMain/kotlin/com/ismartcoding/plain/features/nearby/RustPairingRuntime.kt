@@ -11,7 +11,7 @@ import com.ismartcoding.plain.app.events.HostEvent
 import kotlinx.serialization.json.*
 
 object RustPairingRuntime {
-    const val STATE_FIELDS = "deviceId generation mode phase error"
+    const val STATE_FIELDS = "deviceId generation mode phase error verificationCode"
     suspend fun states(): JsonArray = PlainRust.mainQuery("pairingStates { $STATE_FIELDS }").getValue("pairingStates").jsonArray
 
     suspend fun start(device: NearbyDevice, mode: String = "CHAT"): JsonObject {

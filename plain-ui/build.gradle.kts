@@ -19,13 +19,6 @@ kotlin {
         compileSdk = 37
         minSdk = 28
 
-        // Required so that Compose Multiplatform resources (strings_components/
-        // drawable) are packaged into the published AAR's assets. Without this the
-        // new `com.android.kotlin.multiplatform.library` plugin disables Android
-        // resource processing and `copyAndroidMainComposeResourcesToAndroidAssets`
-        // is never wired up — consumers crash with MissingResourceException at
-        // runtime when plain-ui components call stringResource() on their own
-        // resources (seen when consuming plain-ui 0.3.0).
         androidResources {
             enable = true
         }
@@ -51,8 +44,6 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
-            // `onPreFling` 是 suspend、`Animatable.animateTo` 要 MonotonicFrameClock，
-            // commonTest 里没有可移植的 runBlocking，只能用 runTest + TestMonotonicFrameClock。
             implementation(libs.kotlinx.coroutines.test)
         }
         androidMain.dependencies {
@@ -76,8 +67,6 @@ compose.resources {
 dependencies {
     add("androidHostTestImplementation", kotlin("test"))
     add("androidHostTestImplementation", libs.junit)
-    // 刷新状态机的兜底测试要跑 Animatable.animateTo，只有 JVM 版 coroutines-test
-    // 带 TestMonotonicFrameClock；commonTest 编 iOS 时没有它。
     add("androidHostTestImplementation", libs.kotlinx.coroutines.test)
 }
 

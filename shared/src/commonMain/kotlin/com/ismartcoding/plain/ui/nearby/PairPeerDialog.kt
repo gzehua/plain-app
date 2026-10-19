@@ -72,6 +72,10 @@ fun PairPeerDialog(device: NearbyDevice, onDismiss: () -> Unit) {
                     }
                 }
                 if (generation != null && !terminal && phase != "PASSWORD_REQUIRED") Text(stringResource(Res.string.pending))
+                state?.pairingState()?.verificationCode?.let { code ->
+                    Text(stringResource(Res.string.login_compare_code))
+                    Text(code)
+                }
                 (error ?: state?.pairingState()?.error)?.let { Text(it) }
             }
         },

@@ -66,6 +66,10 @@ fun MainEventCollector(
                     }
                 }
 
+                is com.ismartcoding.plain.app.events.HWebLoginClosedEvent -> {
+                    if (mainVM.pendingLoginEvent.value?.requestId == event.requestId) mainVM.pendingLoginEvent.value = null
+                }
+
                 else -> {}
             }
         }

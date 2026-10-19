@@ -41,6 +41,8 @@ class HConfirmToAcceptLoginEvent(
     val clientIp: String,
 ) : HEvent()
 
+data class HWebLoginClosedEvent(val requestId: String) : HEvent()
+
 // Pairing events
 data class HPairingRequestReceivedEvent(val request: PairingRequestInput) : HEvent()
 data class HPairingSuccessEvent(val deviceId: String, val deviceName: String, val deviceIp: String, val key: String) : HEvent()
