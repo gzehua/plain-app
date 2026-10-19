@@ -259,24 +259,9 @@ internal actual suspend fun provideResourceFile(id: String, uri: String): Unit =
 @OptIn(ExperimentalForeignApi::class)
 private suspend fun <T> withResourceFile(uri: String, block: suspend (Int, Long) -> T): T = withIO {
     if (uri.startsWith("ph://")) {
-        val assets = platform.Photos.PHAsset.fetchAssetsWithLocalIdentifiers(listOf(uri.removePrefix("ph://")), null)
-        check(assets.count > 0UL) { "Photo resource unavailable" }
-        val asset = assets.objectAtIndex(0UL) as platform.Photos.PHAsset
-        val options = platform.Photos.PHImageRequestOptions().apply { synchronous = true; networkAccessAllowed = false }
         val file = checkNotNull(platform.posix.tmpfile()) { "Unable to prepare photo resource" }
         try {
-            var length: Long? = null
-            var failure: Exception? = null
-            platform.Photos.PHImageManager.defaultManager().requestImageDataAndOrientationForAsset(asset, options) { data, _, _, _ ->
-                try {
-                    if (data != null) {
-                        check(platform.posix.fwrite(data.bytes, 1UL, data.length, file) == data.length) { "Unable to read photo resource" }
-                        length = data.length.toLong()
-                    }
-                } catch (error: Exception) { failure = error }
-            }
-            failure?.let { throw it }
-            val size = checkNotNull(length) { "Photo resource is not available locally" }
+            val size = com.ismartcoding.plain.platform.media.IosPhotoResource.write(uri, file)
             check(platform.posix.fflush(file) == 0) { "Unable to flush photo resource" }
             check(platform.posix.fseek(file, 0, platform.posix.SEEK_SET) == 0) { "Unable to seek photo resource" }
             block(platform.posix.fileno(file), size)
