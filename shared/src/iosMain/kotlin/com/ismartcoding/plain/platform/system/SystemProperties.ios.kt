@@ -25,7 +25,8 @@ internal actual fun readSystemProperties(names: List<String>): Map<String, JsonE
     return names.associateWith { name ->
         when (name) {
             "files.recentCatalog" -> JsonPrimitive(false)
-            "files.recentRoot" -> kotlinx.serialization.json.JsonNull
+            "files.recentRoot" -> JsonPrimitive(com.ismartcoding.plain.platform.files.getInternalStoragePath())
+            "media.systemCatalog" -> JsonPrimitive(false)
             "supportedAbis" -> kotlinx.serialization.json.JsonArray(emptyList())
             "updateSource" -> kotlinx.serialization.json.JsonNull
             "deviceType" -> JsonPrimitive(getDeviceType().name)

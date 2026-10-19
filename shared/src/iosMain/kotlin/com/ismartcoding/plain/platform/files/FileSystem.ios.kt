@@ -2,14 +2,19 @@
 
 package com.ismartcoding.plain.platform.files
 
-import com.ismartcoding.plain.platform.system.appDir
-
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSFileSystemFreeSize
 import platform.Foundation.NSFileSystemSize
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSSearchPathForDirectoriesInDomains
+import platform.Foundation.NSUserDomainMask
 
-actual fun getInternalStoragePath(): String = appDir()
+private val documentsDirectory by lazy {
+    NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)[0] as String
+}
+
+actual fun getInternalStoragePath(): String = documentsDirectory
 
 actual fun getInternalStorageName(): String = "Internal Storage"
 
@@ -18,7 +23,7 @@ actual fun getSDCardPath(): String = ""
 actual fun getUsbDiskPaths(): List<String> = emptyList()
 
 actual fun getInternalStorageStats(): StorageStats {
-    val path = appDir()
+    val path = getInternalStoragePath()
     return try {
         val attrs = NSFileManager.defaultManager.attributesOfFileSystemForPath(path, null)
             ?: return StorageStats(0, 0)

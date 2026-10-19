@@ -36,7 +36,6 @@ import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
 import com.ismartcoding.plain.ui.navigation.PBackHandler
-import com.ismartcoding.plain.platform.media.getMediaItemUriString
 import com.ismartcoding.plain.ui.platform.system.isGestureInteractionMode
 import com.ismartcoding.plain.preferences.UserPrefs
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
@@ -216,7 +215,6 @@ fun ImagesPage(
                     tagsVM = tagsVM,
                     tagsState = tagsState,
                     dragSelectState = dragSelectState,
-                    getItemUri = { getMediaItemUriString(imagesVM.dataType, it) },
                     getCollectableItems = { imagesVM.itemsFlow.collectAsStateValue() },
                     isInTrashMode = imagesVM.trash.value
                 )

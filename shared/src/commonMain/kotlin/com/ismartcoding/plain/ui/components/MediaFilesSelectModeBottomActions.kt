@@ -9,6 +9,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.features.media.MediaCatalogClient
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.ui.state.launchSafe
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.api.graphql.models.Tag
@@ -38,7 +41,6 @@ fun <T : IData> MediaFilesSelectModeBottomActions(
     tagsVM: TagsViewModel,
     tagsState: List<Tag>,
     dragSelectState: DragSelectState,
-    getItemUri: (String) -> String,
     getCollectableItems: @Composable () -> List<T>,
     isInTrashMode: Boolean
 ) {
@@ -51,8 +53,7 @@ fun <T : IData> MediaFilesSelectModeBottomActions(
     }
 
     if (showSelectTagsDialog) {
-        val selectedIds = dragSelectState.selectedIds
-        val selectedItems = getCollectableItems().filter { selectedIds.contains(it.id) }
+        val selectedItems = getCollectableItems().filter { it.id in dragSelectState.selectedIds }
         BatchSelectTagsDialog(tagsVM, tagsState, selectedItems, removeFromTags) {
             showSelectTagsDialog = false
             dragSelectState.exitSelectMode()
@@ -70,7 +71,11 @@ fun <T : IData> MediaFilesSelectModeBottomActions(
                 removeFromTags = true
             }
             IconTextSmallButtonShare {
-                shareFiles(dragSelectState.selectedIds.map { getItemUri(it) })
+                val ids = dragSelectState.selectedIds.toList()
+                scope.launchSafe {
+                    val uris = withIO { MediaCatalogClient.shareUris(vm.dataType, ids) }
+                    shareFiles(uris)
+                }
             }
             if (AppFeatureType.MEDIA_TRASH.has()) {
                 if (isInTrashMode) {

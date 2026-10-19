@@ -37,7 +37,6 @@ import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
 import com.ismartcoding.plain.ui.navigation.PBackHandler
-import com.ismartcoding.plain.platform.media.getMediaItemUriString
 import com.ismartcoding.plain.ui.platform.system.isGestureInteractionMode
 import com.ismartcoding.plain.preferences.UserPrefs
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
@@ -202,7 +201,6 @@ fun VideosPage(
                     tagsVM = tagsVM,
                     tagsState = tagsState,
                     dragSelectState = dragSelectState,
-                    getItemUri = { getMediaItemUriString(videosVM.dataType, it) },
                     getCollectableItems = { videosVM.itemsFlow.collectAsStateValue() },
                     isInTrashMode = videosVM.trash.value,
                 )

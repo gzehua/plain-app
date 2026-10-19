@@ -72,7 +72,7 @@ internal fun VideoActionButtons(
         PSheetHeader(
             thumbnail = {
                 PSheetHeaderThumb(
-                    model = getMediaItemUriString(videosVM.dataType, m.id).ifEmpty { m.path },
+                    model = getMediaItemUriString(videosVM.dataType, m.id, m.path),
                     fallbackIcon = UiRes.drawable.ui_drawable_file_video,
                     contentScale = ContentScale.Crop,
                 )
@@ -89,7 +89,7 @@ internal fun VideoActionButtons(
                 }
             }
             PSheetPrimaryAction(UiRes.drawable.ui_drawable_share_2, stringResource(Res.string.share)) {
-                shareFiles(listOf(getMediaItemUriString(videosVM.dataType, m.id)))
+                shareFiles(listOf(getMediaItemUriString(videosVM.dataType, m.id, m.path)))
                 onDismiss()
             }
             if (!videosVM.trash.value) {

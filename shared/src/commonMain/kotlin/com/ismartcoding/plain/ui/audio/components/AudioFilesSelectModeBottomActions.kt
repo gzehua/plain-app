@@ -15,7 +15,8 @@ import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.api.graphql.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.platform.media.getMediaItemUriString
+import com.ismartcoding.plain.features.media.MediaCatalogClient
+import com.ismartcoding.plain.ui.state.launchSafe
 import com.ismartcoding.plain.platform.system.shareFiles
 import com.ismartcoding.plain.ui.base.BottomActionButtons
 import com.ismartcoding.plain.ui.components.IconTextSmallButtonDelete
@@ -90,7 +91,11 @@ fun AudioFilesSelectModeBottomActions(
                     }
                 }
                 IconTextSmallButtonShare {
-                    shareFiles(dragSelectState.selectedIds.map { getMediaItemUriString(DataType.AUDIO, it) })
+                    val ids = dragSelectState.selectedIds.toList()
+                    scope.launchSafe {
+                        val uris = withIO { MediaCatalogClient.shareUris(DataType.AUDIO, ids) }
+                        shareFiles(uris)
+                    }
                 }
             }
             if (AppFeatureType.MEDIA_TRASH.has()) {

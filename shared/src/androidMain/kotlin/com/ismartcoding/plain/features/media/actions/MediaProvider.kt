@@ -72,7 +72,7 @@ internal object MediaProvider {
                     var count = 0
                     var after: MediaProviderRow? = null
                     try {
-                        val uri = Uri.parse(getMediaItemUriString(type, id))
+                        val uri = Uri.parse(getSystemMediaItemUriString(type, id))
                         val selection = "${MediaStore.MediaColumns.DATA} = ?"
                         val args = arrayOf(write.expectedPath)
                         val extras = matching().apply {
@@ -104,7 +104,7 @@ internal object MediaProvider {
 
     private fun row(type: DataType, id: String, volume: Boolean): MediaProviderRow? {
         require(id.toLongOrNull() != null)
-        val uri = Uri.parse(getMediaItemUriString(type, id))
+        val uri = Uri.parse(getSystemMediaItemUriString(type, id))
         val columns = mutableListOf(MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.MIME_TYPE)
         if (isRPlus()) columns.add(MediaStore.MediaColumns.IS_TRASHED)
         val cursor = if (isRPlus()) appContext.contentResolver.query(uri, columns.toTypedArray(), matching(), null)

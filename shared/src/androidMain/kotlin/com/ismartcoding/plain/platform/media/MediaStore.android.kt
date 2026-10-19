@@ -49,7 +49,9 @@ actual suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.feat
     com.ismartcoding.plain.features.telephony.sms.SmsDeletionReceipt(deleted, failed)
 }
 
-actual fun getMediaItemUriString(dataType: DataType, id: String): String = when (dataType) {
+actual fun getMediaItemUriString(dataType: DataType, id: String, path: String): String = getSystemMediaItemUriString(dataType, id)
+
+internal fun getSystemMediaItemUriString(dataType: DataType, id: String): String = when (dataType) {
     DataType.IMAGE -> ImageMediaStoreHelper.getItemUri(id).toString()
     DataType.VIDEO -> VideoMediaStoreHelper.getItemUri(id).toString()
     DataType.AUDIO -> AudioMediaStoreHelper.getItemUri(id).toString()

@@ -35,7 +35,6 @@ import com.ismartcoding.plain.features.media.actions.*
 import com.ismartcoding.plain.ui.media.actions.*
 import com.ismartcoding.plain.api.graphql.models.AudioItem
 import com.ismartcoding.plain.platform.media.deleteMedia
-import com.ismartcoding.plain.platform.media.getMediaItemUriString
 import com.ismartcoding.plain.platform.media.restoreMedia
 import com.ismartcoding.plain.platform.media.trashMedia
 import java.io.File
@@ -153,7 +152,7 @@ class MediaActionsRustHttpTest {
                 if (playlistId.isNotEmpty()) AudioPlaylistsClient.deletePlaylist(playlistId)
                 tagIds.forEach { TagsClient.delete(it) }
                 videoIds.forEach { videoId ->
-                    val uri = Uri.parse(getMediaItemUriString(DataType.VIDEO, videoId))
+                    val uri = android.content.ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, videoId.toLong())
                     val trashed = checkNotNull(appContext.contentResolver.query(
                         uri, arrayOf(MediaStore.MediaColumns.IS_TRASHED),
                         android.os.Bundle().apply { putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE) }, null,

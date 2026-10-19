@@ -2,7 +2,7 @@ package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.platform.system.DeviceType
 import platform.Foundation.NSBundle
-import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSCachesDirectory
 import platform.Foundation.NSUserDomainMask
@@ -34,7 +34,7 @@ actual fun getOwnPackageName(): String =
     NSBundle.mainBundle.bundleIdentifier ?: ""
 
 actual fun dataDirPath(): String =
-    NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)[0] as String
+    NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, true)[0] as String
 
 actual fun isDebugBuild(): Boolean {
     val bundle = NSBundle.mainBundle

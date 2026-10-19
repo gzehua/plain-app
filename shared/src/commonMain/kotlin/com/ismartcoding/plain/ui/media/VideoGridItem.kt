@@ -98,7 +98,7 @@ fun VideoGridItem(
             path = m.path,
             fileName = m.path.getFilenameFromPath(),
             key = m.id,
-            uri = getMediaItemUriString(videosVM.dataType, m.id),
+            uri = getMediaItemUriString(videosVM.dataType, m.id, m.path),
             itemState = itemState,
             previewerState = previewerState,
             widthPx = widthPx

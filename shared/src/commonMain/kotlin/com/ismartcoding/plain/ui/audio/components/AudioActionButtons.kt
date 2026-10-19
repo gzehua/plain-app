@@ -85,7 +85,7 @@ internal fun AudioActionButtons(
             }
             if (!audioVM.trash.value) {
                 PSheetPrimaryAction(UiRes.drawable.ui_drawable_share_2, stringResource(Res.string.share)) {
-                    shareFiles(listOf(getMediaItemUriString(DataType.AUDIO, m.id)))
+                    shareFiles(listOf(getMediaItemUriString(DataType.AUDIO, m.id, m.path)))
                     onDismiss()
                 }
                 PSheetPrimaryAction(UiRes.drawable.ui_drawable_pen, stringResource(Res.string.rename)) {

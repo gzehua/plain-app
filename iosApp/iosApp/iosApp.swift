@@ -104,7 +104,7 @@ final class NetworkInfoProvider: NSObject, IosNetworkInfoProvider {
 }
 
 final class PermissionChecker: NSObject, IosPermissionChecker {
-    private var locationDelegate: LocationPermissionDelegate?
+    private let locationDelegate = LocationPermissionDelegate()
     private var cachedNotificationStatus: UNAuthorizationStatus = .notDetermined
 
     override init() {
@@ -126,8 +126,7 @@ final class PermissionChecker: NSObject, IosPermissionChecker {
         case "READ_CONTACTS", "WRITE_CONTACTS":
             return CNContactStore.authorizationStatus(for: .contacts) == .authorized
         case "ACCESS_FINE_LOCATION":
-            let status = CLLocationManager().authorizationStatus
-            return status == .authorizedAlways || status == .authorizedWhenInUse
+            return locationDelegate.isGranted()
         case "CAMERA":
             return AVCaptureDevice.authorizationStatus(for: .video) == .authorized
         case "RECORD_AUDIO":
@@ -152,8 +151,7 @@ final class PermissionChecker: NSObject, IosPermissionChecker {
                     IosPermissionCallback.shared.onPermissionResult(permissionName: permission, granted: granted)
                 }
             case "ACCESS_FINE_LOCATION":
-                self.locationDelegate = LocationPermissionDelegate(permissionName: permission)
-                self.locationDelegate?.request()
+                self.locationDelegate.request()
             case "CAMERA":
                 AVCaptureDevice.requestAccess(for: .video) { granted in
                     IosPermissionCallback.shared.onPermissionResult(permissionName: permission, granted: granted)
@@ -182,32 +180,46 @@ final class PermissionChecker: NSObject, IosPermissionChecker {
     }
 }
 
-/// CLLocationManager requires a strong delegate reference and a delegate
-/// callback to learn the result of `requestWhenInUseAuthorization()`.
-/// This class holds the manager alive until the user responds, then reports
-/// the result via `IosPermissionCallback` and releases itself.
 final class LocationPermissionDelegate: NSObject, CLLocationManagerDelegate {
-    private let permissionName: String
     private let manager = CLLocationManager()
-    private var previousStatus: CLAuthorizationStatus
+    private let statusLock = NSLock()
+    private var status: CLAuthorizationStatus = .notDetermined
+    private var waitingForResult = false
 
-    init(permissionName: String) {
-        self.permissionName = permissionName
-        self.previousStatus = CLLocationManager().authorizationStatus
+    override init() {
+        precondition(Thread.isMainThread)
         super.init()
         manager.delegate = self
     }
 
+    func isGranted() -> Bool {
+        statusLock.lock()
+        defer { statusLock.unlock() }
+        return status == .authorizedAlways || status == .authorizedWhenInUse
+    }
+
     func request() {
+        precondition(Thread.isMainThread)
+        statusLock.lock()
+        let current = status
+        statusLock.unlock()
+        if current != .notDetermined {
+            IosPermissionCallback.shared.onPermissionResult(permissionName: "ACCESS_FINE_LOCATION", granted: isGranted())
+            return
+        }
+        waitingForResult = true
         manager.requestWhenInUseAuthorization()
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        let status = manager.authorizationStatus
-        if status == previousStatus { return }
-        previousStatus = status
-        let granted = status == .authorizedAlways || status == .authorizedWhenInUse
-        IosPermissionCallback.shared.onPermissionResult(permissionName: permissionName, granted: granted)
+        let current = manager.authorizationStatus
+        statusLock.lock()
+        status = current
+        statusLock.unlock()
+        if waitingForResult && current != .notDetermined {
+            waitingForResult = false
+            IosPermissionCallback.shared.onPermissionResult(permissionName: "ACCESS_FINE_LOCATION", granted: isGranted())
+        }
     }
 }
 

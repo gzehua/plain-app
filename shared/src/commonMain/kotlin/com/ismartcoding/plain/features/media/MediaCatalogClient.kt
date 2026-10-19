@@ -9,6 +9,8 @@ import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
 import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
+import com.ismartcoding.plain.rust.request.selectionQuery
+import com.ismartcoding.plain.platform.media.getMediaItemUriString
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.db.IData
@@ -52,6 +54,10 @@ object MediaCatalogClient {
             }
         }
     }
+    suspend fun shareUris(type: DataType, ids: Collection<String>): List<String> =
+        readSelectedMediaPaths(root(type), ids) { PlainRust.mainQuery(it) }
+            .map { (id, path) -> getMediaItemUriString(type, id, path) }
+
     suspend fun count(type: DataType, query: String): Int {
         when (type) {
             DataType.CALL -> return com.ismartcoding.plain.features.telephony.CallsClient.count(query)
@@ -72,3 +78,16 @@ object MediaCatalogClient {
 
 @Serializable
 private data class DocExtensionGroup(val ext: String, val count: Int)
+
+internal suspend fun readSelectedMediaPaths(
+    root: String,
+    ids: Collection<String>,
+    query: suspend (String) -> JsonObject,
+): List<Pair<String, String>> {
+    if (ids.isEmpty()) return emptyList()
+    val selected = ids.distinct()
+    val rows = query("$root(query: ${gql(selectionQuery(selected))}, limit: ${selected.size}, offset: 0, sortBy: NAME_ASC) { id path }")
+        .getValue(root).jsonArray
+    val paths = rows.associate { it.jsonObject.getValue("id").jsonPrimitive.content to it.jsonObject.getValue("path").jsonPrimitive.content }
+    return selected.map { id -> id to paths.getValue(id) }
+}

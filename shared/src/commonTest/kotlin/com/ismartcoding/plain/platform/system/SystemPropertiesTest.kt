@@ -48,6 +48,7 @@ class SystemPropertiesTest {
         for (name in listOf(
             "dataDir", "systemDbPath", "cacheDir", "downloadsDir", "name", "model",
             "osVersion", "appVersion", "appBuildNumber", "wifiAwareSupported",
+            "media.systemCatalog",
             "android.sdkVersion", "permissions", "unknown",
         )) {
             assertFailsWith<IllegalArgumentException>(name) {

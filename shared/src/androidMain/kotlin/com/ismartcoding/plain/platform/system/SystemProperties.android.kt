@@ -20,6 +20,7 @@ internal actual fun readSystemProperties(names: List<String>): Map<String, JsonE
     return names.associateWith { name ->
         when (name) {
             "files.recentCatalog" -> JsonPrimitive(Build.VERSION.SDK_INT >= 29)
+            "media.systemCatalog" -> JsonPrimitive(true)
             "files.recentRoot" -> if (Build.VERSION.SDK_INT < 29) JsonPrimitive(android.os.Environment.getExternalStorageDirectory().absolutePath) else JsonNull
             "supportedAbis" -> kotlinx.serialization.json.JsonArray(Build.SUPPORTED_ABIS.map(::JsonPrimitive))
             "updateSource" -> if (buildChannel != AppChannelType.GITHUB.name) JsonNull else kotlinx.serialization.json.Json.parseToJsonElement("""{

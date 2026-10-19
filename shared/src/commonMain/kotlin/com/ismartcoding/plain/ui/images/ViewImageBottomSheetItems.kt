@@ -88,7 +88,7 @@ internal fun ViewImageActionButtons(
                 }
             }
             PSheetPrimaryAction(UiRes.drawable.ui_drawable_share_2, stringResource(Res.string.share)) {
-                shareFiles(listOf(getMediaItemUriString(DataType.IMAGE, m.id)))
+                shareFiles(listOf(getMediaItemUriString(DataType.IMAGE, m.id, m.path)))
                 onDismiss()
             }
             if (!imagesVM.trash.value) {

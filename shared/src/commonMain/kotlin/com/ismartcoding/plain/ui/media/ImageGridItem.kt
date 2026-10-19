@@ -95,7 +95,7 @@ fun ImageGridItem(
     ) {
         TransformImageViewWithUri(
             modifier = Modifier.size(with(LocalDensity.current) { widthPx.toDp() }),
-            uri = getMediaItemUriString(imagesVM.dataType, m.id),
+            uri = getMediaItemUriString(imagesVM.dataType, m.id, m.path),
             path = m.path,
             fileName = m.path.getFilenameFromPath(),
             key = m.id,

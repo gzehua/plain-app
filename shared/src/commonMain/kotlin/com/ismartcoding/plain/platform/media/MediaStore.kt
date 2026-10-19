@@ -34,11 +34,7 @@ suspend fun deleteMedia(dataType: DataType, ids: Set<String>, fromTrash: Boolean
 suspend fun moveMedia(dataType: DataType, ids: Set<String>, destDir: String): Boolean =
     com.ismartcoding.plain.features.media.actions.MediaActionClient.run(dataType, com.ismartcoding.plain.features.media.actions.MediaAction.MOVE, ids, destDir = destDir) == ids.size
 
-/**
- * Returns a URI string for the media item identified by [id] of [dataType],
- * suitable for sharing via the system share sheet. Empty string on failure.
- */
-expect fun getMediaItemUriString(dataType: DataType, id: String): String
+expect fun getMediaItemUriString(dataType: DataType, id: String, path: String): String
 
 
 expect suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.features.telephony.sms.SmsDeletionReceipt
