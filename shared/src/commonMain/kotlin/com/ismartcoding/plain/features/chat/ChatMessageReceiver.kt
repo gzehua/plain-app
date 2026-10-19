@@ -8,7 +8,7 @@ import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.api.graphql.models.ChatChannel
 import com.ismartcoding.plain.api.graphql.models.Peer
 import com.ismartcoding.plain.features.chat.models.getMessagePreview
-import com.ismartcoding.plain.app.events.ChatMessageNotificationEvent
+import com.ismartcoding.plain.app.events.HChatMessageNotificationEvent
 import com.ismartcoding.plain.api.graphql.models.ChatItem
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.peer_chat
@@ -55,7 +55,7 @@ object ChatMessageReceiver {
             )
         }
         if (TempData.activeToId == targetId) return
-        sendEvent(ChatMessageNotificationEvent(
+        sendEvent(HChatMessageNotificationEvent(
             targetId = targetId,
             targetName = targetName,
             messageText = messageText,

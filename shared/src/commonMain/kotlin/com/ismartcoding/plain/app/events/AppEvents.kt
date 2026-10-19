@@ -114,11 +114,11 @@ class SleepTimerEvent(val durationMs: Long) : ChannelEvent()
 class CancelSleepTimerEvent : ChannelEvent()
 
 
-data class ChatMessageNotificationEvent(
+data class HChatMessageNotificationEvent(
     val targetId: String,
     val targetName: String,
     val messageText: String,
-) : ChannelEvent()
+) : HEvent()
 
 /**
  * Central event dispatcher for the app. Subscribes to [Channel.sharedFlow] and
@@ -192,7 +192,7 @@ object AppEvents {
                         runUpdateDownloadCommand { AppUpdateDownloads.cancel() }
                     }
 
-                    is ChatMessageNotificationEvent -> {
+                    is HChatMessageNotificationEvent -> {
                         sendChatMessageNotification(
                             targetId = event.targetId,
                             targetName = event.targetName,

@@ -3,6 +3,7 @@ package com.ismartcoding.plain.rust.event
 import com.ismartcoding.plain.rust.request.*
 
 import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.HChatMessageNotificationEvent
 import com.ismartcoding.plain.app.events.HEvent
 import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.app.events.HostEventData
@@ -46,7 +47,8 @@ class EventDirectionContractTest {
             assertTrue(declaration.value, declaration.groupValues[2] == HEvent::class.java.simpleName)
         }
         assertTrue(!HEvent::class.java.isAssignableFrom(HostEvent::class.java))
-        for (path in listOf("rust/event/RustEventProjection.kt", "features/nearby/PairingProjection.kt",
+        assertTrue(HEvent::class.java.isAssignableFrom(HChatMessageNotificationEvent::class.java))
+        for (path in listOf("features/chat/ChatMessageReceiver.kt", "rust/event/RustEventProjection.kt", "features/nearby/PairingProjection.kt",
             "features/nearby/RustNearbyDevices.kt", "features/nearby/RustMdnsRuntime.kt",
             "features/chat/channel/ChannelSystemMessageReceiver.kt", "features/images/search/RustImageModels.kt",
             "features/dlna/DlnaRendererState.kt", "ui/pomodoro/PomodoroProjection.kt")) {
