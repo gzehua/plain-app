@@ -88,11 +88,13 @@ kotlin {
         tasks.matching { it.name == "cinteropPlainPrefs${iosTarget.name.replaceFirstChar { c -> c.uppercase() }}" }.configureEach {
             inputs.file(rootProject.file("plain-rs/include/plain_rust.h"))
         }
+        iosTarget.binaries.all {
+            linkerOpts("-L${rustTargetDir.get().asFile.absolutePath}/$rustTarget/release", "-lplain_rust", "-L${onnxRuntimeDir.get().asFile.absolutePath}", "-lonnxruntime", "-lc++", "-framework", "Foundation", "-framework", "CoreML", "-framework", "Accelerate")
+        }
         iosTarget.binaries.framework {
             baseName = "PlainShared"
             isStatic = true
             debuggable = kotlinDebuggable
-            linkerOpts("-L${rustTargetDir.get().asFile.absolutePath}/$rustTarget/release", "-lplain_rust", "-L${onnxRuntimeDir.get().asFile.absolutePath}", "-lonnxruntime", "-lc++", "-framework", "Foundation", "-framework", "CoreML", "-framework", "Accelerate")
         }
         tasks.matching { it.name.startsWith("link") && it.name.contains(iosTarget.name.replaceFirstChar { c -> c.uppercase() }) }.configureEach {
             dependsOn(buildPlainRust)
