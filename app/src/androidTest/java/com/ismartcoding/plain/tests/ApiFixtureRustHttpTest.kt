@@ -3,11 +3,9 @@ package com.ismartcoding.plain.tests
 import com.ismartcoding.plain.features.sessions.RustSessionStore
 import android.content.Context
 import android.content.pm.ApplicationInfo
-import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.test.platform.app.InstrumentationRegistry
 import android.os.Environment
-import android.util.Base64
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.app.startHttpEngineAsync
 import com.ismartcoding.plain.app.stopHttpEngineAsync
@@ -22,14 +20,11 @@ import java.util.UUID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-
-@Serializable
-private data class ApiPeerFixture(val id: String, val key: String, val publicKey: String)
+import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class ApiFixtureRustHttpTest {
@@ -46,10 +41,7 @@ class ApiFixtureRustHttpTest {
         val peerFile = File(appContext.filesDir, "api-test-peer.json")
         val peerFixture = JsonHelper.jsonDecode<ApiPeerFixture>(peerFile.readText())
         peerFile.delete()
-        check(peerFixture.id.startsWith("api-fixture-"))
-        UUID.fromString(peerFixture.id.removePrefix("api-fixture-"))
-        check(Base64.decode(peerFixture.key, Base64.NO_WRAP).size == 32)
-        check(Base64.decode(peerFixture.publicKey, Base64.NO_WRAP).size == 32)
+        peerFixture.validate()
         val peerId = peerFixture.id
         var channelId = ""
         var clientId = ""
@@ -68,14 +60,22 @@ class ApiFixtureRustHttpTest {
             clientId = session.clientId
             val database = File(appContext.filesDir, "plain.db")
             check(database.isFile && database.canonicalFile.parentFile == appContext.filesDir.canonicalFile)
-            SQLiteDatabase.openDatabase(database.path, null, SQLiteDatabase.OPEN_READWRITE or SQLiteDatabase.NO_LOCALIZED_COLLATORS).use { db ->
-                check(db.version == 1)
-                val now = java.time.Instant.now().toString()
-                db.execSQL(
-                    "INSERT INTO peers (id,name,ip,key,public_key,status,port,device_type,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
-                    arrayOf<Any>(peerId, "API fixture peer", "127.0.0.1", peerFixture.key, peerFixture.publicKey, "PAIRED", 1, "OTHER", now, now),
-                )
+            val registrationLog = File.createTempFile("api-peer-registration-", ".log", appContext.cacheDir)
+            try {
+                val classpath = listOf(appContext.applicationInfo.sourceDir, InstrumentationRegistry.getInstrumentation().context.applicationInfo.sourceDir).joinToString(File.pathSeparator)
+                val command = ProcessBuilder("/system/bin/app_process", "/system/bin", ApiPeerFixtureDatabase::class.java.name, database.path)
+                    .redirectErrorStream(true).redirectOutput(registrationLog)
+                command.environment()["CLASSPATH"] = classpath
+                val process = command.start()
+                process.outputStream.bufferedWriter().use { it.write(JsonHelper.jsonEncode(peerFixture)) }
+                if (!process.waitFor(10, TimeUnit.SECONDS)) {
+                    process.destroyForcibly()
+                    error("API fixture peer registration timed out")
+                }
+                check(process.exitValue() == 0) { "API fixture peer registration failed: ${registrationLog.readText().takeLast(4000)}" }
                 peerCreated = true
+            } finally {
+                registrationLog.delete()
             }
             check(PlainRust.mainQuery("peers { id }").getValue("peers").jsonArray.count { it.jsonObject.getValue("id").jsonPrimitive.content == peerId } == 1)
             channelId = PlainRust.mainMutate("createChatChannel(name: \"API fixture channel\") { id }").getValue("createChatChannel").jsonObject.getValue("id").jsonPrimitive.content
