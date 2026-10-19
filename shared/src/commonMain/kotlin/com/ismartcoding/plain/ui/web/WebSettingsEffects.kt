@@ -9,7 +9,6 @@ import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.IgnoreBatteryOptimizationResultEvent
-import com.ismartcoding.plain.app.events.ClipboardSyncChangedEvent
 import com.ismartcoding.plain.app.events.PermissionsResultEvent
 import com.ismartcoding.plain.app.events.RequestPermissionsEvent
 import com.ismartcoding.plain.app.events.HostEvent
@@ -75,10 +74,6 @@ internal fun togglePermission(scope: CoroutineScope, m: PermissionItem, enable: 
         if (m.permission == Permission.NOTIFICATION_LISTENER) {
             val webEnabled = UserPrefs.desktopAccess.value
             toggleNotificationListener(enable && webEnabled)
-        }
-        // ClipboardWatcher listens for this to start/stop its logcat thread.
-        if (m.permission == Permission.CLIPBOARD) {
-            sendEvent(ClipboardSyncChangedEvent(enable))
         }
         if (enable) {
             val ps = m.permissions.filter { !it.isGranted() }

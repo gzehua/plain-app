@@ -37,6 +37,11 @@ internal object RustHostApi {
                 } catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) { LogCat.e("Audio catalog observation", error) }
             }
+            val clipboardObservation = launch {
+                try { observeClipboardReports() }
+                catch (cancelled: CancellationException) { throw cancelled }
+                catch (error: Exception) { LogCat.e("Clipboard observation", error) }
+            }
             try {
                 coroutineScope {
                     val exchangeScope = this
@@ -82,6 +87,7 @@ internal object RustHostApi {
                 }
             } finally {
                 withContext(NonCancellable) {
+                    clipboardObservation.cancelAndJoin()
                     observation.cancelAndJoin()
                     advertisingObservation.cancelAndJoin()
                     cleanup("BLE advertising") { bleAdvertising.close() }

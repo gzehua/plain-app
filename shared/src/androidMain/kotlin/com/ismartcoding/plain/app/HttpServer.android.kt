@@ -16,7 +16,6 @@ import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.platform.network.aware.WifiAwareTransport
 import com.ismartcoding.plain.features.settings.HttpServerState
-import com.ismartcoding.plain.features.ClipboardWatcher
 import com.ismartcoding.plain.features.telephony.sms.SmsProviderObserver
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.withIO
@@ -40,13 +39,11 @@ actual suspend fun onHttpServerStarted() {
     HttpServerResources.start()
     PNotificationListenerService.toggle(service, Permission.NOTIFICATION_LISTENER.isEnabledAsync())
     SmsProviderObserver.start(service)
-    ClipboardWatcher.start()
 }
 
 actual suspend fun onHttpServerStopped() {
     HttpServerResources.stop()
     SmsProviderObserver.stop()
-    ClipboardWatcher.stop()
     PNotificationListenerService.toggle(appContext, false)
 }
 

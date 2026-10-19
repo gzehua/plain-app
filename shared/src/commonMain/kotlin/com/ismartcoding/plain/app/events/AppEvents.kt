@@ -100,7 +100,6 @@ class PowerDisconnectedEvent : ChannelEvent()
 class HWebRequestReceivedEvent : HEvent()
 data class KeepAwakeChangedEvent(val enabled: Boolean) : ChannelEvent()
 
-data class ClipboardSyncChangedEvent(val enabled: Boolean) : ChannelEvent()
 
 class IgnoreBatteryOptimizationResultEvent : ChannelEvent()
 

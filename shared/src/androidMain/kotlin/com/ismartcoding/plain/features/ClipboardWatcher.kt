@@ -9,21 +9,16 @@ import android.os.Build
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.clipboardManager
 import com.ismartcoding.plain.app.events.ClipboardReportData
-import com.ismartcoding.plain.app.events.ClipboardSyncChangedEvent
 import com.ismartcoding.plain.app.events.WindowFocusChangedEvent
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.lib.Channel
-import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isEnabledAsync
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -34,7 +29,8 @@ import java.util.Locale
 object ClipboardWatcher {
     private const val MAX_TEXT_LENGTH = 256 * 1024
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    @Volatile private var scope: CoroutineScope? = null
+    private var report: (suspend (ClipboardReportData) -> Unit)? = null
     private var listener: ClipboardManager.OnPrimaryClipChangedListener? = null
     private var eventJob: Job? = null
     private var logcatJob: Job? = null
@@ -49,8 +45,10 @@ object ClipboardWatcher {
     }
 
     @Synchronized
-    fun start() {
-        if (eventJob != null) return
+    fun start(scope: CoroutineScope, report: suspend (ClipboardReportData) -> Unit) {
+        check(this.scope == null) { "Clipboard observation already started" }
+        this.scope = scope
+        this.report = report
         try {
             val l = ClipboardManager.OnPrimaryClipChangedListener { handleChange() }
             clipboardManager.addPrimaryClipChangedListener(l)
@@ -58,14 +56,10 @@ object ClipboardWatcher {
         } catch (e: Exception) {
             LogCat.e("ClipboardWatcher start failed: ${e.message}")
         }
-        eventJob = coIO {
+        eventJob = scope.launch(Dispatchers.IO) {
             if (Permission.CLIPBOARD.isEnabledAsync()) startLogcat()
             Channel.sharedFlow.collect { event ->
                 when (event) {
-                    is ClipboardSyncChangedEvent ->
-                        if (event.enabled && canSyncAutomatically(appContext)) startLogcat() else stopLogcat()
-                    // Background clip changes were denied at read time (Android 10+);
-                    // re-read once our own window regains focus so the history catches up.
                     is WindowFocusChangedEvent -> if (event.hasFocus) handleFocusGained()
                     else -> Unit
                 }
@@ -75,6 +69,8 @@ object ClipboardWatcher {
 
     @Synchronized
     fun stop() {
+        scope = null
+        report = null
         listener?.let {
             runCatching { clipboardManager.removePrimaryClipChangedListener(it) }
                 .onFailure { LogCat.e("ClipboardWatcher stop failed: ${it.message}") }
@@ -85,11 +81,12 @@ object ClipboardWatcher {
         eventJob = null
     }
 
-    /** Called when one of our windows gains focus (main activity / floating activity). */
     fun handleFocusGained() {
-        scope.launch {
+        scope?.launch(Dispatchers.IO) {
             try {
                 handleClipboardChange()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (e: Exception) {
                 LogCat.e("ClipboardWatcher focus read failed: ${e.message}")
             }
@@ -98,6 +95,7 @@ object ClipboardWatcher {
 
     @Synchronized
     private fun startLogcat() {
+        val scope = scope ?: return
         if (logcatJob?.isActive == true || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
         if (!canSyncAutomatically(appContext)) return
         try {
@@ -109,9 +107,9 @@ object ClipboardWatcher {
             }
             val process = Runtime.getRuntime().exec(arrayOf("logcat", "-T", timeStamp, filter, "*:S"))
             logcatProcess = process
-            logcatJob = scope.launch {
+            logcatJob = scope.launch(Dispatchers.IO) {
                 BufferedReader(InputStreamReader(process.inputStream)).forEachLine { line ->
-                    if (line.contains(appContext.packageName)) {
+                    if (isActive && line.contains(appContext.packageName)) {
                         appContext.startActivity(
                             Intent(appContext, ClipboardFloatingActivity::class.java)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -133,9 +131,11 @@ object ClipboardWatcher {
     }
 
     private fun handleChange() {
-        scope.launch {
+        scope?.launch(Dispatchers.IO) {
             try {
                 handleClipboardChange()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (e: Exception) {
                 LogCat.e("ClipboardWatcher handle failed: ${e.message}")
             }
@@ -145,6 +145,7 @@ object ClipboardWatcher {
     private suspend fun handleClipboardChange() {
         if (!Permission.CLIPBOARD.isEnabledAsync()) return
         val clip = clipboardManager.primaryClip ?: return
+        if (clip.itemCount == 0) return
         val text = clip.getItemAt(0).coerceToText(appContext)?.toString() ?: return
         if (text.isBlank()) return
         if (text.length > MAX_TEXT_LENGTH) {
@@ -153,11 +154,6 @@ object ClipboardWatcher {
         }
         val sensitive = Build.VERSION.SDK_INT >= 33 &&
             clip.description.extras?.getBoolean(ClipDescription.EXTRA_IS_SENSITIVE, false) == true
-        PlainRust.publish(
-            HostEvent(
-                EventType.CLIPBOARD_REPORTED,
-                JsonHelper.jsonEncode(ClipboardReportData(text, sensitive)),
-            )
-        )
+        report?.invoke(ClipboardReportData(text, sensitive))
     }
 }
