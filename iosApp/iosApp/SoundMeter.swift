@@ -10,7 +10,7 @@ final class SoundMeter: NSObject, IosSoundMeter {
     private var recorder: AVAudioRecorder?
     private var tempFileURL: URL?
 
-    @objc func start_() -> Bool {
+    @objc func start() -> Bool {
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
