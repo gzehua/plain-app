@@ -26,6 +26,8 @@ android {
     compileSdk = 37
     if (providers.gradleProperty("plainAcceptance").orNull == "true") {
         sourceSets.getByName("androidTest").kotlin.srcDir("../../plainapp-test/android/src/androidTest/kotlin")
+        sourceSets.getByName("androidTest").manifest.srcFile("../../plainapp-test/android/src/androidTest/AndroidManifest.xml")
+        sourceSets.getByName("androidTest").java.srcDir("../../plainapp-test/android/src/androidTest/java")
     }
     defaultConfig {
         applicationId = "com.ismartcoding.plain"
