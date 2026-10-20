@@ -24,6 +24,9 @@ rootProject.file("keystore.properties").let {
 
 android {
     compileSdk = 37
+    if (providers.gradleProperty("plainAcceptance").orNull == "true") {
+        sourceSets.getByName("androidTest").kotlin.srcDir("../../plainapp-test/android/src/androidTest/kotlin")
+    }
     defaultConfig {
         applicationId = "com.ismartcoding.plain"
         minSdk = 28
@@ -81,7 +84,7 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix = ".debug"
+            applicationIdSuffix = if (providers.gradleProperty("plainAcceptance").orNull == "true") ".acceptance" else ".debug"
             signingConfig = signingConfigs.getByName("debugPinned")
             isShrinkResources = false
             isMinifyEnabled = false
