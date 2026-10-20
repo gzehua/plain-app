@@ -45,7 +45,7 @@ import com.ismartcoding.plain.ui.base.PSheetPrimaryAction
 import com.ismartcoding.plain.ui.base.PSheetPrimaryActionsRow
 import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
 import com.ismartcoding.plain.ui.base.PSheetPrimaryTrashAction
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
 import com.ismartcoding.plain.ui.components.AddToHomeDialog
@@ -193,7 +193,7 @@ fun ViewDocBottomSheet(
                 }
                 VerticalSpace(dp = 24.dp)
                 if (!docsVM.trash.value) {
-                    Subtitle(text = stringResource(Res.string.tags))
+                    PSectionTitle(title = stringResource(Res.string.tags))
                     TagSelector(
                         data = m,
                         tagsVM = tagsVM,

@@ -42,7 +42,7 @@ import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import kotlin.time.Instant
@@ -145,7 +145,7 @@ fun MdnsDebugPage(navController: NavHostController) {
             }
 
             item { VerticalSpace(16.dp) }
-            item { Subtitle(stringResource(Res.string.mdns_service_type)) }
+            item { PSectionTitle(stringResource(Res.string.mdns_service_type)) }
             if (snapshots.isEmpty()) {
                 item {
                     Text(
@@ -219,7 +219,7 @@ private fun PacketCard(log: MdnsPacketLog, expanded: Boolean, onClick: () -> Uni
 @Composable
 private fun MdnsDeviceCard(snapshot: MdnsServiceSnapshot) {
     Column {
-        Subtitle(snapshot.instanceFqdn)
+        PSectionTitle(snapshot.instanceFqdn)
         PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
             PListItem(
                 title = stringResource(Res.string.mdns_service_type),

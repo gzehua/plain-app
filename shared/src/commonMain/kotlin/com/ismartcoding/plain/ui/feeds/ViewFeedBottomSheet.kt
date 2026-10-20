@@ -32,7 +32,7 @@ import com.ismartcoding.plain.ui.base.PSheetActionRow
 import com.ismartcoding.plain.ui.base.PSheetPrimaryAction
 import com.ismartcoding.plain.ui.base.PSheetPrimaryActionsCard
 import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.Tips
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.DialogHelper
@@ -93,7 +93,7 @@ fun ViewFeedBottomSheet(
             }
         }
         VerticalSpace(dp = 24.dp)
-        Subtitle(text = m.name)
+        PSectionTitle(title = m.name)
         // Sync status card: state persisted by Rust on Feed, refreshed
         // in place when a sync finishes while the sheet is open.
         val reason = feedSyncErrorReason(m.lastError.code)

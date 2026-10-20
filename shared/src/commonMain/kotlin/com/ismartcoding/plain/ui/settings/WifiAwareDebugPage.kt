@@ -46,7 +46,7 @@ import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import kotlinx.coroutines.delay
@@ -92,7 +92,7 @@ fun WifiAwareDebugPage(navController: NavHostController) {
 
 @Composable
 private fun AwareSupportCard(info: AwareDebugInfo) {
-    Subtitle(stringResource(Res.string.wifi_aware_support))
+    PSectionTitle(stringResource(Res.string.wifi_aware_support))
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PListItem(
             title = stringResource(Res.string.wifi_aware_supported),
@@ -122,7 +122,7 @@ private fun AwareSupportCard(info: AwareDebugInfo) {
 
 @Composable
 private fun AwareCharacteristicsCard(info: AwareDebugInfo) {
-    Subtitle(stringResource(Res.string.wifi_aware_characteristics))
+    PSectionTitle(stringResource(Res.string.wifi_aware_characteristics))
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PListItem(
             title = stringResource(Res.string.wifi_aware_max_service_name_length),
@@ -149,7 +149,7 @@ private fun AwareCharacteristicsCard(info: AwareDebugInfo) {
 
 @Composable
 private fun AwarePermissionsCard(info: AwareDebugInfo) {
-    Subtitle(stringResource(Res.string.wifi_aware_permissions))
+    PSectionTitle(stringResource(Res.string.wifi_aware_permissions))
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PListItem(
             title = stringResource(Res.string.wifi_aware_nearby_devices_permission),
@@ -168,7 +168,7 @@ private fun AwarePermissionsCard(info: AwareDebugInfo) {
 
 @Composable
 private fun AwareRuntimeStatusCard(info: AwareDebugInfo) {
-    Subtitle(stringResource(Res.string.wifi_aware_runtime_status))
+    PSectionTitle(stringResource(Res.string.wifi_aware_runtime_status))
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PListItem(
             title = stringResource(Res.string.wifi_aware_attach_status),

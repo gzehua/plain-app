@@ -24,7 +24,7 @@ import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.Tips
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -49,21 +49,21 @@ fun WebDevPage(
             LazyColumn(modifier = Modifier.padding(top = paddingValues.calculateTopPadding())) {
                 item {
                     TopSpace()
-                    Subtitle(text = stringResource(Res.string.token))
+                    PSectionTitle(title = stringResource(Res.string.token))
                     CornerCopyCard(
                         label = stringResource(Res.string.token),
                         modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN),
                         text = adbToken
                     )
                     VerticalSpace(dp = 16.dp)
-                    Subtitle(text = stringResource(Res.string.enable_desktop_access))
+                    PSectionTitle(title = stringResource(Res.string.enable_desktop_access))
                     CornerCopyCard(
                         label = stringResource(Res.string.adb_cmd_start),
                         modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN),
                         text = "adb shell am broadcast -a $packageId.action.ENABLE_DESKTOP_ACCESS -p $packageId --es token $adbToken",
                     )
                     VerticalSpace(dp = 16.dp)
-                    Subtitle(text = stringResource(Res.string.disable_desktop_access))
+                    PSectionTitle(title = stringResource(Res.string.disable_desktop_access))
                     CornerCopyCard(
                         label = stringResource(Res.string.adb_cmd_stop),
                         modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN),

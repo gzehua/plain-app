@@ -29,7 +29,7 @@ import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.PDropdownMenuItem
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.settings.NotificationSettingsViewModel
@@ -78,7 +78,7 @@ fun NotificationSettingsPage(
         LazyColumn(modifier = Modifier.padding(top = paddingValues.calculateTopPadding())) {
             item {
                 TopSpace()
-                Subtitle(text = stringResource(Res.string.filter_mode))
+                PSectionTitle(title = stringResource(Res.string.filter_mode))
                 NotificationFilterModeCard(
                     mode = vm.filterData.value.mode,
                     onToggleMode = { scope.launch(Dispatchers.Default) { vm.toggleModeAsync() } }
@@ -87,7 +87,7 @@ fun NotificationSettingsPage(
             }
 
             item {
-                Subtitle(text = stringResource(
+                PSectionTitle(title = stringResource(
                     if (vm.filterData.value.mode == "allowlist") Res.string.allowed_apps else Res.string.blocked_apps
                 ))
             }

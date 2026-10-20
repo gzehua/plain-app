@@ -13,12 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.base.PSegmentedButtons
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 
 @Composable
 internal fun ShowcaseSegmentedButtons() {
-    Subtitle("PSegmentedButtons")
+    PSectionTitle("PSegmentedButtons")
     Column(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         ButtonSize.entries.forEach { size ->
             var selectedIndex by remember { mutableIntStateOf(0) }

@@ -126,7 +126,7 @@ fun WebSecurityPage(navController: NavHostController) {
                     Tips(text = stringResource(Res.string.two_factor_auth_tips)); VerticalSpace(dp = 24.dp)
                 }
                 item {
-                    Subtitle(text = stringResource(Res.string.https_certificate_signature))
+                    PSectionTitle(title = stringResource(Res.string.https_certificate_signature))
                     CornerCopyCard(
                         label = stringResource(Res.string.https_certificate_signature),
                         modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN),
@@ -157,7 +157,7 @@ fun WebSecurityPage(navController: NavHostController) {
                         text = stringResource(Res.string.replace_ssl_certificate),
                         onClick = { navController.navigate(Routing.ReplaceSslCertificate) })
                     VerticalSpace(dp = 24.dp)
-                    Subtitle(text = stringResource(Res.string.url_token))
+                    PSectionTitle(title = stringResource(Res.string.url_token))
                     CornerCopyCard(
                         label = stringResource(Res.string.url_token),
                         modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN),

@@ -11,12 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.base.PRangeDots
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 
 @Composable
 internal fun ShowcaseRangeDots() {
-    Subtitle("PRangeDots")
+    PSectionTitle("PRangeDots")
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         var selectedIndex by remember { mutableIntStateOf(0) }
         val options = ButtonSize.entries

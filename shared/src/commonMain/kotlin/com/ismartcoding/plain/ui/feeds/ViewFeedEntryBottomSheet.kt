@@ -30,7 +30,7 @@ import com.ismartcoding.plain.ui.base.PSheetHeaderThumb
 import com.ismartcoding.plain.ui.base.PSheetPrimaryAction
 import com.ismartcoding.plain.ui.base.PSheetPrimaryActionsRow
 import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.TagSelector
 import com.ismartcoding.plain.ui.components.DialogHelper
@@ -109,7 +109,7 @@ fun ViewFeedEntryBottomSheet(
                     }
                 }
                 VerticalSpace(dp = 16.dp)
-                Subtitle(text = stringResource(Res.string.tags))
+                PSectionTitle(title = stringResource(Res.string.tags))
                 TagSelector(
                     data = m,
                     tagsVM = tagsVM,

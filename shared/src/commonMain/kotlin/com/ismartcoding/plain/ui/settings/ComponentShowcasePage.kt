@@ -30,7 +30,7 @@ import com.ismartcoding.plain.ui.base.POutlinedButton
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.base.PTopAppBar
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.Tips
 import com.ismartcoding.plain.ui.components.ToastManager
 import com.ismartcoding.plain.ui.base.TopSpace
@@ -72,7 +72,7 @@ fun ComponentShowcasePage(navController: NavHostController) {
 
 @Composable
 private fun ShowcaseAlerts() {
-    Subtitle("PAlert")
+    PSectionTitle("PAlert")
     PAlert(description = "This is a warning alert.", type = AlertType.WARNING)
     VerticalSpace(8.dp)
     PAlert(description = "This is an error alert.", type = AlertType.ERROR)
@@ -87,16 +87,16 @@ private fun ShowcaseAlerts() {
 
 @Composable
 private fun ShowcaseBanners() {
-    Subtitle("PBanner")
+    PSectionTitle("PBanner")
     PBanner(title = "Banner Title", desc = "Banner description.", icon = UiRes.drawable.ui_drawable_lightbulb, onClick = {})
     VerticalSpace(16.dp)
 }
 
 @Composable
 private fun ShowcaseCards() {
-    Subtitle("PCard + PListItem")
+    PSectionTitle("PCard + PListItem")
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
-        PListItem(title = "List item with icon", subtitle = "Subtitle", icon = UiRes.drawable.ui_drawable_settings, showMore = true)
+        PListItem(title = "List item with icon", subtitle = "PSectionTitle", icon = UiRes.drawable.ui_drawable_settings, showMore = true)
         PListItem(title = "List item with value", value = "Value")
         PListItem(title = "List item with switch", separatedActions = true) {
             val checked = remember { mutableStateOf(true) }
@@ -108,7 +108,7 @@ private fun ShowcaseCards() {
 
 @Composable
 private fun ShowcaseButtons() {
-    Subtitle("Buttons")
+    PSectionTitle("Buttons")
     Column(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         PFilledButton(text = "Filled Button", onClick = {})
         PFilledButton(text = "Filled Danger", type = ButtonType.DANGER, onClick = {})
@@ -123,7 +123,7 @@ private fun ShowcaseButtons() {
 
 @Composable
 private fun ShowcaseChipsAndSwitches() {
-    Subtitle("Chips & Switches")
+    PSectionTitle("Chips & Switches")
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             val selected = remember { mutableStateOf(false) }
@@ -143,14 +143,14 @@ private fun ShowcaseChipsAndSwitches() {
 
 @Composable
 private fun ShowcaseTips() {
-    Subtitle("Tips")
+    PSectionTitle("Tips")
     Tips(text = "This is a tips component for supplementary information.")
     VerticalSpace(16.dp)
 }
 
 @Composable
 private fun ShowcaseToasts() {
-    Subtitle("Toast")
+    PSectionTitle("Toast")
     Column(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         PFilledButton(text = "Info Toast", onClick = {
             ToastManager.showInfoToast("This is an info toast")

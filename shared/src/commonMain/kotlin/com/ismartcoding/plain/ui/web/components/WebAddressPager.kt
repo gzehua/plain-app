@@ -2,29 +2,17 @@ package com.ismartcoding.plain.ui.web.components
 
 import com.ismartcoding.plain.preferences.*
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.ui.base.PRangeDots
 import kotlinx.coroutines.launch
 
 /**
@@ -54,23 +42,11 @@ fun WebAddressPager(modifier: Modifier = Modifier) {
         ) { page ->
             WebAddressBar(isHttps = page == 1)
         }
-        Row(
+        PRangeDots(
+            items = listOf(0, 1),
+            selected = pagerState.currentPage,
+            onSelect = { page -> scope.launch { pagerState.animateScrollToPage(page) } },
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            repeat(2) { index ->
-                val selected = pagerState.currentPage == index
-                Box(
-                    modifier = Modifier
-                        .padding(horizontal = 2.dp)
-                        .size(6.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (selected) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                        ),
-                )
-            }
-        }
+        )
     }
 }

@@ -32,7 +32,7 @@ import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PModalBottomSheet
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
 import com.ismartcoding.plain.ui.components.FileRenameDialog
@@ -98,7 +98,7 @@ fun ViewImageBottomSheet(
             if (!imagesVM.trash.value) {
                 item {
                     VerticalSpace(dp = 16.dp)
-                    Subtitle(text = stringResource(Res.string.tags))
+                    PSectionTitle(title = stringResource(Res.string.tags))
                     TagSelector(data = m, tagsVM = tagsVM, tagsMap = tagsMap, tagsState = tagsState,
                         onChangedAsync = { imagesVM.loadAsync(tagsVM) })
                 }

@@ -27,7 +27,7 @@ import com.ismartcoding.plain.ui.base.PSheetPrimaryAction
 import com.ismartcoding.plain.ui.base.PSheetPrimaryActionsCard
 import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.base.PTextField
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.settings as ui_drawable_settings
 
@@ -40,7 +40,7 @@ internal fun ShowcaseComponentStates() {
     var clicks by remember { mutableIntStateOf(0) }
     var value by remember { mutableStateOf("") }
     val density = LocalDensity.current
-    Subtitle("States and accessibility")
+    PSectionTitle("States and accessibility")
     Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row {
             Switch(enabled, onCheckedChange = { enabled = it })

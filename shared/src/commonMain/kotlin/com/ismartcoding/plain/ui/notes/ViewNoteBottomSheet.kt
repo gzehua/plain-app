@@ -21,7 +21,7 @@ import com.ismartcoding.plain.ui.base.PSheetPrimaryAction
 import com.ismartcoding.plain.ui.base.PSheetPrimaryActionsCard
 import com.ismartcoding.plain.ui.base.PSheetPrimaryDeleteAction
 import com.ismartcoding.plain.ui.base.PSheetPrimaryTrashAction
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.TagSelector
 import com.ismartcoding.plain.ui.notes.NotesViewModel
@@ -86,7 +86,7 @@ fun ViewNoteBottomSheet(
             if (!NotesViewModel.trash.value) {
                 item {
                     VerticalSpace(dp = 16.dp)
-                    Subtitle(text = stringResource(Res.string.tags))
+                    PSectionTitle(title = stringResource(Res.string.tags))
                     TagSelector(
                         data = m,
                         tagsVM = tagsVM,

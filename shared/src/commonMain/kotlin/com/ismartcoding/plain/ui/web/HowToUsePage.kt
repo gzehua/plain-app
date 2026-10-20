@@ -34,7 +34,7 @@ import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.components.StepItem
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.web.components.WebAddressPager
@@ -73,7 +73,7 @@ fun HowToUsePage(
             LazyColumn(modifier = Modifier.padding(top = paddingValues.calculateTopPadding())) {
                 item {
                     TopSpace()
-                    Subtitle(text = stringResource(Res.string.quick_start))
+                    PSectionTitle(title = stringResource(Res.string.quick_start))
                     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                         Column(modifier = Modifier.padding(vertical = 8.dp)) {
                             StepItem(index = 1, title = stringResource(Res.string.step_connect_network_title))
@@ -107,7 +107,7 @@ fun HowToUsePage(
                     VerticalSpace(dp = 16.dp)
                 }
                 item {
-                    Subtitle(text = stringResource(Res.string.troubleshooting))
+                    PSectionTitle(title = stringResource(Res.string.troubleshooting))
                     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                         FaqItem(
                             icon = UiRes.drawable.ui_drawable_circle_alert,

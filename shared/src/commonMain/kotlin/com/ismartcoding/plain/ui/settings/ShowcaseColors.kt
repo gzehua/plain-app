@@ -18,14 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.theme.*
 
 @Composable
 fun ShowcaseColors() {
     val cs = MaterialTheme.colorScheme
-    Subtitle("Custom Colors (All Used)")
+    PSectionTitle("Custom Colors (All Used)")
     ColorGrid(
         listOf(
             "green" to cs.green, "grey" to cs.grey,
@@ -41,7 +41,7 @@ fun ShowcaseColors() {
         ),
     )
     VerticalSpace(8.dp)
-    Subtitle("Material3 Colors (Used in App)")
+    PSectionTitle("Material3 Colors (Used in App)")
     ColorGrid(
         listOf(
             "primary" to cs.primary, "onPrimary" to cs.onPrimary,
@@ -61,7 +61,7 @@ fun ShowcaseColors() {
         ),
     )
     VerticalSpace(8.dp)
-    Subtitle("Material3 Colors (Theme Only)")
+    PSectionTitle("Material3 Colors (Theme Only)")
     ColorGrid(
         listOf(
             "onPrimaryContainer" to cs.onPrimaryContainer,

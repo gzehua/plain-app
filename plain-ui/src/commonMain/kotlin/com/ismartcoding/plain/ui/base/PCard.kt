@@ -6,6 +6,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
 
 @Composable
@@ -14,8 +15,7 @@ fun PCard(
     content: @Composable () -> Unit,
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
+        modifier = modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium),
         colors = CardDefaults.cardColors().copy(
             containerColor = MaterialTheme.colorScheme.cardBackgroundNormal
         )

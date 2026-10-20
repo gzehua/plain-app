@@ -54,7 +54,7 @@ import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PScaffold
 import androidx.compose.material3.Switch
 import com.ismartcoding.plain.ui.base.PTopAppBar
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.Tips
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -155,7 +155,7 @@ fun DesktopAccessSettingsPage(navController: NavHostController, webVM: DesktopAc
                 }
                 VerticalSpace(dp = 16.dp)
             }
-            item { Subtitle(text = stringResource(Res.string.features)) }
+            item { PSectionTitle(title = stringResource(Res.string.features)) }
             itemsIndexed(permissionList.value) { index, m ->
                 val permission = m.permission
                 val af = permission.accessFeatureOf()
@@ -234,7 +234,7 @@ fun DesktopAccessSettingsPage(navController: NavHostController, webVM: DesktopAc
                 }
             }
             item {
-                VerticalSpace(dp = 16.dp); Subtitle(text = stringResource(Res.string.performance))
+                VerticalSpace(dp = 16.dp); PSectionTitle(title = stringResource(Res.string.performance))
                 PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                     PListItem(modifier = Modifier.clickable { webVM.enableKeepAwake(!keepAwake) }, title = stringResource(Res.string.keep_awake)) {
                         Switch(checked = keepAwake, onCheckedChange = { enable -> webVM.enableKeepAwake(enable) })

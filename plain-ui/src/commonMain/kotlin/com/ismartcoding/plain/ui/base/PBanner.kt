@@ -19,8 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ismartcoding.plain.ui.theme.Spacing
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -38,18 +38,18 @@ fun PBanner(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = Spacing.lg)
             .clip(MaterialTheme.shapes.large)
             .background(backgroundColor)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-            .padding(16.dp, 20.dp),
+            .padding(Spacing.lg),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         icon?.let { ic ->
             Crossfade(targetState = ic, label = "") {
                 Icon(
                     painter = painterResource(it), contentDescription = null,
-                    modifier = Modifier.padding(end = 16.dp), tint = contentColor,
+                    modifier = Modifier.padding(end = Spacing.lg), tint = contentColor,
                 )
             }
         }
@@ -64,6 +64,7 @@ fun PBanner(
                 color = contentColor, overflow = TextOverflow.Ellipsis,
             )
             desc?.let {
+                VerticalSpace(Spacing.xs)
                 Text(
                     text = it, style = MaterialTheme.typography.bodyMedium,
                     color = contentColor.copy(alpha = 0.85f),
@@ -71,7 +72,7 @@ fun PBanner(
                 )
             }
             action?.let {
-                VerticalSpace(16.dp)
+                VerticalSpace(Spacing.lg)
                 CompositionLocalProvider(LocalContentColor provides contentColor) { it() }
             }
         }

@@ -1,48 +1,52 @@
 package com.ismartcoding.plain.ui.settings
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.ui.theme.listItemTitle
-import com.ismartcoding.plain.ui.theme.listItemValue
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.settings as ui_drawable_settings
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun ShowcaseListItemValues() {
-    Subtitle("PListItem title + value")
+    PSectionTitle("PListItem title + value")
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        val density = LocalDensity.current
-        val measurer = rememberTextMeasurer()
-        for ((label, ratio) in listOf("Fits" to 1.25f, "Exact fit" to 1f, "Overflow" to 0.75f)) {
-            Subtitle(label)
-            for ((title, value) in listOf("Setting title" to "OK", "ID" to "Selected value", "Title" to "Value")) {
-                val titleWidth = measurer.measure(title, MaterialTheme.typography.listItemTitle(), softWrap = false).size.width
-                val valueWidth = measurer.measure(value, MaterialTheme.typography.listItemValue(), softWrap = false).size.width
-                val width = with(density) { ((titleWidth + valueWidth) * ratio).toDp() } + 48.dp
-                PCard(modifier = Modifier.width(width)) {
-                    PListItem(title = title, value = value)
-                }
-                VerticalSpace(8.dp)
-            }
+        PCard {
+            PListItem(title = "Setting title", value = "OK")
+            PListItem(title = "ID", value = "Selected value")
+            PListItem(title = "Longer setting title", value = "A value that exceeds the remaining width and wraps onto multiple lines")
+            PListItem(title = "ID", value = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+            PListItem(title = "A title that is longer than the entire list item width and needs to wrap", value = "Complete value")
+            PListItem(title = "多语言标题需要完整显示", value = "这是需要在剩余宽度内自动换行的详细内容")
         }
         VerticalSpace(8.dp)
-        PCard(modifier = Modifier.fillMaxWidth(0.75f)) {
-            PListItem(title = "Longer setting title", value = "A value that exceeds the remaining width")
-            PListItem(title = "ID", value = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-            PListItem(title = "A longer title", value = "A longer value")
-            PListItem(title = "A title that is longer than the entire list item width", value = "Complete value")
-            PListItem(title = "多语言标题需要完整显示", value = "这是需要在剩余宽度内自动换行的详细内容")
+        PCard {
+            PListItem(
+                title = "Notifications",
+                subtitle = "Alerts and banners",
+                value = "Enabled",
+                showMore = true,
+                start = { Icon(painterResource(UiRes.drawable.ui_drawable_settings), null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary) },
+            )
+        }
+        VerticalSpace(8.dp)
+        PCard {
+            PListItem(
+                title = "Notifications",
+                subtitle = "Alerts and banners",
+                showMore = true,
+                start = { Icon(painterResource(UiRes.drawable.ui_drawable_settings), null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary) },
+            )
         }
         VerticalSpace(8.dp)
         PCard {

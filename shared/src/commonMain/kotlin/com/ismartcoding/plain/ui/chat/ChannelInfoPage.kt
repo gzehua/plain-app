@@ -64,7 +64,7 @@ import com.ismartcoding.plain.ui.base.POutlinedButton
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.base.PTopAppBar
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.DialogHelper
 import com.ismartcoding.plain.ui.chat.ChannelViewModel
@@ -155,7 +155,7 @@ fun ChannelInfoPage(
                 }
 
                 item { VerticalSpace(dp = 16.dp) }
-                item { Subtitle(text = "${stringResource(Res.string.members)} (${displayMembers.size})") }
+                item { PSectionTitle(title = "${stringResource(Res.string.members)} (${displayMembers.size})") }
                 item {
                     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                         displayMembers.forEach { pm ->
@@ -191,7 +191,7 @@ fun ChannelInfoPage(
 
                 if (liveChannel.actions.canManageMembers && addablePeers.isNotEmpty()) {
                     item { VerticalSpace(dp = 16.dp) }
-                    item { Subtitle(text = stringResource(Res.string.add_member)) }
+                    item { PSectionTitle(title = stringResource(Res.string.add_member)) }
                     item {
                         PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                             addablePeers.forEach { peer ->

@@ -23,7 +23,7 @@ import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import kotlinx.coroutines.delay
@@ -66,7 +66,7 @@ fun BleDebugPage(navController: NavHostController) {
 
 @Composable
 private fun BleSupportCard(info: BleDebugInfo) {
-    Subtitle(stringResource(Res.string.ble_support))
+    PSectionTitle(stringResource(Res.string.ble_support))
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PListItem(
             title = stringResource(Res.string.ble_bluetooth_supported),
@@ -86,7 +86,7 @@ private fun BleSupportCard(info: BleDebugInfo) {
 
 @Composable
 private fun BlePermissionsCard(info: BleDebugInfo) {
-    Subtitle(stringResource(Res.string.ble_permissions))
+    PSectionTitle(stringResource(Res.string.ble_permissions))
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PListItem(
             title = stringResource(Res.string.ble_scan_permission),
@@ -113,7 +113,7 @@ private fun BlePermissionsCard(info: BleDebugInfo) {
 
 @Composable
 private fun BleRuntimeStatusCard(info: BleDebugInfo) {
-    Subtitle(stringResource(Res.string.ble_runtime_status))
+    PSectionTitle(stringResource(Res.string.ble_runtime_status))
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PListItem(
             title = stringResource(Res.string.ble_advertising_running),

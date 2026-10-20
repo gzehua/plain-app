@@ -20,7 +20,7 @@ import com.ismartcoding.plain.ui.base.CopyIconButton
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PModalBottomSheet
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
 import com.ismartcoding.plain.ui.components.FileRenameDialog
@@ -81,7 +81,7 @@ fun ViewAudioBottomSheet(
             if (!audioVM.trash.value) {
                 item {
                     VerticalSpace(dp = 16.dp)
-                    Subtitle(text = stringResource(Res.string.tags))
+                    PSectionTitle(title = stringResource(Res.string.tags))
                     TagSelector(
                         data = m,
                         tagsVM = tagsVM,

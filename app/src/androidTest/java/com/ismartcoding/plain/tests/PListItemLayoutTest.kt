@@ -97,15 +97,14 @@ class PListItemLayoutTest {
     }
 
     @Test
-    fun valueWithSubtitleIconAndControlsRemainsComplete() {
+    fun valueWithSubtitleIconAndChevronRemainsComplete() {
         for (direction in LayoutDirection.entries) {
-            show("A longer setting title", "A complete value that needs to wrap", direction, 1f, switch = true, accessories = true)
+            show("A longer setting title", "A complete value that needs to wrap", direction, 1f, accessories = true)
             onMain {
                 val nodes = nodes()
                 assertComplete(textNode(nodes, "A longer setting title"))
                 assertComplete(textNode(nodes, "A complete value that needs to wrap"))
                 assertComplete(textNode(nodes, "Supporting text"))
-                assertTrue(nodes.single { it.config.getOrNull(SemanticsProperties.ToggleableState) != null }.boundsInRoot.width > 0)
             }
         }
     }
@@ -120,6 +119,16 @@ class PListItemLayoutTest {
             val title = textNode(nodes, "Switch action")
             assertTrue(switch.boundsInRoot.left >= title.boundsInRoot.right)
             assertTrue(switch.boundsInRoot.width > 0)
+        }
+    }
+
+    @Test
+    fun valueDoesNotChangeRowHeight() {
+        for (accessories in listOf(false, true)) {
+            show("Notifications", "", LayoutDirection.Ltr, 1f, accessories = accessories)
+            val withoutValue = rowBounds.height
+            show("Notifications", "Enabled", LayoutDirection.Ltr, 1f, accessories = accessories)
+            assertEquals("accessories=$accessories", withoutValue, rowBounds.height, 0.5f)
         }
     }
 

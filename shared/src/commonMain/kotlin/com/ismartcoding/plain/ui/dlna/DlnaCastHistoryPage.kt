@@ -30,7 +30,7 @@ import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
-import com.ismartcoding.plain.ui.base.Subtitle
+import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.state.launchSafe
@@ -62,7 +62,7 @@ fun DlnaCastHistoryPage(
             ) {
                 item { TopSpace() }
                 if (allowed.isNotEmpty()) {
-                    item { Subtitle(text = stringResource(Res.string.dlna_cast_accepted)) }
+                    item { PSectionTitle(title = stringResource(Res.string.dlna_cast_accepted)) }
                     items(allowed, key = { it.first }) { (ip, name) ->
                         PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                             PListItem(
@@ -83,7 +83,7 @@ fun DlnaCastHistoryPage(
                 }
                 if (denied.isNotEmpty()) {
                     item { VerticalSpace(8.dp) }
-                    item { Subtitle(text = stringResource(Res.string.dlna_cast_rejected)) }
+                    item { PSectionTitle(title = stringResource(Res.string.dlna_cast_rejected)) }
                     items(denied, key = { it.first }) { (ip, name) ->
                         PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                             PListItem(
