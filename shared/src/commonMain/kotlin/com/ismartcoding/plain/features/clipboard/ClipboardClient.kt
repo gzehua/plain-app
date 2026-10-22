@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.clipboard
 
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
-import com.ismartcoding.plain.api.graphql.models.ClipboardItem
+import com.ismartcoding.plain.models.ClipboardItem
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql

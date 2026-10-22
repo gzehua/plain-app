@@ -19,7 +19,7 @@ import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.platform.media.loadAudioCoverBitmap
 import com.ismartcoding.plain.ui.audio.components.PlaylistCoverArtwork
 import com.ismartcoding.plain.ui.audio.components.audioCoverCache
-import com.ismartcoding.plain.api.graphql.models.AudioAlbumCover
+import com.ismartcoding.plain.models.AudioAlbumCover
 
 /**
  * Playlist cover stitched from the embedded art of the playlist's richest

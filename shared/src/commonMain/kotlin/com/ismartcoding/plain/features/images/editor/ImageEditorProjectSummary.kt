@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.images.editor
 
-import com.ismartcoding.plain.util.ID
-import com.ismartcoding.plain.api.graphql.models.ImageEditorProject
+import com.ismartcoding.plain.lib.ID
+import com.ismartcoding.plain.models.ImageEditorProject
 import kotlin.time.Instant
 
 data class ImageEditorProjectSummary(

@@ -9,7 +9,6 @@ import com.ismartcoding.plain.features.chat.models.MessageContent
 import com.ismartcoding.plain.features.chat.models.MessageFiles
 import com.ismartcoding.plain.features.chat.models.MessageImages
 import com.ismartcoding.plain.features.chat.models.MessageType
-import com.ismartcoding.plain.db.*
 import com.ismartcoding.plain.features.chat.ChatStatus
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isVideoFast

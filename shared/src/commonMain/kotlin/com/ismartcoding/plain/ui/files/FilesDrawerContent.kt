@@ -29,7 +29,7 @@ import com.ismartcoding.plain.features.files.FilesType
 import com.ismartcoding.plain.app.events.FolderKanbanSelectEvent
 import com.ismartcoding.plain.features.files.FavoriteFoldersClient
 import com.ismartcoding.plain.features.shares.SharesClient
-import com.ismartcoding.plain.api.graphql.models.ShareRecord
+import com.ismartcoding.plain.models.ShareRecord
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.folder
 import com.ismartcoding.plain.i18n.link

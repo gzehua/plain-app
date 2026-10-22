@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.files
 
-import com.ismartcoding.plain.api.graphql.models.FavoriteFolder
+import com.ismartcoding.plain.models.FavoriteFolder
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.bridge.*

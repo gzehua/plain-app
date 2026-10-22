@@ -27,7 +27,7 @@ import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.app.events.DownloadUpdateEvent
-import com.ismartcoding.plain.util.UrlHelper
+import com.ismartcoding.plain.lib.UrlHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.system.getAppVersion
 import com.ismartcoding.plain.platform.system.getCacheSize
@@ -37,7 +37,6 @@ import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 import com.ismartcoding.plain.ui.chat.PeerViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PCard
@@ -51,7 +50,6 @@ import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.DialogHelper
 import com.ismartcoding.plain.features.web.WebHelper
-import com.ismartcoding.plain.ui.settings.UpdateViewModel
 import com.ismartcoding.plain.ui.home.UpdateBanner
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)

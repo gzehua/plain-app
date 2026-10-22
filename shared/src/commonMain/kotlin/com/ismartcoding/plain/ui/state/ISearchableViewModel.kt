@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.state
 
 import androidx.compose.runtime.MutableState
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 
 interface ISearchableViewModel<T : IData> {
     val showSearchBar: MutableState<Boolean>

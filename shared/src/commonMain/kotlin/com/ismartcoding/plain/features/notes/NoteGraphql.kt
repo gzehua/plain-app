@@ -2,7 +2,7 @@ package com.ismartcoding.plain.features.notes
 
 import kotlinx.serialization.json.*
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.api.graphql.models.Note
+import com.ismartcoding.plain.models.Note
 
 internal const val NOTE_FIELDS = "id title content deletedAt createdAt updatedAt"
 internal fun JsonElement.note(): Note = JsonHelper.jsonDecodeFromElement<Note>(this)

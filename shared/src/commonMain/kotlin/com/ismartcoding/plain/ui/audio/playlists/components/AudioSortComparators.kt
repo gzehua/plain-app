@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.audio.playlists.components
 
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Audio as AudioTrack
 import com.ismartcoding.plain.features.files.FileSortBy
 
 /**

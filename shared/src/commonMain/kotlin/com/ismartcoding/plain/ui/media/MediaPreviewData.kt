@@ -2,14 +2,14 @@ package com.ismartcoding.plain.ui.media
 
 import com.ismartcoding.plain.ui.chat.VChat
 
-import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
-import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
+import com.ismartcoding.plain.models.Video as MediaVideo
+import com.ismartcoding.plain.models.Image as MediaImage
 import androidx.compose.ui.unit.toSize
 import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.features.chat.models.MessageFiles
 import com.ismartcoding.plain.features.chat.models.MessageImages
-import com.ismartcoding.plain.api.graphql.models.Image
-import com.ismartcoding.plain.api.graphql.models.Video
+import com.ismartcoding.plain.models.Image
+import com.ismartcoding.plain.models.Video
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.ui.media.viewer.PreviewItem

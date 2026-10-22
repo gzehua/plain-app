@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.rust.event
 
-import com.ismartcoding.plain.api.graphql.models.PomodoroState
-import com.ismartcoding.plain.api.graphql.models.PomodoroToday
+import com.ismartcoding.plain.models.PomodoroState
+import com.ismartcoding.plain.models.PomodoroToday
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.features.pomodoro.PomodoroClient.today
 import com.ismartcoding.plain.lib.JsonHelper

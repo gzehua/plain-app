@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform.telephony
 
-import com.ismartcoding.plain.api.graphql.models.Sim
+import com.ismartcoding.plain.models.Sim
 
 /**
  * Returns the list of active SIM subscriptions on the device.

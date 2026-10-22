@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.ismartcoding.plain.features.clipboard.ClipboardClient
-import com.ismartcoding.plain.api.graphql.models.ClipboardItem
+import com.ismartcoding.plain.models.ClipboardItem
 import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

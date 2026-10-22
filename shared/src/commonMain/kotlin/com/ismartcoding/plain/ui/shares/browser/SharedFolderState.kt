@@ -15,7 +15,7 @@ import com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine
 import com.ismartcoding.plain.features.shares.SharedInfoDto
 import com.ismartcoding.plain.features.shares.SharedLink
 import com.ismartcoding.plain.features.shares.SharedLinkClient
-import com.ismartcoding.plain.api.graphql.models.Root
+import com.ismartcoding.plain.models.Root
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.isAudioFast
 import com.ismartcoding.plain.lib.extensions.isImageFast

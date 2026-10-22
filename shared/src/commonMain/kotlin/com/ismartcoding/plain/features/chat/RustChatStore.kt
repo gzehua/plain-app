@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.chat
 
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
@@ -14,7 +14,7 @@ object RustChatStore {
     suspend fun getByPeerId(id: String): List<ChatItem> = page(peer = id)
     suspend fun getByChannelId(id: String): List<ChatItem> = page(channel = id)
     suspend fun getLatestConversations(): Map<String, ChatItem> =
-        JsonHelper.jsonDecodeFromElement<List<com.ismartcoding.plain.api.graphql.models.ChatConversation>>(
+        JsonHelper.jsonDecodeFromElement<List<com.ismartcoding.plain.models.ChatConversation>>(
             PlainRust.mainQuery("chatConversations { id chat { $FIELDS } }").getValue("chatConversations"),
         ).associate { it.id to it.chat }
     suspend fun search(text: String, limit: Int, offset: Int): List<ChatItem> = page(text = text, limit = limit, offset = offset, descending = true)

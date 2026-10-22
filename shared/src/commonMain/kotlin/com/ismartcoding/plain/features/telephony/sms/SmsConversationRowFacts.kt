@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.telephony.sms
 
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import kotlinx.serialization.Serializable
 
 @Serializable

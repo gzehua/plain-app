@@ -16,7 +16,7 @@ import androidx.navigation.NavHostController
 import com.ismartcoding.plain.features.chat.download.DownloadQueue
 import com.ismartcoding.plain.features.chat.download.DownloadTask
 import com.ismartcoding.plain.features.chat.models.MessageFile
-import com.ismartcoding.plain.api.graphql.models.Peer
+import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.features.chat.models.getPreviewPath
 import com.ismartcoding.plain.ui.extensions.rememberFilePath
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath

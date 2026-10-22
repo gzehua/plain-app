@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.api.graphql
 
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.features.files.extension
-import com.ismartcoding.plain.api.graphql.models.File
+import com.ismartcoding.plain.models.File
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test

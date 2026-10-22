@@ -17,8 +17,8 @@ import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.feeds.FeedEntryFilterType
 import com.ismartcoding.plain.features.tags.TagsClient
 import com.ismartcoding.plain.features.feeds.FeedEntriesClient
-import com.ismartcoding.plain.api.graphql.models.FeedEntry
-import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.models.FeedEntry
+import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.helpers.SearchHelper
 import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.flow.MutableStateFlow

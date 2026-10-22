@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.state
 
 import androidx.compose.runtime.MutableState
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import kotlinx.coroutines.flow.StateFlow
 
 interface ISelectableViewModel<T : IData> {

@@ -8,7 +8,7 @@ import com.ismartcoding.plain.ui.state.ISearchableViewModel
 import com.ismartcoding.plain.ui.state.ISelectableViewModel
 import com.ismartcoding.plain.ui.state.launchSafe
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import com.ismartcoding.plain.preferences.*
 

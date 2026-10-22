@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.ismartcoding.plain.features.feeds.FeedEntryFilterType
 import com.ismartcoding.plain.ui.extensions.rememberFilePath
-import com.ismartcoding.plain.api.graphql.models.Feed
-import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.models.Feed
+import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace

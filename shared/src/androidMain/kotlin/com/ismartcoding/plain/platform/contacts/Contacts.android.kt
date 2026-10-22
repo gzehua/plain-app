@@ -2,7 +2,7 @@ package com.ismartcoding.plain.platform.contacts
 
 import com.ismartcoding.plain.platform.permissions.isGranted
 
-import com.ismartcoding.plain.api.graphql.models.ContactGroup
+import com.ismartcoding.plain.models.ContactGroup
 
 internal actual fun getContactGroups(): List<com.ismartcoding.plain.rust.host.provider.ContactGroupFacts> = GroupHelper.getAll()
 

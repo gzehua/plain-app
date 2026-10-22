@@ -7,7 +7,7 @@ import com.ismartcoding.plain.ui.app.AppUiState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
-import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
+import com.ismartcoding.plain.models.Video as MediaVideo
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.awaitEachGesture

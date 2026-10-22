@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.audio
 
 import com.ismartcoding.plain.ui.media.BaseMediaViewModel
 
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Audio as AudioTrack
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.mutableStateMapOf
 import com.ismartcoding.plain.platform.system.DataType

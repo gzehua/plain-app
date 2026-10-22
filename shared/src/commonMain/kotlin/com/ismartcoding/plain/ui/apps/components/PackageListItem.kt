@@ -24,7 +24,7 @@ import com.ismartcoding.plain.platform.system.PackageType
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
+import com.ismartcoding.plain.models.Package as AppPackage
 import com.ismartcoding.plain.ui.theme.listItemDescription
 import com.ismartcoding.plain.ui.theme.listItemSubtitle
 import com.ismartcoding.plain.ui.theme.listItemTitle

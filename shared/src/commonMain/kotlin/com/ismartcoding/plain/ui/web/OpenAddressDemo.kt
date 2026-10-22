@@ -26,13 +26,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.app.TempData
-import com.ismartcoding.plain.util.UrlHelper
-import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.lib.UrlHelper
 import org.jetbrains.compose.resources.painterResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.search as ui_drawable_search
-import com.ismartcoding.plain.i18n.search
 
 /**
  * Compose-drawn "video" for Quick start step 2: a browser address bar where

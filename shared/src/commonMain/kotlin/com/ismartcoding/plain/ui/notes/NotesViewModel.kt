@@ -11,8 +11,8 @@ import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.notes.NotesClient
 import com.ismartcoding.plain.features.tags.TagsClient
-import com.ismartcoding.plain.api.graphql.models.Note
-import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.models.Note
+import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.helpers.SearchHelper
 import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.CoroutineScope

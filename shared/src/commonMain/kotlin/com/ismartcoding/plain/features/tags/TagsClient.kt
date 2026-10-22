@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.tags
 
-import com.ismartcoding.plain.api.graphql.models.Tag
-import com.ismartcoding.plain.api.graphql.models.TagRelation
+import com.ismartcoding.plain.models.Tag
+import com.ismartcoding.plain.models.TagRelation
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.system.DataType
 

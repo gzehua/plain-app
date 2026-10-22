@@ -1,0 +1,22 @@
+package com.ismartcoding.plain.models
+
+import com.ismartcoding.plain.IMedia
+import kotlin.time.Instant
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Video(
+    override var id: String,
+    override var title: String,
+    override var path: String,
+    override var durationMs: Long,
+    override var size: Long,
+    override var bucketId: String,
+    override var createdAt: Instant,
+    override var updatedAt: Instant,
+    var takenAt: Instant?,
+    var isFavorite: Boolean = false,
+    var width: Int = 0,
+    var height: Int = 0,
+    var rotation: Int = 0,
+) : MediaItem, IMedia

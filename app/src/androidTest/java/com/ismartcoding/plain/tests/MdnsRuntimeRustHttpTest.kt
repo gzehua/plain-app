@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.request.RustApi
 import com.ismartcoding.plain.features.nearby.RustMdnsRuntime
 import kotlin.uuid.Uuid
 import kotlin.uuid.ExperimentalUuidApi
@@ -41,14 +41,14 @@ class MdnsRuntimeRustHttpTest {
         val debugToken = Uuid.random().toString()
         try {
             suspend fun discovering(): Boolean =
-                RustContentApi.query("isDiscovering").getValue("isDiscovering").jsonPrimitive.boolean
-            assertEquals(true, RustContentApi.mutate("startDiscovery").getValue("startDiscovery").jsonPrimitive.boolean)
+                RustApi.query("isDiscovering").getValue("isDiscovering").jsonPrimitive.boolean
+            assertEquals(true, RustApi.mutate("startDiscovery").getValue("startDiscovery").jsonPrimitive.boolean)
             assertTrue(discovering())
             val started = snapshot()
             assertTrue(started.getValue("receiver").jsonPrimitive.boolean)
             assertTrue(started.getValue("scanning").jsonPrimitive.boolean)
             assertTrue(started.getValue("revision").jsonPrimitive.long > before.getValue("revision").jsonPrimitive.long)
-            assertEquals(true, RustContentApi.mutate("stopDiscovery").getValue("stopDiscovery").jsonPrimitive.boolean)
+            assertEquals(true, RustApi.mutate("stopDiscovery").getValue("stopDiscovery").jsonPrimitive.boolean)
             assertFalse(discovering())
             val stopped = snapshot()
             assertFalse(stopped.getValue("scanning").jsonPrimitive.boolean)
@@ -60,11 +60,11 @@ class MdnsRuntimeRustHttpTest {
             val captured = RustMdnsRuntime.snapshot()
             val packets = RustMdnsRuntime.packets(captured, false)
             assertEquals(captured.getValue("running").jsonPrimitive.boolean, RustMdnsRuntime.running)
-            if (RustContentApi.query("app { network { ipv4Addresses } }").getValue("app").jsonObject.getValue("network").jsonObject.getValue("ipv4Addresses").jsonArray.isEmpty()) {
+            if (RustApi.query("app { network { ipv4Addresses } }").getValue("app").jsonObject.getValue("network").jsonObject.getValue("ipv4Addresses").jsonArray.isEmpty()) {
                 assertTrue(packets.all { it.srcPort > 0 && it.size > 0 })
             } else assertTrue(packets.any { it.summary.contains("PTR") && it.detail.contains("_plainapp._tcp.local") && it.srcPort > 0 && it.size > 0 })
             assertTrue(RustMdnsRuntime.services(captured).all { it.serviceType == "_plainapp._tcp.local" })
-            RustContentApi.mutate("stopDiscovery")
+            RustApi.mutate("stopDiscovery")
             assertTrue(discovering())
             RustMdnsRuntime.debugStop(debugToken).await()
             val cleaned = snapshot()
@@ -73,7 +73,7 @@ class MdnsRuntimeRustHttpTest {
             assertTrue(RustMdnsRuntime.packets(cleaned, false).isEmpty())
         } finally {
             RustMdnsRuntime.debugStop(debugToken).await()
-            RustContentApi.mutate(if (before.getValue("manualScanning").jsonPrimitive.boolean) "startDiscovery" else "stopDiscovery")
+            RustApi.mutate(if (before.getValue("manualScanning").jsonPrimitive.boolean) "startDiscovery" else "stopDiscovery")
         }
     }
 }

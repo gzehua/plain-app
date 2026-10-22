@@ -3,8 +3,8 @@ package com.ismartcoding.plain.ui.files.stored
 import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.features.chat.models.MessageFiles
 import com.ismartcoding.plain.features.chat.models.MessageImages
-import com.ismartcoding.plain.api.graphql.models.AppFile
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.AppFile
+import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.features.files.stored.AppFileStore
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.media.getExtensionFromMimeType

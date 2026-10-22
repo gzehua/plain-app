@@ -5,7 +5,7 @@ import com.ismartcoding.plain.rust.request.gql
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
 import com.ismartcoding.plain.features.files.FileSortBy
-import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
+import com.ismartcoding.plain.models.Package as AppPackage
 
 object PackagesClient {
     suspend fun search(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<AppPackage> =

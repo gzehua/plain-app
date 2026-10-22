@@ -2,7 +2,7 @@ package com.ismartcoding.plain.platform.media
 
 import com.ismartcoding.plain.platform.files.getInternalStoragePath
 
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.rust.host.provider.ProviderPlan
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.files.FileSortBy

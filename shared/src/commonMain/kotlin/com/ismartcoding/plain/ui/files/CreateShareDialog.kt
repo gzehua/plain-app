@@ -21,7 +21,7 @@ import com.ismartcoding.plain.features.chat.ShareSendClient
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.features.shares.ShareExpiry
 import com.ismartcoding.plain.features.shares.SharesClient
-import com.ismartcoding.plain.api.graphql.models.ShareRecord
+import com.ismartcoding.plain.models.ShareRecord
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.cancel
 import com.ismartcoding.plain.i18n.close

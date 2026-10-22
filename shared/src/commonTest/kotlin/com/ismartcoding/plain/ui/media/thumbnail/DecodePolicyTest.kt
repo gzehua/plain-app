@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.media.thumbnail
 
-import com.ismartcoding.plain.thumbnail.DecodePolicy
+import com.ismartcoding.plain.lib.DecodePolicy
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

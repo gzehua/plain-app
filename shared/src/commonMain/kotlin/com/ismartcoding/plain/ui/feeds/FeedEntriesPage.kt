@@ -36,8 +36,8 @@ import com.ismartcoding.plain.features.files.PickFileType
 import com.ismartcoding.plain.app.events.ExportFileEvent
 import com.ismartcoding.plain.app.events.PickFileEvent
 import com.ismartcoding.plain.features.feeds.FeedsClient
-import com.ismartcoding.plain.api.graphql.models.Feed
-import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.models.Feed
+import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.download
 import com.ismartcoding.plain.i18n.settings

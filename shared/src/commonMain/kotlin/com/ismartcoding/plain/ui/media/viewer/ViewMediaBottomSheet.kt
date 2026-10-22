@@ -6,8 +6,8 @@ import com.ismartcoding.plain.features.media.MediaClient
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
-import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
-import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
+import com.ismartcoding.plain.models.Video as MediaVideo
+import com.ismartcoding.plain.models.Image as MediaImage
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,10 +21,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.features.chat.models.MessageFile
-import com.ismartcoding.plain.api.graphql.models.Image
-import com.ismartcoding.plain.api.graphql.models.Tag
-import com.ismartcoding.plain.api.graphql.models.TagRelation
-import com.ismartcoding.plain.api.graphql.models.Video
+import com.ismartcoding.plain.models.Image
+import com.ismartcoding.plain.models.Tag
+import com.ismartcoding.plain.models.TagRelation
+import com.ismartcoding.plain.models.Video
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.isUrl

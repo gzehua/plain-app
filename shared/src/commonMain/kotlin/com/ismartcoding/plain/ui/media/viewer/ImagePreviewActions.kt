@@ -2,14 +2,14 @@ package com.ismartcoding.plain.ui.media.viewer
 
 import com.ismartcoding.plain.features.files.extension
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import com.ismartcoding.plain.api.graphql.models.File
+import com.ismartcoding.plain.models.File
 import com.ismartcoding.plain.ui.resources.image as ui_drawable_image
 
-import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
+import com.ismartcoding.plain.models.Image as MediaImage
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.features.chat.models.MessageFile
-import com.ismartcoding.plain.api.graphql.models.Image
+import com.ismartcoding.plain.models.Image
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.image
 import com.ismartcoding.plain.i18n.more_info

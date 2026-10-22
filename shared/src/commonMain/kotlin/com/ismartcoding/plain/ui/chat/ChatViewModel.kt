@@ -13,8 +13,8 @@ import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.features.chat.models.MessageContent
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 import com.ismartcoding.plain.features.chat.ChatStatus
-import com.ismartcoding.plain.api.graphql.models.ChatItem
-import com.ismartcoding.plain.api.graphql.models.Root
+import com.ismartcoding.plain.models.ChatItem
+import com.ismartcoding.plain.models.Root
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.sent
 import com.ismartcoding.plain.lib.withIO
@@ -170,7 +170,7 @@ object ChatViewModel : ISelectableViewModel<VChat> {
      * Entry point for non-UI writers delivering already-persisted messages
      * (share-to-chat, incoming WebSocket, GraphQL-created messages). Updates
      * the open conversation when the target matches. Root message events
-     * are forwarded to desktop clients by RustContentApi.
+     * are forwarded to desktop clients by the Rust core.
      */
     suspend fun onMessagesCreated(target: ChatTarget, items: List<ChatItem>, scroll: Boolean = false) = mutex.withLock {
         if (_target.value == target) {

@@ -15,8 +15,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.extensions.rememberFilePath
 import com.ismartcoding.plain.features.feeds.displayImage
-import com.ismartcoding.plain.api.graphql.models.Tag
-import com.ismartcoding.plain.api.graphql.models.TagRelation
+import com.ismartcoding.plain.models.Tag
+import com.ismartcoding.plain.models.TagRelation
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.platform.system.launchUrl

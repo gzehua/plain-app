@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.app
 
 import com.ismartcoding.plain.app.HttpServerManager
 
-import com.ismartcoding.plain.api.graphql.models.PairingRequestInput
+import com.ismartcoding.plain.models.PairingRequestInput
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel

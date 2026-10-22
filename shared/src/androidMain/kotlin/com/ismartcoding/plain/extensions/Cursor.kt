@@ -1,15 +1,14 @@
 package com.ismartcoding.plain.extensions
 
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
-
 import android.database.Cursor
 import android.provider.MediaStore
 import com.ismartcoding.plain.lib.extensions.getIntValue
 import com.ismartcoding.plain.lib.extensions.getLongValue
 import com.ismartcoding.plain.lib.extensions.getStringValue
 import com.ismartcoding.plain.lib.extensions.getTimeSecondsValue
-import com.ismartcoding.plain.platform.isQPlus
+import com.ismartcoding.plain.models.File as FileEntry
+
 fun Cursor.toFile(cache: MutableMap<String, Int>): FileEntry {
     val id = getStringValue(MediaStore.Files.FileColumns._ID, cache)
     val title = getStringValue(MediaStore.Files.FileColumns.DISPLAY_NAME, cache)

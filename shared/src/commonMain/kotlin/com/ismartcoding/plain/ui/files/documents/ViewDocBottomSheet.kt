@@ -19,8 +19,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.api.graphql.models.Tag
-import com.ismartcoding.plain.api.graphql.models.TagRelation
+import com.ismartcoding.plain.models.Tag
+import com.ismartcoding.plain.models.TagRelation
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.file
 import com.ismartcoding.plain.lib.extensions.formatBytes

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features
 
-import com.ismartcoding.plain.api.graphql.models.FavoriteFolder
+import com.ismartcoding.plain.models.FavoriteFolder
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.request.gql
 import kotlinx.serialization.json.Json

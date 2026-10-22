@@ -6,20 +6,16 @@ import com.ismartcoding.plain.features.files.FilesClient
 
 import com.ismartcoding.plain.platform.getContentTypeForPath
 import com.ismartcoding.plain.platform.media.getDownloadsDirPath
-import com.ismartcoding.plain.rust.http.get
 
-import com.ismartcoding.plain.features.files.extension
-
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.isHeifHeader
 import com.ismartcoding.plain.lib.toNSData
-import com.ismartcoding.plain.thumbnail.DecodePolicy
+import com.ismartcoding.plain.lib.DecodePolicy
 import com.ismartcoding.plain.lib.toByteArray
-import com.ismartcoding.plain.platform.files.StreamSink
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.coroutines.ensureActive
 import kotlinx.cinterop.ExperimentalForeignApi

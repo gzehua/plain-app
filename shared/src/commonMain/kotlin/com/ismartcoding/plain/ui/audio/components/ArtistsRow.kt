@@ -19,7 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.components.drawerOpenAtRowStart
-import com.ismartcoding.plain.api.graphql.models.AudioArtist
+import com.ismartcoding.plain.models.AudioArtist
 
 /** Horizontally scrolling artist tiles. */
 @Composable

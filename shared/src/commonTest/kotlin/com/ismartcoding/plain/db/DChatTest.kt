@@ -5,7 +5,7 @@ import com.ismartcoding.plain.features.chat.models.MessageFiles
 import com.ismartcoding.plain.features.chat.models.MessageImages
 import com.ismartcoding.plain.features.chat.models.MessageText
 import com.ismartcoding.plain.features.chat.models.MessageType
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatItem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.serialization.encodeToString

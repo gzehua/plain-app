@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.nearby
 
-import com.ismartcoding.plain.api.graphql.models.NearbyDevice
+import com.ismartcoding.plain.models.NearbyDevice
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.*

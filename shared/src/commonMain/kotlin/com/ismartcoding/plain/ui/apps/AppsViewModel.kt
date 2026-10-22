@@ -4,7 +4,7 @@ import com.ismartcoding.plain.features.packages.PackagesClient
 import com.ismartcoding.plain.ui.state.ISearchableViewModel
 import com.ismartcoding.plain.ui.state.VTabData
 
-import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
+import com.ismartcoding.plain.models.Package as AppPackage
 
 import com.ismartcoding.plain.i18n.*
 

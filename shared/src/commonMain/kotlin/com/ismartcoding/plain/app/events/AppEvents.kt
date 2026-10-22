@@ -1,9 +1,6 @@
 package com.ismartcoding.plain.app.events
 
-import com.ismartcoding.plain.features.images.search.HImageIndexProgressEvent
-import com.ismartcoding.plain.features.images.search.HImageSearchStatusChangedEvent
-
-import com.ismartcoding.plain.api.graphql.models.PairingRequestInput
+import com.ismartcoding.plain.models.PairingRequestInput
 import com.ismartcoding.plain.ui.state.ActionSourceType
 import com.ismartcoding.plain.ui.state.ActionType
 import com.ismartcoding.plain.features.audio.AudioAction
@@ -12,7 +9,7 @@ import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.features.files.PickFileType
 import com.ismartcoding.plain.features.bookmarks.BookmarksClient
 import com.ismartcoding.plain.features.permissions.getGrantedWebPermissionsAsync
-import com.ismartcoding.plain.features.bluetooth.client.BluetoothPermissionResultEvent
+import com.ismartcoding.plain.features.bluetooth.BluetoothPermissionResultEvent
 import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
 import com.ismartcoding.plain.lib.JsonHelper.jsonEncode
 import com.ismartcoding.plain.lib.coIO
@@ -59,7 +56,7 @@ class ShowPermissionWizardEvent : ChannelEvent()
 class RestartAppEvent : ChannelEvent()
 
 
-class HPomodoroChangedEvent(val today: com.ismartcoding.plain.api.graphql.models.PomodoroToday) : HEvent()
+class HPomodoroChangedEvent(val today: com.ismartcoding.plain.models.PomodoroToday) : HEvent()
 
 class FetchBookmarkMetadataEvent(val bookmarkId: String, val url: String) : ChannelEvent()
 

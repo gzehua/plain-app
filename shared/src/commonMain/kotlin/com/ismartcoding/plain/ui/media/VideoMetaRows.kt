@@ -12,7 +12,7 @@ import androidx.compose.runtime.setValue
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.lib.extensions.formatBitrate
 import com.ismartcoding.plain.lib.extensions.formatDurationMs
-import com.ismartcoding.plain.api.graphql.models.VideoFileInfo
+import com.ismartcoding.plain.models.VideoFileInfo
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.ui.base.PListItem
 import kotlinx.coroutines.Dispatchers

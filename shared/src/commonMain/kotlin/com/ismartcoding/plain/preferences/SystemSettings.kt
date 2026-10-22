@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.api.graphql.models.UpdateInfo
+import com.ismartcoding.plain.models.UpdateInfo
 
 import kotlinx.serialization.Serializable
 

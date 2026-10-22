@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.chat.models
 
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor

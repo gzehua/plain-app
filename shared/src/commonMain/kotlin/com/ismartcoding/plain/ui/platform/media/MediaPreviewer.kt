@@ -42,8 +42,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ismartcoding.plain.api.graphql.models.Tag
-import com.ismartcoding.plain.api.graphql.models.TagRelation
+import com.ismartcoding.plain.models.Tag
+import com.ismartcoding.plain.models.TagRelation
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.close
 import com.ismartcoding.plain.ui.components.ControlChipIconButton

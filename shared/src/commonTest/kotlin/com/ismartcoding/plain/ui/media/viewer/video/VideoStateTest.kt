@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.media.viewer.video
 
 import kotlin.test.assertNull
 
-import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
+import com.ismartcoding.plain.models.Video as MediaVideo
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

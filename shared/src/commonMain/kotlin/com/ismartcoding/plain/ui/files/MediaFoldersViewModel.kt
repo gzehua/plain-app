@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.files
 
 import com.ismartcoding.plain.features.media.MediaCatalogClient
-import com.ismartcoding.plain.api.graphql.models.MediaBucket
+import com.ismartcoding.plain.models.MediaBucket
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf

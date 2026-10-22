@@ -6,12 +6,12 @@ import com.ismartcoding.plain.features.files.FilesClient
 
 import com.ismartcoding.plain.features.files.extension
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
-import com.ismartcoding.plain.api.graphql.models.Doc as Document
-import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
-import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
+import com.ismartcoding.plain.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Doc as Document
+import com.ismartcoding.plain.models.Video as MediaVideo
+import com.ismartcoding.plain.models.Image as MediaImage
 import com.ismartcoding.plain.features.chat.ChatQueries
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.features.chat.models.getMessagePreview
@@ -21,20 +21,20 @@ import com.ismartcoding.plain.ui.platform.system.getIcon
 import com.ismartcoding.plain.features.notes.NotesClient
 import com.ismartcoding.plain.features.feeds.FeedEntriesClient
 import com.ismartcoding.plain.features.files.FileSortBy
-import com.ismartcoding.plain.api.graphql.models.Audio
-import com.ismartcoding.plain.api.graphql.models.ChatItem
-import com.ismartcoding.plain.api.graphql.models.Doc
-import com.ismartcoding.plain.api.graphql.models.FeedEntry
-import com.ismartcoding.plain.api.graphql.models.File
-import com.ismartcoding.plain.api.graphql.models.Image
-import com.ismartcoding.plain.api.graphql.models.Note
-import com.ismartcoding.plain.api.graphql.models.Video
+import com.ismartcoding.plain.models.Audio
+import com.ismartcoding.plain.models.ChatItem
+import com.ismartcoding.plain.models.Doc
+import com.ismartcoding.plain.models.FeedEntry
+import com.ismartcoding.plain.models.File
+import com.ismartcoding.plain.models.Image
+import com.ismartcoding.plain.models.Note
+import com.ismartcoding.plain.models.Video
 import com.ismartcoding.plain.helpers.SearchHelper
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.devices
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.formatDurationMs
-import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
+import com.ismartcoding.plain.models.Package as AppPackage
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.ui.navigation.Routing

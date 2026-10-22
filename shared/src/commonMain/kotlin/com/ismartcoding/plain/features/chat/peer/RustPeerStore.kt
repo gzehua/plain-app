@@ -2,8 +2,8 @@ package com.ismartcoding.plain.features.chat.peer
 
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
-import com.ismartcoding.plain.api.graphql.models.Peer
-import com.ismartcoding.plain.api.graphql.models.PeerRecordInput
+import com.ismartcoding.plain.models.Peer
+import com.ismartcoding.plain.models.PeerRecordInput
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
 

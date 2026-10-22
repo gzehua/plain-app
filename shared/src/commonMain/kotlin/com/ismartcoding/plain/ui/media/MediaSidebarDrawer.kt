@@ -21,7 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.platform.system.has
@@ -35,7 +35,6 @@ import com.ismartcoding.plain.ui.components.SidebarItem
 import com.ismartcoding.plain.ui.components.SidebarSectionHeader
 import com.ismartcoding.plain.ui.components.TagNameDialog
 import com.ismartcoding.plain.ui.components.confirmActionAsync
-import com.ismartcoding.plain.ui.media.BaseMediaViewModel
 import com.ismartcoding.plain.ui.files.documents.DocsViewModel
 import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel

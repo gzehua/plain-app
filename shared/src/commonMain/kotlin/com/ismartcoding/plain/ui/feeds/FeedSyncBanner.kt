@@ -38,7 +38,7 @@ import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.extensions.timeAgo
 import com.ismartcoding.plain.ui.feeds.FeedWorkerState
 import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
-import com.ismartcoding.plain.api.graphql.models.Feed
+import com.ismartcoding.plain.models.Feed
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.setClipboardText
 import com.ismartcoding.plain.ui.base.AlertType

@@ -5,7 +5,7 @@ import com.ismartcoding.plain.ui.state.ISearchableViewModel
 
 import com.ismartcoding.plain.features.audio.AudioQueueClient
 
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Audio as AudioTrack
 import com.ismartcoding.plain.preferences.*
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel

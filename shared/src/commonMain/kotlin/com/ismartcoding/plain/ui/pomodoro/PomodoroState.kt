@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.pomodoro
 
 import androidx.compose.runtime.Composable
-import com.ismartcoding.plain.api.graphql.models.PomodoroState
+import com.ismartcoding.plain.models.PomodoroState
 import com.ismartcoding.plain.i18n.*
 import org.jetbrains.compose.resources.stringResource
 

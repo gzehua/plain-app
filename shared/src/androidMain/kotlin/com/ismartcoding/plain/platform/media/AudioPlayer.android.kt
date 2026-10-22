@@ -3,7 +3,7 @@ package com.ismartcoding.plain.platform.media
 import com.ismartcoding.plain.rust.http.get
 
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.AudioItem
 import kotlinx.coroutines.flow.StateFlow
 
 actual fun createAudioPlayer(): AudioPlayer = ExoPlayerAudioPlayer

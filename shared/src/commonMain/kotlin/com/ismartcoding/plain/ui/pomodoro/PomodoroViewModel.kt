@@ -9,8 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ismartcoding.plain.features.pomodoro.PomodoroClient
 import com.ismartcoding.plain.preferences.*
-import com.ismartcoding.plain.api.graphql.models.PomodoroState
-import com.ismartcoding.plain.api.graphql.models.PomodoroToday
+import com.ismartcoding.plain.models.PomodoroState
+import com.ismartcoding.plain.models.PomodoroToday
 import kotlinx.coroutines.Job
 
 class PomodoroViewModel : ViewModel() {

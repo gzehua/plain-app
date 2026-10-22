@@ -39,7 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.pause
 import com.ismartcoding.plain.lib.LrcParser

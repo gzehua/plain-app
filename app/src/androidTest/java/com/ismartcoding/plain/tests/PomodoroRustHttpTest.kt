@@ -2,7 +2,7 @@ package com.ismartcoding.plain.tests
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.pomodoro.PomodoroClient
-import com.ismartcoding.plain.api.graphql.models.PomodoroState
+import com.ismartcoding.plain.models.PomodoroState
 
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*

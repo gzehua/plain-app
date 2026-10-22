@@ -50,10 +50,10 @@ import androidx.navigation.NavHostController
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.ui.extensions.timeAgo
 import com.ismartcoding.plain.features.feeds.FeedFontScale
-import com.ismartcoding.plain.api.graphql.models.Feed
-import com.ismartcoding.plain.api.graphql.models.FeedEntry
-import com.ismartcoding.plain.api.graphql.models.Tag
-import com.ismartcoding.plain.api.graphql.models.TagRelation
+import com.ismartcoding.plain.models.Feed
+import com.ismartcoding.plain.models.FeedEntry
+import com.ismartcoding.plain.models.Tag
+import com.ismartcoding.plain.models.TagRelation
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.JsonHelper.jsonEncode
 import com.ismartcoding.plain.ui.markdown.compose.Markdown

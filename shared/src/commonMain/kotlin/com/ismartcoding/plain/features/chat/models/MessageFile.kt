@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.chat.models
 
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.lib.generateId
 import kotlinx.serialization.Serializable
 

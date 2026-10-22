@@ -4,7 +4,7 @@ import com.ismartcoding.plain.features.files.FilesClient
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.request.RustApi
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.preferences.RustSystemState
 import kotlinx.coroutines.runBlocking
@@ -49,7 +49,7 @@ class FileBrowseRustHttpTest {
             assertEquals("folder", FilesClient.search("", "${archive.path}!zip!/", FileSortBy.NAME_ASC).first().name)
             RustSystemState.setApiPermissions(permissions + "WRITE_EXTERNAL_STORAGE")
             suspend fun field(selection: String): JsonElement =
-                RustContentApi.query(selection).values.first()
+                RustApi.query(selection).values.first()
             assertEquals(true, field("""pathExists(path: "${root.path}")""").jsonPrimitive.boolean)
             assertEquals("DIR", field("""pathKind(path: "${root.path}")""").jsonPrimitive.content)
             assertEquals("FILE", field("""pathKind(path: "${File(root, "a.txt").path}")""").jsonPrimitive.content)

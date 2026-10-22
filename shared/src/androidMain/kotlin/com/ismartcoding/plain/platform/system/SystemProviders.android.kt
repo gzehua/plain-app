@@ -2,7 +2,7 @@ package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.platform.isQPlus
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import android.provider.CallLog
 import android.provider.ContactsContract
@@ -37,7 +37,7 @@ actual suspend fun mediaBucketItemFacts(dataType: DataType, plan: com.ismartcodi
 }
 
 actual suspend fun fileIndexId(path: String): String? = com.ismartcoding.plain.lib.withIO { com.ismartcoding.plain.platform.media.provider.FileMediaStoreHelper.getIdByPathAsync(com.ismartcoding.plain.appContext, path) }
-actual suspend fun fileIndexRows(plan: com.ismartcoding.plain.rust.host.provider.ProviderPlan, limit: Int, offset: Int, sortBy: com.ismartcoding.plain.features.files.FileSortBy): List<com.ismartcoding.plain.api.graphql.models.File> = com.ismartcoding.plain.platform.media.provider.FileMediaStoreHelper.searchAsync(com.ismartcoding.plain.appContext, plan.where(), limit, offset, sortBy)
+actual suspend fun fileIndexRows(plan: com.ismartcoding.plain.rust.host.provider.ProviderPlan, limit: Int, offset: Int, sortBy: com.ismartcoding.plain.features.files.FileSortBy): List<com.ismartcoding.plain.models.File> = com.ismartcoding.plain.platform.media.provider.FileMediaStoreHelper.searchAsync(com.ismartcoding.plain.appContext, plan.where(), limit, offset, sortBy)
 actual suspend fun fileIndexCount(plan: com.ismartcoding.plain.rust.host.provider.ProviderPlan): Int = com.ismartcoding.plain.lib.withIO {
     plan.wheres().sumOf { com.ismartcoding.plain.platform.media.provider.FileMediaStoreHelper.countAsync(com.ismartcoding.plain.appContext, it) }
 }

@@ -11,7 +11,7 @@ import com.ismartcoding.plain.features.chat.models.toJSONString
 import com.ismartcoding.plain.db.*
 import com.ismartcoding.plain.features.chat.ChatStatus
 import com.ismartcoding.plain.features.chat.ChatMessageEditor
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.features.files.stored.AppFileStore
 import kotlinx.serialization.json.jsonArray
 import java.util.UUID

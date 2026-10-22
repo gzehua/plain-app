@@ -1,12 +1,6 @@
 package com.ismartcoding.plain.ui.components
 
 import com.ismartcoding.plain.ui.base.*
-import com.ismartcoding.plain.ui.apps.components.*
-import com.ismartcoding.plain.ui.audio.components.*
-import com.ismartcoding.plain.ui.notes.components.*
-import com.ismartcoding.plain.ui.web.components.*
-import com.ismartcoding.plain.ui.components.*
-import com.ismartcoding.plain.ui.media.*
 import androidx.navigation.NavHostController
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -17,9 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.platform.IODispatcher
-import com.ismartcoding.plain.ui.components.ListSearchBar
 import com.ismartcoding.plain.ui.state.ISearchableViewModel
 import kotlinx.coroutines.launch
 

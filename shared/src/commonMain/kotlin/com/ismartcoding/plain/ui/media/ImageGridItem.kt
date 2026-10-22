@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.media
 
 import androidx.compose.runtime.getValue
 
-import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
+import com.ismartcoding.plain.models.Image as MediaImage
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource

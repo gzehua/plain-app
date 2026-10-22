@@ -9,8 +9,9 @@ import com.ismartcoding.plain.rust.event.HostEventPacket
 import com.ismartcoding.plain.rust.event.RustEvent
 import com.ismartcoding.plain.rust.event.RustEventProjection
 import com.ismartcoding.plain.rust.host.RustHostApi
-import com.ismartcoding.plain.rust.request.ContentApiSession
+import com.ismartcoding.plain.rust.request.ApiSession
 import com.ismartcoding.plain.rust.request.GraphqlRequest
+import com.ismartcoding.plain.features.settings.AppUpdateDownload
 import com.ismartcoding.plain.app.events.*
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -34,18 +35,18 @@ object PlainRust {
     private var started = false
     private val capabilities = MutableStateFlow<HostEventCapabilities?>(null)
 
-    suspend fun mainQuery(selection: String, session: ContentApiSession? = null): JsonObject =
+    suspend fun mainQuery(selection: String, session: ApiSession? = null): JsonObject =
         data("query { $selection }", session)
 
-    suspend fun mainMutate(selection: String, session: ContentApiSession? = null, longRunning: Boolean = false): JsonObject =
+    suspend fun mainMutate(selection: String, session: ApiSession? = null, longRunning: Boolean = false): JsonObject =
         data("mutation { $selection }", session, longRunning = longRunning)
 
-    suspend fun mainGraphql(document: String, variables: Map<String, JsonElement> = emptyMap(), session: ContentApiSession? = null, longRunning: Boolean = false): JsonObject =
+    suspend fun mainGraphql(document: String, variables: Map<String, JsonElement> = emptyMap(), session: ApiSession? = null, longRunning: Boolean = false): JsonObject =
         data(document, session, variables = variables, longRunning = longRunning)
 
     private suspend fun data(
         document: String,
-        session: ContentApiSession?,
+        session: ApiSession?,
         variables: Map<String, JsonElement> = emptyMap(),
         operationName: String? = null,
         longRunning: Boolean = false,
@@ -64,7 +65,7 @@ object PlainRust {
         document: String,
         variables: Map<String, JsonElement>,
         operationName: String?,
-        session: ContentApiSession,
+        session: ApiSession,
         longRunning: Boolean,
     ): JsonObject {
         val body = JsonHelper.jsonEncode(GraphqlRequest(document, variables, operationName))
@@ -130,7 +131,32 @@ object PlainRust {
         require(error.isEmpty()) { error }
         return com.ismartcoding.plain.features.sessions.onlineClientIds.value.size
     }
+
+    internal suspend inline fun <reified T : Any> call(crossinline request: () -> String): T = withContext(RustDispatchers.requests) {
+        val reply = JsonHelper.jsonDecode<NativeManagementReply<T>>(request())
+        reply.error?.let { error(it) }
+        requireNotNull(reply.value) { "Native management response missing value" }
+    }
+
+    internal suspend fun regenerateTlsCertificate(): List<Int> = call { RustCoreBridge.regenerateTlsCertificate() }
+    internal suspend fun importTlsCertificatePem(certificatePem: String, privateKeyPem: String): List<Int> = call { RustCoreBridge.importTlsCertificatePem(certificatePem, privateKeyPem) }
+    internal suspend fun importTlsCertificatePkcs12(data: ByteArray, password: String): List<Int> = call { RustCoreBridge.importTlsCertificatePkcs12(data, password) }
+    internal suspend fun createSession(name: String): com.ismartcoding.plain.features.sessions.CreatedSession = call { RustCoreBridge.createSession(name) }
+    internal suspend fun confirmWebLogin(requestId: String, allowed: Boolean): Boolean = call { RustCoreBridge.confirmWebLogin(requestId, allowed) }
+    internal suspend fun stageAppRestore(path: String): Boolean = call { RustCoreBridge.stageAppRestore(path) }
+    internal suspend fun exportAppBackup(): String = call { RustCoreBridge.exportAppBackup() }
+    internal suspend fun createCrashReport(report: String): String = call { RustCoreBridge.createCrashReport(report) }
+    internal suspend fun systemSettings(): com.ismartcoding.plain.preferences.SystemSettings = call { RustCoreBridge.systemSettings() }
+    internal suspend fun userSettings(): JsonObject = call { RustCoreBridge.userSettings() }
+    internal suspend fun toggleNotificationApp(packageName: String): Boolean = call { RustCoreBridge.toggleNotificationApp(packageName) }
+    internal suspend fun verifyAdbToken(token: String): Boolean = call { RustCoreBridge.verifyAdbToken(token) }
+    internal suspend fun startAppUpdateDownload(): AppUpdateDownload = call { RustCoreBridge.startAppUpdateDownload() }
+    internal suspend fun cancelAppUpdateDownload(): AppUpdateDownload = call { RustCoreBridge.cancelAppUpdateDownload() }
+    internal suspend fun checkAppUpdate(automatic: Boolean): String = call { RustCoreBridge.checkAppUpdate(automatic) }
 }
+
+@Serializable
+internal data class NativeManagementReply<T>(val value: T? = null, val error: String? = null)
 
 @Serializable
 private data class GraphqlEnvelope(val data: JsonObject? = null, val errors: List<GraphqlError>? = null)

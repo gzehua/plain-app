@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.media.extensions
 
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

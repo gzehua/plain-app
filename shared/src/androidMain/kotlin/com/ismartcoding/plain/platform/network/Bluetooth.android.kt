@@ -16,7 +16,7 @@ import com.ismartcoding.plain.platform.network.ble.client.BleScanner
 import com.ismartcoding.plain.platform.network.ble.server.AndroidBleGattServer
 import com.ismartcoding.plain.platform.network.ble.server.BleGattServer
 import com.ismartcoding.plain.app.events.PermissionsResultEvent
-import com.ismartcoding.plain.features.bluetooth.client.BluetoothPermissionResultEvent
+import com.ismartcoding.plain.features.bluetooth.BluetoothPermissionResultEvent
 import com.ismartcoding.plain.features.bluetooth.client.BluetoothUtil
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.coIO

@@ -2,9 +2,9 @@ package com.ismartcoding.plain.ui.chat
 
 import com.ismartcoding.plain.features.chat.models.MessageStatusData
 import com.ismartcoding.plain.features.chat.models.MessageType
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.features.chat.ChatStatus
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatItem
 import kotlin.time.Instant
 
 data class VChat(

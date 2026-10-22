@@ -41,7 +41,7 @@ expect fun currentDateTimeString(): String
 /**
  * Absolute path to the latest log file (e.g. `<logFolder>/latest.log`).
  */
-fun getLatestLogFilePath(): String = com.ismartcoding.plain.rust.request.RustContentApi.logFilePath
+fun getLatestLogFilePath(): String = com.ismartcoding.plain.rust.request.RustRuntime.logFile
 
 /**
  * Initialize disk logging and HTTP request logging.

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.components
 
-import com.ismartcoding.plain.api.graphql.models.MediaBucket
+import com.ismartcoding.plain.models.MediaBucket
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size

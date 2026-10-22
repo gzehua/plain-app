@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import coil3.compose.AsyncImage
 
-import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
+import com.ismartcoding.plain.models.Video as MediaVideo
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import com.ismartcoding.plain.ui.theme.PlainTheme

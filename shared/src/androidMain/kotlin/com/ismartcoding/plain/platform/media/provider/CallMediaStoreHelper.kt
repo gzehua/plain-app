@@ -12,7 +12,7 @@ import com.ismartcoding.plain.lib.extensions.getStringValue
 import com.ismartcoding.plain.lib.extensions.getTimeValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.api.graphql.models.Call as PhoneCall
+import com.ismartcoding.plain.models.Call as PhoneCall
 
 object CallMediaStoreHelper : BaseContentHelper() {
     override val uriExternal: Uri = CallLog.Calls.CONTENT_URI

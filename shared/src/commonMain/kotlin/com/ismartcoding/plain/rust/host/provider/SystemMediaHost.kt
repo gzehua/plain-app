@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.rust.host.provider
 
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
 import kotlinx.serialization.Serializable
@@ -40,8 +41,8 @@ internal object SystemMediaHost {
         else -> error("Unsupported provider operation")
     }
 
-    private fun mediaFacts(item: com.ismartcoding.plain.db.IData): JsonElement = when (item) {
-        is com.ismartcoding.plain.api.graphql.models.Audio -> JsonHelper.jsonEncodeToElement(AudioFacts(
+    private fun mediaFacts(item: IData): JsonElement = when (item) {
+        is com.ismartcoding.plain.models.Audio -> JsonHelper.jsonEncodeToElement(AudioFacts(
             id = item.id,
             title = item.title,
             artist = item.artist,
@@ -55,13 +56,13 @@ internal object SystemMediaHost {
             updatedAt = item.updatedAt.toString(),
             isFavorite = item.isFavorite,
         ))
-        is com.ismartcoding.plain.api.graphql.models.Image -> mediaFacts(
+        is com.ismartcoding.plain.models.Image -> mediaFacts(
             item.id, item.title, item.path, item.size, item.bucketId, item.createdAt, item.updatedAt,
             durationMs = 0L, takenAt = item.takenAt, isFavorite = item.isFavorite, width = item.width, height = item.height, rotation = item.rotation)
-        is com.ismartcoding.plain.api.graphql.models.Video -> mediaFacts(
+        is com.ismartcoding.plain.models.Video -> mediaFacts(
             item.id, item.title, item.path, item.size, item.bucketId, item.createdAt, item.updatedAt,
             durationMs = item.durationMs, takenAt = item.takenAt, isFavorite = item.isFavorite, width = item.width, height = item.height, rotation = item.rotation)
-        is com.ismartcoding.plain.api.graphql.models.Doc -> mediaFacts(
+        is com.ismartcoding.plain.models.Doc -> mediaFacts(
             item.id, item.title, item.path, item.size, item.bucketId, item.createdAt, item.updatedAt,
             durationMs = item.durationMs, takenAt = null, isFavorite = false)
         else -> error("Unsupported media row ${item::class.simpleName}")

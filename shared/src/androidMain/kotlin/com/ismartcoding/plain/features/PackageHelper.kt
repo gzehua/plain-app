@@ -1,10 +1,10 @@
 package com.ismartcoding.plain.features
 
-import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
+import com.ismartcoding.plain.models.Package as AppPackage
 import com.ismartcoding.plain.platform.system.PackageDetails
 import androidx.core.content.pm.PackageInfoCompat
 
-import com.ismartcoding.plain.api.graphql.models.Certificate
+import com.ismartcoding.plain.models.Certificate
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.files
 
-import com.ismartcoding.plain.api.graphql.models.FileTask
+import com.ismartcoding.plain.models.FileTask
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.serialization.json.*

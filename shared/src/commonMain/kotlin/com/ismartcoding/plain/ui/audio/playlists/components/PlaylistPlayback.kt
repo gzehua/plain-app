@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.ui.audio.playlists.components
 
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Audio as AudioTrack
 import com.ismartcoding.plain.features.audio.AudioQueueClient
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.media.audioJustPlayWithNotificationCheck

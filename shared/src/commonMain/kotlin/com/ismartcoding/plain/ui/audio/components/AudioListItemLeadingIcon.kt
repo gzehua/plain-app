@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.audio.components
 
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Audio as AudioTrack
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size

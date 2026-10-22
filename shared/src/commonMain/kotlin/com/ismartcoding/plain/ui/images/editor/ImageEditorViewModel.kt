@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.ismartcoding.plain.features.images.editor.ImageEditorProjectsClient
 import com.ismartcoding.plain.features.images.editor.ImageEditorProjectSummary
 import com.ismartcoding.plain.features.images.editor.toSummary
-import com.ismartcoding.plain.api.graphql.models.ImageEditorProject
+import com.ismartcoding.plain.models.ImageEditorProject
 import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

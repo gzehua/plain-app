@@ -4,7 +4,7 @@ import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.has
 
 import com.ismartcoding.plain.features.audio.getSubtitle
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Audio as AudioTrack
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -19,8 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.dlna.sender.RustDlnaSender
-import com.ismartcoding.plain.api.graphql.models.Audio
-import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.models.Audio
+import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.permissions.checkNotificationPermission
 import com.ismartcoding.plain.ui.base.HorizontalSpace

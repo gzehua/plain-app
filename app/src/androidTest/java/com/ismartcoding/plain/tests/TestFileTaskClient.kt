@@ -3,7 +3,7 @@ package com.ismartcoding.plain.tests
 import com.ismartcoding.plain.features.files.FileTaskType
 import com.ismartcoding.plain.features.files.FileTaskOp
 
-import com.ismartcoding.plain.api.graphql.models.FileTask
+import com.ismartcoding.plain.models.FileTask
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.serialization.json.*

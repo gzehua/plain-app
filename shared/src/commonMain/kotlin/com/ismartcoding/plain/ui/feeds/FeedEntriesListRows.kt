@@ -33,7 +33,7 @@ import coil3.compose.AsyncImage
 import com.ismartcoding.plain.ui.extensions.rememberFilePath
 import com.ismartcoding.plain.ui.extensions.timeAgo
 import com.ismartcoding.plain.features.feeds.displayImage
-import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace

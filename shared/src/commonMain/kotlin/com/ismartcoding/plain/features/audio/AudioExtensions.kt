@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.audio
 
-import com.ismartcoding.plain.api.graphql.models.Audio
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.Audio
+import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.extensions.formatDurationMs
 
 fun Audio.getSubtitle(): String =

@@ -1,9 +1,9 @@
 package com.ismartcoding.plain.api.graphql
 
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.features.telephony.SmsType
-import com.ismartcoding.plain.api.graphql.models.Package
-import com.ismartcoding.plain.api.graphql.models.Sms
+import com.ismartcoding.plain.models.Package
+import com.ismartcoding.plain.models.Sms
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlin.test.Test
 import kotlin.test.assertEquals

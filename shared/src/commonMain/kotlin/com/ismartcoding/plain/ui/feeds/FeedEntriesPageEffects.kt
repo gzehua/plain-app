@@ -6,7 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HFeedStatusEvent
 import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
-import com.ismartcoding.plain.api.graphql.models.Feed
+import com.ismartcoding.plain.models.Feed
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.ui.navigation.PBackHandler

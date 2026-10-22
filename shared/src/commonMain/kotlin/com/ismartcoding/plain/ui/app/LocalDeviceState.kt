@@ -3,8 +3,8 @@ package com.ismartcoding.plain.ui.app
 import kotlinx.serialization.Serializable
 
 import androidx.compose.runtime.mutableStateOf
-import com.ismartcoding.plain.api.graphql.models.NetworkStatus
-import com.ismartcoding.plain.api.graphql.models.Peer
+import com.ismartcoding.plain.models.NetworkStatus
+import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.DeviceType
 import com.ismartcoding.plain.rust.PlainRust

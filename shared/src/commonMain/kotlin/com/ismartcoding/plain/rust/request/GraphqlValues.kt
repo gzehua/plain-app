@@ -16,6 +16,3 @@ internal fun selectionQuery(ids: Collection<String>): String {
         }
     }
 }
-internal fun JsonObject.string(name: String): String = getValue(name).jsonPrimitive.content
-internal fun JsonObject.instant(name: String): Instant = Instant.parse(string(name))
-internal fun JsonObject.nullableInstant(name: String): Instant? = this[name]?.takeUnless { it is JsonNull }?.jsonPrimitive?.content?.let(Instant::parse)

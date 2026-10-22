@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.api.graphql.models
+package com.ismartcoding.plain.models
 
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlin.test.*

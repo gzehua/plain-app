@@ -1,13 +1,13 @@
 package com.ismartcoding.plain.ui.audio
 
 import com.ismartcoding.plain.features.audio.toPlaylistAudio
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Audio as AudioTrack
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.ismartcoding.plain.app.events.ClearAudioQueueEvent
 import com.ismartcoding.plain.features.audio.AudioQueueClient
-import com.ismartcoding.plain.api.graphql.models.Audio
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.Audio
+import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.media.audioJustPlay
 import com.ismartcoding.plain.preferences.*

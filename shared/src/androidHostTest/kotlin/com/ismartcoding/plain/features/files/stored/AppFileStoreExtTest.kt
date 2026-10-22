@@ -2,7 +2,7 @@ package com.ismartcoding.plain.features.files.stored
 
 import com.ismartcoding.plain.features.files.stored.AppFileStore
 
-import com.ismartcoding.plain.api.graphql.models.AppFile
+import com.ismartcoding.plain.models.AppFile
 import com.ismartcoding.plain.lib.TimeHelper
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -1,9 +1,9 @@
 package com.ismartcoding.plain.ui.pomodoro
 
 import kotlinx.serialization.Serializable
-import com.ismartcoding.plain.api.graphql.models.PomodoroToday
+import com.ismartcoding.plain.models.PomodoroToday
 
-import com.ismartcoding.plain.api.graphql.models.PomodoroState
+import com.ismartcoding.plain.models.PomodoroState
 
 import com.ismartcoding.plain.app.events.HPomodoroChangedEvent
 import com.ismartcoding.plain.features.pomodoro.PomodoroClient

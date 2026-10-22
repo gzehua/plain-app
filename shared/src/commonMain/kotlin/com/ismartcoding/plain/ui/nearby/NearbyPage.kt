@@ -6,7 +6,7 @@ import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
-import com.ismartcoding.plain.api.graphql.models.NearbyDevice
+import com.ismartcoding.plain.models.NearbyDevice
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,7 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.api.graphql.models.Peer
+import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.i18n.*
@@ -161,7 +161,7 @@ fun NearbyPage(
 internal fun LazyListScope.nearbyDeviceListItems(
     nearbyDevices: List<NearbyDevice>,
     peerVM: PeerViewModel,
-    pairedPeers: List<com.ismartcoding.plain.api.graphql.models.Peer>,
+    pairedPeers: List<com.ismartcoding.plain.models.Peer>,
 ) {
     val sortedDevices = nearbyDevices.sortedBy { it.name.toSortName() }
     items(sortedDevices, key = { it.id }) { item ->

@@ -2,7 +2,7 @@ package com.ismartcoding.plain.rust.host.provider
 
 import com.ismartcoding.plain.rust.host.*
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*

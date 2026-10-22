@@ -63,7 +63,7 @@ import com.ismartcoding.plain.i18n.image
 internal fun ViewImageActionButtons(
     imagesVM: ImagesViewModel,
     tagsVM: TagsViewModel,
-    m: com.ismartcoding.plain.api.graphql.models.Image,
+    m: com.ismartcoding.plain.models.Image,
     dragSelectState: DragSelectState,
     qrScanResult: String,
     onShowQrScanResult: () -> Unit,
@@ -166,7 +166,7 @@ internal fun ViewImageActionButtons(
 
 @Composable
 internal fun ViewImagePathCard(
-    m: com.ismartcoding.plain.api.graphql.models.Image,
+    m: com.ismartcoding.plain.models.Image,
 ) {
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PListItem(title = m.path, action = {

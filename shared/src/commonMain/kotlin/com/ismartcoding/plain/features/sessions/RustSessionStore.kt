@@ -1,8 +1,7 @@
 package com.ismartcoding.plain.features.sessions
 
-import com.ismartcoding.plain.rust.request.NativeManagementClient
-
 import com.ismartcoding.plain.rust.PlainRust
+
 import com.ismartcoding.plain.rust.request.gql
 import com.ismartcoding.plain.ui.sessions.VSession
 import com.ismartcoding.plain.features.sessions.SessionType
@@ -19,7 +18,7 @@ object RustSessionStore {
             it.browserName, it.browserVersion, Instant.parse(it.createdAt), Instant.parse(it.updatedAt),
             it.lastSeenAt?.let(Instant::parse))
     }
-    suspend fun create(name: String): CreatedSession = NativeManagementClient.createSession(name)
+    suspend fun create(name: String): CreatedSession = PlainRust.createSession(name)
     suspend fun rename(clientId: String, name: String): Boolean =
         PlainRust.mainMutate("renameSession(clientId: ${gql(clientId)}, name: ${gql(name)})").getValue("renameSession").jsonPrimitive.boolean
     suspend fun delete(clientId: String) { PlainRust.mainMutate("revokeSession(clientId: ${gql(clientId)})") }

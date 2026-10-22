@@ -1,7 +1,7 @@
-package com.ismartcoding.plain.api.graphql.models
+package com.ismartcoding.plain.models
 
 import androidx.compose.ui.unit.IntSize
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.ui.extensions.getRotatedSize
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlin.test.Test

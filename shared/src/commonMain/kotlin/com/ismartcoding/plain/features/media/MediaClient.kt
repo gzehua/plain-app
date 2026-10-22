@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.features.media
 
-import com.ismartcoding.plain.api.graphql.models.AudioItem
-import com.ismartcoding.plain.api.graphql.models.ImageFileInfo
-import com.ismartcoding.plain.api.graphql.models.VideoFileInfo
+import com.ismartcoding.plain.models.AudioItem
+import com.ismartcoding.plain.models.ImageFileInfo
+import com.ismartcoding.plain.models.VideoFileInfo
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql

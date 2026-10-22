@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.platform.network.ble
 
-import com.ismartcoding.plain.rust.request.RustContentApi
-import com.ismartcoding.plain.rust.request.ContentApiSession
+import com.ismartcoding.plain.rust.request.RustRuntime
+import com.ismartcoding.plain.rust.request.ApiSession
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.app.*
 import com.ismartcoding.plain.ui.app.*
@@ -62,6 +62,6 @@ internal object BleDataChannel {
         }
         checkNotNull(response)
     }
-    private suspend fun session(): ContentApiSession { return RustContentApi.transportSession() }
+    private suspend fun session(): ApiSession { return RustRuntime.transportSession() }
     @Serializable private data class ConnectionFacts(val remoteHost: String, val characteristicUuid: String)
 }

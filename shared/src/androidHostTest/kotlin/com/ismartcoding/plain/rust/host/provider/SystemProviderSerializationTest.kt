@@ -3,7 +3,7 @@ package com.ismartcoding.plain.rust.host.provider
 import com.ismartcoding.plain.features.telephony.sms.SmsConversationFacts
 import com.ismartcoding.plain.features.telephony.sms.SmsCountFacts
 import com.ismartcoding.plain.features.telephony.sms.SmsRowsFacts
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.JsonHelper
 import java.io.File
 import kotlinx.serialization.SerializationException

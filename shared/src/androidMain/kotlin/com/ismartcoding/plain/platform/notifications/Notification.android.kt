@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.platform.notifications
 
 import com.ismartcoding.plain.features.packages.PackagesClient
-import com.ismartcoding.plain.api.graphql.models.Notification as AppNotification
+import com.ismartcoding.plain.models.Notification as AppNotification
 import android.app.RemoteInput
 import android.content.Intent
 import android.os.Bundle

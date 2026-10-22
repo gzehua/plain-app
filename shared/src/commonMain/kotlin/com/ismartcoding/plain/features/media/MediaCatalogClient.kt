@@ -3,17 +3,17 @@ package com.ismartcoding.plain.features.media
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
-import com.ismartcoding.plain.api.graphql.models.Doc as Document
-import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
-import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
+import com.ismartcoding.plain.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Doc as Document
+import com.ismartcoding.plain.models.Video as MediaVideo
+import com.ismartcoding.plain.models.Image as MediaImage
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
 import com.ismartcoding.plain.rust.request.selectionQuery
 import com.ismartcoding.plain.platform.media.getMediaItemUriString
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.files.FileSortBy
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import kotlinx.serialization.json.*
 
 object MediaCatalogClient {
@@ -71,7 +71,7 @@ object MediaCatalogClient {
     }
     suspend fun docExtGroups(query: String): List<Pair<String, Int>> =
         JsonHelper.jsonDecodeFromElement<List<DocExtensionGroup>>(PlainRust.mainQuery("docExtGroups(query: ${gql(query)}) { ext count }").getValue("docExtGroups")).map { it.ext to it.count }
-    suspend fun buckets(dataType: DataType): List<com.ismartcoding.plain.api.graphql.models.MediaBucket> =
+    suspend fun buckets(dataType: DataType): List<com.ismartcoding.plain.models.MediaBucket> =
         com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(PlainRust.mainQuery("mediaBuckets(type: ${dataType.name}) { id name itemCount size topItemPaths }").getValue("mediaBuckets"))
 
 }

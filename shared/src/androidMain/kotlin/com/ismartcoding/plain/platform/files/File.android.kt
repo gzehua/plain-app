@@ -1,11 +1,8 @@
 package com.ismartcoding.plain.platform.files
 
-import com.ismartcoding.plain.rust.http.copyTo
-
 import com.ismartcoding.plain.features.files.FilesClient
-import com.ismartcoding.plain.features.files.extension
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import android.graphics.Bitmap
 import com.ismartcoding.plain.appContext
@@ -14,14 +11,13 @@ import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.isHeifHeader
 import com.ismartcoding.plain.lib.extensions.queryOpenableFile
 import com.ismartcoding.plain.lib.extensions.queryOpenableFileName
-import com.ismartcoding.plain.platform.files.StreamSink
 import android.net.Uri
 import androidx.core.net.toUri
 import com.ismartcoding.plain.features.PackageHelper
 import com.ismartcoding.plain.platform.media.provider.FileMediaStoreHelper
 import com.ismartcoding.plain.lib.extensions.compress
 import com.ismartcoding.plain.ui.media.thumbnail.DecodeLimiter
-import com.ismartcoding.plain.thumbnail.DecodePolicy
+import com.ismartcoding.plain.lib.DecodePolicy
 import java.io.ByteArrayOutputStream
 import java.io.File
 

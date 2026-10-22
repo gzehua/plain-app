@@ -9,7 +9,7 @@ import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.request.RustRuntime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.*
@@ -51,8 +51,8 @@ object BackgroundExecution {
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun run(deadlineMs: Long, id: String = Uuid.random().toString()): Boolean = coroutineScope {
-        if (RustContentApi.startedSession() == null) Prefs.load()
-        RustContentApi.start()
+        if (RustRuntime.startedSession() == null) Prefs.load()
+        RustRuntime.start()
         val finished = CompletableDeferred<Boolean>()
         val observer = launch(start = CoroutineStart.UNDISPATCHED) {
             val event = PlainRust.events.first { event ->
@@ -85,7 +85,7 @@ object BackgroundExecution {
     }
 
     fun executionStateChanged() {
-        if (RustContentApi.startedSession() == null) return
+        if (RustRuntime.startedSession() == null) return
         scope.launch {
             try { PlainRust.publish(HostEvent(EventType.EXECUTION_STATE_CHANGED, "{}")) }
             catch (error: Exception) { LogCat.e("Execution state report failed", error) }

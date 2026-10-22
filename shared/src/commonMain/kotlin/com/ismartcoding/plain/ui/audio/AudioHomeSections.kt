@@ -8,9 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.api.graphql.models.AudioArtist
-import com.ismartcoding.plain.api.graphql.models.AudioPlaylist
-import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.models.AudioArtist
+import com.ismartcoding.plain.models.AudioPlaylist
+import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.artists
 import com.ismartcoding.plain.i18n.playlists

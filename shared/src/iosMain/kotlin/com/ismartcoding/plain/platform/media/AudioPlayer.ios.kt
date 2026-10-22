@@ -4,7 +4,7 @@ package com.ismartcoding.plain.platform.media
 
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.audio.AudioQueueClient
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.AudioItem
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -9,13 +9,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ismartcoding.plain.features.feeds.FeedsClient
-import com.ismartcoding.plain.api.graphql.models.Feed
+import com.ismartcoding.plain.models.Feed
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.error
 import com.ismartcoding.plain.i18n.already_added
 import kotlinx.coroutines.CancellationException
 import com.ismartcoding.plain.i18n.invalid_url
-import com.ismartcoding.plain.api.graphql.models.FeedPreview
+import com.ismartcoding.plain.models.FeedPreview
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

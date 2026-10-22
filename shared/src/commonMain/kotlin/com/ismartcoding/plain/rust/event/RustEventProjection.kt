@@ -2,14 +2,11 @@ package com.ismartcoding.plain.rust.event
 
 import kotlinx.serialization.Serializable
 
-import com.ismartcoding.plain.rust.request.ContentApiSession
-
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HWebRequestReceivedEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.rust.host.*
-import com.ismartcoding.plain.rust.request.RustContentApi
 import com.ismartcoding.plain.ui.notes.NotesViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.*
@@ -50,7 +47,7 @@ internal object RustEventProjection {
             EventType.MEDIA_ACTION_FINISHED.name -> com.ismartcoding.plain.ui.media.actions.MediaActionProjection.apply(payload)
             EventType.HTTP_SERVER_STARTED.name -> {
                 val started = JsonHelper.jsonDecode<com.ismartcoding.plain.rust.http.HttpServerStarted>(payload)
-                com.ismartcoding.plain.rust.request.RustContentApi.httpStarted(started.generation, started.httpPort)
+                com.ismartcoding.plain.rust.request.RustRuntime.httpStarted(started.generation, started.httpPort)
                 com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
             }
             EventType.HTTP_SERVER_FAILED.name -> {

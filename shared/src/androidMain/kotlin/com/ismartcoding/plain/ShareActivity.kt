@@ -4,7 +4,7 @@ import com.ismartcoding.plain.app.AppIntents
 import com.ismartcoding.plain.app.Constants
 import com.ismartcoding.plain.app.IntentExtras
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.request.RustRuntime
 import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.serialization.json.JsonPrimitive
 
@@ -238,7 +238,7 @@ class ShareActivity : ComponentActivity() {
     }
 
     private fun shareOpenFile(name: String): File =
-        File(RustContentApi.sharedPreviewDirectory, name.replace('/', '_'))
+        File(RustRuntime.sharedPreviewDir, name.replace('/', '_'))
 
     private suspend fun copyToShareOpenCache(uri: Uri, name: String): File {
         val f = shareOpenFile(name.ifBlank { "file_${System.currentTimeMillis()}" })

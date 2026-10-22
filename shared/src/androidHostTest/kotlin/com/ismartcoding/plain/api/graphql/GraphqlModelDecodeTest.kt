@@ -2,7 +2,7 @@ package com.ismartcoding.plain.api.graphql
 
 import com.ismartcoding.plain.features.chat.models.*
 import com.ismartcoding.plain.features.chat.ChatStatus
-import com.ismartcoding.plain.api.graphql.models.*
+import com.ismartcoding.plain.models.*
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.SerializationException

@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.files
 
 import com.ismartcoding.plain.features.files.FilesClient
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.components.DialogHelper

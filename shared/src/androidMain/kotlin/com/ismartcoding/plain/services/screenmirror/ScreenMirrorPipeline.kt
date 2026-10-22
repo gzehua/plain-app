@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.services.screenmirror
 
-import com.ismartcoding.plain.api.graphql.models.ScreenMirrorQuality
+import com.ismartcoding.plain.models.ScreenMirrorQuality
 import android.content.Context
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
@@ -15,7 +15,7 @@ import com.ismartcoding.plain.platform.isUPlus
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.services.ScreenMirrorService
-import com.ismartcoding.plain.api.graphql.models.ScreenMirrorVideoCodec
+import com.ismartcoding.plain.models.ScreenMirrorVideoCodec
 import com.ismartcoding.plain.lib.screenmirror.ScreenMirrorCaptureSize
 import com.ismartcoding.plain.lib.screenmirror.VideoPacket
 import com.ismartcoding.plain.platform.isRPlus

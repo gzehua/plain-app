@@ -3,7 +3,7 @@ package com.ismartcoding.plain.platform.media
 import com.ismartcoding.plain.ui.permissions.checkNotificationPermission
 
 import com.ismartcoding.plain.features.audio.AudioCommands
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.audio_notification_prompt
 import kotlinx.coroutines.Dispatchers

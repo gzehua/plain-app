@@ -3,13 +3,11 @@ package com.ismartcoding.plain.ui.media.viewer
 import com.ismartcoding.plain.features.media.MediaClient
 
 import com.ismartcoding.plain.ui.extensions.getRotatedSize
-import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
-import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
+import com.ismartcoding.plain.models.Video as MediaVideo
+import com.ismartcoding.plain.models.Image as MediaImage
 import androidx.compose.ui.unit.IntSize
 import com.ismartcoding.plain.features.chat.models.MessageFile
-import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.api.graphql.models.Image
-import com.ismartcoding.plain.api.graphql.models.Video
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.lib.extensions.getMimeType
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isVideoFast

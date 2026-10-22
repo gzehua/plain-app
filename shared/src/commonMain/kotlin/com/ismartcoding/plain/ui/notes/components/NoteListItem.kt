@@ -22,8 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.extensions.timeAgo
-import com.ismartcoding.plain.api.graphql.models.Note
-import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.models.Note
+import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.notes.NotesViewModel

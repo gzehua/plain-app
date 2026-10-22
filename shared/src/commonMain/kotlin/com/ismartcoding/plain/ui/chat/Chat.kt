@@ -7,7 +7,7 @@ import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.features.files.PickFileType
 import com.ismartcoding.plain.app.events.PickFileResultEvent
 import com.ismartcoding.plain.features.chat.ChatMessageEditor
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.ui.chat.PeerViewModel
 

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.chat.download
 
-import com.ismartcoding.plain.api.graphql.models.Peer
+import com.ismartcoding.plain.models.Peer
 import kotlinx.coroutines.Job
 
 import com.ismartcoding.plain.features.chat.models.MessageFile

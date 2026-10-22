@@ -23,8 +23,8 @@ import androidx.navigation.NavHostController
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher
-import com.ismartcoding.plain.api.graphql.models.ChatChannel
-import com.ismartcoding.plain.api.graphql.models.Peer
+import com.ismartcoding.plain.models.ChatChannel
+import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.features.chat.models.getBestIp
 import com.ismartcoding.plain.features.chat.models.getName
 import com.ismartcoding.plain.ui.chat.peer.PeerCacher

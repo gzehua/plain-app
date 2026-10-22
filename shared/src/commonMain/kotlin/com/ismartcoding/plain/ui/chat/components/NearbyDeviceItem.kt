@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.chat.components
 
 import androidx.compose.material3.CircularProgressIndicator
 
-import com.ismartcoding.plain.api.graphql.models.NearbyDevice
+import com.ismartcoding.plain.models.NearbyDevice
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme

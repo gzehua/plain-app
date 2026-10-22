@@ -1,27 +1,27 @@
 package com.ismartcoding.plain.ui.search
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
-import com.ismartcoding.plain.api.graphql.models.Doc as Document
-import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
-import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
+import com.ismartcoding.plain.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Doc as Document
+import com.ismartcoding.plain.models.Video as MediaVideo
+import com.ismartcoding.plain.models.Image as MediaImage
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.api.graphql.models.Audio
-import com.ismartcoding.plain.api.graphql.models.Doc
-import com.ismartcoding.plain.api.graphql.models.FeedEntry
-import com.ismartcoding.plain.api.graphql.models.File
-import com.ismartcoding.plain.api.graphql.models.Image
-import com.ismartcoding.plain.api.graphql.models.Note
-import com.ismartcoding.plain.api.graphql.models.Video
+import com.ismartcoding.plain.models.Audio
+import com.ismartcoding.plain.models.Doc
+import com.ismartcoding.plain.models.FeedEntry
+import com.ismartcoding.plain.models.File
+import com.ismartcoding.plain.models.Image
+import com.ismartcoding.plain.models.Note
+import com.ismartcoding.plain.models.Video
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.folder
 import com.ismartcoding.plain.i18n.image
 import com.ismartcoding.plain.i18n.video
-import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
+import com.ismartcoding.plain.models.Package as AppPackage
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.file_text as ui_drawable_file_text
 import com.ismartcoding.plain.ui.resources.folder as ui_drawable_folder
@@ -63,7 +63,7 @@ sealed interface GlobalSearchAction {
 
 /** Source model for domains whose rows render with the source page's own list item component. */
 sealed interface GlobalSearchSource {
-    data class Note(val note: com.ismartcoding.plain.api.graphql.models.Note) : GlobalSearchSource
+    data class Note(val note: com.ismartcoding.plain.models.Note) : GlobalSearchSource
     data class Audio(val audio: AudioTrack) : GlobalSearchSource
     data class Image(val image: MediaImage) : GlobalSearchSource
     data class Video(val video: MediaVideo) : GlobalSearchSource

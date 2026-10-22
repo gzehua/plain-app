@@ -2,8 +2,8 @@ package com.ismartcoding.plain.features.chat
 
 import com.ismartcoding.plain.features.chat.ChatCacher
 import com.ismartcoding.plain.features.chat.RustChatStore
-import com.ismartcoding.plain.api.graphql.models.ChatItem
-import com.ismartcoding.plain.api.graphql.models.ChatTextEdit
+import com.ismartcoding.plain.models.ChatItem
+import com.ismartcoding.plain.models.ChatTextEdit
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql

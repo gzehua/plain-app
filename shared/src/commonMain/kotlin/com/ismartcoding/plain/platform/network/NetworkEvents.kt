@@ -5,12 +5,12 @@ import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.request.RustRuntime
 import kotlinx.coroutines.CancellationException
 
 object NetworkEvents {
     fun changed() {
-        if (RustContentApi.startedSession() == null) return
+        if (RustRuntime.startedSession() == null) return
         coIO {
             try { PlainRust.publish(HostEvent(EventType.NETWORK_INTERFACES_CHANGED, "null")) }
             catch (cancelled: CancellationException) { throw cancelled }

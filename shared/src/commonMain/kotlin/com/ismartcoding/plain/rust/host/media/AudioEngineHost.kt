@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.rust.host.media
 
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.platform.media.AudioPlayer

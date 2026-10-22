@@ -2,7 +2,7 @@ package com.ismartcoding.plain.platform.media
 
 import com.ismartcoding.plain.features.screenmirror.ScreenMirrorControlInput
 import com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode
-import com.ismartcoding.plain.api.graphql.models.ScreenMirrorVideoCodec
+import com.ismartcoding.plain.models.ScreenMirrorVideoCodec
 
 actual fun isScreenMirrorRunning(): Boolean = false
 

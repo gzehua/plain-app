@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.platform.media.provider
 
 
-import com.ismartcoding.plain.api.graphql.models.Doc as Document
+import com.ismartcoding.plain.models.Doc as Document
 import com.ismartcoding.plain.helpers.ContentWhere
 import android.content.Context
 import android.net.Uri

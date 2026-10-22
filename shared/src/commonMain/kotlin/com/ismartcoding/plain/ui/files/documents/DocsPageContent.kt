@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.files.documents
 
-import com.ismartcoding.plain.api.graphql.models.Doc as Document
+import com.ismartcoding.plain.models.Doc as Document
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -19,8 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.api.graphql.models.Doc
-import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.models.Doc
+import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.NoDataColumn
 import com.ismartcoding.plain.ui.base.TopSpace

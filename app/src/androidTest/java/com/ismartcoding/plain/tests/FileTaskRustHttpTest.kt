@@ -27,7 +27,7 @@ import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class FileTaskRustHttpTest {
-    private suspend fun awaitTask(id: String): com.ismartcoding.plain.api.graphql.models.FileTask {
+    private suspend fun awaitTask(id: String): com.ismartcoding.plain.models.FileTask {
         while (true) {
             val task = checkNotNull(TestFileTaskClient.list(0, Int.MAX_VALUE, "").find { it.id == id })
             if (task.status == FileTaskStatus.DONE || task.status == FileTaskStatus.ERROR) return task
@@ -80,13 +80,13 @@ class FileTaskRustHttpTest {
             try { TestFileTaskClient.create(FileTaskType.COPY,listOf(FileTaskOp("/system/test",File(root,"forbidden").path))) }
             catch (_: Exception) { rejected = true }
             assertTrue(rejected)
-            val spoofedCaller = runCatching { RustContentApi.query("fileTasks(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, query: \"\", offset: 0, limit: 1) { id }") }
+            val spoofedCaller = runCatching { RustApi.query("fileTasks(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, query: \"\", offset: 0, limit: 1) { id }") }
             assertTrue(spoofedCaller.isFailure)
             RustSystemState.setApiPermissions(originalPermissions + "WRITE_EXTERNAL_STORAGE")
-            assertEquals(true, RustContentApi.mutate("""copyFile(src: "${source.path}", dst: "${File(root,"public-copy.txt").path}", overwrite: false)""").getValue("copyFile").jsonPrimitive.boolean)
+            assertEquals(true, RustApi.mutate("""copyFile(src: "${source.path}", dst: "${File(root,"public-copy.txt").path}", overwrite: false)""").getValue("copyFile").jsonPrimitive.boolean)
             assertEquals("synthetic",File(root,"public-copy.txt").readText())
             var publicFailed = false
-            try { RustContentApi.mutate("""copyFile(src: "/system/test", dst: "${File(root,"public-never").path}", overwrite: false)""") }
+            try { RustApi.mutate("""copyFile(src: "/system/test", dst: "${File(root,"public-never").path}", overwrite: false)""") }
             catch (_: Exception) { publicFailed = true }
             assertTrue(publicFailed)
         } finally {

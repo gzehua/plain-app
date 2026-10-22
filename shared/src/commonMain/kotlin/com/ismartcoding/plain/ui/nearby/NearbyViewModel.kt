@@ -6,7 +6,7 @@ import com.ismartcoding.plain.ui.state.launchSafe
 
 import com.ismartcoding.plain.platform.network.ble.PairingTransport
 
-import com.ismartcoding.plain.api.graphql.models.NearbyDevice
+import com.ismartcoding.plain.models.NearbyDevice
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.features.chat.peer.PeerManager

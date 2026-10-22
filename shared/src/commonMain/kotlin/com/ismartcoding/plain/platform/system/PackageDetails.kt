@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.api.graphql.models.Package
+import com.ismartcoding.plain.models.Package
 
 data class PackageDetails(
     val item: Package,

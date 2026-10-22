@@ -33,7 +33,7 @@ import com.ismartcoding.plain.features.audio.*
 import com.ismartcoding.plain.ui.audio.*
 import com.ismartcoding.plain.features.media.actions.*
 import com.ismartcoding.plain.ui.media.actions.*
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.platform.media.deleteMedia
 import com.ismartcoding.plain.platform.media.restoreMedia
 import com.ismartcoding.plain.platform.media.trashMedia

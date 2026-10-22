@@ -3,7 +3,7 @@ package com.ismartcoding.plain.ui.nearby
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
-import com.ismartcoding.plain.api.graphql.models.PairingRequestInput
+import com.ismartcoding.plain.models.PairingRequestInput
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.background

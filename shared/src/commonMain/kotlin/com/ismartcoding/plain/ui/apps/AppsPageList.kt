@@ -29,7 +29,7 @@ import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshLayoutState
 import com.ismartcoding.plain.ui.apps.components.PackageListItem
 import com.ismartcoding.plain.ui.apps.AppsViewModel
-import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
+import com.ismartcoding.plain.models.Package as AppPackage
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import com.ismartcoding.plain.platform.system.getApplicationIcon

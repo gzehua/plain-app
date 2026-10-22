@@ -7,7 +7,7 @@ import com.ismartcoding.plain.platform.system.ShizukuHelper
 import android.provider.Telephony
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.audio.AudioMediaStoreHelper
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.platform.media.provider.DocMediaStoreHelper
 import com.ismartcoding.plain.rust.host.provider.ProviderPlan
 import com.ismartcoding.plain.platform.system.DataType

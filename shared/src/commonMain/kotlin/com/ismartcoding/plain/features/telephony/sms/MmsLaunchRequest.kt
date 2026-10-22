@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.telephony.sms
 
-import com.ismartcoding.plain.api.graphql.models.SmsAttachment
+import com.ismartcoding.plain.models.SmsAttachment
 
 import kotlinx.serialization.Serializable
 

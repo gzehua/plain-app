@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
+import com.ismartcoding.plain.models.Package as AppPackage
 
 import kotlin.time.Instant
 

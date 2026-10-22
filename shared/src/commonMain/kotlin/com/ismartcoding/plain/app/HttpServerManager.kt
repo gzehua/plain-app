@@ -1,13 +1,10 @@
 package com.ismartcoding.plain.app
 
-import com.ismartcoding.plain.app.startHttpServerAsync
-
 import com.ismartcoding.plain.preferences.*
 
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.settings.HttpServerState
 import com.ismartcoding.plain.app.events.StartHttpServerEvent
-import com.ismartcoding.plain.util.UrlHelper
+import com.ismartcoding.plain.lib.UrlHelper
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -16,7 +13,6 @@ import com.ismartcoding.plain.platform.notifications.generateNotificationId
 import com.ismartcoding.plain.platform.system.Capability
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.permissions.isGranted
-import com.ismartcoding.plain.app.stopHttpServiceAsync
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /** Platform service intent, UI lifecycle state . */

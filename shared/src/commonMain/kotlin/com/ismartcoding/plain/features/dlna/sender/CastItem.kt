@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.dlna.sender
 
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
-import com.ismartcoding.plain.db.IMedia
+import com.ismartcoding.plain.models.Audio as AudioTrack
+import com.ismartcoding.plain.IMedia
 import kotlinx.serialization.Serializable
 
 @Serializable

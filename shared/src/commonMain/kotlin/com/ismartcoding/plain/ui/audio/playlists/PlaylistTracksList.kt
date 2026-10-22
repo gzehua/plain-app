@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.audio.playlists
 
-import com.ismartcoding.plain.api.graphql.models.AudioAlbumCover
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.AudioAlbumCover
+import com.ismartcoding.plain.models.Audio as AudioTrack
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable

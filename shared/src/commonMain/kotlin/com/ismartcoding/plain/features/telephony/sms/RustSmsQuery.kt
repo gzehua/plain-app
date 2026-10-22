@@ -3,7 +3,7 @@ package com.ismartcoding.plain.features.telephony.sms
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.api.graphql.models.Sms
+import com.ismartcoding.plain.models.Sms
 import kotlinx.serialization.json.*
 
 object RustSmsQuery {

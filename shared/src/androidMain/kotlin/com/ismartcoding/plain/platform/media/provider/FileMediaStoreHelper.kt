@@ -2,7 +2,7 @@ package com.ismartcoding.plain.platform.media.provider
 
 import com.ismartcoding.plain.features.files.extension
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import android.content.Context
 import android.net.Uri

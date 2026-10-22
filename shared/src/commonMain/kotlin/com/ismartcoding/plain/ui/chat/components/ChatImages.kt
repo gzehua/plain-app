@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.features.chat.download.DownloadQueue
 import com.ismartcoding.plain.features.chat.models.MessageImages
-import com.ismartcoding.plain.api.graphql.models.Peer
+import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.chat.VChat
 

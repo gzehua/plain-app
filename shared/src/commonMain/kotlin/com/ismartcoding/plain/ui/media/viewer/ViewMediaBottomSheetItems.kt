@@ -3,8 +3,8 @@ package com.ismartcoding.plain.ui.media.viewer
 import androidx.compose.foundation.layout.Column
 import com.ismartcoding.plain.features.chat.models.MessageFile
 
-import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
-import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
+import com.ismartcoding.plain.models.Video as MediaVideo
+import com.ismartcoding.plain.models.Image as MediaImage
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.api.graphql.models.Image
-import com.ismartcoding.plain.api.graphql.models.Video
+import com.ismartcoding.plain.models.Image
+import com.ismartcoding.plain.models.Video
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.cast
 import com.ismartcoding.plain.platform.system.shareFile

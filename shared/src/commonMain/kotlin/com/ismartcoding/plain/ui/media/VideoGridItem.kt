@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.media
 
 import androidx.compose.runtime.getValue
 
-import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
+import com.ismartcoding.plain.models.Video as MediaVideo
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource

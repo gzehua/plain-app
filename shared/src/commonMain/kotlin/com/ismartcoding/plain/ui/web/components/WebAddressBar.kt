@@ -27,7 +27,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.app.TempData
-import com.ismartcoding.plain.util.UrlHelper
+import com.ismartcoding.plain.lib.UrlHelper
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.collapse_backup_addresses
 import com.ismartcoding.plain.i18n.collapsed

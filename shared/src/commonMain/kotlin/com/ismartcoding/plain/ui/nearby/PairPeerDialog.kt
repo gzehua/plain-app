@@ -9,7 +9,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import com.ismartcoding.plain.ui.base.PTextButton
 import androidx.compose.runtime.*
-import com.ismartcoding.plain.api.graphql.models.NearbyDevice
+import com.ismartcoding.plain.models.NearbyDevice
 import com.ismartcoding.plain.features.nearby.RustPairingRuntime
 import com.ismartcoding.plain.i18n.*
 import kotlinx.coroutines.CancellationException

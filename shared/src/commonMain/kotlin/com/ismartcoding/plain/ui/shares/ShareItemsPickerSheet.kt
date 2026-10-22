@@ -6,7 +6,7 @@ import com.ismartcoding.plain.features.files.FilesClient
 
 import com.ismartcoding.plain.features.files.extension
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

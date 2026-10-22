@@ -29,7 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.ismartcoding.plain.features.dlna.sender.CastItem
-import com.ismartcoding.plain.db.IMedia
+import com.ismartcoding.plain.IMedia
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.ui.resources.file as ui_drawable_file
@@ -47,7 +47,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.text.ifEmpty
 import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.i18n.file
 
 @Composable
 fun CastSessionPlaylistItem(

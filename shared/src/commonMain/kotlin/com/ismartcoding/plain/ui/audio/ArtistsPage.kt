@@ -27,7 +27,7 @@ import com.ismartcoding.plain.ui.base.AlphabetIndexBar
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.api.graphql.models.AudioArtist
+import com.ismartcoding.plain.models.AudioArtist
 import com.ismartcoding.plain.ui.audio.AudioHomeViewModel
 import com.ismartcoding.plain.ui.audio.AudioViewModel
 import com.ismartcoding.plain.ui.navigation.Routing

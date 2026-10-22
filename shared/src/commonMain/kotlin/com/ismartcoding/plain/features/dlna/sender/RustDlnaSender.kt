@@ -2,7 +2,7 @@ package com.ismartcoding.plain.features.dlna.sender
 
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
-import com.ismartcoding.plain.db.IMedia
+import com.ismartcoding.plain.IMedia
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.platform.system.PlatformLock

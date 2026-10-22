@@ -5,7 +5,7 @@ import com.ismartcoding.plain.ui.tags.TagsViewModel
 import com.ismartcoding.plain.ui.media.BaseMediaViewModel
 import com.ismartcoding.plain.ui.state.VTabData
 
-import com.ismartcoding.plain.api.graphql.models.Doc as Document
+import com.ismartcoding.plain.models.Doc as Document
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import androidx.compose.foundation.lazy.LazyListState

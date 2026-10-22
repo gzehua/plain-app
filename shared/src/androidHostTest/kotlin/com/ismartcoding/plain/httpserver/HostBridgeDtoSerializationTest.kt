@@ -1,9 +1,9 @@
 package com.ismartcoding.plain.httpserver
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import com.ismartcoding.plain.lib.JsonHelper.jsonEncode
-import com.ismartcoding.plain.api.graphql.models.Package as AppPackage
+import com.ismartcoding.plain.models.Package as AppPackage
 import com.ismartcoding.plain.platform.system.PackageType
 import kotlin.test.Test
 import kotlin.test.assertTrue

@@ -1,11 +1,11 @@
 package com.ismartcoding.plain.ui.chat
 
-import com.ismartcoding.plain.api.graphql.models.ChatChannel
-import com.ismartcoding.plain.api.graphql.models.Peer
+import com.ismartcoding.plain.models.ChatChannel
+import com.ismartcoding.plain.models.Peer
 
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.ui.chat.peer.PeerCacher
-import com.ismartcoding.plain.api.graphql.models.ChatChannelMember
+import com.ismartcoding.plain.models.ChatChannelMember
 
 fun ChatChannelMember.isMe(): Boolean = peerId == TempData.clientId
 

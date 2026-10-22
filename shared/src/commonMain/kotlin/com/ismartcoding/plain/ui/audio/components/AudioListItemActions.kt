@@ -3,7 +3,7 @@ package com.ismartcoding.plain.ui.audio.components
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Audio as AudioTrack
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -14,7 +14,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.material3.MaterialTheme
-import com.ismartcoding.plain.db.IMedia
+import com.ismartcoding.plain.IMedia
 import com.ismartcoding.plain.ui.components.PIconButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

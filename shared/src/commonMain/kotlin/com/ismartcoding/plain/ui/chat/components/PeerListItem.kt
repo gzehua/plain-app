@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.features.chat.models.getMessagePreview
 import com.ismartcoding.plain.ui.extensions.timeAgo
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.theme.listItemSubtitle

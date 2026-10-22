@@ -12,7 +12,7 @@ import androidx.compose.runtime.setValue
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.features.media.MediaCatalogClient

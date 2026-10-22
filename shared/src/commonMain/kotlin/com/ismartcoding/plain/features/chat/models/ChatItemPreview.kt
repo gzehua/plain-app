@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.chat.models
 
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.file
 import com.ismartcoding.plain.i18n.files

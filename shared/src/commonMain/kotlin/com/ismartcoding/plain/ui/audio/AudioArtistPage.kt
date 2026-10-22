@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
 import com.ismartcoding.plain.features.audio.toPlaylistAudio
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Audio as AudioTrack
 import com.ismartcoding.plain.preferences.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

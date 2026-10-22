@@ -2,8 +2,8 @@ package com.ismartcoding.plain.features.feeds
 
 import kotlinx.serialization.json.*
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.api.graphql.models.Feed
-import com.ismartcoding.plain.api.graphql.models.FeedEntry
+import com.ismartcoding.plain.models.Feed
+import com.ismartcoding.plain.models.FeedEntry
 
 internal const val FEED_FIELDS = "id name url logo fetchContent lastSyncAt lastError { code detail } createdAt updatedAt"
 internal const val ENTRY_FIELDS = "id title url image description author content feedId rawId publishedAt read createdAt updatedAt"

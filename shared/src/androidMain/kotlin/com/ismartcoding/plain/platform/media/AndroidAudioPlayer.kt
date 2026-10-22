@@ -13,7 +13,7 @@ import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.audio.AudioAction
 import com.ismartcoding.plain.app.events.AudioActionEvent
 import com.ismartcoding.plain.features.audio.AudioQueueClient
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent

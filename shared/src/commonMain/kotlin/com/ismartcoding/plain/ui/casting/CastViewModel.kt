@@ -5,7 +5,7 @@ import com.ismartcoding.plain.ui.state.launchSafe
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.db.IMedia
+import com.ismartcoding.plain.IMedia
 import com.ismartcoding.plain.features.dlna.sender.*
 import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
 import com.ismartcoding.plain.ui.components.DialogHelper

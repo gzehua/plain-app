@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.audio
 
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.*

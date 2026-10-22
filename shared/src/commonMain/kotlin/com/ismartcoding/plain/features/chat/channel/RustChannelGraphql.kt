@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.chat.channel
 
-import com.ismartcoding.plain.api.graphql.models.ChatChannel
+import com.ismartcoding.plain.models.ChatChannel
 import com.ismartcoding.plain.features.chat.peer.GraphQLResponse
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.withIO
@@ -79,6 +79,6 @@ internal suspend fun snapshotChannelsGraphql(): List<ChatChannel> = withIO {
     PlainRust.mainQuery("chatChannels { $CHANNEL_FIELDS }").getValue("chatChannels")
         .let { JsonHelper.jsonDecodeFromElement<List<ChatChannel>>(it) }
 }
-internal suspend fun channelGraphql(id: String): com.ismartcoding.plain.api.graphql.models.ChatChannel? {
+internal suspend fun channelGraphql(id: String): com.ismartcoding.plain.models.ChatChannel? {
     return snapshotChannelsGraphql().firstOrNull { it.id == id }
 }

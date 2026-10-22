@@ -3,7 +3,7 @@ package com.ismartcoding.plain.features.nearby
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
-import com.ismartcoding.plain.api.graphql.models.PairingRequestInput
+import com.ismartcoding.plain.models.PairingRequestInput
 import com.ismartcoding.plain.ui.nearby.NearbyItemStatus
 import com.ismartcoding.plain.ui.nearby.NearbyViewModel
 import kotlinx.serialization.json.*
@@ -61,7 +61,7 @@ object PairingProjection {
     }
 
     suspend fun request(payload: String) {
-        val request = com.ismartcoding.plain.lib.JsonHelper.jsonDecode<com.ismartcoding.plain.api.graphql.models.PairingRequestInput>(payload)
+        val request = com.ismartcoding.plain.lib.JsonHelper.jsonDecode<com.ismartcoding.plain.models.PairingRequestInput>(payload)
         if (!RustPairingRuntime.currentRequest(request.fromId, request.signature)) return
         com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.app.events.HPairingRequestReceivedEvent(request))
     }

@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.media.audioJustPlayWithNotificationCheck
 import com.ismartcoding.plain.ui.base.HorizontalSpace

@@ -9,15 +9,9 @@ import com.ismartcoding.plain.ui.components.PIconButton
 import com.ismartcoding.plain.ui.components.SearchableTopBar
 import com.ismartcoding.plain.ui.components.SortAndBrowseDialog
 
-import com.ismartcoding.plain.api.graphql.models.MediaBucket
+import com.ismartcoding.plain.models.MediaBucket
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.*
-import com.ismartcoding.plain.ui.apps.components.*
-import com.ismartcoding.plain.ui.audio.components.*
-import com.ismartcoding.plain.ui.notes.components.*
-import com.ismartcoding.plain.ui.web.components.*
-import com.ismartcoding.plain.ui.components.*
-import com.ismartcoding.plain.ui.media.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
@@ -37,17 +31,15 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.db.IData
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.features.dlna.sender.RustDlnaSender
 import com.ismartcoding.plain.ui.base.dragselect.DragSelectState
 import com.ismartcoding.plain.ui.casting.CastViewModel
-import com.ismartcoding.plain.ui.media.BaseMediaViewModel
 import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
 import com.ismartcoding.plain.ui.state.enterSearchMode
-import com.ismartcoding.plain.ui.media.MediaSidebarDrawer
 import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.cast as ui_drawable_cast

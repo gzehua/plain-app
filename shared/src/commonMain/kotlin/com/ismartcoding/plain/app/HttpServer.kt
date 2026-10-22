@@ -9,7 +9,7 @@ import com.ismartcoding.plain.rust.http.createPlainHttpClient
 import com.ismartcoding.plain.rust.http.get
 import com.ismartcoding.plain.rust.http.request
 
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.request.RustRuntime
 import com.ismartcoding.plain.features.settings.HttpServerState
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.http_server_failed
@@ -93,7 +93,7 @@ expect suspend fun stopHttpServiceAsync()
  * with a broken listener. Rust answers `/health` directly.
  */
 suspend fun checkHttpServerAsync(): Boolean = withIO {
-    val base = RustContentApi.startedSession()?.baseUrl
+    val base = RustRuntime.startedSession()?.baseUrl
     if (base == null) {
         LogCat.e("Rust HTTP server diagnostic failed: core not started")
         return@withIO false

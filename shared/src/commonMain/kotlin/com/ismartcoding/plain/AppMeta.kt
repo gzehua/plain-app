@@ -1,5 +1,7 @@
 package com.ismartcoding.plain
 
+import com.ismartcoding.plain.ui.Identifiable
+
 @PublishedApi
 internal expect var buildTypeValue: String
 
@@ -11,3 +13,15 @@ val buildType: String
 
 val buildChannel: String
     get() = buildChannelValue
+
+interface IData : Identifiable {
+    override var id: String
+}
+
+data class IDData(override var id: String) : Identifiable
+
+interface IMedia {
+    val path: String
+    val durationMs: Long
+    val title: String
+}

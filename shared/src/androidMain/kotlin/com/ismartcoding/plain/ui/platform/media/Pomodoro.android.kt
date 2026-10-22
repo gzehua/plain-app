@@ -24,14 +24,14 @@ import com.ismartcoding.plain.app.Constants
 import com.ismartcoding.plain.MainActivity
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.ui.extensions.getFinalPath
-import com.ismartcoding.plain.api.graphql.models.PomodoroSettings
+import com.ismartcoding.plain.models.PomodoroSettings
 import com.ismartcoding.plain.ui.platform.notifications.NotificationHelper
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.extensions.isAudioFast
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.preferences.*
-import com.ismartcoding.plain.api.graphql.models.PomodoroState
+import com.ismartcoding.plain.models.PomodoroState
 import com.ismartcoding.plain.ui.theme.BrandPrimary
 import java.io.File
 import kotlin.math.PI

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.audio
 
-import com.ismartcoding.plain.api.graphql.models.Audio as AudioTrack
+import com.ismartcoding.plain.models.Audio as AudioTrack
 import com.ismartcoding.plain.helpers.ContentWhere
 import android.content.Context
 import android.net.Uri

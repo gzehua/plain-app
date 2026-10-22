@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.api.graphql.models.Video as MediaVideo
+import com.ismartcoding.plain.models.Video as MediaVideo
 import com.ismartcoding.plain.features.files.FilePathData
 import com.ismartcoding.plain.features.notifications.NotificationFilterData
 import com.ismartcoding.plain.platform.system.AppFeatureType
@@ -8,10 +8,10 @@ import com.ismartcoding.plain.ui.theme.DarkTheme
 import com.ismartcoding.plain.features.audio.MediaPlayMode
 import com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode
 import com.ismartcoding.plain.features.files.FileSortBy
-import com.ismartcoding.plain.api.graphql.models.AudioItem
-import com.ismartcoding.plain.api.graphql.models.PomodoroSettings
-import com.ismartcoding.plain.api.graphql.models.ScreenMirrorQuality
-import com.ismartcoding.plain.api.graphql.models.Video
+import com.ismartcoding.plain.models.AudioItem
+import com.ismartcoding.plain.models.PomodoroSettings
+import com.ismartcoding.plain.models.ScreenMirrorQuality
+import com.ismartcoding.plain.models.Video
 import com.ismartcoding.plain.platform.system.Locale
 
 /**
@@ -103,7 +103,7 @@ object UserPrefs {
     }
 
     suspend fun clearRecentSearches() {
-        val result = com.ismartcoding.plain.rust.request.RustContentApi.mutate(
+        val result = com.ismartcoding.plain.rust.request.RustApi.mutate(
             "setUserPref(key: \"recent_searches\", value: [])",
         ).getValue("setUserPref")
         check(com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<Boolean>(result)) {
@@ -118,7 +118,7 @@ object UserPrefs {
     }
 
     suspend fun toggleNotificationApp(packageName: String) =
-        com.ismartcoding.plain.rust.request.NativeManagementClient.toggleNotificationApp(packageName).also { PrefStore.refresh() }
+        com.ismartcoding.plain.rust.PlainRust.toggleNotificationApp(packageName).also { PrefStore.refresh() }
 
     suspend fun setNotificationMode(mode: String) = PrefStore.runAction(UserAction.SetNotificationMode(mode))
 

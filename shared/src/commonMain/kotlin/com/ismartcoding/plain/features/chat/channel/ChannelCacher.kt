@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.features.chat.channel
 
 import com.ismartcoding.plain.features.chat.ChatCacher
-import com.ismartcoding.plain.api.graphql.models.ChatChannel
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatChannel
+import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.lib.extensions.toSortName
 import com.ismartcoding.plain.lib.withIO
 import kotlin.time.Instant

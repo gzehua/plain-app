@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.platform.network.ble.client
 
 import com.ismartcoding.plain.platform.network.ble.BleService
-import com.ismartcoding.plain.api.graphql.models.Peer
+import com.ismartcoding.plain.models.Peer
 import kotlinx.coroutines.flow.Flow
 
 interface BleGattClient {

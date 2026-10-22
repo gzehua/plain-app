@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform.contacts
 
-import com.ismartcoding.plain.api.graphql.models.ContactGroup
+import com.ismartcoding.plain.models.ContactGroup
 
 /**
  * Returns all contact groups. Empty list on platforms without a contacts provider.

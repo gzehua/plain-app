@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.feeds
 
-import com.ismartcoding.plain.api.graphql.models.FeedSyncState
+import com.ismartcoding.plain.models.FeedSyncState
 import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

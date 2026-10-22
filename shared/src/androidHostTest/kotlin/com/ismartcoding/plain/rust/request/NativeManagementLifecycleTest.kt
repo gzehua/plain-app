@@ -1,4 +1,5 @@
 package com.ismartcoding.plain.rust.request
+import com.ismartcoding.plain.rust.PlainRust
 
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
@@ -10,7 +11,7 @@ class NativeManagementLifecycleTest {
     @Test
     fun bridgeCallsDoNotInitializeTheRuntime() = runBlocking {
         var requests = 0
-        val result = NativeManagementClient.call<Boolean> {
+        val result = PlainRust.call<Boolean> {
             requests++
             """{"value":true}"""
         }
@@ -21,7 +22,7 @@ class NativeManagementLifecycleTest {
     @Test
     fun bridgeErrorsReachTheCallerWithoutRestartingTheRuntime() = runBlocking {
         val failure = assertFailsWith<IllegalStateException> {
-            NativeManagementClient.call<Boolean> { """{"error":"Core is not initialized"}""" }
+            PlainRust.call<Boolean> { """{"error":"Core is not initialized"}""" }
         }
         assertEquals("Core is not initialized", failure.message)
     }

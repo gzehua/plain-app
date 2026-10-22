@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.media
 
-import com.ismartcoding.plain.api.graphql.models.MediaBucket
+import com.ismartcoding.plain.models.MediaBucket
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize

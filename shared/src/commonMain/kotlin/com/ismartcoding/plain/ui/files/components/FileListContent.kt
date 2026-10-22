@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.files.components
 
 import com.ismartcoding.plain.features.files.extension
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.Box

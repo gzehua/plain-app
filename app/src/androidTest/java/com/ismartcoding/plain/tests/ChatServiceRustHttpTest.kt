@@ -12,9 +12,10 @@ import com.ismartcoding.plain.features.chat.models.toJSONString
 import com.ismartcoding.plain.db.*
 import com.ismartcoding.plain.features.chat.ChatStatus
 import com.ismartcoding.plain.features.shares.SharesClient
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.features.files.stored.AppFileStore
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.rust.request.RustApi
+import com.ismartcoding.plain.rust.request.RustRuntime
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
@@ -45,7 +46,7 @@ class ChatServiceRustHttpTest {
             files += textFile.uri.removePrefix("fid:").substringBefore('.')
             assertEquals(longText.toByteArray().size.toLong(), textFile.size)
             val record = AppFileStore.page(0, 1, "text:${files.single()}").single().appFile
-            assertArrayEquals(longText.toByteArray(), File(RustContentApi.directory, record.realPath).readBytes())
+            assertArrayEquals(longText.toByteArray(), File(RustRuntime.dataDir, record.realPath).readBytes())
             assertTrue(com.ismartcoding.plain.features.chat.sendPickedAttachments(listOf(local, local), listOf(androidx.core.content.FileProvider.getUriForFile(com.ismartcoding.plain.appContext, com.ismartcoding.plain.app.AppIntents.AUTHORITY, source).toString()), null, "$marker caption"))
             val picked = created().filter { (it.messageContent.value as? MessageFiles)?.items?.any { item -> item.fileName == source.name } == true }
             assertEquals(2, picked.size)
@@ -62,7 +63,7 @@ class ChatServiceRustHttpTest {
             assertEquals(200, status)
             assertArrayEquals(source.readBytes(), body)
             ChatClient.deleteOne(picked.first().id)
-            val page = RustContentApi.query("""chatItems(target: "peer:local", offset: 0, limit: 20, query: "text:$marker") { id }""")["chatItems"]!!.jsonArray
+            val page = RustApi.query("""chatItems(target: "peer:local", offset: 0, limit: 20, query: "text:$marker") { id }""")["chatItems"]!!.jsonArray
             assertTrue("the sent message must appear in the contract page, got $page", page.any { it.jsonObject["id"]!!.jsonPrimitive.content == forward.id })
             val image = File(root, "$marker.png")
             val bitmap = android.graphics.Bitmap.createBitmap(7, 5, android.graphics.Bitmap.Config.ARGB_8888)
@@ -82,7 +83,7 @@ class ChatServiceRustHttpTest {
             assertEquals(source.length() + image.length(), card.totalSize)
             assertTrue(SharesClient.getShare(card.shareId)!!.readOnly)
             assertEquals(com.ismartcoding.plain.features.shares.SharedLinkClient.ownLink(card.shareId).token, card.urlToken)
-            val staging = File(RustContentApi.directory, "chat-picks")
+            val staging = File(RustRuntime.dataDir, "chat-picks")
             assertTrue(staging.listFiles().orEmpty().isEmpty())
         } finally {
             created()

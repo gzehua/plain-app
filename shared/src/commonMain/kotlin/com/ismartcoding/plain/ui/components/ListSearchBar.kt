@@ -18,8 +18,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalWindowInfo
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.db.IData
-import com.ismartcoding.plain.ui.components.PIconButton
+import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.ui.state.ISearchableViewModel
 import com.ismartcoding.plain.ui.state.exitSearchMode
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal

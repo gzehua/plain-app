@@ -5,7 +5,7 @@ import com.ismartcoding.plain.platform.permissions.isGranted
 
 import com.ismartcoding.plain.appContext
 
-import com.ismartcoding.plain.api.graphql.models.Sim
+import com.ismartcoding.plain.models.Sim
 import android.annotation.SuppressLint
 import com.ismartcoding.plain.subscriptionManager
 

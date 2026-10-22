@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform.media.provider
 
-import com.ismartcoding.plain.api.graphql.models.Image as MediaImage
+import com.ismartcoding.plain.models.Image as MediaImage
 import com.ismartcoding.plain.helpers.ContentWhere
 import android.content.Context
 import android.net.Uri

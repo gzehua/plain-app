@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.files.text
 
-import com.ismartcoding.plain.api.graphql.models.File as FileEntry
+import com.ismartcoding.plain.models.File as FileEntry
 
 import com.ismartcoding.plain.preferences.*
 

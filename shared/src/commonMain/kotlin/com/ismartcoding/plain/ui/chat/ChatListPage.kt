@@ -15,22 +15,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.chat.ChatCacher
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.features.chat.models.getBestIp
 import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 import com.ismartcoding.plain.features.chat.peer.PeerStatusClient
 import com.ismartcoding.plain.ui.components.ButtonSize
-import com.ismartcoding.plain.platform.system.DeviceType
 import com.ismartcoding.plain.ui.platform.system.getIcon
 import com.ismartcoding.plain.app.events.PermissionsResultEvent
 import com.ismartcoding.plain.app.events.RequestPermissionsEvent
-import com.ismartcoding.plain.features.bluetooth.client.BluetoothPermissionResultEvent
+import com.ismartcoding.plain.features.bluetooth.BluetoothPermissionResultEvent
 import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.i18n.channels
-import com.ismartcoding.plain.i18n.desktop_access
-import com.ismartcoding.plain.i18n.devices
 import com.ismartcoding.plain.i18n.grant_permission
 import com.ismartcoding.plain.i18n.local_chat
 import com.ismartcoding.plain.i18n.local_chat_desc
@@ -38,7 +33,6 @@ import com.ismartcoding.plain.i18n.nearby_wifi_devices_required_for_chat
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.network.BleAvailability
-import com.ismartcoding.plain.app.HttpServerManager
 import com.ismartcoding.plain.platform.network.bleAvailabilityFlow
 import com.ismartcoding.plain.platform.network.canRequestBluetoothAccess
 import com.ismartcoding.plain.platform.network.wifiAwarePermission
@@ -47,12 +41,10 @@ import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.network.ensureBlePermissionAsync
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.platform.system.openAppSettings
-import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.base.AlertType
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PAlert
 import com.ismartcoding.plain.ui.base.PTextButton
-import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
@@ -60,15 +52,12 @@ import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
-import com.ismartcoding.plain.ui.chat.ChannelViewModel
-import com.ismartcoding.plain.ui.chat.PeerViewModel
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.navigation.MainNavScaffold
 import com.ismartcoding.plain.ui.chat.components.CreateChannelDialog
 import com.ismartcoding.plain.ui.chat.components.PeerListItem
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.bot as ui_drawable_bot
-import com.ismartcoding.plain.ui.resources.devices as ui_drawable_devices
 import com.ismartcoding.plain.ui.resources.hash as ui_drawable_hash
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import kotlinx.coroutines.launch

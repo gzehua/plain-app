@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.rust.host.media
 
-import com.ismartcoding.plain.api.graphql.models.AudioItem
+import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.media.AudioPlayer
 import kotlinx.coroutines.CompletableDeferred

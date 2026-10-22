@@ -7,7 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.api.graphql.models.ClipboardItem
+import com.ismartcoding.plain.models.ClipboardItem
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.ui.base.PListItem

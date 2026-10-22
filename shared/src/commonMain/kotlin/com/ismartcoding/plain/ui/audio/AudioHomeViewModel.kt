@@ -2,10 +2,10 @@ package com.ismartcoding.plain.ui.audio
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.ismartcoding.plain.api.graphql.models.Audio
-import com.ismartcoding.plain.api.graphql.models.AudioArtist
-import com.ismartcoding.plain.api.graphql.models.AudioPlaylist
-import com.ismartcoding.plain.api.graphql.models.AudioAlbumCover
+import com.ismartcoding.plain.models.Audio
+import com.ismartcoding.plain.models.AudioArtist
+import com.ismartcoding.plain.models.AudioPlaylist
+import com.ismartcoding.plain.models.AudioAlbumCover
 import com.ismartcoding.plain.features.audio.AudioOverviewClient
 import com.ismartcoding.plain.features.audio.AudioPlaylistsClient
 import com.ismartcoding.plain.ui.tags.TagsViewModel

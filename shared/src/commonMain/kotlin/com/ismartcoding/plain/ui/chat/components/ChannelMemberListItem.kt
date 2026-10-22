@@ -3,7 +3,7 @@ package com.ismartcoding.plain.ui.chat.components
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.ismartcoding.plain.api.graphql.models.Peer
+import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.features.chat.models.getBestIp
 import com.ismartcoding.plain.features.chat.models.getName
 import com.ismartcoding.plain.ui.components.BadgeType
@@ -11,7 +11,7 @@ import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.components.ButtonType
 import com.ismartcoding.plain.platform.system.DeviceType
 import com.ismartcoding.plain.ui.platform.system.getIcon
-import com.ismartcoding.plain.api.graphql.models.ChatChannelMember
+import com.ismartcoding.plain.models.ChatChannelMember
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.cancel
 import com.ismartcoding.plain.i18n.channel_creator

@@ -5,11 +5,11 @@ import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
-import com.ismartcoding.plain.api.graphql.models.ChatChannel
-import com.ismartcoding.plain.api.graphql.models.Peer
+import com.ismartcoding.plain.models.ChatChannel
+import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.features.chat.models.getMessagePreview
 import com.ismartcoding.plain.app.events.HChatMessageNotificationEvent
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.peer_chat
 import com.ismartcoding.plain.lib.sendEvent

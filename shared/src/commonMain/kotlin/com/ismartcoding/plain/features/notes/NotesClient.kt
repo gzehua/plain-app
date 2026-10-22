@@ -1,10 +1,9 @@
 package com.ismartcoding.plain.features.notes
 
-import com.ismartcoding.plain.api.graphql.models.Note
-import com.ismartcoding.plain.rust.request.RustContentApi
+import com.ismartcoding.plain.models.Note
+import com.ismartcoding.plain.rust.request.RustApi
 import com.ismartcoding.plain.rust.request.gql
 import com.ismartcoding.plain.rust.request.selectionQuery
-import com.ismartcoding.plain.rust.request.string
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.int
@@ -13,8 +12,8 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 object NotesClient : NotesApi(
-    query = { RustContentApi.query(it) },
-    mutate = { RustContentApi.mutate(it) },
+    query = { RustApi.query(it) },
+    mutate = { RustApi.mutate(it) },
 )
 
 open class NotesApi internal constructor(
@@ -24,8 +23,6 @@ open class NotesApi internal constructor(
     suspend fun count(query: String): Int = this.query("noteCount(query: ${gql(query)})").getValue("noteCount").jsonPrimitive.int
     suspend fun search(query: String, limit: Int, offset: Int): List<Note> = this.query("notes(query: ${gql(query)}, limit: $limit, offset: $offset) { $NOTE_FIELDS }").getValue("notes").jsonArray.map { it.note() }
     suspend fun getById(id: String): Note? = query("note(id: ${gql(id)}) { $NOTE_FIELDS }")["note"]?.takeUnless { it is JsonNull }?.note()
-    suspend fun getIdsAsync(query: String): Set<String> = ids(query)
-    private suspend fun ids(query: String): Set<String> = this.query("notes(query: ${gql(query)}, limit: ${Int.MAX_VALUE}, offset: 0) { id }").getValue("notes").jsonArray.map { it.jsonObject.string("id") }.toSet()
     suspend fun save(id: String, title: String, content: String): Note {
         val input = "{ title: ${gql(title)}, content: ${gql(content)} }"
         val field = if (id.isEmpty()) "createNote" else "updateNote"

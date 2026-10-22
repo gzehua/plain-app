@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.chat
 
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
 import kotlinx.serialization.json.JsonNull

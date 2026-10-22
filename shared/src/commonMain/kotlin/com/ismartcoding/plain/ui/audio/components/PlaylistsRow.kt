@@ -19,10 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.api.graphql.models.AudioPlaylist
+import com.ismartcoding.plain.models.AudioPlaylist
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.components.drawerOpenAtRowStart
-import com.ismartcoding.plain.api.graphql.models.AudioAlbumCover
+import com.ismartcoding.plain.models.AudioAlbumCover
 import com.ismartcoding.plain.ui.audio.playlists.components.PlaylistMosaicCover
 import com.ismartcoding.plain.ui.theme.listItemTitle
 import org.jetbrains.compose.resources.pluralStringResource

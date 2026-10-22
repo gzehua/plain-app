@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform.contacts
 
-import com.ismartcoding.plain.api.graphql.models.ContactGroup
+import com.ismartcoding.plain.models.ContactGroup
 import com.ismartcoding.plain.appContext
 import android.content.ContentProviderOperation
 import android.content.ContentUris

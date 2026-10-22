@@ -8,8 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ismartcoding.plain.features.feeds.FeedEntriesClient
 import com.ismartcoding.plain.features.feeds.FeedsClient
-import com.ismartcoding.plain.api.graphql.models.Feed
-import com.ismartcoding.plain.api.graphql.models.FeedEntry
+import com.ismartcoding.plain.models.Feed
+import com.ismartcoding.plain.models.FeedEntry
 import com.ismartcoding.plain.ui.state.launchSafe
 import com.ismartcoding.plain.features.feeds.fetchContentAsync
 import kotlinx.coroutines.delay

@@ -2,7 +2,7 @@ package com.ismartcoding.plain.features.files.stored
 
 import kotlinx.serialization.Serializable
 
-import com.ismartcoding.plain.api.graphql.models.AppFile
+import com.ismartcoding.plain.models.AppFile
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.files.queryPickedFileInfo
@@ -36,7 +36,7 @@ object AppFileStore {
 
     private suspend fun importPath(path: String, name: String, mime: String, deleteSource: Boolean): AppFile {
         val file = withContext(NonCancellable) {
-            RustContentApi.mutate("importAppFile(source: ${gql(path)}, fileName: ${gql(name)}, mimeType: ${gql(mime)}, deleteSource: $deleteSource) { $FIELDS }", longRunning = true)
+            RustApi.mutate("importAppFile(source: ${gql(path)}, fileName: ${gql(name)}, mimeType: ${gql(mime)}, deleteSource: $deleteSource) { $FIELDS }", longRunning = true)
                 .getValue("importAppFile").file()
         }
         try {
@@ -49,13 +49,13 @@ object AppFileStore {
     }
 
     suspend fun page(offset: Int, limit: Int, query: String = ""): List<VAppFile> =
-        RustContentApi.query("appFiles(offset: $offset, limit: $limit, query: ${gql(query)}) { $FIELDS }")
+        RustApi.query("appFiles(offset: $offset, limit: $limit, query: ${gql(query)}) { $FIELDS }")
             .getValue("appFiles").let { JsonHelper.jsonDecodeFromElement<List<AppFile>>(it) }.map { VAppFile(it, it.fileName) }
-    suspend fun count(query: String = ""): Int = RustContentApi.query("appFileCount(query: ${gql(query)})").getValue("appFileCount").jsonPrimitive.int
-    suspend fun displayName(id: String): String = RustContentApi.query("appFiles(offset: 0, limit: 1, query: ${gql("text:$id")}) { fileName }")
+    suspend fun count(query: String = ""): Int = RustApi.query("appFileCount(query: ${gql(query)})").getValue("appFileCount").jsonPrimitive.int
+    suspend fun displayName(id: String): String = RustApi.query("appFiles(offset: 0, limit: 1, query: ${gql("text:$id")}) { fileName }")
         .getValue("appFiles").let { JsonHelper.jsonDecodeFromElement<List<AppFileName>>(it) }.firstOrNull()?.fileName.orEmpty()
     suspend fun release(id: String) {
-        RustContentApi.mutate("releaseAppFile(fileId: ${gql(id.substringBefore('.'))})")
+        RustApi.mutate("releaseAppFile(fileId: ${gql(id.substringBefore('.'))})")
     }
     private fun JsonElement.file(): AppFile = JsonHelper.jsonDecodeFromElement<AppFile>(this)
 }

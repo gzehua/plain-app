@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.notes
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.ismartcoding.plain.api.graphql.models.Note
+import com.ismartcoding.plain.models.Note
 
 class NoteViewModel : ViewModel() {
     var editMode = mutableStateOf(false)

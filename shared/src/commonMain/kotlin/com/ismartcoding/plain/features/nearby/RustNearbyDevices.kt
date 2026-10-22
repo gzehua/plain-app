@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.nearby
 
 
-import com.ismartcoding.plain.api.graphql.models.NearbyDevice
+import com.ismartcoding.plain.models.NearbyDevice
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.ui.nearby.NearbyViewModel

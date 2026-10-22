@@ -2,7 +2,7 @@ package com.ismartcoding.plain.features.audio
 
 import kotlinx.serialization.Serializable
 
-import com.ismartcoding.plain.api.graphql.models.AudioOverview
+import com.ismartcoding.plain.models.AudioOverview
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.features.media.MediaCatalogClient
 import com.ismartcoding.plain.lib.JsonHelper

@@ -5,7 +5,7 @@ import com.ismartcoding.plain.features.sessions.RustSessionStore
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.preferences.UserPrefs
 import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.ContentApiSession
+import com.ismartcoding.plain.rust.request.ApiSession
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
@@ -31,7 +31,7 @@ class MainGraphqlRustHttpTest {
             assertTrue(token.isNotEmpty())
             val app = PlainRust.mainQuery("app { httpPort urlToken capabilities }").getValue("app").jsonObject
             assertEquals(getDeviceCapabilities().map { it.name }.toSet(), app.getValue("capabilities").jsonArray.map { it.jsonPrimitive.content }.toSet())
-            val remote = ContentApiSession("http://127.0.0.1:${app.getValue("httpPort").jsonPrimitive.int}", clientId, token)
+            val remote = ApiSession("http://127.0.0.1:${app.getValue("httpPort").jsonPrimitive.int}", clientId, token)
             val schema = "__schema { queryType { name } mutationType { name } }"
             assertEquals(PlainRust.mainQuery(schema), PlainRust.mainQuery(schema, remote))
             assertEquals(app.getValue("urlToken"), PlainRust.mainQuery("app { urlToken }", remote).getValue("app").jsonObject.getValue("urlToken"))

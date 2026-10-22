@@ -2,7 +2,7 @@ package com.ismartcoding.plain.rust.host.provider
 
 import kotlinx.serialization.Serializable
 
-import com.ismartcoding.plain.api.graphql.models.Call as PhoneCall
+import com.ismartcoding.plain.models.Call as PhoneCall
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
 

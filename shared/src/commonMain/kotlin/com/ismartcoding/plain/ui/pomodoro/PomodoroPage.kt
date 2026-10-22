@@ -3,7 +3,7 @@ package com.ismartcoding.plain.ui.pomodoro
 import com.ismartcoding.plain.ui.permissions.getText
 import com.ismartcoding.plain.ui.permissions.getGrantAccessText
 
-import com.ismartcoding.plain.api.graphql.models.PomodoroSettings
+import com.ismartcoding.plain.models.PomodoroSettings
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.Arrangement

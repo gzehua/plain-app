@@ -6,10 +6,10 @@ import kotlinx.serialization.Serializable
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 
 import com.ismartcoding.plain.features.chat.ChatCacher
-import com.ismartcoding.plain.api.graphql.models.Peer
+import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.features.chat.peer.transport.PeerTransportType
 import com.ismartcoding.plain.features.nearby.PeerStatus
-import com.ismartcoding.plain.api.graphql.models.ChatItem
+import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.lib.withIO
 import kotlin.time.Instant
 import kotlinx.coroutines.CoroutineScope

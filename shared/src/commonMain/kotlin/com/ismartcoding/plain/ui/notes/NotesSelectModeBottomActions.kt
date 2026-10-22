@@ -7,7 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.ismartcoding.plain.api.graphql.models.Tag
+import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.ui.base.BottomActionButtons
 import com.ismartcoding.plain.ui.components.IconTextSmallButtonDelete
 import com.ismartcoding.plain.ui.components.IconTextSmallButtonLabel
