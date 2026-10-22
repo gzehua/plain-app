@@ -56,7 +56,7 @@ object BackgroundExecution {
         if (!RustRuntime.isCoreInitialized) Prefs.load() else RustRuntime.start()
         val finished = async(start = CoroutineStart.UNDISPATCHED) {
             val event = RustEventHandler.events.first { event ->
-                event.type == "BACKGROUND_EXECUTION_FINISHED" && JsonHelper.jsonDecode<ExecutionResult>(event.payload).id == id
+                event.type == EventType.BACKGROUND_EXECUTION_FINISHED && JsonHelper.jsonDecode<ExecutionResult>(event.payload).id == id
             }
             requireNotNull(JsonHelper.jsonDecode<ExecutionResult>(event.payload).success)
         }

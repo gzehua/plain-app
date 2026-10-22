@@ -55,7 +55,7 @@ fun AppFilesPage(
     LaunchedEffect(appFilesVM) {
         launchSafe { appFilesVM.loadAsync() }
         com.ismartcoding.plain.rust.RustEventHandler.events.collect { event ->
-            if (event.type == com.ismartcoding.plain.app.events.EventType.CONTENT_CHANGED.name) launchSafe { appFilesVM.loadAsync() }.join()
+            if (event.type == com.ismartcoding.plain.app.events.EventType.CONTENT_CHANGED) launchSafe { appFilesVM.loadAsync() }.join()
         }
     }
 

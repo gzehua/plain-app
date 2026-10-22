@@ -22,9 +22,15 @@ class EventDirectionContractTest {
         assertEquals("SCREEN_MIRROR_VIDEO_CODEC", kind.content)
         assertEquals("{}", packet.jsonObject.getValue("payload").jsonPrimitive.content)
         val greeting = JsonHelper.jsonDecode<RustEvent>("""{"type":"CONTENT_CHANGED","payload":"{}","reconcile":true}""")
-        assertEquals(EventType.CONTENT_CHANGED.name, greeting.type)
+        assertEquals(EventType.CONTENT_CHANGED, greeting.type)
         assertTrue(greeting.reconcile)
         assertTrue(EventType.entries.all { it.name.matches(Regex("[A-Z_]+")) })
+        EventType.entries.forEach { type ->
+            val event = RustEvent(type, "{}")
+            val encoded = JsonHelper.jsonEncodeToElement(event).jsonObject
+            assertEquals(type.name, encoded.getValue("type").jsonPrimitive.content)
+            assertEquals(event, JsonHelper.jsonDecodeFromElement<RustEvent>(encoded))
+        }
     }
 
     @Test

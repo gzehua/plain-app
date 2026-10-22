@@ -43,7 +43,7 @@ internal fun FeedEntriesPageEffects(
 
     LaunchedEffect(feedEntriesVM, feedsVM, tagsVM) {
         com.ismartcoding.plain.rust.RustEventHandler.events.collect { event ->
-            if (event.type == EventType.CONTENT_CHANGED.name) {
+            if (event.type == EventType.CONTENT_CHANGED) {
                 feedsVM.loadAsync(withCount = true)
                 feedsVM.refreshSelectedItemAsync()
                 scope.launch(IODispatcher) { feedEntriesVM.loadAsync(tagsVM) }

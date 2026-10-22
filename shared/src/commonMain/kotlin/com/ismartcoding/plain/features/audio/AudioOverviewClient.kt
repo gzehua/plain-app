@@ -20,10 +20,10 @@ object AudioOverviewClient {
 
     val updates get() = RustEventHandler.events.filter { updatesOverview(it.type, it.payload) }
 
-    internal fun updatesOverview(type: String, payload: String): Boolean = when (type) {
-        EventType.AUDIO_LIBRARY_UPDATED.name -> true
-        EventType.MEDIA_LIBRARY_UPDATED.name -> JsonHelper.jsonDecode<MediaLibraryUpdate>(payload).types?.contains(DataType.AUDIO.value) == true
-        EventType.MEDIA_SCAN_PROGRESS.name -> when (JsonHelper.jsonDecode<MediaScanUpdate>(payload).state) {
+    internal fun updatesOverview(type: EventType, payload: String): Boolean = when (type) {
+        EventType.AUDIO_LIBRARY_UPDATED -> true
+        EventType.MEDIA_LIBRARY_UPDATED -> JsonHelper.jsonDecode<MediaLibraryUpdate>(payload).types?.contains(DataType.AUDIO.value) == true
+        EventType.MEDIA_SCAN_PROGRESS -> when (JsonHelper.jsonDecode<MediaScanUpdate>(payload).state) {
             "IDLE", "FAILED", "STOPPED", "PAUSED" -> true
             else -> false
         }

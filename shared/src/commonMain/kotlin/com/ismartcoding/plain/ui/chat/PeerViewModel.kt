@@ -81,13 +81,13 @@ class PeerViewModel : ViewModel() {
     )
 }
 
-internal fun isPeerUpdate(type: String): Boolean = when (type) {
-    EventType.PEER_UPDATED.name,
-    EventType.PEER_STATUS_UPDATED.name,
-    EventType.PEER_CONNECTIONS_UPDATED.name,
-    EventType.CHANNELS_UPDATED.name,
-    EventType.CONTENT_CHANGED.name,
-    EventType.PAIRING_SUCCESS.name,
-    EventType.WEB_LOGIN_COMPLETED.name -> true
+internal fun isPeerUpdate(type: EventType): Boolean = when (type) {
+    EventType.PEER_UPDATED,
+    EventType.PEER_STATUS_UPDATED,
+    EventType.PEER_CONNECTIONS_UPDATED,
+    EventType.CHANNELS_UPDATED,
+    EventType.CONTENT_CHANGED,
+    EventType.PAIRING_SUCCESS,
+    EventType.WEB_LOGIN_COMPLETED -> true
     else -> false
 }

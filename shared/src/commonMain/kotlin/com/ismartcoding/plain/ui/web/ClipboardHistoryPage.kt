@@ -55,7 +55,7 @@ fun ClipboardHistoryPage(
     LaunchedEffect(vm) {
         launch { vm.loadAsync() }
         com.ismartcoding.plain.rust.RustEventHandler.events.collect { event ->
-            if (event.type == EventType.H_CLIPBOARD_HISTORY_UPDATED.name || event.type == EventType.CONTENT_CHANGED.name) vm.loadAsync()
+            if (event.type == EventType.H_CLIPBOARD_HISTORY_UPDATED || event.type == EventType.CONTENT_CHANGED) vm.loadAsync()
         }
     }
 

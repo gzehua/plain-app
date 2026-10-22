@@ -33,7 +33,7 @@ class PomodoroEventsTest {
         try {
         repeat(32) {
             RustEventHandler.handleEvent(RustEvent(
-                EventType.POMODORO_ACTION.name,
+                EventType.POMODORO_ACTION,
                 """{"action":"progress","today":$snapshot,"completedState":null}""",
             ))
         }

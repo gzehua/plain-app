@@ -50,6 +50,7 @@ import com.ismartcoding.plain.ui.pomodoro.PomodoroProjection
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.*
 
 suspend fun sendEventToRust(event: HostEvent) {
@@ -78,7 +79,14 @@ object RustEventHandler {
         scope.launch {
             readRustStream(
                 next = { withContext(RustDispatchers.events) { RustNativeApi.next("events") } },
-                consume = { incoming.emit(JsonHelper.jsonDecode<RustEvent>(it)) },
+                consume = { value ->
+                    try {
+                        incoming.emit(JsonHelper.jsonDecode<RustEvent>(value))
+                    } catch (error: SerializationException) {
+                        // Skip unknown or malformed frames without closing the event stream.
+                        LogCat.e("Decode Rust event", error)
+                    }
+                },
                 closed = {},
             )
         }
@@ -88,36 +96,36 @@ object RustEventHandler {
         val type = event.type
         val payload = event.payload
         when (type) {
-            EventType.NETWORK_CHANGED.name -> LocalDeviceState.refresh()
-            EventType.WEB_LOGIN_COMPLETED.name -> {
+            EventType.NETWORK_CHANGED -> LocalDeviceState.refresh()
+            EventType.WEB_LOGIN_COMPLETED -> {
                 val facts = JsonHelper.jsonDecode<WebLoginCompletedFacts>(payload)
                 val request = facts.request
                 sendWebLoginNotification(request.browserName, request.browserVersion, request.osName, request.osVersion, facts.clientIp)
             }
 
-            EventType.MEDIA_ACTION_FINISHED.name -> MediaActionProjection.apply(payload)
-            EventType.HTTP_SERVER_STATE_CHANGED.name -> {
+            EventType.MEDIA_ACTION_FINISHED -> MediaActionProjection.apply(payload)
+            EventType.HTTP_SERVER_STATE_CHANGED -> {
                 refreshHttpServerState()
                 LocalDeviceState.refresh()
             }
-            EventType.PEER_STATUS_UPDATED.name -> {
+            EventType.PEER_STATUS_UPDATED -> {
                 ChatCacher.load()
             }
-            EventType.PEER_TRANSPORT_UPDATED.name -> PeerTransportProjection.apply(JsonHelper.jsonDecode<JsonArray>(payload))
-            EventType.MDNS_UPDATED.name, EventType.NEARBY_DISCOVERY_STARTED.name, EventType.NEARBY_DISCOVERY_STOPPED.name -> RustMdnsRuntime.refresh()
-            EventType.DLNA_RENDERER_UPDATED.name -> DlnaRendererState.apply(
+            EventType.PEER_TRANSPORT_UPDATED -> PeerTransportProjection.apply(JsonHelper.jsonDecode<JsonArray>(payload))
+            EventType.MDNS_UPDATED, EventType.NEARBY_DISCOVERY_STARTED, EventType.NEARBY_DISCOVERY_STOPPED -> RustMdnsRuntime.refresh()
+            EventType.DLNA_RENDERER_UPDATED -> DlnaRendererState.apply(
                 JsonHelper.jsonDecode<JsonObject>(payload).getValue("renderer").jsonObject)
-            EventType.NEARBY_DEVICES_UPDATED.name -> {
+            EventType.NEARBY_DEVICES_UPDATED -> {
                 val devices = RustNearbyDevices.snapshot()
                 RustNearbyDevices.apply(devices)
             }
-            EventType.PAIRING_REQUEST_RECEIVED.name -> PairingProjection.request(payload)
-            EventType.PAIRING_STATE_CHANGED.name -> PairingProjection.applyState(JsonHelper.jsonDecode<JsonObject>(payload))
-            EventType.PAIRING_STARTED.name -> PairingProjection.started(payload)
-            EventType.PAIRING_CANCELED.name -> PairingProjection.canceled(payload)
-            EventType.PAIRING_SUCCESS.name -> PairingProjection.success(payload)
-            EventType.PAIRING_FAILED.name -> PairingProjection.timeout(payload)
-            EventType.MESSAGE_CREATED.name -> {
+            EventType.PAIRING_REQUEST_RECEIVED -> PairingProjection.request(payload)
+            EventType.PAIRING_STATE_CHANGED -> PairingProjection.applyState(JsonHelper.jsonDecode<JsonObject>(payload))
+            EventType.PAIRING_STARTED -> PairingProjection.started(payload)
+            EventType.PAIRING_CANCELED -> PairingProjection.canceled(payload)
+            EventType.PAIRING_SUCCESS -> PairingProjection.success(payload)
+            EventType.PAIRING_FAILED -> PairingProjection.timeout(payload)
+            EventType.MESSAGE_CREATED -> {
                 JsonHelper.jsonDecode<List<PeerIdEvent>>(payload).forEach { value ->
                     RustChatStore.getById(value.id)?.let { item ->
                         if (item.fromId == "me") {
@@ -132,51 +140,51 @@ object RustEventHandler {
                     }
                 }
             }
-            EventType.MESSAGE_DELETED.name -> {
+            EventType.MESSAGE_DELETED -> {
                 val target = JsonHelper.jsonDecode<String>(payload)
                 if (target.startsWith("ids=")) ChatViewModel.onMessagesDeleted(target.removePrefix("ids=").split(',').filter { it.isNotEmpty() }.toSet())
                 else ChatViewModel.onConversationCleared(target)
                 ChatCacher.load()
             }
-            EventType.CHANNELS_UPDATED.name -> {
+            EventType.CHANNELS_UPDATED -> {
                 val result = JsonHelper.jsonDecode<JsonElement>(payload).jsonObject
                 ChannelSystemMessageReceiver.applyCommitted(result)
             }
-            EventType.MESSAGE_UPDATED.name -> {
+            EventType.MESSAGE_UPDATED -> {
                 val items = JsonHelper.jsonDecode<List<PeerIdEvent>>(payload).mapNotNull { value ->
                     RustChatStore.getById(value.id)
                 }
                 items.forEach { ChatViewModel.update(it) }
                 ChatCacher.load()
             }
-            EventType.DOWNLOAD_PROGRESS.name -> {
+            EventType.DOWNLOAD_PROGRESS -> {
                 DownloadQueue.refresh()
             }
-            EventType.ONLINE_CLIENTS_UPDATED.name -> setOnlineClientIds(
+            EventType.ONLINE_CLIENTS_UPDATED -> setOnlineClientIds(
                 JsonHelper.jsonDecode<Set<String>>(payload))
-            EventType.PREFS_UPDATED.name -> {
+            EventType.PREFS_UPDATED -> {
                 Prefs.refresh()
                 LocalDeviceState.refresh()
             }
-            EventType.IMAGE_MODELS_UPDATED.name -> RustImageModels.apply(JsonHelper.jsonDecode<JsonObject>(payload))
-            EventType.DLNA_SENDER_UPDATED.name -> RustDlnaSender.apply(JsonHelper.jsonDecode<JsonObject>(payload))
-            EventType.WEB_LOGIN_REQUESTED.name -> {
+            EventType.IMAGE_MODELS_UPDATED -> RustImageModels.apply(JsonHelper.jsonDecode<JsonObject>(payload))
+            EventType.DLNA_SENDER_UPDATED -> RustDlnaSender.apply(JsonHelper.jsonDecode<JsonObject>(payload))
+            EventType.WEB_LOGIN_REQUESTED -> {
                 val facts = JsonHelper.jsonDecode<WebLoginRequestFacts>(payload)
                 sendAppEvent(HConfirmToAcceptLoginEvent(
                     facts.clientId, facts.request, facts.requestId, facts.clientIp))
             }
-            EventType.WEB_LOGIN_CLOSED.name -> {
+            EventType.WEB_LOGIN_CLOSED -> {
                 val facts = JsonHelper.jsonDecode<WebLoginClosedFacts>(payload)
                 sendAppEvent(HWebLoginClosedEvent(facts.requestId))
             }
-            EventType.WEB_REQUEST_RECEIVED.name -> {
+            EventType.WEB_REQUEST_RECEIVED -> {
                 sendAppEvent(HWebRequestReceivedEvent())
             }
-            EventType.SHARED_FOLDER_DOWNLOAD_UPDATED.name -> SharedFolderDownloadEngine.refresh()
-            EventType.AUDIO_PLAYBACK_UPDATED.name -> AudioEngineHost.restore(JsonHelper.jsonDecode<JsonObject>(payload))
-            EventType.APP_UPDATE_DOWNLOAD_UPDATED.name -> AppUpdateDownloads.apply(JsonHelper.jsonDecode(payload))
-            EventType.FEED_SYNC_UPDATED.name -> FeedWorkerState.apply(JsonHelper.jsonDecode<FeedSyncUpdate>(payload))
-            EventType.CONTENT_CHANGED.name -> {
+            EventType.SHARED_FOLDER_DOWNLOAD_UPDATED -> SharedFolderDownloadEngine.refresh()
+            EventType.AUDIO_PLAYBACK_UPDATED -> AudioEngineHost.restore(JsonHelper.jsonDecode<JsonObject>(payload))
+            EventType.APP_UPDATE_DOWNLOAD_UPDATED -> AppUpdateDownloads.apply(JsonHelper.jsonDecode(payload))
+            EventType.FEED_SYNC_UPDATED -> FeedWorkerState.apply(JsonHelper.jsonDecode<FeedSyncUpdate>(payload))
+            EventType.CONTENT_CHANGED -> {
                 Prefs.refresh()
                 ChannelCacher.load()
                 ChatClient.refreshLatestChats()
@@ -185,7 +193,8 @@ object RustEventHandler {
                 catch (error: Exception) { LogCat.e("Favorite folders refresh",error) }
                 NotesViewModel.reloadAsync()
             }
-            EventType.POMODORO_ACTION.name -> PomodoroProjection.apply(payload)
+            EventType.POMODORO_ACTION -> PomodoroProjection.apply(payload)
+            else -> Unit
         }
     }
 
@@ -193,7 +202,7 @@ object RustEventHandler {
 
 @Serializable
 data class RustEvent(
-    val type: String,
+    val type: EventType,
     val payload: String,
     val reconcile: Boolean = false,
 )

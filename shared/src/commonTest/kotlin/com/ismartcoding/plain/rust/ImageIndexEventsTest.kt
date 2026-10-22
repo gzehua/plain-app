@@ -11,7 +11,7 @@ class ImageIndexEventsTest {
         val before = RustImageModels.snapshot.value
         repeat(32) { indexed ->
             RustEventHandler.handleEvent(RustEvent(
-                EventType.IMAGE_INDEX_UPDATED.name,
+                EventType.IMAGE_INDEX_UPDATED,
                 """{"version":1,"isRunning":true,"totalImages":64,"indexedImages":$indexed,"skippedImages":0,"errorMessage":""}""",
             ))
         }
