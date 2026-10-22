@@ -43,15 +43,11 @@ object RustEventHandler {
             events.collect { event ->
                 try {
                     handleEvent(event)
-                    if (event.reconcile) refreshState()
                 } catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) { LogCat.e("Handle Rust event", error) }
             }
         }
         scope.launch {
-            try { refreshState() }
-            catch (cancelled: CancellationException) { throw cancelled }
-            catch (error: Exception) { LogCat.e("Refresh Rust state", error) }
             readRustStream(
                 next = { withContext(RustDispatchers.events) { RustNativeApi.next("events") } },
                 consume = { incoming.emit(JsonHelper.jsonDecode<RustEvent>(it)) },
@@ -188,25 +184,6 @@ object RustEventHandler {
         }
     }
 
-    private suspend fun refreshState() {
-        com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
-        com.ismartcoding.plain.ui.feeds.FeedWorkerState.refresh()
-        com.ismartcoding.plain.features.videos.VideoProgressHost.restore()
-        com.ismartcoding.plain.preferences.Prefs.refresh()
-        com.ismartcoding.plain.features.chat.download.DownloadQueue.refresh()
-        com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine.refresh()
-        com.ismartcoding.plain.features.nearby.PairingProjection.reconcile()
-        val devices = com.ismartcoding.plain.features.nearby.RustNearbyDevices.snapshot()
-        com.ismartcoding.plain.features.nearby.RustNearbyDevices.apply(devices)
-        com.ismartcoding.plain.features.nearby.RustMdnsRuntime.refresh()
-        com.ismartcoding.plain.features.dlna.DlnaRendererState.refresh()
-        com.ismartcoding.plain.ui.pomodoro.PomodoroProjection.refresh()
-        com.ismartcoding.plain.ui.chat.peer.PeerCacher.refreshOnline()
-        com.ismartcoding.plain.ui.chat.peer.PeerCacher.load()
-        com.ismartcoding.plain.features.chat.channel.ChannelCacher.load()
-        com.ismartcoding.plain.ui.chat.ChatViewModel.refreshLoaded()
-        com.ismartcoding.plain.features.chat.ChatCacher.load()
-    }
 }
 
 @Serializable

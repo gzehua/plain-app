@@ -21,6 +21,7 @@ suspend fun initCommonPreferences() {
     TempData.deviceName.value = UserPrefs.deviceName.value
     com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
     PeerCacher.load()
+    PeerCacher.refreshOnline()
     ChannelCacher.load()
     ChatCacher.load()
     LogCat.d("initCommonPreferences: clientId=${TempData.clientId}, deviceName=${TempData.deviceName.value}")
