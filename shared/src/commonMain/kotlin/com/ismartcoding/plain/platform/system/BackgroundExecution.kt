@@ -10,7 +10,6 @@ import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.IODispatcher
-import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.rust.RustRuntime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
@@ -53,7 +52,7 @@ object BackgroundExecution {
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun run(deadlineMs: Long, id: String = Uuid.random().toString()): Boolean = coroutineScope {
-        if (!RustRuntime.isCoreInitialized) Prefs.load() else RustRuntime.start()
+        RustRuntime.start()
         val finished = async(start = CoroutineStart.UNDISPATCHED) {
             val event = RustEventHandler.events.first { event ->
                 event.type == EventType.BACKGROUND_EXECUTION_FINISHED && JsonHelper.jsonDecode<ExecutionResult>(event.payload).id == id

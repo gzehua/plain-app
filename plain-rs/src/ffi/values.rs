@@ -4,6 +4,14 @@ pub(crate) fn c_string(value: String) -> *mut c_char {
     CString::new(value).expect("string contains NUL").into_raw()
 }
 
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_prefs_string_free(pointer: *mut c_char) {
+    if !pointer.is_null() {
+        // SAFETY: pointer was returned by c_string and is freed exactly once.
+        drop(unsafe { CString::from_raw(pointer) });
+    }
+}
+
 pub(crate) fn input(pointer: *const c_char) -> Result<String, String> {
     if pointer.is_null() {
         return Err("null string passed to Rust preferences".to_string());

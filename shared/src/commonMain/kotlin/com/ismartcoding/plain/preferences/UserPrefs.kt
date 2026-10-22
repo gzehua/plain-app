@@ -24,7 +24,7 @@ import com.ismartcoding.plain.platform.system.Locale
  *
  * Keys are the Rust serde names. Rust owns the defaults and the validation;
  * the argument here is only what the flow shows before the first load, and
- * [Prefs.load] replaces every value with the authoritative snapshot.
+ * [com.ismartcoding.plain.rust.RustRuntime.start] loads the authoritative snapshot.
  */
 object UserPrefs {
     val httpPort = userPref("httpPort", 8080)

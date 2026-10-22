@@ -6,6 +6,7 @@ import com.ismartcoding.plain.app.initCommonPreferences
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
 import com.ismartcoding.plain.preferences.*
+import com.ismartcoding.plain.rust.RustRuntime
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,7 +34,7 @@ import platform.UIKit.UIViewController
 private var initialized = false
 
 /**
- * One-time iOS app initialization: Rust preferences, log adapters,
+ * One-time iOS app initialization: Rust runtime, log adapters,
  * and event collectors. Idempotent — safe to call multiple times.
  */
 @OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
@@ -42,7 +43,7 @@ fun initIosApp() {
     initialized = true
 
     com.ismartcoding.plain.platform.system.setupIosImageLoader()
-    Prefs.load()
+    RustRuntime.start()
 
     // Disk logging + HTTP request logging (debug=VERBOSE, release=WARN)
     initDiskLogging()

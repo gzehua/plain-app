@@ -11,7 +11,6 @@ uint64_t plain_ble_info(uint64_t handle);
 PlainBleBuffer plain_ble_call(int32_t action, uint64_t handle, uint32_t id, uint32_t sequence, uint32_t limit, bool response, const uint8_t *data, size_t len);
 void plain_ble_buffer_free(PlainBleBuffer buffer);
 
-char *plain_prefs_open(const char *data_dir, const char *cache_dir);
 void plain_prefs_string_free(char *pointer);
 
 

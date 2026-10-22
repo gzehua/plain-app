@@ -7,5 +7,4 @@
 
 mod bootstrap;
 mod ffi;
-pub(crate) use ffi::prefs::prefs;
 pub use plain_rs::ffi::ble;

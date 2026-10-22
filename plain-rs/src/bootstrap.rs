@@ -1,5 +1,6 @@
 use plain_server::assembly::server::ContentServer;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String, String> {
     let mut guard = crate::ffi::server::CORE.lock().map_err(|e| e.to_string())?;
@@ -7,15 +8,11 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
     let cache_directory = config["systemProperties"]["cacheDir"]
         .as_str()
         .ok_or("Startup cache directory required")?;
-    let prefs = crate::prefs()?;
     let directory = std::path::Path::new(data_dir);
     if !directory.is_absolute() {
         return Err("Absolute data directory required".into());
     }
     let paths = plain_rs::data_paths::DataPaths::new(directory);
-    if prefs.path() != paths.system_prefs() || prefs.user_path() != paths.user_prefs() {
-        return Err("Preferences and core must share one data directory".into());
-    }
     let mut started_listener = false;
     if let Some(core) = guard.as_mut() {
         if core.directory != PathBuf::from(data_dir)
@@ -29,7 +26,8 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             .block_on(core.server.http_ports())
             .is_none()
         {
-            let settings = plain_rs::prefs::user::snapshot(&prefs).map_err(|e| e.to_string())?;
+            let settings = plain_rs::prefs::user::snapshot(core.server.preferences()?)
+                .map_err(|e| e.to_string())?;
             let (cert, key) = plain_server::services::tls_identity::identity(&paths.tls_identity())?;
             core.server
                 .set_build_debug(config["debug"].as_bool().unwrap_or(false));
@@ -45,6 +43,15 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             started_listener = true;
         }
     } else {
+        // Apply a pending restore and acquire the directory lock before loading preferences.
+        let _data_directory = plain_server::assembly::data_directory::DataDirectory::open(
+            directory,
+            std::path::Path::new(cache_directory),
+        )?;
+        let prefs = Arc::new(
+            plain_rs::prefs::Prefs::load_pair(&paths.system_prefs(), &paths.user_prefs())
+                .map_err(|e| e.to_string())?,
+        );
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(2)
             .enable_all()
@@ -60,7 +67,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
         let server = runtime.block_on(ContentServer::start_http(
             directory,
             token,
-            prefs.clone(),
+            prefs,
             properties,
             settings.http_port as u16,
             settings.https_port as u16,
@@ -84,7 +91,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             .block_on(core.server.http_ports())
             .ok_or("HTTP server stopped during startup")?;
         plain_rs::prefs::user::patch(
-            &prefs,
+            core.server.preferences()?,
             plain_rs::prefs::user::UserSettingsPatch {
                 http_port: Some(http as i32),
                 https_port: Some(https as i32),
