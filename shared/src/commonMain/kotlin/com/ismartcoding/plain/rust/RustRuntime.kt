@@ -42,7 +42,7 @@ object RustRuntime {
         require(result.sharedPreviewDir.startsWith('/')) { "Rust shared preview cache path required" }
         logPath = result.logFile
         sharedPreviewPath = result.sharedPreviewDir
-        kotlinx.coroutines.runBlocking(Dispatchers.IO) { com.ismartcoding.plain.preferences.RustSystemState.refresh() }
+        kotlinx.coroutines.runBlocking(Dispatchers.IO) { com.ismartcoding.plain.preferences.Prefs.refresh() }
         isCoreInitialized = true
         if (!collectorsStarted) {
             RustEventHandler.start(scope)

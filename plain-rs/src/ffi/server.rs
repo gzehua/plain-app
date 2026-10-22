@@ -2,10 +2,9 @@ use crate::ffi::values::c_string;
 use crate::ffi::values::input;
 use plain_server::assembly::server::ContentServer;
 use std::ffi::c_char;
-use std::{path::PathBuf, sync::Mutex};
+use std::sync::Mutex;
 use tokio::runtime::Runtime;
 pub(crate) struct Core {
-    pub(crate) directory: PathBuf,
     pub(crate) token: String,
     pub(crate) server: ContentServer,
     pub(crate) runtime: Runtime,

@@ -40,7 +40,7 @@ fn tls_certificate_signature() -> String {
     reply!((|| -> Result<serde_json::Value, String> {
         let response = super::server::with_core(|core| {
             core.server.native_management()?;
-            let path = plain_rs::data_paths::DataPaths::new(&core.directory).tls_identity();
+            let path = plain_rs::data_paths::DataPaths::new(core.server.data_directory()).tls_identity();
             plain_server::services::tls_identity::action(&path, r#"{"action":"get"}"#)
         })??;
         let value: serde_json::Value =

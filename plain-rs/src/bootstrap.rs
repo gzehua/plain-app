@@ -1,5 +1,4 @@
 use plain_server::assembly::server::ContentServer;
-use std::path::PathBuf;
 use std::sync::Arc;
 
 pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String, String> {
@@ -15,7 +14,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
     let paths = plain_rs::data_paths::DataPaths::new(directory);
     let mut started_listener = false;
     if let Some(core) = guard.as_mut() {
-        if core.directory != PathBuf::from(data_dir)
+        if core.server.data_directory() != directory
             || core.token != token
             || core.server.cache_paths().root() != std::path::Path::new(cache_directory)
         {
@@ -78,7 +77,6 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
         started_listener = true;
         crate::ffi::events::install(&runtime, &server);
         *guard = Some(crate::ffi::server::Core {
-            directory: PathBuf::from(data_dir),
             token: token.into(),
             server,
             runtime,

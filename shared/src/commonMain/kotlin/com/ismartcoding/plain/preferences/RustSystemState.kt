@@ -13,7 +13,6 @@ object RustSystemState {
     val state: StateFlow<SystemSettings> get() = SystemPrefsClient.local.system
     private suspend inline fun <reified T> set(key: String, value: T) = SystemPrefsClient.local.set(key, JsonHelper.jsonEncodeToElement(value))
 
-    suspend fun refresh() = Prefs.refresh()
     suspend fun setPassword(password: String) = set("password", password)
     suspend fun setPasswordType(value: PasswordType) = set("password_type", value.value)
     suspend fun setTwoFactor(enabled: Boolean) = set("auth_two_factor", enabled)

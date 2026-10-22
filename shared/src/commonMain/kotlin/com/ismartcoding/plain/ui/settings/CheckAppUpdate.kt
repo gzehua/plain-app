@@ -4,13 +4,13 @@ import com.ismartcoding.plain.features.settings.UpdatesClient
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.check_failure
 import com.ismartcoding.plain.i18n.rate_limit
-import com.ismartcoding.plain.preferences.RustSystemState
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException
 
 suspend fun checkAppUpdate(showToast: Boolean, automatic: Boolean = false): Boolean? = try {
     val status = UpdatesClient.check(automatic)
-    RustSystemState.refresh()
+    Prefs.refresh()
     when (status) {
         "AVAILABLE" -> true
         "UP_TO_DATE" -> false
