@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.nearby
 
-import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.rust.sendEventToRust
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 import com.ismartcoding.plain.models.NearbyDevice
@@ -35,7 +35,7 @@ object RustPairingRuntime {
         RustGraphqlApi.query("isPairingRequestCurrent(id: ${gql(id)}, signature: ${gql(signature)})").getValue("isPairingRequestCurrent").jsonPrimitive.boolean
 
     suspend fun complete(payload: String) {
-        RustEventHandler.sendEvent(HostEvent(EventType.PAIRING_RESPONSE_REPORTED, payload))
+        sendEventToRust(HostEvent(EventType.PAIRING_RESPONSE_REPORTED, payload))
     }
     suspend fun respond(request: PairingRequestInput, accepted: Boolean): JsonElement =
         RustGraphqlApi.graphql("mutation(\$input: PairingRequestInput!, \$accepted: Boolean!) { respondToPairing(input: \$input, accepted: \$accepted) }", mapOf("input" to JsonHelper.jsonEncodeToElement(request), "accepted" to JsonPrimitive(accepted)), longRunning = true).getValue("respondToPairing")

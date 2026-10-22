@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.rust.host
 
-import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.rust.sendEventToRust
 
 import kotlinx.serialization.Serializable
 
@@ -35,7 +35,7 @@ internal object RustHostApiHandler {
             val observation = launch {
                 try {
                     forwardAudioCatalogChanges(audioCatalogNotifications()) {
-                        RustEventHandler.sendEvent(com.ismartcoding.plain.app.events.HostEvent(
+                        sendEventToRust(com.ismartcoding.plain.app.events.HostEvent(
                             com.ismartcoding.plain.app.events.EventType.MEDIA_CATALOG_CHANGED,
                             JsonHelper.jsonEncode(MediaCatalogChange(listOf(com.ismartcoding.plain.platform.system.DataType.AUDIO.value))),
                         ))

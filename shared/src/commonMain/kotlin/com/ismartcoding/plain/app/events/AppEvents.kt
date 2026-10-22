@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.app.events
 
+import com.ismartcoding.plain.rust.sendEventToRust
 import com.ismartcoding.plain.models.PairingRequestInput
 import com.ismartcoding.plain.ui.state.ActionSourceType
 import com.ismartcoding.plain.ui.state.ActionType
@@ -161,7 +162,7 @@ object AppEvents {
 
                     is HostEvent -> {
                         coIO {
-                            com.ismartcoding.plain.rust.RustEventHandler.sendEvent(event)
+                            sendEventToRust(event)
                         }
                     }
 

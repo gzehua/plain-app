@@ -16,10 +16,26 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
+private val hostEventTypes = MutableStateFlow<HostEventTypes?>(null)
+
+suspend fun sendEventToRust(event: HostEvent) {
+    val types = withTimeoutOrNull(5_000) { hostEventTypes.filterNotNull().first() } ?: error("Rust host event channel unavailable")
+    require(event.type.name in when (event.data) {
+        is HostEventData.Text -> types.textTypes
+        is HostEventData.Binary -> types.binaryTypes
+    }) { "${event.type} is not a host-produced event" }
+    val error = withContext(RustDispatchers.requests) {
+        when (val data = event.data) {
+            is HostEventData.Text -> RustNativeApi.send("text", JsonHelper.jsonEncode(mapOf("type" to event.type.name, "payload" to data.value)), byteArrayOf())
+            is HostEventData.Binary -> RustNativeApi.send("binary", event.type.name, data.value)
+        }
+    }
+    require(error.isEmpty()) { error }
+}
+
 object RustEventHandler {
     private val incoming = MutableSharedFlow<RustEvent>(extraBufferCapacity = 64)
     val events: SharedFlow<RustEvent> = incoming.asSharedFlow()
-    private val hostEventTypes = MutableStateFlow<HostEventTypes?>(null)
 
     internal fun start(scope: CoroutineScope) {
         hostEventTypes.value = JsonHelper.jsonDecode(RustNativeApi.next("capabilities"))
@@ -42,21 +58,6 @@ object RustEventHandler {
                 closed = {},
             )
         }
-    }
-
-    suspend fun sendEvent(event: HostEvent) {
-        val types = withTimeoutOrNull(5_000) { hostEventTypes.filterNotNull().first() } ?: error("Rust host event channel unavailable")
-        require(event.type.name in when (event.data) {
-            is HostEventData.Text -> types.textTypes
-            is HostEventData.Binary -> types.binaryTypes
-        }) { "${event.type} is not a host-produced event" }
-        val error = withContext(RustDispatchers.requests) {
-            when (val data = event.data) {
-                is HostEventData.Text -> RustNativeApi.send("text", JsonHelper.jsonEncode(mapOf("type" to event.type.name, "payload" to data.value)), byteArrayOf())
-                is HostEventData.Binary -> RustNativeApi.send("binary", event.type.name, data.value)
-            }
-        }
-        require(error.isEmpty()) { error }
     }
 
     internal suspend fun handleEvent(event: RustEvent) {

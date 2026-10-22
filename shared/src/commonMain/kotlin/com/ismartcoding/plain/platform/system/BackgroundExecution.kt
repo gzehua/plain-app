@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.rust.sendEventToRust
 
 import kotlinx.serialization.Serializable
 
@@ -63,9 +64,9 @@ object BackgroundExecution {
         }
         try {
             withGrant(
-                grant = { RustEventHandler.sendEvent(HostEvent(EventType.BACKGROUND_EXECUTION_GRANTED, JsonHelper.jsonEncode(ExecutionGrant(id, deadlineMs)))) },
+                grant = { sendEventToRust(HostEvent(EventType.BACKGROUND_EXECUTION_GRANTED, JsonHelper.jsonEncode(ExecutionGrant(id, deadlineMs)))) },
                 awaitCompletion = { finished.await() },
-                revoke = { RustEventHandler.sendEvent(HostEvent(EventType.BACKGROUND_EXECUTION_REVOKED, JsonHelper.jsonEncode(ExecutionRevocation(id)))) },
+                revoke = { sendEventToRust(HostEvent(EventType.BACKGROUND_EXECUTION_REVOKED, JsonHelper.jsonEncode(ExecutionRevocation(id)))) },
             )
         } finally {
             withContext(NonCancellable) { observer.cancelAndJoin() }
@@ -88,7 +89,7 @@ object BackgroundExecution {
     fun executionStateChanged() {
         if (RustRuntime.startedSession() == null) return
         scope.launch {
-            try { RustEventHandler.sendEvent(HostEvent(EventType.EXECUTION_STATE_CHANGED, "{}")) }
+            try { sendEventToRust(HostEvent(EventType.EXECUTION_STATE_CHANGED, "{}")) }
             catch (error: Exception) { LogCat.e("Execution state report failed", error) }
         }
     }

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.rust.sendEventToRust
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.clipboard.ClipboardClient
@@ -26,7 +26,7 @@ class ClipboardRustHttpTest {
         val text = "$marker 🌍 100%_ \\ \"quoted\""
         val ids = mutableListOf<String>()
         try {
-            RustEventHandler.sendEvent(HostEvent(EventType.CLIPBOARD_REPORTED,
+            sendEventToRust(HostEvent(EventType.CLIPBOARD_REPORTED,
                 JsonHelper.jsonEncode(ClipboardReportData(text, sensitive = true))))
             val entry = ClipboardClient.getPage(50, 0, marker).single()
             ids += entry.id
@@ -34,7 +34,7 @@ class ClipboardRustHttpTest {
             assertEquals("", entry.source)
             assertEquals("", entry.label)
             assertTrue(entry.sensitive)
-            RustEventHandler.sendEvent(HostEvent(EventType.CLIPBOARD_REPORTED,
+            sendEventToRust(HostEvent(EventType.CLIPBOARD_REPORTED,
                 JsonHelper.jsonEncode(ClipboardReportData(text, sensitive = false))))
             assertEquals(1, ClipboardClient.count(marker))
             assertEquals(entry, ClipboardClient.getPage(50, 0, marker).single())

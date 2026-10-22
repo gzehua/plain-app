@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.rust.host.media
 
-import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.rust.sendEventToRust
 
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.app.TempData
@@ -53,7 +53,7 @@ object AudioEngineHost {
                 try {
                     val report = withContext(Dispatchers.Main) { mutex.withLock { report(engine()) } }
                     if (report.path.isNotEmpty() && report.revision >= 0) {
-                        RustEventHandler.sendEvent(com.ismartcoding.plain.app.events.HostEvent(com.ismartcoding.plain.app.events.EventType.AUDIO_PROGRESS_REPORTED, JsonHelper.jsonEncode(report)))
+                        sendEventToRust(com.ismartcoding.plain.app.events.HostEvent(com.ismartcoding.plain.app.events.EventType.AUDIO_PROGRESS_REPORTED, JsonHelper.jsonEncode(report)))
                     }
                 } catch (cancelled: CancellationException) { throw cancelled }
                 catch (e: Exception) { LogCat.e("Audio progress: ${e.message}") }

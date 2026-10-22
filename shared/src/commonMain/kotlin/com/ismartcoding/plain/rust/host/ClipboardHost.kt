@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.rust.host
 
-import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.rust.sendEventToRust
 
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HostEvent
@@ -19,7 +19,7 @@ internal suspend fun observeClipboardReports() = observeClipboardWhenEnabled(
 ) {
     observeClipboardChanges { report ->
         try {
-            RustEventHandler.sendEvent(HostEvent(EventType.CLIPBOARD_REPORTED, JsonHelper.jsonEncode(report)))
+            sendEventToRust(HostEvent(EventType.CLIPBOARD_REPORTED, JsonHelper.jsonEncode(report)))
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {

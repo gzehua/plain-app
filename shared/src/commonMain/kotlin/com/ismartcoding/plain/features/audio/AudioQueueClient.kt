@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.audio
 
-import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.rust.sendEventToRust
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 import kotlinx.serialization.Serializable
@@ -40,14 +40,14 @@ object AudioQueueClient {
     ).getValue("audioQueueItems").let { JsonHelper.jsonDecodeFromElement<List<QueuedMediaId>>(it) }.mapNotNull { it.mediaId }.toSet()
 
     suspend fun onStarted(audio: AudioItem, revision: Long) {
-        RustEventHandler.sendEvent(com.ismartcoding.plain.app.events.HostEvent(
+        sendEventToRust(com.ismartcoding.plain.app.events.HostEvent(
             com.ismartcoding.plain.app.events.EventType.AUDIO_STARTED_REPORTED,
             JsonHelper.jsonEncode(AudioPlaybackReport(audio.path, revision)),
         ))
     }
 
     suspend fun onCompleted(path: String, revision: Long) {
-        RustEventHandler.sendEvent(com.ismartcoding.plain.app.events.HostEvent(
+        sendEventToRust(com.ismartcoding.plain.app.events.HostEvent(
             com.ismartcoding.plain.app.events.EventType.AUDIO_COMPLETED_REPORTED,
             JsonHelper.jsonEncode(AudioPlaybackReport(path, revision)),
         ))
