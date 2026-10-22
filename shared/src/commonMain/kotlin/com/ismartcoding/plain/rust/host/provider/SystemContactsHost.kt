@@ -18,39 +18,39 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal object SystemContactsHost {
-    suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
+    internal suspend fun handle(method: String, params: JsonObject): HostResult = when (method) {
         "systemContactFacts" -> {
             val request = JsonHelper.jsonDecodeFromElement<ProviderPageRequest>(params)
-            JsonHelper.jsonEncodeToElement(readContacts(request.plan, request.limit, request.offset))
+            hostResult(readContacts(request.plan, request.limit, request.offset))
         }
-        "systemContactCount" -> JsonHelper.jsonEncodeToElement(
+        "systemContactCount" -> hostResult(
             countMedia(
                 DataType.CONTACT,
                 params.providerPlan(),
             )
         )
-        "systemContactIds" -> JsonHelper.jsonEncodeToElement(
+        "systemContactIds" -> hostResult(
             getMediaIds(
                 DataType.CONTACT,
                 params.providerPlan(),
             )
         )
-        "systemContactGroupFacts" -> JsonHelper.jsonEncodeToElement(getContactGroups())
-        "systemContactSources" -> JsonHelper.jsonEncodeToElement(getContactSources())
+        "systemContactGroupFacts" -> hostResult(getContactGroups())
+        "systemContactSources" -> hostResult(getContactSources())
         "systemCreateContact" -> {
             val request = JsonHelper.jsonDecodeFromElement<CreateContactRequest>(params)
-            JsonHelper.jsonEncodeToElement(createContact(request.input, request.accountType))
+            hostResult(createContact(request.input, request.accountType))
         }
         "systemUpdateContact" -> {
             val request = JsonHelper.jsonDecodeFromElement<UpdateContactRequest>(params)
             updateContact(
                 request.id, request.input,
             )
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
         "systemCreateContactGroup" -> {
             val request = JsonHelper.jsonDecodeFromElement<CreateContactGroupRequest>(params)
-            JsonHelper.jsonEncodeToElement(createContactGroup(
+            hostResult(createContactGroup(
                 request.name, request.accountName, request.accountType,
             ).id.toString())
         }
@@ -59,11 +59,11 @@ internal object SystemContactsHost {
             updateContactGroup(
                 request.id, request.name,
             )
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
         "systemDeleteContactGroup" -> {
             deleteContactGroup(JsonHelper.jsonDecodeFromElement<IdRequest>(params).id)
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
         else -> error("Unsupported provider operation")
     }

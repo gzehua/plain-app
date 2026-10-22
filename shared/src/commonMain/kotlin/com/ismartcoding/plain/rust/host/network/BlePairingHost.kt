@@ -4,6 +4,7 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.network.ble.BlePairConnection
 import com.ismartcoding.plain.platform.network.bleTransport
+import com.ismartcoding.plain.rust.host.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -16,32 +17,32 @@ object BlePairingHost {
     private val handles = mutableMapOf<String, Handle>()
     private val closed = linkedSetOf<String>()
 
-    suspend fun handle(method: String, params: JsonObject): JsonElement {
+    internal suspend fun handle(method: String, params: JsonObject): HostResult {
         return when (method) {
             "blePairConnect" -> {
                 val request = JsonHelper.jsonDecodeFromElement<BleConnectRequest>(params)
                 val generation = request.generation
                 val operation = currentCoroutineContext()[Job]
                 val entry = mutex.withLock {
-                    if (generation in closed || handles.containsKey(generation) || handles.size >= 2) return JsonPrimitive(false)
+                    if (generation in closed || handles.containsKey(generation) || handles.size >= 2) return hostResult(false)
                     Handle(operation).also { handles[generation] = it }
                 }
                 val device = bleTransport().createScanner()
-                    .createClient(request.shortId) ?: return JsonPrimitive(false)
+                    .createClient(request.shortId) ?: return hostResult(false)
                 val connection = BlePairConnection(device)
                 val installed = mutex.withLock {
                     if (handles[generation] !== entry) false else { entry.connection = connection; true }
                 }
-                if (!installed) { connection.close(); return JsonPrimitive(false) }
-                JsonPrimitive(connection.connect())
+                if (!installed) { connection.close(); return hostResult(false) }
+                hostResult(connection.connect())
             }
             "blePairSend" -> {
                 val request = JsonHelper.jsonDecodeFromElement<BleSendRequest>(params)
-                JsonPrimitive(connection(request.generation).send(request.body))
+                hostResult(connection(request.generation).send(request.body))
             }
             "blePairWait" -> {
                 val request = JsonHelper.jsonDecodeFromElement<BleWaitRequest>(params)
-                connection(request.generation).wait(request.timeoutMs.coerceIn(1, 1_000))
+                hostResult(connection(request.generation).wait(request.timeoutMs.coerceIn(1, 1_000)))
             }
             "blePairClose" -> {
                 val generation = JsonHelper.jsonDecodeFromElement<BleGenerationRequest>(params).generation
@@ -52,7 +53,7 @@ object BlePairingHost {
                 }
                 entry?.job?.cancel()
                 entry?.connection?.close()
-                JsonPrimitive(true)
+                hostResult(true)
             }
             else -> error("Unsupported BLE operation")
         }

@@ -3,6 +3,7 @@ package com.ismartcoding.plain.rust.host.network
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.network.ble.BleUuids
 import com.ismartcoding.plain.platform.network.bleTransport
+import com.ismartcoding.plain.rust.host.*
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.Serializable
@@ -12,7 +13,7 @@ object PeerTransportPrewarmHost {
     @Serializable
     private data class ScanResult(val shortId: String, val awareSupported: Boolean, val awareRunning: Boolean)
 
-    suspend fun scan(params: JsonObject): JsonElement {
+    internal suspend fun scan(params: JsonObject): HostResult {
         val request = JsonHelper.jsonDecodeFromElement<PrewarmScanRequest>(params)
         val device = withTimeoutOrNull(request.timeoutMs) {
             bleTransport().createScanner().scan(BleUuids.SERVICE_UUID).firstOrNull {
@@ -20,8 +21,8 @@ object PeerTransportPrewarmHost {
             }
         }
         return device?.let {
-            JsonHelper.jsonEncodeToElement(ScanResult(it.id, it.awareSupported, it.awareRunning))
-        } ?: JsonNull
+            hostResult(ScanResult(it.id, it.awareSupported, it.awareRunning))
+        } ?: hostResult()
     }
 }
 

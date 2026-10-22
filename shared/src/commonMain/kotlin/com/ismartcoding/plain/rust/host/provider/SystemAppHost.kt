@@ -15,27 +15,28 @@ import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.system.readBatterySample
 import com.ismartcoding.plain.platform.system.sampleSystemProperties
 import com.ismartcoding.plain.platform.system.scheduleBackgroundWake
+import com.ismartcoding.plain.rust.host.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal object SystemAppHost {
-    suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
+    internal suspend fun handle(method: String, params: JsonObject): HostResult = when (method) {
         "systemSetClipboard" -> {
             setClipboardText("plain", JsonHelper.jsonDecodeFromElement<ClipboardTextRequest>(params).text)
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
         "systemPermissionFacts" -> run {
             val request = JsonHelper.jsonDecodeFromElement<PermissionRequest>(params)
             val granted = request.permissions.associate { name ->
                 name to Permission.valueOf(name).isGranted()
             }
-            JsonHelper.jsonEncodeToElement(PermissionFacts(
+            hostResult(PermissionFacts(
                 granted = granted,
             ))
         }
         "systemOpenAccessibilitySettings" -> {
             sendEvent(HOpenAccessibilitySettingsEvent())
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
         "systemOpenWebSettings" -> {
             val feature = JsonHelper.jsonDecodeFromElement<WebSettingsRequest>(params).feature
@@ -43,25 +44,25 @@ internal object SystemAppHost {
                     WebSettingsFeature.entries.firstOrNull { it.name == name }
                 }
             sendEvent(HOpenWebSettingsEvent(feature))
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
-        "systemNetworkType" -> JsonHelper.jsonEncodeToElement(getNetworkType().name)
+        "systemNetworkType" -> hostResult(getNetworkType().name)
         "systemScheduleBackgroundWake" -> {
             scheduleBackgroundWake(JsonHelper.jsonDecodeFromElement<BackgroundWakeRequest>(params).atMs)
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
-        "systemProperties" -> JsonHelper.jsonEncodeToElement(sampleSystemProperties(
+        "systemProperties" -> hostResult(sampleSystemProperties(
             JsonHelper.jsonDecodeFromElement<SystemPropertiesRequest>(params).names,
         ))
-        "systemBatterySample" -> JsonHelper.jsonEncodeToElement(readBatterySample())
-        "systemCapabilities" -> JsonHelper.jsonEncodeToElement(getDeviceCapabilities().map { it.name })
+        "systemBatterySample" -> hostResult(readBatterySample())
+        "systemCapabilities" -> hostResult(getDeviceCapabilities().map { it.name })
         "systemClearMediaCache" -> {
             clearMediaCache()
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
         "systemRelaunchApp" -> {
             sendEvent(RestartAppEvent())
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
         else -> error("Unsupported provider operation")
     }

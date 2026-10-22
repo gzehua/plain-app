@@ -9,28 +9,29 @@ import com.ismartcoding.plain.platform.media.countMedia
 import com.ismartcoding.plain.platform.media.getMediaIds
 import com.ismartcoding.plain.platform.media.searchMedia
 import com.ismartcoding.plain.platform.system.DataType
+import com.ismartcoding.plain.rust.host.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal object SystemCallsHost {
-    suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
-        "systemPhoneLocaleFacts" -> JsonHelper.jsonEncodeToElement(phoneLocaleFacts())
+    internal suspend fun handle(method: String, params: JsonObject): HostResult = when (method) {
+        "systemPhoneLocaleFacts" -> hostResult(phoneLocaleFacts())
         "systemCallFacts" -> {
             val request = JsonHelper.jsonDecodeFromElement<ProviderPageRequest>(params)
-            JsonHelper.jsonEncodeToElement(
+            hostResult(
                 searchMedia(
                     DataType.CALL, request.plan, request.limit, request.offset,
                     FileSortBy.DATE_DESC,
                 ).filterIsInstance<PhoneCall>().map(::callFacts)
             )
         }
-        "systemCallCount" -> JsonHelper.jsonEncodeToElement(
+        "systemCallCount" -> hostResult(
             countMedia(
                 DataType.CALL,
                 params.providerPlan(),
             )
         )
-        "systemCallIds" -> JsonHelper.jsonEncodeToElement(
+        "systemCallIds" -> hostResult(
             getMediaIds(
                 DataType.CALL,
                 params.providerPlan(),
@@ -41,7 +42,7 @@ internal object SystemCallsHost {
             call(
                 request.number, request.showDialer,
             )
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
         else -> error("Unsupported provider operation")
     }

@@ -11,17 +11,17 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal object SystemPackagesHost {
-    suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
-        "systemPackageFacts" -> JsonHelper.jsonEncodeToElement(installedPackageFacts())
+    internal suspend fun handle(method: String, params: JsonObject): HostResult = when (method) {
+        "systemPackageFacts" -> hostResult(installedPackageFacts())
         "systemPackageStatuses" -> {
             val ids = JsonHelper.jsonDecodeFromElement<IdsRequest>(params).ids
-            JsonHelper.jsonEncodeToElement(getPackageInfoMap(ids))
+            hostResult(getPackageInfoMap(ids))
         }
-        "systemPackageInstallProfile" -> JsonHelper.jsonEncodeToElement(packageInstallProfile())
+        "systemPackageInstallProfile" -> hostResult(packageInstallProfile())
         "systemInstallPackage" -> {
             val request = JsonHelper.jsonDecodeFromElement<InstallPackageRequest>(params)
             val result = installPackage(request.paths, request.packageName, request.session)
-            JsonHelper.jsonEncodeToElement(PackageInstallFacts(
+            hostResult(PackageInstallFacts(
                 packageName = result.packageName,
                 lastUpdateTime = result.lastUpdateTime?.toString(),
                 isNew = result.isNew,
@@ -31,7 +31,7 @@ internal object SystemPackagesHost {
             JsonHelper.jsonDecodeFromElement<IdsRequest>(params).ids.forEach {
                 uninstallPackage(it)
             }
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
         else -> error("Unsupported provider operation")
     }

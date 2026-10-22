@@ -53,7 +53,7 @@ class AudioEngineHostTest {
             assertFalse(result.isCompleted)
             assertEquals(listOf("bind:5", "seek"), player.calls)
             player.gate.complete(Unit)
-            val report = result.await().jsonObject
+            val report = JsonHelper.jsonDecode<JsonObject>(result.await().encodeReply(1)).getValue("result").jsonObject
             assertEquals(listOf("bind:5", "seek", "speed:1.5", "play"), player.calls)
             assertEquals(1200, report.getValue("positionMs").jsonPrimitive.int)
             assertEquals(5, report.getValue("revision").jsonPrimitive.int)
@@ -75,7 +75,7 @@ class AudioEngineHostTest {
             assertFalse(result.isCompleted)
             assertEquals(listOf("bind:5", "load"), player.calls)
             player.gate.complete(Unit)
-            val report = result.await().jsonObject
+            val report = JsonHelper.jsonDecode<JsonObject>(result.await().encodeReply(1)).getValue("result").jsonObject
             assertEquals("song", report.getValue("path").jsonPrimitive.content)
             assertTrue(report.getValue("loaded").jsonPrimitive.boolean)
         } finally {

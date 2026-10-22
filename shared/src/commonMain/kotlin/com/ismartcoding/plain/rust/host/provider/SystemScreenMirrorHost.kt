@@ -14,22 +14,23 @@ import com.ismartcoding.plain.platform.media.resetScreenMirrorTouchStream
 import com.ismartcoding.plain.platform.media.stopScreenMirror
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
+import com.ismartcoding.plain.rust.host.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal object SystemScreenMirrorHost {
-    suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
+    internal suspend fun handle(method: String, params: JsonObject): HostResult = when (method) {
         "systemScreenMirrorControls" -> {
             JsonHelper.jsonDecodeFromElement<ScreenMirrorControlsFacts>(params).inputs.forEach { dispatchScreenMirrorControl(it) }
-            JsonNull
+            hostResult()
         }
         "systemScreenMirrorResetTouch" -> {
             resetScreenMirrorTouchStream()
-            JsonNull
+            hostResult()
         }
         "systemScreenMirrorState" -> {
             val codec = getScreenMirrorVideoCodec()
-            JsonHelper.jsonEncodeToElement(ScreenMirrorStateFacts(
+            hostResult(ScreenMirrorStateFacts(
                 running = isScreenMirrorRunning(),
                 controlEnabled = isScreenMirrorControlEnabled(),
                 codec = codec,
@@ -42,11 +43,11 @@ internal object SystemScreenMirrorHost {
                     request.audio
                 )
             )
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
         "systemStopScreenMirror" -> {
             stopScreenMirror()
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
         "systemRequestScreenMirrorAudio" -> {
             val granted = Permission.RECORD_AUDIO.isGranted()
@@ -55,11 +56,11 @@ internal object SystemScreenMirrorHost {
                     HRequestScreenMirrorAudioEvent()
                 )
             }
-            JsonHelper.jsonEncodeToElement(granted)
+            hostResult(granted)
         }
         "systemRequestScreenMirrorKeyFrame" -> {
             requestScreenMirrorKeyFrame()
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
         else -> error("Unsupported provider operation")
     }

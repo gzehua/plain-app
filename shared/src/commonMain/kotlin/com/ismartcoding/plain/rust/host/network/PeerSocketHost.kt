@@ -2,6 +2,7 @@ package com.ismartcoding.plain.rust.host.network
 
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.network.openAwareByteSocket
+import com.ismartcoding.plain.rust.host.*
 import kotlin.io.encoding.Base64
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
@@ -12,31 +13,31 @@ object PeerSocketHost {
 
     private val handles = PeerSocketHandles(::openAwareByteSocket)
 
-    suspend fun handle(method: String, params: JsonObject): JsonElement {
-        if (method == "peerTransportSocketCloseAll") { disconnect(); return JsonPrimitive(true) }
+    internal suspend fun handle(method: String, params: JsonObject): HostResult {
+        if (method == "peerTransportSocketCloseAll") { disconnect(); return hostResult(true) }
         return when (method) {
             "peerTransportSocketOpen" -> {
                 val request = JsonHelper.jsonDecodeFromElement<SocketOpenRequest>(params)
                 handles.open(request.token, request.peerId)
-                JsonPrimitive(true)
+                hostResult(true)
             }
             "peerTransportSocketClose" -> {
                 val request = JsonHelper.jsonDecodeFromElement<SocketTokenRequest>(params)
                 handles.close(request.token)
-                JsonPrimitive(true)
+                hostResult(true)
             }
             "peerTransportSocketRead" -> {
                 val request = JsonHelper.jsonDecodeFromElement<SocketReadRequest>(params)
                 require(request.length in 1..32768)
                 val bytes = handles.socket(request.token).read(request.length)
-                JsonHelper.jsonEncodeToElement(ReadResult(bytes != null && bytes.isEmpty(), bytes?.let { Base64.encode(it) }))
+                hostResult(ReadResult(bytes != null && bytes.isEmpty(), bytes?.let { Base64.encode(it) }))
             }
             "peerTransportSocketWrite" -> {
                 val request = JsonHelper.jsonDecodeFromElement<SocketWriteRequest>(params)
                 val bytes = Base64.decode(request.bytes)
                 require(bytes.size <= 32768)
                 handles.socket(request.token).write(bytes)
-                JsonPrimitive(bytes.size)
+                hostResult(bytes.size)
             }
             else -> error("Unknown socket operation")
         }

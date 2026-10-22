@@ -9,13 +9,13 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal object SystemNotificationsHost {
-    suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
-        "systemNotificationFacts" -> JsonHelper.jsonEncodeToElement(notificationFacts())
-        "systemCancelNotifications" -> JsonHelper.jsonEncodeToElement(cancelNotificationFacts(
+    internal suspend fun handle(method: String, params: JsonObject): HostResult = when (method) {
+        "systemNotificationFacts" -> hostResult(notificationFacts())
+        "systemCancelNotifications" -> hostResult(cancelNotificationFacts(
             JsonHelper.jsonDecodeFromElement<IdsRequest>(params).ids.toSet()))
         "systemReplyNotification" -> {
             val request = JsonHelper.jsonDecodeFromElement<ReplyNotificationRequest>(params)
-            JsonHelper.jsonEncodeToElement(replyNotification(request.id, request.actionIndex, request.text))
+            hostResult(replyNotification(request.id, request.actionIndex, request.text))
         }
         else -> error("Unsupported provider operation")
     }

@@ -92,11 +92,10 @@ internal object RustHostApiHandler {
                         launch {
                             try {
                                 val reply = try {
-                                    val result = executeHostRequest(request, exchangeScope, bleAdvertising)
-                                    RustHostReply(request.id, result = result)
+                                    executeHostRequest(request, exchangeScope, bleAdvertising).encodeReply(request.id)
                                 } catch (cancelled: CancellationException) { throw cancelled }
-                                catch (error: Exception) { RustHostReply(request.id, error = error.message ?: "Host operation failed") }
-                                val error = RustNativeApi.send("reply", JsonHelper.jsonEncode(reply), byteArrayOf())
+                                catch (error: Exception) { encodeHostError(request.id, error) }
+                                val error = RustNativeApi.send("reply", reply, byteArrayOf())
                                 check(error.isEmpty()) { error }
                             } finally { capacity.release() }
                         }
@@ -138,127 +137,82 @@ internal suspend fun executeHostRequest(
     request: RustHostRequest,
     exchangeScope: CoroutineScope,
     bleAdvertising: PairingTransport.Connection,
-): JsonElement {
+): HostResult {
     val method = request.method
     val params = request.params
     return when (method) {
         "prefsChanged" -> {
             PrefStore.refresh()
-            JsonNull
+            hostResult()
         }
-        "fileResourceStream" -> { FileResourceStreamHost.start(exchangeScope, params); JsonNull }
+        "fileResourceStream" -> { FileResourceStreamHost.start(exchangeScope, params); hostResult() }
         "thumbnailDecode" -> ThumbnailHost.decode(params)
-        "blePairConnect",
-        "blePairSend",
-        "blePairWait",
+        "blePairConnect", "blePairSend", "blePairWait",
         "blePairClose" -> BlePairingHost.handle(method, params)
-        "bleAdvertising" -> bleAdvertising.handle(params)
-        "bleScanRead" -> BleScanDriver.read(params)
+        "bleAdvertising" -> hostResult(bleAdvertising.handle(params))
+        "bleScanRead" -> hostResult(BleScanDriver.read(params))
         "mdnsMulticast" -> MdnsMulticastHost.handle(params)
         "nearbyScanFacts" -> NearbyScanHost.facts()
         "pairingNotification" -> PairingNotificationHost.handle(params)
         "peerStartAware",
         "peerStopAware" -> PeerAwareHost.handle(method, params)
         "peerTransportPrewarmScan" -> PeerTransportPrewarmHost.scan(params)
-        "peerTransportCapabilities" -> JsonHelper.jsonEncodeToElement(buildList {
+        "peerTransportCapabilities" -> hostResult(buildList {
             if (isWifiAwareSupported) add(PeerTransportType.AWARE)
             if (isBleReady()) add(PeerTransportType.BLE)
         })
-        "peerTransportSocketOpen",
-        "peerTransportSocketClose",
-        "peerTransportSocketRead",
-        "peerTransportSocketWrite",
+        "peerTransportSocketOpen", "peerTransportSocketClose", "peerTransportSocketRead", "peerTransportSocketWrite",
         "peerTransportSocketCloseAll" -> PeerSocketHost.handle(method, params)
-        "peerTransportBleExchange" -> PeerBleExchange.exchange(params)
-        "systemPackageFacts",
-        "systemPackageStatuses",
-        "systemInstallPackage",
-        "systemPackageInstallProfile",
+        "peerTransportBleExchange" -> hostResult(PeerBleExchange.exchange(params))
+        "systemPackageFacts", "systemPackageStatuses", "systemInstallPackage", "systemPackageInstallProfile",
         "systemUninstallPackages" -> SystemPackagesHost.handle(method, params)
-        "systemNotificationFacts",
-        "systemCancelNotifications",
+        "systemNotificationFacts", "systemCancelNotifications",
         "systemReplyNotification" -> SystemNotificationsHost.handle(method, params)
-        "systemContactFacts",
-        "systemContactCount",
-        "systemContactIds",
-        "systemContactGroupFacts",
-        "systemContactSources",
-        "systemCreateContact",
-        "systemUpdateContact",
-        "systemCreateContactGroup",
+        "systemContactFacts", "systemContactCount", "systemContactIds", "systemContactGroupFacts",
+        "systemContactSources", "systemCreateContact", "systemUpdateContact", "systemCreateContactGroup",
         "systemUpdateContactGroup",
         "systemDeleteContactGroup" -> SystemContactsHost.handle(method, params)
-        "systemPhoneLocaleFacts",
-        "systemCallFacts",
-        "systemCallCount",
-        "systemCallIds",
+        "systemPhoneLocaleFacts", "systemCallFacts", "systemCallCount", "systemCallIds",
         "systemMakeCall" -> SystemCallsHost.handle(method, params)
-        "systemMmsTextFacts",
-        "systemSmsCountFacts",
-        "systemSmsRowsFacts",
-        "systemSmsIdsFacts",
-        "systemSmsConversationFacts",
-        "systemSmsThreadFacts",
-        "systemDivideSmsText",
-        "systemSendSmsParts",
-        "systemDeleteSmsRows",
-        "systemMmsLatest",
-        "systemMmsLaunch",
-        "systemMmsCandidates",
+        "systemMmsTextFacts", "systemSmsCountFacts", "systemSmsRowsFacts", "systemSmsIdsFacts",
+        "systemSmsConversationFacts", "systemSmsThreadFacts", "systemDivideSmsText", "systemSendSmsParts",
+        "systemDeleteSmsRows", "systemMmsLatest", "systemMmsLaunch", "systemMmsCandidates",
         "systemSimFacts" -> SystemSmsHost.handle(method, params)
-        "systemScreenMirrorControls",
-        "systemScreenMirrorResetTouch",
-        "systemScreenMirrorState",
-        "systemStartScreenMirror",
-        "systemStopScreenMirror",
-        "systemRequestScreenMirrorAudio",
+        "systemScreenMirrorControls", "systemScreenMirrorResetTouch", "systemScreenMirrorState",
+        "systemStartScreenMirror", "systemStopScreenMirror", "systemRequestScreenMirrorAudio",
         "systemRequestScreenMirrorKeyFrame" -> SystemScreenMirrorHost.handle(method, params)
         "systemImageModelsObserve" -> {
             observeImageCatalog(JsonHelper.jsonDecodeFromElement<ObserveImageCatalogRequest>(params).enabled)
-            JsonHelper.jsonEncodeToElement(true)
+            hostResult(true)
         }
-        "systemFileResource" -> FileResourceHost.handle(params)
-        "systemFileIndexId",
-        "systemFileIndexRows",
-        "systemFileIndexCount",
-        "systemMountFacts",
+        "systemFileResource" -> hostResult(FileResourceHost.handle(params))
+        "systemFileIndexId", "systemFileIndexRows", "systemFileIndexCount", "systemMountFacts",
         "imageDecodeBounds" -> SystemFilesHost.handle(method, params)
-        "systemMediaBucketItemFacts",
-        "systemMediaRows",
-        "systemMediaCount",
+        "systemMediaBucketItemFacts", "systemMediaRows", "systemMediaCount",
         "systemMediaIdsFacts" -> SystemMediaHost.handle(method, params)
-        "systemAudioPlaybackState" -> JsonHelper.jsonEncodeToElement(AudioPlaybackFacts(
+        "systemAudioPlaybackState" -> hostResult(AudioPlaybackFacts(
             isPlaying = audioIsPlayingFlow().value,
             positionMs = audioPlayerProgressAsync(),
         ))
         "systemDeleteRecords" -> {
             val request = JsonHelper.jsonDecodeFromElement<DeleteRecordsRequest>(params)
-            JsonHelper.jsonEncodeToElement(deleteSystemProviderFacts(
+            hostResult(deleteSystemProviderFacts(
                 DataType.valueOf(request.provider), request.ids.toSet()))
         }
-        "systemSetClipboard",
-        "systemPermissionFacts",
-        "systemOpenAccessibilitySettings",
-        "systemOpenWebSettings",
-        "systemNetworkType",
-        "systemScheduleBackgroundWake",
-        "systemProperties",
-        "systemBatterySample",
-        "systemCapabilities",
-        "systemClearMediaCache",
+        "systemSetClipboard", "systemPermissionFacts", "systemOpenAccessibilitySettings", "systemOpenWebSettings",
+        "systemNetworkType", "systemScheduleBackgroundWake", "systemProperties", "systemBatterySample",
+        "systemCapabilities", "systemClearMediaCache",
         "systemRelaunchApp" -> SystemAppHost.handle(method, params)
         "audioEngineCommand" -> AudioEngineHost.command(params)
         "fileTaskScan",
         "fileTaskMediaSnapshot" -> FileTaskHost.handle(method,params)
         "mediaProviderRows",
-        "mediaProviderWrite" -> handleMediaProvider(method, params)
-        "imageCatalogSnapshot",
-        "imageCatalogPage",
-        "imageCatalogResolve",
-        "imageCatalogVerify" -> handleImageCatalogHost(method, params)
+        "mediaProviderWrite" -> hostResult(handleMediaProvider(method, params))
+        "imageCatalogSnapshot", "imageCatalogPage", "imageCatalogResolve",
+        "imageCatalogVerify" -> hostResult(handleImageCatalogHost(method, params))
         "audioLibraryResolve" -> {
             val input = JsonHelper.jsonDecodeFromElement<AudioLibraryResolveRequest>(params)
-            JsonHelper.jsonEncodeToElement(audioLibraryResolve(input.ids, input.paths))
+            hostResult(audioLibraryResolve(input.ids, input.paths))
         }
         else -> error("Unknown Rust host operation: $method")
 

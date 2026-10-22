@@ -8,6 +8,7 @@ import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.platform.media.AudioPlayer
 import com.ismartcoding.plain.platform.media.audioPlayer
+import com.ismartcoding.plain.rust.host.*
 import com.ismartcoding.plain.rust.sendEventToRust
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -77,7 +78,7 @@ object AudioEngineHost {
         }
     }
 
-    suspend fun command(params: JsonObject): JsonElement = withContext(Dispatchers.Main) {
+    internal suspend fun command(params: JsonObject): HostResult = withContext(Dispatchers.Main) {
         mutex.withLock {
             val player = engine()
             val command = JsonHelper.jsonDecodeFromElement<AudioEngineCommand>(params)
@@ -107,7 +108,7 @@ object AudioEngineHost {
             }
             revision = requestedRevision
             val reported = report(player)
-            JsonHelper.jsonEncodeToElement(AudioEngineReport(
+            hostResult(AudioEngineReport(
                 reported.path, if (action == "PLAY" || action == "SEEK") position else reported.positionMs, reported.revision, loaded,
             ))
         }

@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 object PeerAwareHost {
-    suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
+    internal suspend fun handle(method: String, params: JsonObject): HostResult = when (method) {
         "peerStartAware" -> {
             val request = JsonHelper.jsonDecodeFromElement<StartAwareRequest>(params)
             val peer = request.peer
@@ -19,13 +19,13 @@ object PeerAwareHost {
             PeerSocketHost.disconnectPeer(peer.id)
             val started = startAwareIfNeeded()
             if (started) subscribeAwareForPeer(peer, config) else unsubscribeAwareForPeer(peer.id)
-            JsonPrimitive(started)
+            hostResult(started)
         }
         "peerStopAware" -> {
             val id = JsonHelper.jsonDecodeFromElement<IdRequest>(params).id
             PeerSocketHost.disconnectPeer(id)
             unsubscribeAwareForPeer(id)
-            JsonPrimitive(true)
+            hostResult(true)
         }
         else -> error("Unknown peer Host operation: $method")
     }

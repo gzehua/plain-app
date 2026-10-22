@@ -2,12 +2,13 @@ package com.ismartcoding.plain.rust.host.files
 
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.files.decodeThumbnailBytes
+import com.ismartcoding.plain.rust.host.*
 import com.ismartcoding.plain.rust.native.RustNativeApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal object ThumbnailHost {
-    suspend fun decode(params: JsonObject): JsonElement {
+    internal suspend fun decode(params: JsonObject): HostResult {
         val request = JsonHelper.jsonDecodeFromElement<ThumbnailRequest>(params)
         val bytes = decodeThumbnailBytes(request.path,
             request.width,
@@ -15,11 +16,11 @@ internal object ThumbnailHost {
             request.centerCrop,
             request.mediaId,
             request.fileName,
-        ) ?: return JsonNull
+        ) ?: return hostResult()
         val token = request.outputToken
         val error = RustNativeApi.send("thumbnail", token, bytes)
         check(error.isEmpty()) { error }
-        return JsonPrimitive(true)
+        return hostResult(true)
     }
 }
 

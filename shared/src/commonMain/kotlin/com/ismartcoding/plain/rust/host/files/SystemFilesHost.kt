@@ -14,18 +14,18 @@ import com.ismartcoding.plain.rust.host.provider.providerPlan
 import kotlinx.serialization.json.*
 
 internal object SystemFilesHost {
-    suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
-        "systemFileIndexId" -> JsonHelper.jsonEncodeToElement(fileIndexId(JsonHelper.jsonDecodeFromElement<PathRequest>(params).path))
-        "systemFileIndexCount" -> JsonHelper.jsonEncodeToElement(fileIndexCount(params.providerPlan()))
+    internal suspend fun handle(method: String, params: JsonObject): HostResult = when (method) {
+        "systemFileIndexId" -> hostResult(fileIndexId(JsonHelper.jsonDecodeFromElement<PathRequest>(params).path))
+        "systemFileIndexCount" -> hostResult(fileIndexCount(params.providerPlan()))
         "systemFileIndexRows" -> {
             val request = JsonHelper.jsonDecodeFromElement<FileIndexRowsRequest>(params)
-            JsonHelper.jsonEncodeToElement(fileIndexRows(
+            hostResult(fileIndexRows(
                 request.plan, request.limit, request.offset,
                 FileSortBy.valueOf(request.sortBy),
             ).map(::fileFacts))
         }
-        "systemMountFacts" -> JsonHelper.jsonEncodeToElement(storageVolumeFacts())
-        "imageDecodeBounds" -> JsonHelper.jsonEncodeToElement(readImageBounds(JsonHelper.jsonDecodeFromElement<PathRequest>(params).path))
+        "systemMountFacts" -> hostResult(storageVolumeFacts())
+        "imageDecodeBounds" -> hostResult(readImageBounds(JsonHelper.jsonDecodeFromElement<PathRequest>(params).path))
         else -> error("Unsupported provider operation")
     }
 

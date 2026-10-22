@@ -14,16 +14,17 @@ import com.ismartcoding.plain.platform.media.mediaStoreRevision
 import com.ismartcoding.plain.platform.media.searchMedia
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.platform.system.mediaBucketItemFacts
+import com.ismartcoding.plain.rust.host.*
 import com.ismartcoding.plain.ui.platform.media.audioAlbumArtUri
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal object SystemMediaHost {
-    suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
+    internal suspend fun handle(method: String, params: JsonObject): HostResult = when (method) {
         "systemMediaBucketItemFacts" -> {
             val request = JsonHelper.jsonDecodeFromElement<MediaPlanRequest>(params)
-            JsonHelper.jsonEncodeToElement(mediaBucketItemFacts(
+            hostResult(mediaBucketItemFacts(
                 DataType.valueOf(request.dataType), request.plan))
         }
         "systemMediaRows" -> {
@@ -36,25 +37,25 @@ internal object SystemMediaHost {
                 FileSortBy.valueOf(request.sortBy),
             )
             val rows = items.map { mediaFacts(it) }
-            if (includeRevision) JsonHelper.jsonEncodeToElement(MediaRowsFacts(rows, before, mediaStoreRevision()))
-            else JsonHelper.jsonEncodeToElement(rows)
+            if (includeRevision) hostResult(MediaRowsFacts(rows, before, mediaStoreRevision()))
+            else hostResult(rows)
         }
         "systemMediaCount" -> {
             val request = JsonHelper.jsonDecodeFromElement<MediaPlanRequest>(params)
-            JsonHelper.jsonEncodeToElement(countMedia(
+            hostResult(countMedia(
                 DataType.valueOf(request.dataType), request.plan))
         }
         "systemMediaIdsFacts" -> {
             val request = JsonHelper.jsonDecodeFromElement<MediaPlanRequest>(params)
             val type = DataType.valueOf(request.dataType)
             val plan = request.plan
-            JsonHelper.jsonEncodeToElement(getMediaIds(type, plan))
+            hostResult(getMediaIds(type, plan))
         }
         else -> error("Unsupported provider operation")
     }
 
-    private fun mediaFacts(item: IData): JsonElement = when (item) {
-        is Audio -> JsonHelper.jsonEncodeToElement(AudioFacts(
+    private fun mediaFacts(item: IData): HostResult = when (item) {
+        is Audio -> hostResult(AudioFacts(
             id = item.id,
             title = item.title,
             artist = item.artist,
@@ -92,7 +93,7 @@ internal object SystemMediaHost {
         takenAt: Instant?,
         isFavorite: Boolean,
         width: Int = 0, height: Int = 0, rotation: Int = 0,
-    ): JsonElement = JsonHelper.jsonEncodeToElement(MediaFacts(
+    ): HostResult = hostResult(MediaFacts(
         id = id,
         title = title,
         path = path,
@@ -110,7 +111,7 @@ internal object SystemMediaHost {
 
 @Serializable
 internal data class MediaRowsFacts(
-    val rows: List<JsonElement>,
+    val rows: List<HostResult>,
     val revisionBefore: List<MediaVolumeRevision>?,
     val revisionAfter: List<MediaVolumeRevision>?,
 )
