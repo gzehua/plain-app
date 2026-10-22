@@ -18,6 +18,7 @@ import com.ismartcoding.plain.ui.feeds.FeedsViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
 import com.ismartcoding.plain.ui.state.exitSearchMode
 import com.ismartcoding.plain.ui.state.exitSelectMode
+import com.ismartcoding.plain.ui.state.launchSafe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -36,6 +37,7 @@ internal fun FeedEntriesPageEffects(
             feedEntriesVM.feedId.value = feedId
         }
         feedsVM.loadAsync(withCount = true)
+        scope.launchSafe { FeedWorkerState.refresh() }
         scope.launch(IODispatcher) { feedEntriesVM.loadAsync(tagsVM) }
     }
 
