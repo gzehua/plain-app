@@ -32,14 +32,7 @@ internal object SystemSmsHost {
             val request = JsonHelper.jsonDecodeFromElement<MmsProviderRequest>(params)
             JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.readSentMmsCandidates(request.minimumId, request.launchTimeSec))
         }
-        "systemSimFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.telephony.getSims().map { sim ->
-            SimFacts(
-                id = sim.id,
-                label = sim.label,
-                number = sim.number,
-                subscriptionId = sim.subscriptionId,
-            )
-        })
+        "systemSimFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.telephony.getSims())
         else -> error("Unsupported provider operation")
     }
 }

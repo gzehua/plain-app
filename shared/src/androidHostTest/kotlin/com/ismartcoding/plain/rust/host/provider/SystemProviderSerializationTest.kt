@@ -3,6 +3,7 @@ package com.ismartcoding.plain.rust.host.provider
 import com.ismartcoding.plain.features.telephony.sms.SmsConversationFacts
 import com.ismartcoding.plain.features.telephony.sms.SmsCountFacts
 import com.ismartcoding.plain.features.telephony.sms.SmsRowsFacts
+import com.ismartcoding.plain.models.ScreenMirrorVideoCodec
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.JsonHelper
 import java.io.File
@@ -46,7 +47,7 @@ class SystemProviderSerializationTest {
     @Test
     fun nestedCodecKeepsNullFields() {
         assertEquals("""{"running":true,"controlEnabled":false,"codec":{"annexB":"abc","keyFrame":null}}""",
-            JsonHelper.jsonEncode(ScreenMirrorStateFacts(true, false, ScreenMirrorCodecFacts("abc", null))))
+            JsonHelper.jsonEncode(ScreenMirrorStateFacts(true, false, ScreenMirrorVideoCodec("abc", null))))
 
     }
 

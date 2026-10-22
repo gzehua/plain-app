@@ -25,12 +25,7 @@ internal object SystemScreenMirrorHost {
             JsonHelper.jsonEncodeToElement(ScreenMirrorStateFacts(
                 running = com.ismartcoding.plain.platform.media.isScreenMirrorRunning(),
                 controlEnabled = com.ismartcoding.plain.platform.media.isScreenMirrorControlEnabled(),
-                codec = codec?.let { value ->
-                    ScreenMirrorCodecFacts(
-                        annexB = value.annexB,
-                        keyFrame = value.keyFrame,
-                    )
-                },
+                codec = codec,
             ))
         }
         "systemStartScreenMirror" -> {
