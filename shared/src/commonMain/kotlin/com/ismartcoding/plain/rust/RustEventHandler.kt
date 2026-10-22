@@ -37,7 +37,6 @@ import com.ismartcoding.plain.lib.sendEvent as sendAppEvent
 import com.ismartcoding.plain.platform.notifications.sendWebLoginNotification
 import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.rust.host.AudioEngineHost
-import com.ismartcoding.plain.rust.native.RustDispatchers
 import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.rust.native.readRustStream
 import com.ismartcoding.plain.ui.app.LocalDeviceState
@@ -54,7 +53,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.*
 
 suspend fun sendEventToRust(event: HostEvent) {
-    val error = withContext(RustDispatchers.requests) {
+    val error = withContext(Dispatchers.IO) {
         when (val data = event.data) {
             is HostEventData.Text -> RustNativeApi.send("text", JsonHelper.jsonEncode(mapOf("type" to event.type.name, "payload" to data.value)), byteArrayOf())
             is HostEventData.Binary -> RustNativeApi.send("binary", event.type.name, data.value)
@@ -78,7 +77,7 @@ object RustEventHandler {
         }
         scope.launch {
             readRustStream(
-                next = { withContext(RustDispatchers.events) { RustNativeApi.next("events") } },
+                next = { RustNativeApi.next("events") },
                 consume = { value ->
                     try {
                         incoming.emit(JsonHelper.jsonDecode<RustEvent>(value))

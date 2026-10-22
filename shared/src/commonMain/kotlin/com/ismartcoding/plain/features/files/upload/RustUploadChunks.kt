@@ -7,7 +7,6 @@ import com.ismartcoding.plain.rust.graphql.gql
 import kotlinx.serialization.Serializable
 
 import com.ismartcoding.plain.rust.native.RustNativeApi
-import com.ismartcoding.plain.rust.native.RustDispatchers
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
@@ -16,7 +15,7 @@ import kotlin.uuid.ExperimentalUuidApi
 
 internal object RustUploadChunks {
     private val client = UploadChunksClient(
-        sendChunk = { id, index, bytes -> withContext(RustDispatchers.requests) { RustNativeApi.uploadChunk(id, index, bytes) } },
+        sendChunk = { id, index, bytes -> withContext(Dispatchers.IO) { RustNativeApi.uploadChunk(id, index, bytes) } },
         mutate = { RustGraphqlApi.mutate(it) },
         query = { RustGraphqlApi.query(it) },
     )

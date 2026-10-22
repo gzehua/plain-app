@@ -3,6 +3,7 @@ package com.ismartcoding.plain.rust.native
 import com.ismartcoding.plain.features.sessions.CreatedSession
 import com.ismartcoding.plain.features.settings.AppUpdateDownload
 import com.ismartcoding.plain.preferences.SystemSettings
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 
@@ -35,7 +36,7 @@ internal actual object RustNativeApi {
     actual fun httpStatus(): String = httpStatusNative()
     private external fun bleIncomingNative(remoteHost: String, characteristicUuid: String, bytes: ByteArray): ByteArray
     actual suspend fun bleIncoming(remoteHost: String, characteristicUuid: String, bytes: ByteArray): ByteArray =
-        withContext(RustDispatchers.requests) { bleIncomingNative(remoteHost, characteristicUuid, bytes) }
+        withContext(Dispatchers.IO) { bleIncomingNative(remoteHost, characteristicUuid, bytes) }
     private external fun checkHttpNative(): String
     actual suspend fun checkHttp(): Boolean = nativeCall { checkHttpNative() }
     private external fun tlsCertificateSignatureNative(): String

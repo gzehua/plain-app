@@ -19,7 +19,6 @@ import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.files.handleMediaProvider
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import com.ismartcoding.plain.rust.native.RustDispatchers
 import com.ismartcoding.plain.rust.native.readRustStream
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.serialization.json.*
@@ -112,7 +111,7 @@ internal object RustHostApiHandler {
         }
         scope.launch {
             readRustStream(
-                next = { withContext(RustDispatchers.events) { RustNativeApi.next("host") } },
+                next = { RustNativeApi.next("host") },
                 consume = { requests.send(it) },
                 closed = { requests.cancel() },
             )

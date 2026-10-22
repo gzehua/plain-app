@@ -1,8 +1,9 @@
 package com.ismartcoding.plain.rust.graphql
 
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.native.RustDispatchers
 import com.ismartcoding.plain.rust.native.RustNativeApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -17,7 +18,7 @@ object RustGraphqlApi {
     suspend fun mutate(selection: String): JsonObject = graphql("mutation { $selection }")
 
     suspend fun graphql(document: String, variables: Map<String, JsonElement> = emptyMap()): JsonObject =
-        withContext(RustDispatchers.requests) {
+        withContext(Dispatchers.IO) {
             val response = JsonHelper.jsonDecode<JsonObject>(
                 RustNativeApi.graphql(JsonHelper.jsonEncode(GraphqlRequest(document, variables))),
             )

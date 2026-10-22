@@ -3,6 +3,8 @@ package com.ismartcoding.plain.rust.native
 import com.ismartcoding.plain.features.sessions.CreatedSession
 import com.ismartcoding.plain.features.settings.AppUpdateDownload
 import com.ismartcoding.plain.preferences.SystemSettings
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 
@@ -111,7 +113,7 @@ internal actual object RustNativeApi {
         }
     }
     actual suspend fun bleIncoming(remoteHost: String, characteristicUuid: String, bytes: ByteArray): ByteArray =
-        withContext(RustDispatchers.requests) {
+        withContext(Dispatchers.IO) {
             memScoped {
                 bytes.usePinned { pinned ->
                     val buffer = plain_ble_incoming(remoteHost.cstr.ptr, characteristicUuid.cstr.ptr,
