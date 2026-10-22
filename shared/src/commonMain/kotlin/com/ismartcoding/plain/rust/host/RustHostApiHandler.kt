@@ -20,12 +20,10 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.serialization.json.*
 
 internal object RustHostApiHandler {
-    private var collector: Job? = null
     private val requests = Channel<String>(32)
 
     fun start(scope: CoroutineScope) {
-        check(collector == null) { "Rust host already started" }
-        collector = scope.launch {
+        scope.launch {
             val bleAdvertising = com.ismartcoding.plain.platform.network.ble.PairingTransport.connect()
             val advertisingObservation = launch {
                 try { bleAdvertising.observeFacts() }
