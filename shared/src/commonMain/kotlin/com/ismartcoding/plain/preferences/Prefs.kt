@@ -1,33 +1,16 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.rust.native.RustNativeApi
-
-import com.ismartcoding.plain.models.Video as MediaVideo
-import com.ismartcoding.plain.features.files.FilePathData
-import com.ismartcoding.plain.features.notifications.NotificationFilterData
-import com.ismartcoding.plain.platform.system.AppFeatureType
-import com.ismartcoding.plain.ui.theme.DarkTheme
 import com.ismartcoding.plain.features.audio.MediaPlayMode
-import com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode
 import com.ismartcoding.plain.features.files.FileSortBy
-import com.ismartcoding.plain.models.AudioItem
+import com.ismartcoding.plain.features.notifications.NotificationFilterData
+import com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode
 import com.ismartcoding.plain.models.PomodoroSettings
 import com.ismartcoding.plain.models.ScreenMirrorQuality
-import com.ismartcoding.plain.models.Video
+import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.Locale
+import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.ui.theme.DarkTheme
 
-/**
- * Every user preference, one declaration per field.
- *
- * Each field is a [Pref] — a `MutableStateFlow` that persists on assignment —
- * so a setting is read with `.value`, subscribed with `collect`, and changed by
- * assigning `.value`. The key and codec stay inside the declaration; no caller
- * builds a patch or names a storage key.
- *
- * Keys are the Rust serde names. Rust owns the defaults and the validation;
- * the argument here is only what the flow shows before the first load, and
- * [com.ismartcoding.plain.rust.RustRuntime.start] loads the authoritative snapshot.
- */
 object Prefs {
     val httpPort = pref("httpPort", 8080)
     val httpsPort = pref("httpsPort", 8443)
@@ -58,7 +41,6 @@ object Prefs {
     val editorFontSize = pref("editorFontSize", 14)
     val editorStatusBar = pref("editorStatusBar", true)
     val nearbyDiscoverable = pref("nearbyDiscoverable", true)
-    val aiImageSearchEnabled = pref("aiImageSearchEnabled", false)
     val notificationFilter = pref("notificationFilter", NotificationFilterData("blacklist", emptySet()))
     val pomodoroSettings = pref("pomodoroSettings", PomodoroSettings(25, 5, 15, 4, true, true, "", ""))
     val appHomeFeatures = pref("appHomeFeatures", "IMAGES|VIDEOS|AUDIO|DOCS|FILES|NOTES|FEEDS")
@@ -75,12 +57,11 @@ object Prefs {
     fun parseLocale(value: String): Locale? =
         value.takeIf { it.isNotEmpty() }?.split('-')?.let { Locale(it[0], it.getOrElse(1) { "" }) }
 
-    /** The stored form of a locale: `language` or `language-country`, empty for system. */
     fun formatLocale(value: Locale?): String =
         value?.let { it.language + if (it.country.isEmpty()) "" else "-${it.country}" }.orEmpty()
 
     suspend fun toggleNotificationApp(packageName: String) =
-        com.ismartcoding.plain.rust.native.RustNativeApi.toggleNotificationApp(packageName)
+        RustNativeApi.toggleNotificationApp(packageName)
 
     suspend fun setNotificationMode(mode: String) = RustNativeApi.setNotificationFilterMode(mode)
 
