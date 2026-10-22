@@ -4,9 +4,11 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.native.RustDispatchers
 import com.ismartcoding.plain.rust.native.RustNativeApi
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 /** Executes App GraphQL requests through the native bridge. */
 object RustGraphqlApi {
@@ -16,19 +18,12 @@ object RustGraphqlApi {
 
     suspend fun graphql(document: String, variables: Map<String, JsonElement> = emptyMap()): JsonObject =
         withContext(RustDispatchers.requests) {
-            val response = RustNativeApi.graphql(JsonHelper.jsonEncode(GraphqlRequest(document, variables)))
-            unwrap(JsonHelper.jsonDecode(response))
+            val response = JsonHelper.jsonDecode<JsonObject>(
+                RustNativeApi.graphql(JsonHelper.jsonEncode(GraphqlRequest(document, variables))),
+            )
+            response["errors"]?.let { errors ->
+                error(errors.jsonArray.joinToString { it.jsonObject.getValue("message").jsonPrimitive.content })
+            }
+            response.getValue("data").jsonObject
         }
-
-    private fun unwrap(response: JsonObject): JsonObject {
-        val envelope = JsonHelper.jsonDecodeFromElement<GraphqlEnvelope>(response)
-        check(envelope.errors.isNullOrEmpty()) { envelope.errors?.joinToString { it.message ?: "Rust API error" } ?: "Rust API error" }
-        return requireNotNull(envelope.data) { "Rust API response missing data" }
-    }
 }
-
-@Serializable
-private data class GraphqlEnvelope(val data: JsonObject? = null, val errors: List<GraphqlError>? = null)
-
-@Serializable
-private data class GraphqlError(val message: String? = null)
