@@ -186,7 +186,7 @@ fun MainNavGraph(
             val selectedTab by mainVM.currentRootTab
             val onTabSelected: (Int) -> Unit = { mainVM.currentRootTab.value = it }
             when (selectedTab) {
-                0 -> HomePage(navController, mainVM, updateVM, peerVM, channelVM, onTabSelected = onTabSelected)
+                0 -> HomePage(navController, mainVM, updateVM, channelVM, onTabSelected = onTabSelected)
                 1 -> ChatListPage(navController, peerVM = peerVM, channelVM = channelVM, onTabSelected = onTabSelected)
                 2 -> ToolsPage(navController, onTabSelected = onTabSelected)
                 3 -> GlobalSearchPage(navController, audioQueueVM, globalSearchVM, onTabSelected = onTabSelected)

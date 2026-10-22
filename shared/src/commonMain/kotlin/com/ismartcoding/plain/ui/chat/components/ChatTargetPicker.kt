@@ -48,13 +48,13 @@ import com.ismartcoding.plain.ui.resources.Res as UiRes
  */
 @Composable
 fun ChatTargetPicker(
+    options: List<ChatTargetOption>,
     selectedIds: List<String>,
     onToggle: (String) -> Unit,
     onConfirm: () -> Unit,
     enabled: Boolean = true,
     sending: Boolean = false,
 ) {
-    val options = chatTargetOptions()
     val localOption = options.first { it.target.isLocal() }
     val channelOptions = options.filter { it.target.type == ChatTargetType.CHANNEL }
     val peerOptions = options.filter { !it.target.isLocal() && it.target.type == ChatTargetType.PEER }

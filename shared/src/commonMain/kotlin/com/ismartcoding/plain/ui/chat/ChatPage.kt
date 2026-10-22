@@ -39,7 +39,6 @@ import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
-import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 import com.ismartcoding.plain.features.chat.ChatChannelStatus
 import com.ismartcoding.plain.features.nearby.PeerStatus
 import com.ismartcoding.plain.i18n.*
@@ -94,6 +93,7 @@ fun ChatPage(
     val itemsState = chatVM.itemsFlow.collectAsState()
     val chatTarget = chatVM.target.collectAsState()
     val channelsState = ChannelCacher.channels.collectAsState()
+    val peers by peerVM.peersMap.collectAsState()
     val scope = rememberCoroutineScope()
     var inputValue by remember { mutableStateOf("") }
     var showForwardDialog by remember { mutableStateOf(false) }
@@ -149,7 +149,7 @@ fun ChatPage(
         } else if (target.isLocal()) {
             LocaleHelper.getString(Res.string.local_chat)
         } else {
-            PeerCacher.getPeer(target.toId)?.name ?: ""
+            peers[target.toId]?.name ?: ""
         }
     }
 
@@ -158,7 +158,7 @@ fun ChatPage(
     // Transport badge: only visible while a send is in flight. Reflects the
     // transport the router is currently attempting (LAN/AWARE/BLE) in real
     // time; disappears once the send succeeds or all transports are exhausted.
-    val currentTransportMap = PeerCacher.currentTransportMap.collectAsState()
+    val currentTransportMap = chatVM.currentTransportMap.collectAsState()
     val transportType = if (chatTarget.value.type == ChatTargetType.PEER && !chatTarget.value.isLocal()) {
         currentTransportMap.value[chatTarget.value.toId]
     } else null
@@ -219,8 +219,8 @@ fun ChatPage(
                                 audioQueueVM,
                                 itemsState.value,
                                 m = m,
-                                peer = (if (chatTarget.value.type == ChatTargetType.PEER) PeerCacher.getPeer(chatTarget.value.toId) else null)
-                                    ?: PeerCacher.getPeer(m.fromId),
+                                peer = (if (chatTarget.value.type == ChatTargetType.PEER) peers[chatTarget.value.toId] else null)
+                                    ?: peers[m.fromId],
                                 index = index,
                                 imageWidthDp = imageWidthDp,
                                 imageWidthPx = imageWidthPx.value,
@@ -235,7 +235,7 @@ fun ChatPage(
                     }
                 }
             }
-            val peer = if (chatTarget.value.type == ChatTargetType.PEER) PeerCacher.getPeer(chatTarget.value.toId) else null
+            val peer = if (chatTarget.value.type == ChatTargetType.PEER) peers[chatTarget.value.toId] else null
             val notAllowChat = (channel != null && !channel.isJoined()) || peer?.status == PeerStatus.UNPAIRED
             if (notAllowChat) {
                 Box(

@@ -30,6 +30,8 @@ import com.ismartcoding.plain.ui.base.PAlert
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.audio.AudioViewModel
 import com.ismartcoding.plain.ui.casting.CastViewModel
+import com.ismartcoding.plain.ui.chat.isPeerUpdate
+import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.ui.files.documents.DocsViewModel
 import com.ismartcoding.plain.ui.feeds.FeedEntriesViewModel
 import com.ismartcoding.plain.ui.search.GlobalSearchAction
@@ -73,8 +75,11 @@ fun GlobalSearchPage(
     // Runs on every entry (and return from a viewer): re-syncs loaded hits
     // with their source data (note edits, feed read flags, ...) in place, so
     // no full reload flash.
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel) {
         viewModel.refreshHits()
+        RustEventHandler.events.collect { event ->
+            if (isPeerUpdate(event.type)) viewModel.refreshHits(GlobalSearchDomain.CHAT)
+        }
     }
 
     // Live suggestions: re-arm the debounce on every keystroke; a submit or a

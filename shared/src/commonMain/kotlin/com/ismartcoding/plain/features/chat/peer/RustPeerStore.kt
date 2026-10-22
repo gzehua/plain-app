@@ -9,7 +9,7 @@ import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
 
 object RustPeerStore {
-    private const val FIELDS = "id name ip key publicKey status port deviceType token createdAt updatedAt address { bestIp name baseUrl apiUrl statusWsUrl }"
+    private const val FIELDS = "id name ip key publicKey status port deviceType token createdAt updatedAt online address { bestIp name baseUrl apiUrl statusWsUrl }"
     suspend fun getAll(): List<Peer> = RustGraphqlApi.query("peers { $FIELDS }").getValue("peers").jsonArray.map(::decode)
     suspend fun getById(id: String): Peer? = getAll().find { it.id == id }
     suspend fun remove(id: String): Boolean = RustGraphqlApi.mutate("deletePeer(id: ${gql(id)})").getValue("deletePeer").jsonPrimitive.boolean

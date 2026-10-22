@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.features.chat.models.getBestIp
-import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 import com.ismartcoding.plain.ui.components.ButtonType
 import com.ismartcoding.plain.platform.system.DeviceType
 import com.ismartcoding.plain.ui.platform.system.getText
@@ -48,7 +47,9 @@ fun PeerInfoPage(
     peerVM: PeerViewModel,
 ) {
     val chatTarget = target.collectAsState()
-    val peer = PeerCacher.getPeer(chatTarget.value.toId)
+    val peers by peerVM.peersMap.collectAsState()
+    val peer = peers[chatTarget.value.toId]
+    LaunchedEffect(peerVM) { peerVM.observe() }
 
     PScaffold(
         topBar = {

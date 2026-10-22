@@ -48,7 +48,6 @@ import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 import com.ismartcoding.plain.ui.chat.ChannelViewModel
 import com.ismartcoding.plain.ui.app.MainViewModel
-import com.ismartcoding.plain.ui.chat.PeerViewModel
 import com.ismartcoding.plain.ui.settings.UpdateViewModel
 import com.ismartcoding.plain.ui.navigation.MainNavScaffold
 import com.ismartcoding.plain.ui.settings.UpdateDialog
@@ -61,7 +60,6 @@ fun HomePage(
     navController: NavHostController,
     mainVM: MainViewModel,
     updateVM: UpdateViewModel,
-    peerVM: PeerViewModel,
     channelVM: ChannelViewModel,
     onTabSelected: (Int) -> Unit,
 ) {
@@ -69,7 +67,6 @@ fun HomePage(
     var systemAlertWindow by remember { mutableStateOf(Permission.SYSTEM_ALERT_WINDOW.isGranted()) }
     val refreshState = rememberRefreshLayoutState {
         PeerStatusClient.reconnectNow("home_pull_refresh")
-        peerVM.load()
         channelVM.load()
         setRefreshState(RefreshContentState.Finished)
     }

@@ -30,7 +30,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.models.Peer
-import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.toSortName
@@ -63,7 +62,8 @@ fun NearbyPage(
     val bleAvailability by bleAvailabilityFlow.collectAsState()
     val peerDiscoverySupported = Capability.PEER_DISCOVERY in getDeviceCapabilities()
     val isSearching = isDiscovering || isBleScanning
-    val pairedPeers by PeerCacher.pairedPeers.collectAsState()
+    val pairedPeers by peerVM.pairedPeers.collectAsState()
+    LaunchedEffect(peerVM) { peerVM.observe() }
 
     LaunchedEffect(peerDiscoverySupported) {
         if (peerDiscoverySupported) {

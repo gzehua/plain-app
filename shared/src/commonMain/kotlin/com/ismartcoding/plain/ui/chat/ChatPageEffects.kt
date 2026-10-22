@@ -12,6 +12,7 @@ import com.ismartcoding.plain.ui.state.launchSafe
 
 @Composable
 internal fun ChatPageEffects(chatVM: ChatViewModel, peerVM: PeerViewModel, focusManager: FocusManager, scrollState: LazyListState) {
+    LaunchedEffect(peerVM) { peerVM.observe() }
     LaunchedEffect(Unit) {
         launchSafe { DownloadQueue.refresh() }
     }

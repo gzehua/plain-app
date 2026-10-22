@@ -40,6 +40,7 @@ import com.ismartcoding.plain.ui.shares.ShareFile
 import com.ismartcoding.plain.ui.shares.ShareStage
 import com.ismartcoding.plain.ui.shares.ShareViewModel
 import com.ismartcoding.plain.ui.chat.components.ChatTargetPicker
+import com.ismartcoding.plain.ui.chat.components.chatTargetOptions
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
@@ -87,6 +88,7 @@ fun ShareSheet(
             ActionsStage(vm, onOpen, onSaveToFiles, onSaveAsNote, onOpenAsText)
         } else {
             ChatTargetPicker(
+                options = chatTargetOptions(),
                 selectedIds = vm.selectedIds.toList(),
                 onToggle = vm::toggle,
                 onConfirm = onSend,

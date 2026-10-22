@@ -17,7 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.features.chat.models.MessageStatusData
-import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 import com.ismartcoding.plain.features.chat.ChatStatus
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.system.formatTime
@@ -32,6 +31,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ChatName(
     m: VChat,
+    senderName: String?,
     isPeerChat: Boolean = false,
     isLocal: Boolean = false,
     onRetry: (() -> Unit)? = null,
@@ -46,7 +46,7 @@ fun ChatName(
             text = when (m.fromId) {
                 "local" -> stringResource(Res.string.local_chat)
                 "me" -> stringResource(Res.string.me)
-                else -> PeerCacher.getPeer(m.fromId)?.name ?: stringResource(Res.string.unknown)
+                else -> senderName ?: stringResource(Res.string.unknown)
             },
 
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),

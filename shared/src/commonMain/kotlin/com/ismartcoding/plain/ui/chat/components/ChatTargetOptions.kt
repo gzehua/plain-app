@@ -4,12 +4,14 @@ import com.ismartcoding.plain.ui.chat.isJoined
 import com.ismartcoding.plain.ui.chat.joinedMembers
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
-import com.ismartcoding.plain.ui.chat.peer.PeerCacher
+import com.ismartcoding.plain.ui.chat.PeerViewModel
 import com.ismartcoding.plain.ui.platform.system.getIcon
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.ui.resources.bot as ui_drawable_bot
@@ -35,7 +37,9 @@ data class ChatTargetOption(
 
 @Composable
 fun chatTargetOptions(): List<ChatTargetOption> {
-    val pairedPeers = PeerCacher.pairedPeers.collectAsStateValue()
+    val peerVM: PeerViewModel = viewModel(key = "chatTargetPeers") { PeerViewModel() }
+    val pairedPeers = peerVM.pairedPeers.collectAsStateValue()
+    LaunchedEffect(peerVM) { peerVM.observe() }
     val channels by ChannelCacher.channels.collectAsState()
     val localTitle = stringResource(Res.string.local_chat)
     val localDesc = stringResource(Res.string.local_chat_desc)

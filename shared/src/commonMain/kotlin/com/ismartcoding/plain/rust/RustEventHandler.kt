@@ -63,7 +63,6 @@ object RustEventHandler {
             EventType.NETWORK_CHANGED.name -> com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
             EventType.WEB_LOGIN_COMPLETED.name -> {
                 val facts = JsonHelper.jsonDecode<com.ismartcoding.plain.features.sessions.WebLoginCompletedFacts>(payload)
-                if (facts.chatPaired) com.ismartcoding.plain.features.chat.peer.PeerManager.load()
                 val request = facts.request
                 com.ismartcoding.plain.platform.notifications.sendWebLoginNotification(request.browserName, request.browserVersion, request.osName, request.osVersion, facts.clientIp)
             }
@@ -78,26 +77,10 @@ object RustEventHandler {
                 val failure = JsonHelper.jsonDecode<HttpServerFailure>(payload)
                 com.ismartcoding.plain.app.onRustHttpServerFailed(failure.generation, failure.message)
             }
-            EventType.PEER_UPDATED.name -> {
-                val id = JsonHelper.jsonDecode<PeerIdEvent>(payload).id
-                com.ismartcoding.plain.ui.chat.peer.PeerCacher.refreshPeer(id)
-            }
             EventType.PEER_STATUS_UPDATED.name -> {
-                com.ismartcoding.plain.ui.chat.peer.PeerCacher.refreshOnline()
-                com.ismartcoding.plain.ui.chat.peer.PeerCacher.load()
                 com.ismartcoding.plain.features.chat.ChatCacher.load()
             }
             EventType.PEER_TRANSPORT_UPDATED.name -> com.ismartcoding.plain.features.chat.peer.PeerTransportProjection.apply(JsonHelper.jsonDecode<JsonArray>(payload))
-            EventType.PEER_CONNECTIONS_UPDATED.name -> {
-                val event = JsonHelper.jsonDecode<PeerConnectionEvent>(payload)
-                val id = event.id
-                val online = event.online
-                if (id != null && online != null) {
-                    com.ismartcoding.plain.ui.chat.peer.PeerCacher.setOnline(id, online)
-                } else {
-                    com.ismartcoding.plain.ui.chat.peer.PeerCacher.refreshOnline()
-                }
-            }
             EventType.MDNS_UPDATED.name, EventType.NEARBY_DISCOVERY_STARTED.name, EventType.NEARBY_DISCOVERY_STOPPED.name -> com.ismartcoding.plain.features.nearby.RustMdnsRuntime.refresh()
             EventType.DLNA_RENDERER_UPDATED.name -> com.ismartcoding.plain.features.dlna.DlnaRendererState.apply(
                 JsonHelper.jsonDecode<JsonObject>(payload).getValue("renderer").jsonObject)
@@ -172,7 +155,6 @@ object RustEventHandler {
             EventType.FEED_SYNC_UPDATED.name -> com.ismartcoding.plain.ui.feeds.FeedWorkerState.apply(JsonHelper.jsonDecode<com.ismartcoding.plain.ui.feeds.FeedSyncUpdate>(payload))
             EventType.CONTENT_CHANGED.name -> {
                 com.ismartcoding.plain.preferences.Prefs.refresh()
-                com.ismartcoding.plain.ui.chat.peer.PeerCacher.load()
                 com.ismartcoding.plain.features.chat.channel.ChannelCacher.load()
                 com.ismartcoding.plain.features.chat.ChatClient.refreshLatestChats()
                 try { com.ismartcoding.plain.features.files.FavoriteFoldersClient.refresh() }
@@ -202,5 +184,3 @@ internal data class HostEventTypes(
 @Serializable
 private data class PeerIdEvent(val id: String)
 
-@Serializable
-private data class PeerConnectionEvent(val id: String? = null, val online: Boolean? = null)

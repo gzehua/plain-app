@@ -15,7 +15,7 @@ import com.ismartcoding.plain.models.Image as MediaImage
 import com.ismartcoding.plain.features.chat.ChatQueries
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.features.chat.models.getMessagePreview
-import com.ismartcoding.plain.ui.chat.peer.PeerCacher
+import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.ui.platform.system.getIcon
 import com.ismartcoding.plain.features.notes.NotesClient
@@ -28,6 +28,7 @@ import com.ismartcoding.plain.models.FeedEntry
 import com.ismartcoding.plain.models.File
 import com.ismartcoding.plain.models.Image
 import com.ismartcoding.plain.models.Note
+import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.models.Video
 import com.ismartcoding.plain.helpers.SearchHelper
 import com.ismartcoding.plain.i18n.*
@@ -93,8 +94,11 @@ internal suspend fun GlobalSearchViewModel.queryDomain(
             FilesClient.indexed(SearchHelper.buildTextFilter(q), limit, offset, FileSortBy.DATE_DESC).map { it.toHit() }
         GlobalSearchDomain.FEEDS ->
             FeedEntriesClient.search(SearchHelper.buildTextFilter(q), limit, offset).map { it.toHit(q) }
-        GlobalSearchDomain.CHAT ->
-            ChatQueries.searchAsync(q, limit, offset).map { it.toHit(q) }
+        GlobalSearchDomain.CHAT -> {
+            val items = ChatQueries.searchAsync(q, limit, offset)
+            val peers = if (items.isEmpty()) emptyMap() else RustPeerStore.getAll().associateBy { it.id }
+            items.map { it.toHit(q, peers) }
+        }
         GlobalSearchDomain.APPS ->
             PackagesClient.search(q, limit, offset, FileSortBy.DATE_DESC).filter { it.name.isNotBlank() }.map { it.toHit() }
     }
@@ -102,7 +106,8 @@ internal suspend fun GlobalSearchViewModel.queryDomain(
 /**
  * Re-fetches the currently loaded hits of an editable domain by their source
  * ids; entries that no longer exist fall out. Returns null for domains
- * without an editable source (files, chat, apps).
+ * without an editable source (files, apps). Chat results are re-queried in
+ * one batch so their peer names and icons also stay current.
  */
 internal suspend fun GlobalSearchViewModel.reloadDomainHits(
     d: GlobalSearchDomain,
@@ -122,6 +127,7 @@ internal suspend fun GlobalSearchViewModel.reloadDomainHits(
         GlobalSearchDomain.IMAGES -> reloadMediaHits<MediaImage>(hits, DataType.IMAGE) { it.toHit() }
         GlobalSearchDomain.VIDEOS -> reloadMediaHits<MediaVideo>(hits, DataType.VIDEO) { it.toHit() }
         GlobalSearchDomain.DOCS -> reloadMediaHits<Document>(hits, DataType.DOC) { it.toHit() }
+        GlobalSearchDomain.CHAT -> queryDomain(d, q, hits.size, 0)
         else -> null
     }
 
@@ -201,7 +207,7 @@ private fun FeedEntry.toHit(q: String): GlobalSearchHit = GlobalSearchHit(
     action = GlobalSearchAction.Navigate(Routing.FeedEntry(id)),
 )
 
-private fun ChatItem.toHit(q: String): GlobalSearchHit {
+private fun ChatItem.toHit(q: String, peers: Map<String, Peer>): GlobalSearchHit {
     val channelId = channelId.orEmpty()
     val isChannel = channelId.isNotEmpty()
     val conversation: String
@@ -211,11 +217,11 @@ private fun ChatItem.toHit(q: String): GlobalSearchHit {
         conversation = ChannelCacher.getChannel(channelId)?.name ?: channelId
         chatRoute = "channel:$channelId"
         senderName = if (fromId == "me") LocaleHelper.getString(Res.string.me)
-        else PeerCacher.getPeer(fromId)?.name ?: fromId
+        else peers[fromId]?.name ?: fromId
     } else {
         val other = if (fromId == "me" || fromId == "local") toId else fromId
         conversation = if (other == "local") LocaleHelper.getString(Res.string.local_chat)
-        else PeerCacher.getPeer(other)?.name ?: other
+        else peers[other]?.name ?: other
         chatRoute = "peer:$other"
         senderName = if (fromId == "me") LocaleHelper.getString(Res.string.me) else conversation
     }
@@ -224,7 +230,7 @@ private fun ChatItem.toHit(q: String): GlobalSearchHit {
     } else {
         val other = if (fromId == "me" || fromId == "local") toId else fromId
         if (other == "local") UiRes.drawable.ui_drawable_bot
-        else PeerCacher.getPeer(other)?.deviceType?.getIcon() ?: UiRes.drawable.ui_drawable_devices
+        else peers[other]?.deviceType?.getIcon() ?: UiRes.drawable.ui_drawable_devices
     }
     return GlobalSearchHit(
         key = "chat_$id",

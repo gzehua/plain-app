@@ -86,7 +86,6 @@ object PairingProjection {
         val value = JsonHelper.jsonDecode<PairingSucceeded>(payload)
         val peer = com.ismartcoding.plain.features.chat.peer.RustPeerStore.getById(value.deviceId) ?: return
         if (!peer.isPaired() || peer.key != value.key) return
-        com.ismartcoding.plain.features.chat.peer.PeerManager.load()
         NearbyViewModel.handlePairingSuccess(peer.id)
         com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.app.events.HPairingSuccessEvent(
             peer.id, peer.name, value.ip, peer.key,

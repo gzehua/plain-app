@@ -14,7 +14,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -27,7 +29,6 @@ import com.ismartcoding.plain.models.ChatChannel
 import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.features.chat.models.getBestIp
 import com.ismartcoding.plain.features.chat.models.getName
-import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.components.ButtonType
 import com.ismartcoding.plain.platform.system.DeviceType
@@ -85,23 +86,28 @@ fun ChannelInfoPage(
     navController: NavHostController, chatVM: ChatViewModel, peerVM: PeerViewModel, channelVM: ChannelViewModel,
 ) {
     val chatTarget = chatVM.target.collectAsState()
+    val peers by peerVM.peersMap.collectAsState()
+    LaunchedEffect(peerVM) { peerVM.observe() }
     // Collect channels as state so the UI recomposes whenever ChannelCacher
     // updates after Rust commits an invite, kick, or acceptance.
     val channels = ChannelCacher.channels.collectAsState()
     val liveChannel = channels.value.find { it.id == chatTarget.value.toId }
     val showRenameDialog = remember { mutableStateOf(false) }
-    val selectedMemberPeer = remember { mutableStateOf<PeerMember?>(null) }
+    val selectedMemberPeerId = remember { mutableStateOf<String?>(null) }
 
     val ownerPeerId: String? = remember(liveChannel?.ownerId) {
         if (liveChannel?.ownerId.isNullOrEmpty()) null
         else if (liveChannel.actions.isOwner) TempData.clientId
         else liveChannel.ownerId
     }
-    val memberPeers: List<PeerMember> = remember(liveChannel?.members, ownerPeerId, com.ismartcoding.plain.ui.app.LocalDeviceState.peer.value) {
+    val memberPeers: List<PeerMember> = remember(liveChannel?.members, ownerPeerId, peers, com.ismartcoding.plain.ui.app.LocalDeviceState.peer.value) {
         liveChannel?.members?.mapNotNull { m ->
-            val peer = (if (m.isMe()) mePeer() else PeerCacher.getPeer(m.peerId)) ?: return@mapNotNull null
+            val peer = (if (m.isMe()) mePeer() else peers[m.peerId]) ?: return@mapNotNull null
             PeerMember(peer, m, isSelf = m.isMe(), isOwner = m.peerId == ownerPeerId)
         } ?: emptyList()
+    }
+    LaunchedEffect(memberPeers, selectedMemberPeerId.value) {
+        if (memberPeers.none { it.peer.id == selectedMemberPeerId.value }) selectedMemberPeerId.value = null
     }
     val inviteLabel = stringResource(Res.string.invite)
 
@@ -125,8 +131,7 @@ fun ChannelInfoPage(
         val presentIds = liveChannel.members.map { it.peerId }.toMutableSet().apply {
             ownerPeerId?.let { add(it) }
         }
-        PeerCacher.pairedPeers.collectAsState().value
-            .filter { it.id !in presentIds }
+        peers.values.filter { it.isPaired() && it.id !in presentIds }
             .sortedBy { it.getName().toSortName() }
     } else emptyList()
 
@@ -161,7 +166,7 @@ fun ChannelInfoPage(
                         displayMembers.forEach { pm ->
                             val canManage = liveChannel.actions.canManageMembers && !pm.isSelf && !pm.isOwner
                             val selfPendingInvite = pm.isSelf && pm.isPending()
-                            val ownerPeer = if (selfPendingInvite) liveChannel.getOwner() else null
+                            val ownerPeer = if (selfPendingInvite) liveChannel.getOwner(peers) else null
                             ChannelMemberListItem(
                                 member = pm,
                                 onClick = when {
@@ -177,7 +182,7 @@ fun ChannelInfoPage(
                                             )
                                         }
                                     }
-                                    !pm.isSelf -> { { selectedMemberPeer.value = pm } }
+                                    !pm.isSelf -> { { selectedMemberPeerId.value = pm.peer.id } }
                                     else -> null
                                 },
                                 onRemove = if (canManage) {
@@ -298,13 +303,13 @@ fun ChannelInfoPage(
         )
     }
 
-    selectedMemberPeer.value?.let { sp ->
+    memberPeers.find { it.peer.id == selectedMemberPeerId.value }?.let { sp ->
         MemberInfoDialog(
             peerMember = sp,
             canManageMembers = liveChannel?.actions?.canManageMembers == true,
             liveChannel = liveChannel,
             channelVM = channelVM,
-            onDismiss = { selectedMemberPeer.value = null },
+            onDismiss = { selectedMemberPeerId.value = null },
         )
     }
 }

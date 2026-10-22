@@ -31,6 +31,7 @@ fun ForwardTargetDialog(
     PModalBottomSheet(onDismissRequest = onDismiss, modifier = Modifier.fillMaxWidth()) {
         PBottomSheetTopAppBar(title = stringResource(Res.string.forward))
         ChatTargetPicker(
+            options = options,
             selectedIds = selectedIds.toList(),
             onToggle = { id -> if (!selectedIds.remove(id)) selectedIds.add(id) },
             onConfirm = {

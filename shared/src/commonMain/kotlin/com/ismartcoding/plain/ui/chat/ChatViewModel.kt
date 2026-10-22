@@ -11,7 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.features.chat.models.MessageContent
-import com.ismartcoding.plain.features.chat.peer.RustPeerStore
+import com.ismartcoding.plain.features.chat.peer.transport.PeerTransportType
 import com.ismartcoding.plain.features.chat.ChatStatus
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.models.Root
@@ -55,6 +55,9 @@ object ChatViewModel : ISelectableViewModel<VChat> {
     private val _target = MutableStateFlow(ChatTarget("local", ChatTargetType.PEER))
     val target = _target.asStateFlow()
 
+    // Transport has an event snapshot, not a query; retain it before the page opens.
+    val currentTransportMap = MutableStateFlow<Map<String, PeerTransportType>>(emptyMap())
+
     private val _scrollToLatest = Channel<String?>(Channel.BUFFERED)
     val scrollToLatest: Flow<String?> = _scrollToLatest.receiveAsFlow()
 
@@ -77,12 +80,7 @@ object ChatViewModel : ISelectableViewModel<VChat> {
         val dao = RustChatStore
         val isChannel = current.type == ChatTargetType.CHANNEL
         val list = if (isChannel) dao.getByChannelId(current.toId) else dao.getByPeerId(toId)
-        _itemsFlow.value = list.sortedByDescending { it.createdAt }.map { chat ->
-            val fromName = if (isChannel && chat.fromId != "me") {
-                RustPeerStore.getById(chat.fromId)?.name ?: ""
-            } else ""
-            VChat.from(chat, fromName)
-        }
+        _itemsFlow.value = list.sortedByDescending { it.createdAt }.map { VChat.from(it) }
     }
 
     fun addAll(items: List<ChatItem>) {

@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ismartcoding.plain.ui.state.launchSafe
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -32,6 +33,7 @@ class GlobalSearchViewModel : ViewModel() {
     var recentQueries = mutableStateOf<List<String>>(emptyList())
 
     private var searchJob: Job? = null
+    private val refreshJobs = mutableMapOf<GlobalSearchDomain, Job>()
 
     init {
         viewModelScope.launch {
@@ -161,17 +163,20 @@ class GlobalSearchViewModel : ViewModel() {
     /**
      * Re-syncs loaded hits with their source data after returning from a
      * viewer page (note edited, feed entry read, media trashed, ...). Domains
-     * without an editable source (files, chat, apps) are skipped. Entries
+     * without an editable source (files, apps) are skipped. Entries
      * that no longer exist fall out of the list.
      */
-    fun refreshHits() {
-        val q = queryText.value.trim()
-        if (q.isEmpty()) return
+    fun refreshHits(onlyDomain: GlobalSearchDomain? = null) {
+        val q = searchedQuery.value
+        if (q.isEmpty() || q != queryText.value.trim()) return
         domainStates.forEach { (d, state) ->
+            if (onlyDomain != null && d != onlyDomain) return@forEach
             val hits = state.hits.value
             if (hits.isEmpty()) return@forEach
-            viewModelScope.launch {
+            refreshJobs.remove(d)?.cancel()
+            refreshJobs[d] = viewModelScope.launchSafe {
                 val fresh = reloadDomainHits(d, hits, q)
+                if (searchedQuery.value != q || queryText.value.trim() != q || domainStates[d] !== state || state.hits.value != hits) return@launchSafe
                 if (fresh != null && fresh != hits) {
                     val removed = hits.size - fresh.size
                     if (removed > 0) state.total.intValue -= removed

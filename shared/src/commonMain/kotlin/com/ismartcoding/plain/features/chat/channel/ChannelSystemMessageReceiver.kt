@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.features.chat.channel
 
-import com.ismartcoding.plain.ui.chat.peer.PeerCacher
 import com.ismartcoding.plain.app.events.HChannelInviteReceivedEvent
 import com.ismartcoding.plain.app.events.HChannelInviteCanceledEvent
 import com.ismartcoding.plain.lib.JsonHelper
@@ -11,7 +10,6 @@ object ChannelSystemMessageReceiver {
     suspend fun applyCommitted(result: JsonObject) {
         val event = JsonHelper.jsonDecodeFromElement<ChannelRuntimeEvent>(result)
         if (event.changed) {
-            PeerCacher.load()
             ChannelCacher.load()
             com.ismartcoding.plain.features.chat.ChatClient.refreshLatestChats()
         }

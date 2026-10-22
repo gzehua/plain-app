@@ -107,6 +107,7 @@ fun ChatListItem(
                 ) {
                     ChatName(
                         m = m,
+                        senderName = peer?.name,
                         isPeerChat = peer != null,
                         isLocal = chatTarget.isLocal(),
                         onRetry = if (!chatTarget.isLocal()) {

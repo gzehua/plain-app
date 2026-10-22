@@ -17,7 +17,7 @@ data class VChat(
     val value: Any? = null,
 ) : IData {
     companion object {
-        fun from(data: ChatItem, fromName: String = ""): VChat {
+        fun from(data: ChatItem): VChat {
             return VChat(data.id, data.fromId, data.createdAt, data.messageContent.type, data.status, data.parseStatusData(), data.messageContent.value)
         }
     }
