@@ -16,6 +16,7 @@ import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -97,6 +98,8 @@ import com.ismartcoding.plain.ui.home.HomePage
 import com.ismartcoding.plain.ui.images.editor.ImageEditorListPage
 import com.ismartcoding.plain.ui.shares.send.ShareImagePage
 import com.ismartcoding.plain.features.downloads.DownloadCenter
+import com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine
+import com.ismartcoding.plain.ui.state.launchSafe
 import com.ismartcoding.plain.features.downloads.isTerminalDownloadStatus
 import com.ismartcoding.plain.features.shares.SharedFolderBatchTask
 import com.ismartcoding.plain.ui.downloads.components.DownloadFloatingWidget
@@ -164,6 +167,9 @@ fun MainNavGraph(
     val backStackEntry by navController.currentBackStackEntryAsState()
     var showDownloads by remember { mutableStateOf(false) }
     val tasksMap = DownloadCenter.progress.collectAsState().value
+    LaunchedEffect(Unit) {
+        launchSafe { SharedFolderDownloadEngine.refresh() }
+    }
     val shareTasks = tasksMap.values.filterIsInstance<SharedFolderBatchTask>()
     val onShareFolderPage = backStackEntry?.destination?.hasRoute<Routing.SharedFolder>() == true
     Box(modifier = Modifier.fillMaxSize()) {
