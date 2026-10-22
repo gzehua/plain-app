@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.rust.bridge.RustPrefsBridge
-import com.ismartcoding.plain.rust.request.RustRuntime
+import com.ismartcoding.plain.rust.native.RustPrefsBridge
+import com.ismartcoding.plain.rust.RustRuntime
 
 object Prefs {
     fun load() {

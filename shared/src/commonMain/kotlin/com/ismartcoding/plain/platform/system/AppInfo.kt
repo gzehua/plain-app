@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.rust.http.request
+import com.ismartcoding.plain.network.request
 
 import com.ismartcoding.plain.platform.system.DeviceType
 
@@ -19,7 +19,7 @@ expect fun getDeviceType(): DeviceType
  * All IPv4 addresses of the device. Empty list on iOS (BLE-only).
  */
 
-fun appDir(): String = com.ismartcoding.plain.rust.request.RustRuntime.dataDir
+fun appDir(): String = com.ismartcoding.plain.rust.RustRuntime.dataDir
 
 /**
  * Platform cache/temp directory. Android: `Context.cacheDir`; iOS:

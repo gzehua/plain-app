@@ -37,7 +37,7 @@ import com.ismartcoding.plain.platform.system.*
 import com.ismartcoding.plain.ui.platform.system.*
 import com.ismartcoding.plain.ui.state.*
 import com.ismartcoding.plain.platform.telephony.*
-import com.ismartcoding.plain.rust.http.*
+import com.ismartcoding.plain.network.*
 import kotlinx.serialization.json.*
 import kotlinx.serialization.Serializable
 import com.ismartcoding.plain.lib.JsonHelper

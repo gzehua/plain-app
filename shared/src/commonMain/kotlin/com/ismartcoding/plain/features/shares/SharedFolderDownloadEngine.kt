@@ -1,8 +1,9 @@
 package com.ismartcoding.plain.features.shares
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
+import com.ismartcoding.plain.rust.graphql.gql
 import com.ismartcoding.plain.features.downloads.*
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.*
@@ -67,8 +68,8 @@ object SharedFolderDownloadEngine {
     }
     private const val QUEUE_FIELDS = "runtimeId revision tasks { id messageId type title targetDir link { host port sharedId token pageUrl } urlToken entries { name virtualPath isDir size mimeType hasThumb } zipName generation status error downloadedSize totalSize downloadSpeed totalFiles doneFiles failedFiles currentFile packing failures { path error } }"
     private suspend fun call(request: Request): JsonElement = when (request) {
-        Request.Snapshot -> PlainRust.mainQuery("sharedDownloadQueue { $QUEUE_FIELDS }").getValue("sharedDownloadQueue")
-        is Request.Enqueue -> PlainRust.mainGraphql("mutation(\$input: SharedDownloadInput!) { enqueueSharedDownload(input: \$input) }", mapOf("input" to JsonHelper.jsonEncodeToElement(request.input)), longRunning = true).getValue("enqueueSharedDownload")
+        Request.Snapshot -> RustGraphqlApi.query("sharedDownloadQueue { $QUEUE_FIELDS }").getValue("sharedDownloadQueue")
+        is Request.Enqueue -> RustGraphqlApi.graphql("mutation(\$input: SharedDownloadInput!) { enqueueSharedDownload(input: \$input) }", mapOf("input" to JsonHelper.jsonEncodeToElement(request.input)), longRunning = true).getValue("enqueueSharedDownload")
         is Request.Control -> {
             val operation = when (request.command) {
                 "retry" -> "retrySharedDownload"
@@ -76,7 +77,7 @@ object SharedFolderDownloadEngine {
                 "remove" -> "removeSharedDownload"
                 else -> error("Unknown shared download control")
             }
-            PlainRust.mainMutate("$operation(id: ${gql(request.id)})", longRunning = true).getValue(operation)
+            RustGraphqlApi.mutate("$operation(id: ${gql(request.id)})", longRunning = true).getValue(operation)
         }
     }
 

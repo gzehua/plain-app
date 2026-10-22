@@ -2,7 +2,7 @@ package com.ismartcoding.plain.features.feeds
 
 import com.ismartcoding.plain.features.feeds.FeedEntriesClient
 import com.ismartcoding.plain.models.FeedEntry
-import com.ismartcoding.plain.rust.http.ApiResult
+import com.ismartcoding.plain.network.ApiResult
 import kotlinx.coroutines.CancellationException
 
 suspend fun FeedEntry.fetchContentAsync(): ApiResult = try {

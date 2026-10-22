@@ -1,7 +1,8 @@
 package com.ismartcoding.plain.features.nearby
 
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
+import com.ismartcoding.plain.rust.graphql.gql
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.ui.nearby.NearbyViewModel
@@ -51,14 +52,14 @@ object RustMdnsRuntime {
     }
     suspend fun debugStart(token: String) = enqueue(Request.DebugStart(token)).await()
     fun debugStop(token: String) = enqueue(Request.DebugStop(token))
-    suspend fun snapshot(): JsonObject = PlainRust.mainQuery("mdnsState { $STATE_FIELDS }").getValue("mdnsState").jsonObject.also { apply(it) }
+    suspend fun snapshot(): JsonObject = RustGraphqlApi.query("mdnsState { $STATE_FIELDS }").getValue("mdnsState").jsonObject.also { apply(it) }
     private const val STATE_FIELDS = "runtimeId revision receiver running scanning published manualScanning debugSessionCount capturing services { serviceType instanceName instanceFqdn hostname port txtRecords ips ipv6 complete } packetsIn { time direction srcIp srcPort dstIp dstPort size summary detail } packetsOut { time direction srcIp srcPort dstIp dstPort size summary detail }"
     private suspend fun call(request: Request): JsonObject {
         val operation = when (request) {
             is Request.DebugStart -> "acquireMdnsDebugSession(token: ${gql(request.token)})"
             is Request.DebugStop -> "releaseMdnsDebugSession(token: ${gql(request.token)})"
         }
-        return PlainRust.mainMutate("$operation { $STATE_FIELDS }").getValue(operation.substringBefore('(')).jsonObject
+        return RustGraphqlApi.mutate("$operation { $STATE_FIELDS }").getValue(operation.substringBefore('(')).jsonObject
     }
 
     private sealed interface Request {

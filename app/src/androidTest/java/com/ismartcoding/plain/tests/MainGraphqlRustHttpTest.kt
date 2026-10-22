@@ -1,11 +1,12 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.sessions.RustSessionStore
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.preferences.UserPrefs
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.ApiSession
+import com.ismartcoding.plain.rust.graphql.ApiSession
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
@@ -29,24 +30,24 @@ class MainGraphqlRustHttpTest {
             id = clientId
             val token = created.token
             assertTrue(token.isNotEmpty())
-            val app = PlainRust.mainQuery("app { httpPort urlToken capabilities }").getValue("app").jsonObject
+            val app = RustGraphqlApi.query("app { httpPort urlToken capabilities }").getValue("app").jsonObject
             assertEquals(getDeviceCapabilities().map { it.name }.toSet(), app.getValue("capabilities").jsonArray.map { it.jsonPrimitive.content }.toSet())
             val remote = ApiSession("http://127.0.0.1:${app.getValue("httpPort").jsonPrimitive.int}", clientId, token)
             val schema = "__schema { queryType { name } mutationType { name } }"
-            assertEquals(PlainRust.mainQuery(schema), PlainRust.mainQuery(schema, remote))
-            assertEquals(app.getValue("urlToken"), PlainRust.mainQuery("app { urlToken }", remote).getValue("app").jsonObject.getValue("urlToken"))
+            assertEquals(RustGraphqlApi.query(schema), RustGraphqlApi.query(schema, remote))
+            assertEquals(app.getValue("urlToken"), RustGraphqlApi.query("app { urlToken }", remote).getValue("app").jsonObject.getValue("urlToken"))
             com.ismartcoding.plain.preferences.RustSystemState.refresh()
             assertEquals(app.getValue("urlToken").jsonPrimitive.content, com.ismartcoding.plain.preferences.RustSystemState.state.value.urlToken)
             for (selection in listOf("systemPrefs", "systemSettings { password }", "userSettings { service }")) {
                 for (session in listOf(null, remote)) {
-                    val failure = runCatching { PlainRust.mainQuery(selection, session) }.exceptionOrNull()
+                    val failure = runCatching { RustGraphqlApi.query(selection, session) }.exceptionOrNull()
                     assertNotNull(failure)
                     assertTrue(failure.toString().contains("Unknown field"))
                 }
             }
-            assertTrue(runCatching { PlainRust.mainQuery("sessions { token }", remote) }.isFailure)
-            assertTrue(PlainRust.mainQuery("sessions { clientId }", remote).getValue("sessions").jsonArray.any { it.jsonObject.getValue("clientId").jsonPrimitive.content == clientId })
-            assertTrue(PlainRust.mainGraphql("mutation(\$id:String!,\$name:String!){renameSession(clientId:\$id,name:\$name)}", mapOf("id" to JsonPrimitive(clientId), "name" to JsonPrimitive("$name renamed")), remote).getValue("renameSession").jsonPrimitive.boolean)
+            assertTrue(runCatching { RustGraphqlApi.query("sessions { token }", remote) }.isFailure)
+            assertTrue(RustGraphqlApi.query("sessions { clientId }", remote).getValue("sessions").jsonArray.any { it.jsonObject.getValue("clientId").jsonPrimitive.content == clientId })
+            assertTrue(RustGraphqlApi.graphql("mutation(\$id:String!,\$name:String!){renameSession(clientId:\$id,name:\$name)}", mapOf("id" to JsonPrimitive(clientId), "name" to JsonPrimitive("$name renamed")), remote).getValue("renameSession").jsonPrimitive.boolean)
             assertEquals("$name renamed", RustSessionStore.list().single { it.clientId == clientId }.name)
         } finally {
             id?.let { RustSessionStore.delete(it) }
@@ -57,7 +58,7 @@ class MainGraphqlRustHttpTest {
 
     @Test
     fun selectedDeviceFieldsReadActualSdkFactsThroughTheMainNativeExecutor() = runBlocking {
-        val data = PlainRust.mainQuery("deviceInfo { name model appVersion appBuildNumber kernelVersion totalMemory display { width height density } }").getValue("deviceInfo").jsonObject
+        val data = RustGraphqlApi.query("deviceInfo { name model appVersion appBuildNumber kernelVersion totalMemory display { width height density } }").getValue("deviceInfo").jsonObject
         assertTrue(data.getValue("model").jsonPrimitive.content.isNotEmpty())
         assertTrue(data.getValue("appVersion").jsonPrimitive.content.isNotEmpty())
         assertTrue(data.getValue("kernelVersion").jsonPrimitive.content.isNotEmpty())

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform.files
 
-import com.ismartcoding.plain.rust.bridge.RustCoreBridge
+import com.ismartcoding.plain.rust.native.RustNativeApi
 
 internal class NativeResourceStreamSink(private val id: String) : StreamSink {
     private var closed = false
@@ -11,7 +11,7 @@ internal class NativeResourceStreamSink(private val id: String) : StreamSink {
         var current = offset
         while (current < offset + length) {
             val end = minOf(current + 64 * 1024, offset + length)
-            val error = RustCoreBridge.resourceWrite(id, bytes.copyOfRange(current, end))
+            val error = RustNativeApi.resourceWrite(id, bytes.copyOfRange(current, end))
             check(error.isEmpty()) { error }
             current = end
         }

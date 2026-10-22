@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform.network.ble
 
-import com.ismartcoding.plain.rust.bridge.RustBleBridge
+import com.ismartcoding.plain.rust.native.RustBleBridge
 
 import com.ismartcoding.plain.platform.system.PlatformLock
 

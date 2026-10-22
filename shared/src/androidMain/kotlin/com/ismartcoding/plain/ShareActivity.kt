@@ -1,11 +1,12 @@
 package com.ismartcoding.plain
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.app.AppIntents
 import com.ismartcoding.plain.app.Constants
 import com.ismartcoding.plain.app.IntentExtras
 
-import com.ismartcoding.plain.rust.request.RustRuntime
-import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.RustRuntime
 import kotlinx.serialization.json.JsonPrimitive
 
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
@@ -214,7 +215,7 @@ class ShareActivity : ComponentActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val f = shareOpenFile("shared_text_${System.currentTimeMillis()}.txt")
-                PlainRust.mainGraphql(
+                RustGraphqlApi.graphql(
                     "mutation(\$directory:String!,\$path:String!,\$content:String!){createDir(path:\$directory){path} writeTextFile(path:\$path,content:\$content,overwrite:true){path}}",
                     mapOf("directory" to JsonPrimitive(checkNotNull(f.parent)), "path" to JsonPrimitive(f.path), "content" to JsonPrimitive(text)),
                 )

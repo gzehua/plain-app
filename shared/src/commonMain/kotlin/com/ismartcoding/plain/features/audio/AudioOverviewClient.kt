@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.features.audio
 
+import com.ismartcoding.plain.rust.event.RustEventHandler
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import kotlinx.serialization.Serializable
 
 import com.ismartcoding.plain.models.AudioOverview
@@ -7,16 +10,15 @@ import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.features.media.MediaCatalogClient
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.DataType
-import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.coroutines.flow.filter
 import kotlinx.serialization.json.*
 
 object AudioOverviewClient {
     suspend fun read(): AudioOverview = JsonHelper.jsonDecodeFromElement(
-        PlainRust.mainQuery("audioOverview { artists { name itemCount playCount samplePath } recentItems { ${MediaCatalogClient.fields(DataType.AUDIO)} } }").getValue("audioOverview"),
+        RustGraphqlApi.query("audioOverview { artists { name itemCount playCount samplePath } recentItems { ${MediaCatalogClient.fields(DataType.AUDIO)} } }").getValue("audioOverview"),
     )
 
-    val updates get() = PlainRust.events.filter { updatesOverview(it.type, it.payload) }
+    val updates get() = RustEventHandler.events.filter { updatesOverview(it.type, it.payload) }
 
     internal fun updatesOverview(type: String, payload: String): Boolean = when (type) {
         EventType.AUDIO_LIBRARY_UPDATED.name -> true

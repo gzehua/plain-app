@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.pomodoro
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 
 import com.ismartcoding.plain.models.PomodoroSettings
@@ -17,8 +19,7 @@ import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.app.events.PickFileResultEvent
 import com.ismartcoding.plain.platform.files.queryPickedFileInfo
-import com.ismartcoding.plain.rust.request.gql
-import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.graphql.gql
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.jsonPrimitive
 import com.ismartcoding.plain.ui.base.PFilledButton
@@ -51,7 +52,7 @@ fun PomodoroSettingsDialog(
                     try {
                         val source = event.uris.first()
                         val info = checkNotNull(queryPickedFileInfo(source)) { "Unable to read selected sound" }
-                        val imported = PlainRust.mainMutate("importPomodoroSound(source: ${gql(source)})", longRunning = true)
+                        val imported = RustGraphqlApi.mutate("importPomodoroSound(source: ${gql(source)})", longRunning = true)
                             .getValue("importPomodoroSound").jsonPrimitive.content
                         originalFileName = info.displayName
                         soundPath = imported

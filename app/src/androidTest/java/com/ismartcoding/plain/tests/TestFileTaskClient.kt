@@ -1,11 +1,12 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.features.files.FileTaskType
 import com.ismartcoding.plain.features.files.FileTaskOp
 
 import com.ismartcoding.plain.models.FileTask
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.serialization.json.*
 
 internal object TestFileTaskClient {
@@ -15,12 +16,12 @@ internal object TestFileTaskClient {
     suspend fun create(type: FileTaskType, ops: List<FileTaskOp>, title: String = type.name): FileTask = submit(type, ops, title, false)
 
     private suspend fun submit(type: FileTaskType, ops: List<FileTaskOp>, title: String, wait: Boolean): FileTask =
-        parse(PlainRust.mainGraphql(
+        parse(RustGraphqlApi.graphql(
             "mutation(\$type:FileTaskType!,\$title:String!,\$ops:[FileTaskOpInput!]!,\$wait:Boolean!){createFileTask(type:\$type,title:\$title,ops:\$ops,waitForCompletion:\$wait){ $fields }}",
             mapOf("type" to JsonPrimitive(type.name), "title" to JsonPrimitive(title), "ops" to json.encodeToJsonElement(ops), "wait" to JsonPrimitive(wait)),
             longRunning = wait,
         ).getValue("createFileTask"))
 
-    suspend fun list(offset: Int, limit: Int, query: String): List<FileTask> = PlainRust.mainQuery("fileTasks(offset: $offset, limit: $limit, query: ${JsonHelper.jsonEncode(query)}) { $fields }").getValue("fileTasks").jsonArray.map(::parse)
+    suspend fun list(offset: Int, limit: Int, query: String): List<FileTask> = RustGraphqlApi.query("fileTasks(offset: $offset, limit: $limit, query: ${JsonHelper.jsonEncode(query)}) { $fields }").getValue("fileTasks").jsonArray.map(::parse)
     private fun parse(value: JsonElement): FileTask = JsonHelper.jsonDecodeFromElement(value)
 }

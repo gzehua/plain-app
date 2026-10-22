@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.platform.system
 
-import com.ismartcoding.plain.rust.http.get
+import com.ismartcoding.plain.network.get
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

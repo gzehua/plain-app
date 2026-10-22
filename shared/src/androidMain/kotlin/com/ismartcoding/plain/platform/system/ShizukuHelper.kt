@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.platform.permissions.isGranted
-import com.ismartcoding.plain.rust.http.get
-import com.ismartcoding.plain.rust.http.request
+import com.ismartcoding.plain.network.get
+import com.ismartcoding.plain.network.request
 
 import android.content.pm.PackageManager
 import android.os.ParcelFileDescriptor

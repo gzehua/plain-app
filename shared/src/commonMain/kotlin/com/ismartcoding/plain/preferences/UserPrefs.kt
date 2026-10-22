@@ -103,7 +103,7 @@ object UserPrefs {
     }
 
     suspend fun clearRecentSearches() {
-        val result = com.ismartcoding.plain.rust.PlainRust.mainMutate(
+        val result = com.ismartcoding.plain.rust.graphql.RustGraphqlApi.mutate(
             "setUserPref(key: \"recent_searches\", value: [])",
         ).getValue("setUserPref")
         check(com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<Boolean>(result)) {
@@ -118,7 +118,7 @@ object UserPrefs {
     }
 
     suspend fun toggleNotificationApp(packageName: String) =
-        com.ismartcoding.plain.rust.PlainRust.toggleNotificationApp(packageName).also { PrefStore.refresh() }
+        com.ismartcoding.plain.rust.native.RustNativeApi.toggleNotificationApp(packageName).also { PrefStore.refresh() }
 
     suspend fun setNotificationMode(mode: String) = PrefStore.runAction(UserAction.SetNotificationMode(mode))
 

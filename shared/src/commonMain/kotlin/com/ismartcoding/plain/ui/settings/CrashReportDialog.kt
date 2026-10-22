@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.ui.settings
 
-import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.native.RustNativeApi
+
 
 import com.ismartcoding.plain.i18n.*
 
@@ -58,7 +59,7 @@ fun CrashReportDialog(
                     scope.launch {
                         saving = true
                         try {
-                            val path = PlainRust.createCrashReport(crashReport)
+                            val path = RustNativeApi.createCrashReport(crashReport)
                             navController?.navigateTextFile(path, type = TextFileType.CRASH_REPORT)
                             onDismiss()
                         } catch (error: CancellationException) {

@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.rust.event.RustEventHandler
+
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent
@@ -44,13 +46,12 @@ import com.ismartcoding.plain.platform.system.*
 import com.ismartcoding.plain.ui.platform.system.*
 import com.ismartcoding.plain.ui.state.*
 import com.ismartcoding.plain.platform.telephony.*
-import com.ismartcoding.plain.rust.http.*
+import com.ismartcoding.plain.network.*
 import com.ismartcoding.plain.testing.CryptoFixtures.chaCha20Encrypt
 import com.ismartcoding.plain.testing.CryptoFixtures.chaCha20Decrypt
 import com.ismartcoding.plain.testing.CryptoFixtures.computeECDHSharedKey
 import com.ismartcoding.plain.testing.CryptoFixtures.generateECDHKeyPair
 import com.ismartcoding.plain.preferences.*
-import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.*
@@ -81,7 +82,7 @@ class SessionMigrationRustHttpTest {
                 Base64Lenient.encode(client.publicKeyEncoded))
             val notification = async(start = CoroutineStart.UNDISPATCHED) {
                 withTimeout(10_000) {
-                    PlainRust.events.first {
+                    RustEventHandler.events.first {
                         it.type == EventType.WEB_LOGIN_REQUESTED.name &&
                             JsonHelper.jsonDecode<JsonObject>(it.payload)["clientId"]?.jsonPrimitive?.content == id
                     }

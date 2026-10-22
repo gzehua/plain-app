@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.platform.system
 
 
-import com.ismartcoding.plain.rust.http.HttpLogSink
-import com.ismartcoding.plain.rust.http.httpLogSink
+import com.ismartcoding.plain.network.HttpLogSink
+import com.ismartcoding.plain.network.httpLogSink
 import com.ismartcoding.plain.lib.logcat.DiskLogAdapter
 import com.ismartcoding.plain.lib.logcat.DiskLogStrategy
 import com.ismartcoding.plain.lib.logcat.FormatStrategy
@@ -41,7 +41,7 @@ expect fun currentDateTimeString(): String
 /**
  * Absolute path to the latest log file (e.g. `<logFolder>/latest.log`).
  */
-fun getLatestLogFilePath(): String = com.ismartcoding.plain.rust.request.RustRuntime.logFile
+fun getLatestLogFilePath(): String = com.ismartcoding.plain.rust.RustRuntime.logFile
 
 /**
  * Initialize disk logging and HTTP request logging.

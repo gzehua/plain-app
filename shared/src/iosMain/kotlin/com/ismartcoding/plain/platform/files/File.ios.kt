@@ -248,7 +248,7 @@ actual suspend fun getFileByMediaId(mediaId: String): FileEntry? = null
 
 @OptIn(ExperimentalForeignApi::class)
 internal actual suspend fun provideResourceFile(id: String, uri: String): Unit = withResourceFile(uri) { descriptor, length ->
-    val error = com.ismartcoding.plain.rust.bridge.RustCoreBridge.resourceFile(id, descriptor, 0, length)
+    val error = com.ismartcoding.plain.rust.native.RustNativeApi.resourceFile(id, descriptor, 0, length)
     check(error.isEmpty()) { error }
 }
 

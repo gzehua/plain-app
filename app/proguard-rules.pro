@@ -108,11 +108,11 @@
 -dontwarn okhttp3.internal.platform.**
 -dontwarn org.conscrypt.**
 -dontwarn org.openjsse.**
--keep class com.ismartcoding.plain.rust.bridge.RustPrefsBridge { *; }
+-keep class com.ismartcoding.plain.rust.native.RustPrefsBridge { *; }
 
--keep class com.ismartcoding.plain.rust.bridge.RustCoreBridge { *; }
+-keep class com.ismartcoding.plain.rust.native.RustNativeApi { *; }
 
--keep class com.ismartcoding.plain.rust.bridge.RustBleBridge { *; }
+-keep class com.ismartcoding.plain.rust.native.RustBleBridge { *; }
 
 -keep class com.ismartcoding.plain.rust.bridge.RustDlnaBridge { *; }
 

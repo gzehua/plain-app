@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.platform.files
 
-import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.native.RustNativeApi
+
 
 import com.ismartcoding.plain.platform.system.Capability
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
@@ -25,7 +26,7 @@ private fun exportBackup(save: suspend (String) -> String) {
         DialogHelper.showLoading()
         var archive: String? = null
         try {
-            val path = PlainRust.exportAppBackup()
+            val path = RustNativeApi.exportAppBackup()
             archive = path
             val destination = save(path)
             DialogHelper.showConfirmDialog("", LocaleHelper.getStringFAsync(Res.string.exported_to, destination))
@@ -44,7 +45,7 @@ fun restore(uriStr: String) {
     coMain {
         DialogHelper.showLoading()
         try {
-            PlainRust.stageAppRestore(uriStr)
+            RustNativeApi.stageAppRestore(uriStr)
             val message = LocaleHelper.getStringAsync(Res.string.app_restore_ready)
             if (Capability.APP_RELAUNCH in getDeviceCapabilities()) {
                 DialogHelper.showConfirmDialog("", message) {

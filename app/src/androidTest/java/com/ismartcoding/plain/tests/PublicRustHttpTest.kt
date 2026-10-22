@@ -38,7 +38,7 @@ import com.ismartcoding.plain.platform.system.*
 import com.ismartcoding.plain.ui.platform.system.*
 import com.ismartcoding.plain.ui.state.*
 import com.ismartcoding.plain.platform.telephony.*
-import com.ismartcoding.plain.rust.http.*
+import com.ismartcoding.plain.network.*
 import com.ismartcoding.plain.testing.CryptoFixtures.chaCha20Encrypt
 import com.ismartcoding.plain.testing.CryptoFixtures.chaCha20Decrypt
 import com.ismartcoding.plain.preferences.*

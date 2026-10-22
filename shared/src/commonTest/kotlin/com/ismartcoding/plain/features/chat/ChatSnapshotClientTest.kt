@@ -2,7 +2,7 @@ package com.ismartcoding.plain.features.chat
 
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.request.gql
+import com.ismartcoding.plain.rust.graphql.gql
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject

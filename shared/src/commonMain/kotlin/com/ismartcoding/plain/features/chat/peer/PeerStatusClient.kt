@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.features.chat.peer
 
-import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.CancellationException
@@ -10,7 +11,7 @@ object PeerStatusClient {
         LogCat.d("Peer status reconnect: $reason")
         coIO {
             try {
-                PlainRust.mainMutate("controlPeerStatus(action: RECONNECT)")
+                RustGraphqlApi.mutate("controlPeerStatus(action: RECONNECT)")
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {

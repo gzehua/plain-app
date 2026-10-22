@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.native.RustNativeApi
+
 
 
 import com.ismartcoding.plain.features.settings.PasswordType
@@ -25,5 +26,5 @@ object RustSystemState {
     suspend fun completeOnboarding() = set("onboarding_completed", true)
     suspend fun setMdnsHostname(hostname: String) = set("mdns_hostname", hostname)
     suspend fun patchUpdate(patch: UpdateInfoPatch) = set("update_info", patch)
-    suspend fun verifyAdbToken(token: String): Boolean = PlainRust.verifyAdbToken(token)
+    suspend fun verifyAdbToken(token: String): Boolean = RustNativeApi.verifyAdbToken(token)
 }

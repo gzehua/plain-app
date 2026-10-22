@@ -2,7 +2,7 @@
 
 package com.ismartcoding.plain.ui.platform.media
 
-import com.ismartcoding.plain.rust.http.get
+import com.ismartcoding.plain.network.get
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.ImageBitmapConfig

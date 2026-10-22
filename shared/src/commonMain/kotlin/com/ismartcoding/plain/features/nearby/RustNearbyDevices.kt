@@ -1,9 +1,10 @@
 package com.ismartcoding.plain.features.nearby
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 
 import com.ismartcoding.plain.models.NearbyDevice
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.ui.nearby.NearbyViewModel
 import kotlinx.serialization.json.jsonArray
 
@@ -15,8 +16,8 @@ object RustNearbyDevices {
     suspend fun observeDiscovery() {
         val token = kotlin.uuid.Uuid.random().toString()
         discoverySession(token,
-            acquire = { PlainRust.mainMutate("acquireDiscovery(token: ${com.ismartcoding.plain.rust.request.gql(it)})"); apply(snapshot()) },
-            release = { PlainRust.mainMutate("releaseDiscovery(token: ${com.ismartcoding.plain.rust.request.gql(it)})") },
+            acquire = { RustGraphqlApi.mutate("acquireDiscovery(token: ${com.ismartcoding.plain.rust.graphql.gql(it)})"); apply(snapshot()) },
+            release = { RustGraphqlApi.mutate("releaseDiscovery(token: ${com.ismartcoding.plain.rust.graphql.gql(it)})") },
         )
     }
 
@@ -25,7 +26,7 @@ object RustNearbyDevices {
      * handler — the event payload only carries the revision.
      */
     suspend fun snapshot(): List<NearbyDevice> =
-        PlainRust.mainQuery("nearbyDevices { $NEARBY_DEVICE_FIELDS }")
+        RustGraphqlApi.query("nearbyDevices { $NEARBY_DEVICE_FIELDS }")
             .getValue("nearbyDevices")
             .jsonArray
             .map { JsonHelper.jsonDecode<NearbyDevice>(it.toString()) }

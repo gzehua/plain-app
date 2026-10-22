@@ -6,7 +6,7 @@ import com.ismartcoding.plain.app.startHttpEngineAsync
 import com.ismartcoding.plain.features.shares.SharedLinkClient
 import com.ismartcoding.plain.features.shares.SharesClient
 import com.ismartcoding.plain.preferences.UserPrefs
-import com.ismartcoding.plain.rust.http.*
+import com.ismartcoding.plain.network.*
 import com.ismartcoding.plain.testing.CryptoFixtures
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*

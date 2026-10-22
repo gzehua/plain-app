@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.rust.http.HttpStatusCode
-import com.ismartcoding.plain.rust.http.PlainResponse
+import com.ismartcoding.plain.network.HttpStatusCode
+import com.ismartcoding.plain.network.PlainResponse
 
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.runBlocking

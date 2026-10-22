@@ -4,8 +4,8 @@ import com.ismartcoding.plain.ui.platform.system.enterPipMode
 import com.ismartcoding.plain.ui.platform.system.keepScreenOn
 import com.ismartcoding.plain.ui.platform.system.setImmersiveFullscreen
 import com.ismartcoding.plain.platform.system.videoCacheDir
-import com.ismartcoding.plain.rust.http.get
-import com.ismartcoding.plain.rust.http.post
+import com.ismartcoding.plain.network.get
+import com.ismartcoding.plain.network.post
 
 import android.annotation.SuppressLint
 import android.app.Activity

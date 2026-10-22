@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.preferences
 
-import com.ismartcoding.plain.rust.request.gql
+import com.ismartcoding.plain.rust.graphql.gql
 
 internal sealed class UserAction {
     data class RecordSearch(val value: String) : UserAction()

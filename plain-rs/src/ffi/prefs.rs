@@ -107,7 +107,7 @@ mod android {
     type BridgeResult<T> = std::result::Result<T, BridgeError>;
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustPrefsBridge_openNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustPrefsBridge_openNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         data_dir: JString<'_>,

@@ -35,14 +35,6 @@ import com.ismartcoding.plain.ui.markdown.utils.resolveImageLink
 import com.ismartcoding.plain.ui.markdown.utils.innerList
 import com.ismartcoding.plain.ui.markdown.utils.mapAutoLinkToType
 import com.ismartcoding.plain.ui.markdown.compose.elements.mathBody
-import com.ismartcoding.plain.ui.markdown.utils.extractFontColor
-import com.ismartcoding.plain.ui.markdown.utils.extractHtmlImgAlt
-import com.ismartcoding.plain.ui.markdown.utils.extractHtmlImgSrc
-import com.ismartcoding.plain.ui.markdown.utils.getUnescapedTextInNode
-import com.ismartcoding.plain.ui.markdown.utils.innerList
-import com.ismartcoding.plain.ui.markdown.utils.isFontCloseTag
-import com.ismartcoding.plain.ui.markdown.utils.mapAutoLinkToType
-import com.ismartcoding.plain.ui.markdown.utils.resolveImageLink
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode

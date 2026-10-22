@@ -28,6 +28,7 @@ char *plain_events_next(const char *stream);
 char *plain_events_send(const char *action, const char *message, const uint8_t *bytes, size_t len);
 
 char *plain_restart_http_server(int32_t http_port, int32_t https_port);
+char *plain_tls_certificate_signature(void);
 char *plain_regenerate_tls_certificate(void);
 char *plain_import_tls_certificate_pem(const char *certificate_pem, const char *private_key_pem);
 char *plain_import_tls_certificate_pkcs12(const uint8_t *data, size_t data_len, const char *password);

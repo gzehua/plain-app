@@ -182,7 +182,7 @@ actual suspend fun getFileByMediaId(mediaId: String): FileEntry? = withIO {
 
 internal actual suspend fun provideResourceFile(id: String, uri: String): Unit = withIO {
     appContext.contentResolver.openAssetFileDescriptor(Uri.parse(uri), "r")?.use { asset ->
-        val error = com.ismartcoding.plain.rust.bridge.RustCoreBridge.resourceFile(
+        val error = com.ismartcoding.plain.rust.native.RustNativeApi.resourceFile(
             id, asset.parcelFileDescriptor.fd, asset.startOffset, asset.declaredLength,
         )
         check(error.isEmpty()) { error }

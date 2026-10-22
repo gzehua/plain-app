@@ -31,7 +31,7 @@ class LinkPreviewRustHttpTest {
             hash = image.id
             val content = MessageContent(MessageType.TEXT, MessageText(url,
                 listOf(LinkPreview(url = url, title = id, imageLocalPath = AppFileStore.toFidUri(image))))).toJSONString()
-            val value = com.ismartcoding.plain.rust.PlainRust.mainGraphql(
+            val value = com.ismartcoding.plain.rust.graphql.RustGraphqlApi.graphql(
                 "mutation(\$content:String!){sendChatItem(target: \"peer:local\", content: \$content) { id fromId toId channelId content status statusData createdAt updatedAt }}",
                 mapOf("content" to kotlinx.serialization.json.JsonPrimitive(content)),
             ).getValue("sendChatItem").jsonArray.single()

@@ -4,7 +4,7 @@ import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
 import com.ismartcoding.plain.platform.files.decodeThumbnailBytes
-import com.ismartcoding.plain.rust.bridge.RustCoreBridge
+import com.ismartcoding.plain.rust.native.RustNativeApi
 import kotlinx.serialization.json.*
 
 internal object ThumbnailHost {
@@ -18,7 +18,7 @@ internal object ThumbnailHost {
             request.fileName,
         ) ?: return JsonNull
         val token = request.outputToken
-        val error = RustCoreBridge.send("thumbnail", token, bytes)
+        val error = RustNativeApi.send("thumbnail", token, bytes)
         check(error.isEmpty()) { error }
         return JsonPrimitive(true)
     }

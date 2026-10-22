@@ -2,7 +2,7 @@ package com.ismartcoding.plain.features.nearby
 
 
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.bridge.RustBleBridge
+import com.ismartcoding.plain.rust.native.RustBleBridge
 
 object RustBleServiceData {
     fun decode(data: ByteArray?): BleAdvertisement? {

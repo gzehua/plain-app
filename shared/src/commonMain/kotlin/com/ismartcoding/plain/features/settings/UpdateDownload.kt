@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.features.settings
 
-import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.native.RustNativeApi
+
 
 import com.ismartcoding.plain.features.settings.AppUpdateDownload
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,10 +19,10 @@ object AppUpdateDownloads {
     }
 
     suspend fun start() {
-        apply(PlainRust.startAppUpdateDownload())
+        apply(RustNativeApi.startAppUpdateDownload())
     }
 
     suspend fun cancel() {
-        apply(PlainRust.cancelAppUpdateDownload())
+        apply(RustNativeApi.cancelAppUpdateDownload())
     }
 }

@@ -57,7 +57,7 @@ fun ImageEditorListPage(
 
     LaunchedEffect(vm) {
         launch { vm.loadAsync() }
-        com.ismartcoding.plain.rust.PlainRust.events.collect { event ->
+        com.ismartcoding.plain.rust.event.RustEventHandler.events.collect { event ->
             if (event.type == com.ismartcoding.plain.app.events.EventType.CONTENT_CHANGED.name) vm.loadAsync()
         }
     }

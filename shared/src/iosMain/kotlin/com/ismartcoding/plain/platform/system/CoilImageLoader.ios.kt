@@ -1,10 +1,10 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.rust.http.PlainHttpClient
-import com.ismartcoding.plain.rust.http.PlainRequest
-import com.ismartcoding.plain.rust.http.PlainResponse
-import com.ismartcoding.plain.rust.http.createBrowserHttpClient
-import com.ismartcoding.plain.rust.http.request
+import com.ismartcoding.plain.network.PlainHttpClient
+import com.ismartcoding.plain.network.PlainRequest
+import com.ismartcoding.plain.network.PlainResponse
+import com.ismartcoding.plain.network.createBrowserHttpClient
+import com.ismartcoding.plain.network.request
 
 import coil3.svg.SvgDecoder
 import coil3.ImageLoader
@@ -20,7 +20,7 @@ import coil3.network.NetworkResponseBody
 import coil3.network.NetworkResponse
 import coil3.request.crossfade
 import io.ktor.utils.io.ByteReadChannel
-import com.ismartcoding.plain.rust.http.copyTo
+import com.ismartcoding.plain.network.copyTo
 import okio.BufferedSink
 import okio.FileSystem
 import okio.Path

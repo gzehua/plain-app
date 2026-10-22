@@ -1,15 +1,16 @@
 package com.ismartcoding.plain.app
 
+import com.ismartcoding.plain.rust.native.RustNativeApi
+
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 
 import com.ismartcoding.plain.app.HttpServerManager
-import com.ismartcoding.plain.rust.http.PlainHttpClientSpec
-import com.ismartcoding.plain.rust.http.RustHttpEngine
-import com.ismartcoding.plain.rust.http.createPlainHttpClient
-import com.ismartcoding.plain.rust.http.get
-import com.ismartcoding.plain.rust.http.request
+import com.ismartcoding.plain.network.PlainHttpClientSpec
+import com.ismartcoding.plain.rust.RustRuntime
+import com.ismartcoding.plain.network.createPlainHttpClient
+import com.ismartcoding.plain.network.get
+import com.ismartcoding.plain.network.request
 
-import com.ismartcoding.plain.rust.request.RustRuntime
 import com.ismartcoding.plain.features.settings.HttpServerState
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.http_server_failed
@@ -27,10 +28,10 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonPrimitive
 
-suspend fun getSSLSignature(): ByteArray = com.ismartcoding.plain.rust.http.RustTlsCertificate.signature()
+suspend fun getSSLSignature(): ByteArray = RustNativeApi.tlsCertificateSignature()
 
 suspend fun generateSSLKeyStore() {
-    com.ismartcoding.plain.rust.http.RustTlsCertificate.regenerate()
+    RustNativeApi.regenerateTlsCertificate()
 }
 
 /**
@@ -63,10 +64,10 @@ suspend fun replaceSSLKeyStoreAsync(
     password: String = "",
 ): ByteArray = withIO {
     when (mode) {
-        SslCertImportMode.PKCS12 -> com.ismartcoding.plain.rust.http.RustTlsCertificate.importPkcs12(
+        SslCertImportMode.PKCS12 -> RustNativeApi.importTlsCertificatePkcs12(
             com.ismartcoding.plain.platform.files.readPickedFileBytes(firstUri), password,
         )
-        SslCertImportMode.PEM -> com.ismartcoding.plain.rust.http.RustTlsCertificate.importPem(
+        SslCertImportMode.PEM -> RustNativeApi.importTlsCertificatePem(
             com.ismartcoding.plain.platform.files.readPickedFileBytes(firstUri).decodeToString(throwOnInvalidSequence = true),
             com.ismartcoding.plain.platform.files.readPickedFileBytes(secondUri).decodeToString(throwOnInvalidSequence = true),
         )
@@ -79,8 +80,8 @@ suspend fun replaceSSLKeyStoreAsync(
  */
 suspend fun resetPasswordAsync(): String = com.ismartcoding.plain.features.sessions.RustWebLogin.resetPassword()
 
-suspend fun startHttpEngineAsync() = RustHttpEngine.start()
-suspend fun stopHttpEngineAsync() = RustHttpEngine.stop()
+suspend fun startHttpEngineAsync() = RustRuntime.startHttp()
+suspend fun stopHttpEngineAsync() = RustRuntime.stopHttp()
 
 expect suspend fun onHttpServerStarted()
 expect suspend fun onHttpServerStopped()
@@ -117,7 +118,7 @@ suspend fun startHttpServerAsync() = withIO {
         HttpServerManager.serverState.value = HttpServerState.STARTING
         HttpServerManager.httpServerError.value = ""
         try {
-            RustHttpEngine.start()
+            RustRuntime.startHttp()
             onHttpServerStarted()
             HttpServerManager.serverState.value = HttpServerState.ON
         } catch (error: Throwable) {
@@ -140,7 +141,7 @@ private suspend fun stopHooks() {
 }
 
 private suspend fun stopEngineAndHooks() {
-    runCatching { RustHttpEngine.stop() }
+    runCatching { RustRuntime.stopHttp() }
         .onFailure { LogCat.e("HTTP server engine stop failed: ${it.message}") }
     stopHooks()
 }
@@ -156,7 +157,7 @@ private suspend fun recordServerFailure(detail: String) {
 internal suspend fun onRustHttpServerFailed(generation: Long, message: String) = withIO {
     withContext(NonCancellable) {
         lifecycleMutex.withLock {
-            if (RustHttpEngine.failed(generation)) {
+            if (RustRuntime.httpFailed(generation)) {
                 stopHooks()
                 recordServerFailure(message)
             }
@@ -188,7 +189,7 @@ fun restartServer() {
     }
 }
 
-fun isHttpServerRunning(): Boolean = RustHttpEngine.isRunning
+fun isHttpServerRunning(): Boolean = RustRuntime.isHttpRunning
 fun isMdnsRunning(): Boolean = com.ismartcoding.plain.features.nearby.RustMdnsRuntime.running
 expect fun getAwareAttachStatus(): String
 expect fun getAwareDiscoveredPeerCount(): Int

@@ -1,17 +1,18 @@
 package com.ismartcoding.plain.features.tags
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.models.TagRelation
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.DataType
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
-import com.ismartcoding.plain.rust.request.gqlIds
+import com.ismartcoding.plain.rust.graphql.gql
+import com.ismartcoding.plain.rust.graphql.gqlIds
 import kotlinx.serialization.json.*
 
 internal object RustContentTags : TagsApi(
-    query = { PlainRust.mainQuery(it) },
-    mutate = { PlainRust.mainMutate(it) },
+    query = { RustGraphqlApi.query(it) },
+    mutate = { RustGraphqlApi.mutate(it) },
 )
 
 internal open class TagsApi(

@@ -1,7 +1,8 @@
 package com.ismartcoding.plain.features.dlna.sender
 
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
+import com.ismartcoding.plain.rust.graphql.gql
 import com.ismartcoding.plain.IMedia
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.coIO
@@ -45,7 +46,7 @@ internal object RustDlnaSender {
             is CastCommand.Reorder -> "reorderDlnaItems(from: ${command.from}, to: ${command.to})"
             CastCommand.Clear -> "clearDlnaItems"
         }
-        val row = PlainRust.mainMutate("$operation { $fields }").getValue(operation.substringBefore('('))
+        val row = RustGraphqlApi.mutate("$operation { $fields }").getValue(operation.substringBefore('('))
         apply(row.jsonObject)
     }
     private fun input(item: CastItem): String = "{path: ${gql(item.path)}, title: ${gql(item.title)}, albumArt: ${gql(item.albumArt)}, artist: ${gql(item.artist)}, durationMs: ${item.durationMs}, audio: ${item.audio}}"

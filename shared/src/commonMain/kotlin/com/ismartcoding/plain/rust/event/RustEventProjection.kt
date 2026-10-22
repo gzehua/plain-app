@@ -46,12 +46,12 @@ internal object RustEventProjection {
 
             EventType.MEDIA_ACTION_FINISHED.name -> com.ismartcoding.plain.ui.media.actions.MediaActionProjection.apply(payload)
             EventType.HTTP_SERVER_STARTED.name -> {
-                val started = JsonHelper.jsonDecode<com.ismartcoding.plain.rust.http.HttpServerStarted>(payload)
-                com.ismartcoding.plain.rust.request.RustRuntime.httpStarted(started.generation, started.httpPort)
+                val started = JsonHelper.jsonDecode<com.ismartcoding.plain.rust.HttpServerStarted>(payload)
+                com.ismartcoding.plain.rust.RustRuntime.httpStarted(started.generation, started.httpPort)
                 com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
             }
             EventType.HTTP_SERVER_FAILED.name -> {
-                val failure = JsonHelper.jsonDecode<com.ismartcoding.plain.rust.http.HttpServerFailure>(payload)
+                val failure = JsonHelper.jsonDecode<com.ismartcoding.plain.rust.HttpServerFailure>(payload)
                 com.ismartcoding.plain.app.onRustHttpServerFailed(failure.generation, failure.message)
             }
             EventType.PEER_UPDATED.name -> {

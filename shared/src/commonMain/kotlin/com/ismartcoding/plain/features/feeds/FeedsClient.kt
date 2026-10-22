@@ -1,20 +1,21 @@
 package com.ismartcoding.plain.features.feeds
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.models.Feed
 import com.ismartcoding.plain.models.FeedEntryCount
 import com.ismartcoding.plain.models.FeedPreview
 import com.ismartcoding.plain.models.FeedSyncState
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
+import com.ismartcoding.plain.rust.graphql.gql
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 
 internal object FeedsClient : FeedsApi(
-    query = { PlainRust.mainQuery(it) },
-    mutate = { PlainRust.mainMutate(it) },
+    query = { RustGraphqlApi.query(it) },
+    mutate = { RustGraphqlApi.mutate(it) },
 )
 
 internal open class FeedsApi(

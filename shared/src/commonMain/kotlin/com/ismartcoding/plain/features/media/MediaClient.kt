@@ -1,32 +1,33 @@
 package com.ismartcoding.plain.features.media
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.models.ImageFileInfo
 import com.ismartcoding.plain.models.VideoFileInfo
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
+import com.ismartcoding.plain.rust.graphql.gql
 import kotlinx.serialization.json.*
 
 object MediaClient {
     suspend fun audioInfo(path: String): AudioItem = JsonHelper.jsonDecodeFromElement(
-        PlainRust.mainGraphql(
+        RustGraphqlApi.graphql(
             "query AudioMetadata(\$path: String!) { audioMetadata(path: \$path) { title artist path durationMs } }",
             mapOf("path" to JsonPrimitive(path)),
         ).getValue("audioMetadata"),
     )
 
     suspend fun lyricsByPath(path: String): String =
-        PlainRust.mainQuery("audioLyricsByPath(path: ${gql(path)})")
+        RustGraphqlApi.query("audioLyricsByPath(path: ${gql(path)})")
             .getValue("audioLyricsByPath").jsonPrimitive.contentOrNull.orEmpty()
 
-    suspend fun cacheAudioCover(path: String): String? = PlainRust.mainGraphql(
+    suspend fun cacheAudioCover(path: String): String? = RustGraphqlApi.graphql(
         "mutation CacheAudioCover(\$path: String!) { cacheAudioCover(path: \$path) }",
         mapOf("path" to JsonPrimitive(path)),
     ).getValue("cacheAudioCover").jsonPrimitive.contentOrNull
 
     suspend fun videoInfo(path: String): VideoFileInfo? {
-        val info = PlainRust.mainGraphql(
+        val info = RustGraphqlApi.graphql(
             "query(\$path:String!,\$name:String!){fileInfo(path:\$path,fileName:\$name){data{__typename ... on VideoFileInfo{width height rotation displayWidth displayHeight durationMs bitrate frameRate title artist album genre takenAt writer composer location{latitude longitude}}}}}",
             mapOf("path" to JsonPrimitive(path), "name" to JsonPrimitive("video.mp4")),
         ).getValue("fileInfo").jsonObject.getValue("data")
@@ -34,7 +35,7 @@ object MediaClient {
     }
 
     suspend fun imageInfo(path: String): ImageFileInfo? {
-        val info = PlainRust.mainGraphql(
+        val info = RustGraphqlApi.graphql(
             "query(\$path:String!,\$name:String!){fileInfo(path:\$path,fileName:\$name){data{__typename ... on ImageFileInfo{width height rotation make model colorSpace apertureValue exposureTime focalLength isoSpeed takenAt flash fNumber exposureProgram meteringMode whiteBalance creator resolutionX resolutionY description location{latitude longitude}}}}}",
             mapOf("path" to JsonPrimitive(path), "name" to JsonPrimitive("image.jpg")),
         ).getValue("fileInfo").jsonObject.getValue("data")
@@ -42,7 +43,7 @@ object MediaClient {
     }
 
     suspend fun durationMs(path: String): Long = readMediaDurationMs(path) { document, variables ->
-        PlainRust.mainGraphql(document, variables)
+        RustGraphqlApi.graphql(document, variables)
     }
 }
 

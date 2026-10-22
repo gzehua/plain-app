@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.chat.peer
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
@@ -21,7 +23,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.serialization.json.*
 import kotlinx.coroutines.flow.stateIn
 
@@ -46,7 +47,7 @@ object PeerCacher {
         .stateIn(scope, SharingStarted.Eagerly, emptySet())
 
     suspend fun refreshOnline() {
-        val peers = JsonHelper.jsonDecodeFromElement<List<PeerOnlineState>>(PlainRust.mainQuery("peers { id online }").getValue("peers"))
+        val peers = JsonHelper.jsonDecodeFromElement<List<PeerOnlineState>>(RustGraphqlApi.query("peers { id online }").getValue("peers"))
         onlineMap.value = peers.associate { it.id to it.online }
     }
 

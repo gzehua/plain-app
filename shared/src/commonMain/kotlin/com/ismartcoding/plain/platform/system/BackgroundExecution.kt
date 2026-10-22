@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.platform.system
 
+import com.ismartcoding.plain.rust.event.RustEventHandler
+
 import kotlinx.serialization.Serializable
 
 import com.ismartcoding.plain.app.events.EventType
@@ -8,8 +10,7 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.preferences.Prefs
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.RustRuntime
+import com.ismartcoding.plain.rust.RustRuntime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.*
@@ -55,16 +56,16 @@ object BackgroundExecution {
         RustRuntime.start()
         val finished = CompletableDeferred<Boolean>()
         val observer = launch(start = CoroutineStart.UNDISPATCHED) {
-            val event = PlainRust.events.first { event ->
+            val event = RustEventHandler.events.first { event ->
                 event.type == "BACKGROUND_EXECUTION_FINISHED" && JsonHelper.jsonDecode<ExecutionResult>(event.payload).id == id
             }
             finished.complete(requireNotNull(JsonHelper.jsonDecode<ExecutionResult>(event.payload).success))
         }
         try {
             withGrant(
-                grant = { PlainRust.publish(HostEvent(EventType.BACKGROUND_EXECUTION_GRANTED, JsonHelper.jsonEncode(ExecutionGrant(id, deadlineMs)))) },
+                grant = { RustEventHandler.publish(HostEvent(EventType.BACKGROUND_EXECUTION_GRANTED, JsonHelper.jsonEncode(ExecutionGrant(id, deadlineMs)))) },
                 awaitCompletion = { finished.await() },
-                revoke = { PlainRust.publish(HostEvent(EventType.BACKGROUND_EXECUTION_REVOKED, JsonHelper.jsonEncode(ExecutionRevocation(id)))) },
+                revoke = { RustEventHandler.publish(HostEvent(EventType.BACKGROUND_EXECUTION_REVOKED, JsonHelper.jsonEncode(ExecutionRevocation(id)))) },
             )
         } finally {
             withContext(NonCancellable) { observer.cancelAndJoin() }
@@ -87,7 +88,7 @@ object BackgroundExecution {
     fun executionStateChanged() {
         if (RustRuntime.startedSession() == null) return
         scope.launch {
-            try { PlainRust.publish(HostEvent(EventType.EXECUTION_STATE_CHANGED, "{}")) }
+            try { RustEventHandler.publish(HostEvent(EventType.EXECUTION_STATE_CHANGED, "{}")) }
             catch (error: Exception) { LogCat.e("Execution state report failed", error) }
         }
     }

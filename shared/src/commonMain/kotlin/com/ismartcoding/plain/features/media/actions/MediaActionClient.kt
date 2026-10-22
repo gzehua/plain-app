@@ -1,9 +1,10 @@
 package com.ismartcoding.plain.features.media.actions
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.platform.system.DataType
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
-import com.ismartcoding.plain.rust.request.selectionQuery
+import com.ismartcoding.plain.rust.graphql.gql
+import com.ismartcoding.plain.rust.graphql.selectionQuery
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -15,7 +16,7 @@ object MediaActionClient {
         val method = mediaActionMethod(action)
         val query = mediaActionSelection(ids, fromTrash || action == MediaAction.RESTORE)
         val destination = if (action == MediaAction.MOVE) ", destDir: ${gql(destDir)}" else ""
-        return PlainRust.mainMutate(
+        return RustGraphqlApi.mutate(
             "$method(type: ${type.name}, query: ${gql(query)}$destination) { affectedCount }",
             longRunning = true,
         ).getValue(method).jsonObject.getValue("affectedCount").jsonPrimitive.int

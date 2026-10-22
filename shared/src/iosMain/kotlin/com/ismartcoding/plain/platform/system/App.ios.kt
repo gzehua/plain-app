@@ -2,7 +2,7 @@
 
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.rust.http.get
+import com.ismartcoding.plain.network.get
 
 actual fun isAppForegrounded(): Boolean = platform.UIKit.UIApplication.sharedApplication.applicationState != platform.UIKit.UIApplicationState.UIApplicationStateBackground
 actual fun installApk(path: String) {}

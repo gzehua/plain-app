@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.rust.event
 
-import com.ismartcoding.plain.rust.request.*
+import com.ismartcoding.plain.rust.graphql.*
 
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HChatMessageNotificationEvent

@@ -41,6 +41,27 @@ pub extern "C" fn plain_restart_http_server(http_port: i32, https_port: i32) -> 
     c_string(restart_http_server(http_port, https_port))
 }
 
+fn tls_certificate_signature() -> String {
+    reply!((|| -> Result<serde_json::Value, String> {
+        let response = super::server::with_core(|core| {
+            core.server.native_management()?;
+            let path = plain_rs::data_paths::DataPaths::new(&core.directory).tls_identity();
+            plain_server::services::tls_identity::action(&path, r#"{"action":"get"}"#)
+        })??;
+        let value: serde_json::Value =
+            serde_json::from_str(&response).map_err(|e| e.to_string())?;
+        value
+            .get("signature")
+            .cloned()
+            .ok_or_else(|| "TLS signature missing".to_owned())
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_tls_certificate_signature() -> *mut c_char {
+    c_string(tls_certificate_signature())
+}
+
 fn regenerate_tls_certificate() -> String {
     reply!((|| {
         let (runtime, management) = parts()?;
@@ -278,7 +299,7 @@ mod android {
     };
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_restartHttpServerNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_restartHttpServerNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         http_port: jint,
@@ -293,7 +314,19 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_regenerateTlsCertificateNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_tlsCertificateSignatureNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            env.new_string(tls_certificate_signature())
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_regenerateTlsCertificateNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -306,7 +339,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_importTlsCertificatePemNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_importTlsCertificatePemNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         certificate_pem: JString<'_>,
@@ -324,7 +357,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_importTlsCertificatePkcs12Native(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_importTlsCertificatePkcs12Native(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         data: JByteArray<'_>,
@@ -340,7 +373,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_createSessionNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_createSessionNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         name: JString<'_>,
@@ -354,7 +387,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_confirmWebLoginNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_confirmWebLoginNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         request_id: JString<'_>,
@@ -369,7 +402,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_stageAppRestoreNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_stageAppRestoreNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         path: JString<'_>,
@@ -383,7 +416,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_exportAppBackupNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_exportAppBackupNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -396,7 +429,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_createCrashReportNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_createCrashReportNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         report: JString<'_>,
@@ -410,7 +443,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_verifyAdbTokenNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_verifyAdbTokenNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         token: JString<'_>,
@@ -424,7 +457,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_startAppUpdateDownloadNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_startAppUpdateDownloadNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -437,7 +470,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_cancelAppUpdateDownloadNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_cancelAppUpdateDownloadNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -450,7 +483,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_checkAppUpdateNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_checkAppUpdateNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         automatic: jboolean,
@@ -463,7 +496,7 @@ mod android {
         .into_raw()
     }
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_systemSettingsNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_systemSettingsNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -472,7 +505,7 @@ mod android {
             .into_raw()
     }
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_userSettingsNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_userSettingsNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -481,7 +514,7 @@ mod android {
             .into_raw()
     }
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_bridge_RustCoreBridge_toggleNotificationAppNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_toggleNotificationAppNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         package_name: JString<'_>,

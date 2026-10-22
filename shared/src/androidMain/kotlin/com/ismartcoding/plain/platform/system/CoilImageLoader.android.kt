@@ -3,8 +3,8 @@
 package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.platform.isQPlus
-import com.ismartcoding.plain.rust.http.get
-import com.ismartcoding.plain.rust.http.request
+import com.ismartcoding.plain.network.get
+import com.ismartcoding.plain.network.request
 
 import android.graphics.Bitmap
 import android.graphics.Paint
@@ -40,7 +40,7 @@ import coil3.svg.isSvg
 import coil3.toAndroidUri
 import coil3.video.VideoFrameDecoder
 import com.ismartcoding.plain.activityManager
-import com.ismartcoding.plain.rust.http.OkHttpClientFactory
+import com.ismartcoding.plain.network.OkHttpClientFactory
 import kotlin.math.roundToInt
 
 /**

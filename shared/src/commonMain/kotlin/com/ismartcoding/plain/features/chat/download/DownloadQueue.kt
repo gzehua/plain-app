@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.features.chat.download
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
@@ -9,8 +11,7 @@ import com.ismartcoding.plain.features.downloads.DownloadQueueVersion
 import com.ismartcoding.plain.features.downloads.DownloadStatus
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
+import com.ismartcoding.plain.rust.graphql.gql
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,7 +70,7 @@ object DownloadQueue {
     }
     private const val QUEUE_FIELDS = "runtimeId revision tasks { id messageId status error downloaded total speed file { id: fileId uri size durationMs width height summary fileName } peer { id name ip key publicKey status port deviceType token createdAt updatedAt } }"
     private suspend fun call(request: Request): JsonElement {
-        if (request == Request.Snapshot) return PlainRust.mainQuery("chatDownloadQueue { $QUEUE_FIELDS }").getValue("chatDownloadQueue")
+        if (request == Request.Snapshot) return RustGraphqlApi.query("chatDownloadQueue { $QUEUE_FIELDS }").getValue("chatDownloadQueue")
         val operation = when (request) {
             is Request.Enqueue -> "enqueueChatDownload(messageId: ${gql(request.messageId)}, fileId: ${gql(request.fileId)}, peerId: ${gql(request.peerId)})"
             is Request.Control -> {
@@ -84,7 +85,7 @@ object DownloadQueue {
             }
             Request.Snapshot -> error("Snapshot already handled")
         }
-        return PlainRust.mainMutate(operation, longRunning = true).getValue(operation.substringBefore('('))
+        return RustGraphqlApi.mutate(operation, longRunning = true).getValue(operation.substringBefore('('))
     }
 
     private sealed interface Request {

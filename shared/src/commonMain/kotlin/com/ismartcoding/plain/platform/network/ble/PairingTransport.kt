@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.platform.network.ble
 
+import com.ismartcoding.plain.rust.event.RustEventHandler
+
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
@@ -12,7 +14,6 @@ import com.ismartcoding.plain.platform.network.bleAvailabilityFlow
 import com.ismartcoding.plain.platform.network.ble.server.BleGattServer
 import com.ismartcoding.plain.platform.network.bleTransport
 import com.ismartcoding.plain.platform.system.PlatformLock
-import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
@@ -75,7 +76,7 @@ object PairingTransport {
                 AdvertisingFacts(available == BleAvailability.READY, aware, lease)
             }.collect { facts ->
                 if (!lock.withLock { !closed && current === this }) return@collect
-                try { PlainRust.publish(HostEvent(EventType.BLE_ADVERTISING_FACTS_REPORTED, JsonHelper.jsonEncode(facts))) }
+                try { RustEventHandler.publish(HostEvent(EventType.BLE_ADVERTISING_FACTS_REPORTED, JsonHelper.jsonEncode(facts))) }
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) { LogCat.e("BLE advertising facts", error) }
             }

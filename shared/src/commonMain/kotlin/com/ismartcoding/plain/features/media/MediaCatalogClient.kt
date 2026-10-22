@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.features.media
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
@@ -7,9 +9,8 @@ import com.ismartcoding.plain.models.Audio as AudioTrack
 import com.ismartcoding.plain.models.Doc as Document
 import com.ismartcoding.plain.models.Video as MediaVideo
 import com.ismartcoding.plain.models.Image as MediaImage
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
-import com.ismartcoding.plain.rust.request.selectionQuery
+import com.ismartcoding.plain.rust.graphql.gql
+import com.ismartcoding.plain.rust.graphql.selectionQuery
 import com.ismartcoding.plain.platform.media.getMediaItemUriString
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.files.FileSortBy
@@ -43,7 +44,7 @@ object MediaCatalogClient {
             else -> Unit
         }
         val root = root(type)
-        return PlainRust.mainQuery("$root(query: ${gql(query)}, limit: $limit, offset: $offset, sortBy: ${sortBy.name}) { ${fields(type)} }").getValue(root).jsonArray.map {
+        return RustGraphqlApi.query("$root(query: ${gql(query)}, limit: $limit, offset: $offset, sortBy: ${sortBy.name}) { ${fields(type)} }").getValue(root).jsonArray.map {
             val row = it.jsonObject
             when (type) {
                 DataType.AUDIO -> com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<AudioTrack>(row)
@@ -55,7 +56,7 @@ object MediaCatalogClient {
         }
     }
     suspend fun shareUris(type: DataType, ids: Collection<String>): List<String> =
-        readSelectedMediaPaths(root(type), ids) { PlainRust.mainQuery(it) }
+        readSelectedMediaPaths(root(type), ids) { RustGraphqlApi.query(it) }
             .map { (id, path) -> getMediaItemUriString(type, id, path) }
 
     suspend fun count(type: DataType, query: String): Int {
@@ -67,12 +68,12 @@ object MediaCatalogClient {
         }
         root(type)
         val field = type.name.lowercase() + "Count"
-        return PlainRust.mainQuery("$field(query: ${gql(query)})").getValue(field).jsonPrimitive.int
+        return RustGraphqlApi.query("$field(query: ${gql(query)})").getValue(field).jsonPrimitive.int
     }
     suspend fun docExtGroups(query: String): List<Pair<String, Int>> =
-        JsonHelper.jsonDecodeFromElement<List<DocExtensionGroup>>(PlainRust.mainQuery("docExtGroups(query: ${gql(query)}) { ext count }").getValue("docExtGroups")).map { it.ext to it.count }
+        JsonHelper.jsonDecodeFromElement<List<DocExtensionGroup>>(RustGraphqlApi.query("docExtGroups(query: ${gql(query)}) { ext count }").getValue("docExtGroups")).map { it.ext to it.count }
     suspend fun buckets(dataType: DataType): List<com.ismartcoding.plain.models.MediaBucket> =
-        com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(PlainRust.mainQuery("mediaBuckets(type: ${dataType.name}) { id name itemCount size topItemPaths }").getValue("mediaBuckets"))
+        com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(RustGraphqlApi.query("mediaBuckets(type: ${dataType.name}) { id name itemCount size topItemPaths }").getValue("mediaBuckets"))
 
 }
 

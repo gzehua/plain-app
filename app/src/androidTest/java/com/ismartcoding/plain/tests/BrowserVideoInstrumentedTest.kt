@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.features.media.MediaClient
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -40,9 +42,8 @@ import com.ismartcoding.plain.platform.system.*
 import com.ismartcoding.plain.ui.platform.system.*
 import com.ismartcoding.plain.ui.state.*
 import com.ismartcoding.plain.platform.telephony.*
-import com.ismartcoding.plain.rust.http.*
+import com.ismartcoding.plain.network.*
 import com.ismartcoding.plain.preferences.UserPrefs
-import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
@@ -59,7 +60,7 @@ class BrowserVideoInstrumentedTest {
     fun publicResourceTranscodesHevcWithTheRustOwnedPipeline() = runBlocking {
         val source = File("/data/local/tmp/hevc_probe.mp4")
         assumeTrue("HEVC fixture is missing", source.isFile)
-        val capabilities = PlainRust.mainQuery("app { capabilities }").getValue("app").jsonObject
+        val capabilities = RustGraphqlApi.query("app { capabilities }").getValue("app").jsonObject
             .getValue("capabilities").jsonArray.map { it.jsonPrimitive.content }
         assumeTrue("HEVC transcoding is unavailable", "VIDEO_TRANSCODE" in capabilities)
         val service = UserPrefs.service.value

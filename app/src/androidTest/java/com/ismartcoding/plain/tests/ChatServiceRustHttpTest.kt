@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.chat.ChatClient
 import com.ismartcoding.plain.features.chat.RustChatStore
@@ -13,8 +15,7 @@ import com.ismartcoding.plain.features.chat.ChatStatus
 import com.ismartcoding.plain.features.shares.SharesClient
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.features.files.stored.AppFileStore
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.RustRuntime
+import com.ismartcoding.plain.rust.RustRuntime
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
@@ -62,7 +63,7 @@ class ChatServiceRustHttpTest {
             assertEquals(200, status)
             assertArrayEquals(source.readBytes(), body)
             ChatClient.deleteOne(picked.first().id)
-            val page = PlainRust.mainQuery("""chatItems(target: "peer:local", offset: 0, limit: 20, query: "text:$marker") { id }""")["chatItems"]!!.jsonArray
+            val page = RustGraphqlApi.query("""chatItems(target: "peer:local", offset: 0, limit: 20, query: "text:$marker") { id }""")["chatItems"]!!.jsonArray
             assertTrue("the sent message must appear in the contract page, got $page", page.any { it.jsonObject["id"]!!.jsonPrimitive.content == forward.id })
             val image = File(root, "$marker.png")
             val bitmap = android.graphics.Bitmap.createBitmap(7, 5, android.graphics.Bitmap.Config.ARGB_8888)

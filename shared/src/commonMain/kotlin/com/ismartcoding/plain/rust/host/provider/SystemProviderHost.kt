@@ -43,7 +43,7 @@ object SystemProviderHost {
         "systemMmsLatest", "systemMmsLaunch", "systemMmsCandidates",
         "systemSimFacts" -> SystemSmsHost.handle(method, params)
         "systemScreenMirrorControls",
-        "systemScreenMirrorResetTouch" -> com.ismartcoding.plain.rust.http.WebSocketHost.handle(method, params)
+        "systemScreenMirrorResetTouch" -> com.ismartcoding.plain.rust.host.network.WebSocketHost.handle(method, params)
         "systemScreenMirrorState",
         "systemStartScreenMirror",
         "systemStopScreenMirror",

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.rust.http.get
+import com.ismartcoding.plain.network.get
 
 import android.content.Context
 import android.os.LocaleList as AndroidLocaleList

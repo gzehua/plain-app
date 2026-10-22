@@ -1,7 +1,9 @@
 package com.ismartcoding.plain.ui.platform.media
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.platform.files.queryPickedFileInfo
-import com.ismartcoding.plain.rust.http.request
+import com.ismartcoding.plain.network.request
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -9,8 +11,7 @@ import androidx.compose.runtime.MutableState
 import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.app.events.PickFileResultEvent
 import com.ismartcoding.plain.lib.Channel
-import com.ismartcoding.plain.rust.request.gql
-import com.ismartcoding.plain.rust.PlainRust
+import com.ismartcoding.plain.rust.graphql.gql
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.jsonPrimitive
@@ -23,7 +24,7 @@ fun PickImageEffect(imageUrl: MutableState<String>) {
                 val source = event.uris.firstOrNull() ?: return@collect
                 try {
                     val info = checkNotNull(queryPickedFileInfo(source)) { "Unable to read selected image" }
-                    imageUrl.value = PlainRust.mainMutate(
+                    imageUrl.value = RustGraphqlApi.mutate(
                         "importNoteImage(source: ${gql(source)}, fileName: ${gql(info.displayName)})", longRunning = true,
                     ).getValue("importNoteImage").jsonPrimitive.content
                 } catch (error: CancellationException) {

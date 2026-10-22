@@ -1,14 +1,15 @@
 package com.ismartcoding.plain.features.chat
 
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+
 import com.ismartcoding.plain.models.ChatItem
-import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
+import com.ismartcoding.plain.rust.graphql.gql
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 
 internal suspend fun readChatSnapshot(
     ids: List<String>,
-    fetch: suspend (String) -> JsonObject = { PlainRust.mainQuery(it) },
+    fetch: suspend (String) -> JsonObject = { RustGraphqlApi.query(it) },
 ): Map<String, ChatItem?> {
     val result = linkedMapOf<String, ChatItem?>()
     for (batch in ids.distinct().chunked(128)) {
