@@ -35,7 +35,8 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent as sendAppEvent
 import com.ismartcoding.plain.platform.notifications.sendWebLoginNotification
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.preferences.PrefStore
+import com.ismartcoding.plain.preferences.SystemPrefsClient
 import com.ismartcoding.plain.rust.host.AudioEngineHost
 import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.rust.native.readRustStream
@@ -162,7 +163,8 @@ object RustEventHandler {
             EventType.ONLINE_CLIENTS_UPDATED -> setOnlineClientIds(
                 JsonHelper.jsonDecode<Set<String>>(payload))
             EventType.PREFS_UPDATED -> {
-                Prefs.refresh()
+                PrefStore.refresh()
+                SystemPrefsClient.local.refresh()
                 LocalDeviceState.refresh()
             }
             EventType.IMAGE_MODELS_UPDATED -> RustImageModels.apply(JsonHelper.jsonDecode<JsonObject>(payload))
@@ -184,7 +186,8 @@ object RustEventHandler {
             EventType.APP_UPDATE_DOWNLOAD_UPDATED -> AppUpdateDownloads.apply(JsonHelper.jsonDecode(payload))
             EventType.FEED_SYNC_UPDATED -> FeedWorkerState.apply(JsonHelper.jsonDecode<FeedSyncUpdate>(payload))
             EventType.CONTENT_CHANGED -> {
-                Prefs.refresh()
+                PrefStore.refresh()
+                SystemPrefsClient.local.refresh()
                 ChannelCacher.load()
                 ChatClient.refreshLatestChats()
                 try { FavoriteFoldersClient.refresh() }

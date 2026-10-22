@@ -3,6 +3,8 @@ package com.ismartcoding.plain.rust
 import kotlinx.coroutines.IO
 
 import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.preferences.PrefStore
+import com.ismartcoding.plain.preferences.SystemPrefsClient
 
 import com.ismartcoding.plain.platform.system.*
 import com.ismartcoding.plain.rust.native.RustNativeApi
@@ -42,7 +44,10 @@ object RustRuntime {
         require(result.sharedPreviewDir.startsWith('/')) { "Rust shared preview cache path required" }
         logPath = result.logFile
         sharedPreviewPath = result.sharedPreviewDir
-        kotlinx.coroutines.runBlocking(Dispatchers.IO) { com.ismartcoding.plain.preferences.Prefs.refresh() }
+        kotlinx.coroutines.runBlocking(Dispatchers.IO) {
+            PrefStore.refresh()
+            SystemPrefsClient.local.refresh()
+        }
         isCoreInitialized = true
         if (!collectorsStarted) {
             RustEventHandler.start(scope)
