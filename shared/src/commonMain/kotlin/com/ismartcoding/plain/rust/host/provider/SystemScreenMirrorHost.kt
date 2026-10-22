@@ -50,10 +50,7 @@ internal object SystemScreenMirrorHost {
             JsonHelper.jsonEncodeToElement(true)
         }
         "systemUpdateScreenMirrorQuality" -> {
-            val request = JsonHelper.jsonDecodeFromElement<ScreenMirrorQualityRequest>(params)
             com.ismartcoding.plain.preferences.Prefs.refresh()
-            val mode = com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode.valueOf(request.mode)
-            com.ismartcoding.plain.platform.media.onScreenMirrorQualityChanged(mode)
             JsonHelper.jsonEncodeToElement(true)
         }
         else -> error("Unsupported provider operation")
@@ -63,5 +60,3 @@ internal object SystemScreenMirrorHost {
 @Serializable
 private data class StartScreenMirrorRequest(val audio: Boolean)
 
-@Serializable
-private data class ScreenMirrorQualityRequest(val mode: String)
