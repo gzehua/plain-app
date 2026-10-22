@@ -44,7 +44,7 @@ fun newImageLoader(context: PlatformContext): ImageLoader =
         }
         .diskCache {
             DiskCache.Builder()
-                .directory(imageCacheDir().toPath())
+                .directory(cacheDirPath().toPath() / "image_cache")
                 .maxSizePercent(1.0)
                 .build()
         }

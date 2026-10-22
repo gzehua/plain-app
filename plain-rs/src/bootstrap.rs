@@ -90,6 +90,5 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
     .map_err(|e| e.to_string())?;
     Ok(serde_json::json!({
         "logFile":core.server.log_file()?,
-        "cacheDir":core.server.cache_paths().root(),"imageCacheDir":core.server.cache_paths().image_cache(),"videoCacheDir":core.server.cache_paths().video_cache(),
         "sharedPreviewDir":core.server.cache_paths().shared_previews()}).to_string())
 }

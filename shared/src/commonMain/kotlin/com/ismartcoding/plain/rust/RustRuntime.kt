@@ -20,12 +20,7 @@ object RustRuntime {
     val dataDir: String by lazy { dataDirPath() }
     @Volatile private var logPath: String? = null
     val logFile: String get() = checkNotNull(logPath) { "Rust log path is not initialized" }
-    @Volatile private var imageCachePath: String? = null
-    @Volatile private var videoCachePath: String? = null
     @Volatile private var sharedPreviewPath: String? = null
-    val cacheDir: String by lazy { cacheDirPath() }
-    val videoCacheDir: String get() = checkNotNull(videoCachePath) { "Rust video cache is not initialized" }
-    val imageCacheDir: String get() = checkNotNull(imageCachePath) { "Rust image cache is not initialized" }
     val sharedPreviewDir: String get() = checkNotNull(sharedPreviewPath) { "Rust shared preview cache is not initialized" }
 
     private var sessionToken: String? = null
@@ -41,13 +36,9 @@ object RustRuntime {
         val result = JsonHelper.jsonDecode<RustHttpServerResult>(RustNativeApi.start(
             dataDir, token, JsonHelper.jsonEncode(config)))
         check(result.errorCode.isEmpty()) { result.error }
-        require(result.cacheDir.startsWith('/') && result.imageCacheDir.startsWith('/') && result.videoCacheDir.startsWith('/')) { "Rust cache paths required" }
-        check(result.cacheDir == cacheDir) { "Rust cache root differs from startup configuration" }
         require(result.logFile.startsWith('/')) { "Rust log file path required" }
         require(result.sharedPreviewDir.startsWith('/')) { "Rust shared preview cache path required" }
         logPath = result.logFile
-        imageCachePath = result.imageCacheDir
-        videoCachePath = result.videoCacheDir
         sharedPreviewPath = result.sharedPreviewDir
         kotlinx.coroutines.runBlocking(com.ismartcoding.plain.platform.IODispatcher) { com.ismartcoding.plain.preferences.RustSystemState.refresh() }
         isCoreInitialized = true

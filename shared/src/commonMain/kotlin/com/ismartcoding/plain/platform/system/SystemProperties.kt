@@ -15,7 +15,7 @@ private val startupProperties = StartupSystemProperties {
         "wifiAwareSupported", "files.recentCatalog", "files.recentRoot", "media.systemCatalog", "supportedAbis", "updateSource",
     ) + startupPlatformPropertyNames()) + mapOf(
         "buildChannel" to kotlinx.serialization.json.JsonPrimitive(com.ismartcoding.plain.platform.system.AppChannelType.fromString(com.ismartcoding.plain.buildChannel).name),
-        "cacheDir" to kotlinx.serialization.json.JsonPrimitive(com.ismartcoding.plain.rust.RustRuntime.cacheDir),
+        "cacheDir" to kotlinx.serialization.json.JsonPrimitive(cacheDirPath()),
         "downloadsDir" to kotlinx.serialization.json.JsonPrimitive(getDownloadsDirPath()),
     )
 }
