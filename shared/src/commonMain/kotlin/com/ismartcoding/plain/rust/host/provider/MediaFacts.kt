@@ -16,3 +16,33 @@ internal data class MediaFacts(
     val isFavorite: Boolean,
     val width: Int = 0, val height: Int = 0, val rotation: Int = 0,
 )
+
+@Serializable
+internal data class AudioFacts(
+    val id: String,
+    val title: String,
+    val artist: String,
+    val path: String,
+    val size: Long,
+    val bucketId: String,
+    val durationMs: Long,
+    val albumArtUri: String,
+    val albumId: String,
+    val createdAt: String,
+    val updatedAt: String,
+    val isFavorite: Boolean,
+)
+
+@Serializable
+internal data class AudioPlaybackFacts(
+    val isPlaying: Boolean,
+    val positionMs: Long,
+)
+
+@Serializable
+data class MediaBucketItemFacts(
+    val id: String,
+    val name: String,
+    val size: Long,
+    val path: String,
+)

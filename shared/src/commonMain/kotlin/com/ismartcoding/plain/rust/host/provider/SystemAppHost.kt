@@ -7,14 +7,12 @@ import com.ismartcoding.plain.features.web.WebSettingsFeature
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.network.getNetworkType
-import com.ismartcoding.plain.platform.network.vpnActive
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.platform.setClipboardText
 import com.ismartcoding.plain.platform.system.clearMediaCache
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.system.readBatterySample
-import com.ismartcoding.plain.platform.system.readMemoryAvailable
 import com.ismartcoding.plain.platform.system.sampleSystemProperties
 import com.ismartcoding.plain.platform.system.scheduleBackgroundWake
 import kotlinx.serialization.Serializable
@@ -47,7 +45,6 @@ internal object SystemAppHost {
             sendEvent(HOpenWebSettingsEvent(feature))
             JsonHelper.jsonEncodeToElement(true)
         }
-        "systemVpnActive" -> JsonHelper.jsonEncodeToElement(vpnActive())
         "systemNetworkType" -> JsonHelper.jsonEncodeToElement(getNetworkType().name)
         "systemScheduleBackgroundWake" -> {
             scheduleBackgroundWake(JsonHelper.jsonDecodeFromElement<BackgroundWakeRequest>(params).atMs)
@@ -56,7 +53,6 @@ internal object SystemAppHost {
         "systemProperties" -> JsonHelper.jsonEncodeToElement(sampleSystemProperties(
             JsonHelper.jsonDecodeFromElement<SystemPropertiesRequest>(params).names,
         ))
-        "systemMemoryAvailable" -> JsonHelper.jsonEncodeToElement(readMemoryAvailable())
         "systemBatterySample" -> JsonHelper.jsonEncodeToElement(readBatterySample())
         "systemCapabilities" -> JsonHelper.jsonEncodeToElement(getDeviceCapabilities().map { it.name })
         "systemClearMediaCache" -> {

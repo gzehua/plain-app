@@ -18,6 +18,7 @@ import kotlin.concurrent.Volatile
  */
 interface IosNetworkInfoProvider {
     fun getNetworkType(): String
+    fun isVpnActive(): Boolean
 }
 
 /**
@@ -100,6 +101,7 @@ object IosPlatformRegistry {
     fun setBackgroundScheduler(scheduler: IosBackgroundScheduler) { backgroundScheduler = scheduler }
     fun scheduleBackgroundWake(atMillis: Double): String = checkNotNull(backgroundScheduler).schedule(atMillis)
     fun networkType(): String = _networkInfoProvider?.getNetworkType() ?: "NONE"
+    fun vpnActive(): Boolean = _networkInfoProvider?.isVpnActive() ?: false
 
     @Volatile
     private var _networkInfoProvider: IosNetworkInfoProvider? = null

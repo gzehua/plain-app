@@ -1,3 +1,4 @@
+import Darwin
 import BackgroundTasks
 import SwiftUI
 import PlainShared
@@ -99,6 +100,54 @@ final class NetworkInfoProvider: NSObject, IosNetworkInfoProvider {
         networkLock.lock()
         defer { networkLock.unlock() }
         return networkType
+    }
+
+    func isVpnActive() -> Bool {
+        guard let selected = routeAddress(AF_INET, "192.0.2.1")
+            ?? routeAddress(AF_INET6, "fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff") else { return false }
+        var head: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&head) == 0 else { return false }
+        defer { freeifaddrs(head) }
+        var current = head
+        while let row = current?.pointee {
+            current = row.ifa_next
+            guard let address = row.ifa_addr, let name = row.ifa_name,
+                row.ifa_flags & UInt32(IFF_UP) != 0 else { continue }
+            let interface = String(cString: name)
+            let tunnel = row.ifa_flags & UInt32(IFF_POINTOPOINT) != 0
+                || interface.hasPrefix("utun") || interface.hasPrefix("ipsec")
+            if tunnel && numericAddress(address) == selected { return true }
+        }
+        return false
+    }
+
+    private func routeAddress(_ family: Int32, _ host: String) -> String? {
+        var hints = addrinfo()
+        hints.ai_flags = AI_NUMERICHOST
+        hints.ai_family = family
+        hints.ai_socktype = SOCK_DGRAM
+        var result: UnsafeMutablePointer<addrinfo>?
+        guard getaddrinfo(host, "1", &hints, &result) == 0, let result else { return nil }
+        defer { freeaddrinfo(result) }
+        let fd = socket(family, SOCK_DGRAM, 0)
+        guard fd >= 0 else { return nil }
+        defer { close(fd) }
+        guard connect(fd, result.pointee.ai_addr, result.pointee.ai_addrlen) == 0 else { return nil }
+        var address = sockaddr_storage()
+        var length = socklen_t(MemoryLayout<sockaddr_storage>.size)
+        return withUnsafeMutablePointer(to: &address) { pointer in
+            pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { socketAddress in
+                guard getsockname(fd, socketAddress, &length) == 0 else { return nil }
+                return numericAddress(socketAddress)
+            }
+        }
+    }
+
+    private func numericAddress(_ address: UnsafePointer<sockaddr>) -> String? {
+        var host = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+        guard getnameinfo(address, socklen_t(address.pointee.sa_len), &host,
+            socklen_t(host.count), nil, 0, NI_NUMERICHOST) == 0 else { return nil }
+        return String(cString: host)
     }
 
 }

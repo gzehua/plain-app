@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.rust.host.provider
+package com.ismartcoding.plain.rust.host.files
 
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.lib.JsonHelper
@@ -9,6 +9,8 @@ import com.ismartcoding.plain.platform.system.fileIndexCount
 import com.ismartcoding.plain.platform.system.fileIndexId
 import com.ismartcoding.plain.platform.system.fileIndexRows
 import com.ismartcoding.plain.rust.host.*
+import com.ismartcoding.plain.rust.host.provider.FileIndexRowsRequest
+import com.ismartcoding.plain.rust.host.provider.providerPlan
 import kotlinx.serialization.json.*
 
 internal object SystemFilesHost {
@@ -27,8 +29,6 @@ internal object SystemFilesHost {
         else -> error("Unsupported provider operation")
     }
 
-    /** The `File` contract row. `mediaId` stays an empty string for non-media
-     * entries; Rust maps that to `null` rather than carrying the sentinel. */
     private fun fileFacts(file: FileEntry): FileFacts = FileFacts(
         name = file.name,
         path = file.path,

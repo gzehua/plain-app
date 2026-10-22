@@ -1,10 +1,9 @@
-package com.ismartcoding.plain.rust.host
+package com.ismartcoding.plain.rust.host.files
 
 import com.ismartcoding.plain.lib.JsonHelper
-import kotlinx.serialization.Serializable
-
 import com.ismartcoding.plain.platform.files.decodeThumbnailBytes
 import com.ismartcoding.plain.rust.native.RustNativeApi
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal object ThumbnailHost {

@@ -3,7 +3,7 @@ package com.ismartcoding.plain.platform.files
 import com.ismartcoding.plain.platform.system.appDir
 
 import com.ismartcoding.plain.features.files.DriveType
-import com.ismartcoding.plain.rust.host.provider.MountFacts
+import com.ismartcoding.plain.rust.host.files.MountFacts
 
 internal fun storageVolumeFacts(): List<MountFacts> = buildList {
     val internal = getInternalStorageStats()

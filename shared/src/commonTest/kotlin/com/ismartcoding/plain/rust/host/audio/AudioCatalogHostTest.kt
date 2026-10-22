@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.rust.host
+package com.ismartcoding.plain.rust.host.audio
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose

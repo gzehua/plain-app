@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.rust.host
+package com.ismartcoding.plain.rust.host.audio
 
 import com.ismartcoding.plain.app.events.PermissionsResultEvent
 import com.ismartcoding.plain.lib.Channel

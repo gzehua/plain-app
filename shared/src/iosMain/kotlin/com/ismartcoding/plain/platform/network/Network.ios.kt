@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.platform.network
 
+import com.ismartcoding.plain.platform.system.IosPlatformRegistry
 
+actual fun getNetworkType(): NetworkType = NetworkType.valueOf(IosPlatformRegistry.networkType())
 
-actual fun getNetworkType(): NetworkType = NetworkType.valueOf(com.ismartcoding.plain.platform.system.IosPlatformRegistry.networkType())
-
-internal actual fun vpnActive(): Boolean = error("VPN state is sampled by Rust")
+internal actual fun vpnActive(): Boolean = IosPlatformRegistry.vpnActive()

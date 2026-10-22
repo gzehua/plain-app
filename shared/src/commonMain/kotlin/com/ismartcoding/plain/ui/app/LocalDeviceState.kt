@@ -5,6 +5,7 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import kotlinx.serialization.Serializable
 
 import androidx.compose.runtime.mutableStateOf
+import com.ismartcoding.plain.platform.network.vpnActive
 import com.ismartcoding.plain.models.NetworkStatus
 import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.lib.JsonHelper
@@ -21,7 +22,7 @@ object LocalDeviceState {
 
     suspend fun refresh() = refreshLock.withLock {
         try {
-            val app = JsonHelper.jsonDecodeFromElement<LocalAppInfo>(RustGraphqlApi.query("app { clientId deviceName deviceType httpsPort network { ipv4Addresses primaryIpv4 vpnActive } }").getValue("app"))
+            val app = JsonHelper.jsonDecodeFromElement<LocalAppInfo>(RustGraphqlApi.query("app { clientId deviceName deviceType httpsPort network { ipv4Addresses primaryIpv4 } }").getValue("app"))
             val network = app.network
             peer.value = Peer(
                 key = "",
@@ -38,7 +39,7 @@ object LocalDeviceState {
             )
             AppUiState.ip4s.value = network.ipv4Addresses
             AppUiState.primaryIpv4.value = network.primaryIpv4
-            AppUiState.vpnActive.value = network.vpnActive
+            AppUiState.vpnActive.value = vpnActive()
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {

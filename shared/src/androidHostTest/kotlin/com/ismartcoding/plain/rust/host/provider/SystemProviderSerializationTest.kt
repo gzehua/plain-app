@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.rust.host.provider
 
+import com.ismartcoding.plain.rust.host.files.FileFacts
+
 import com.ismartcoding.plain.features.telephony.sms.SmsConversationFacts
 import com.ismartcoding.plain.features.telephony.sms.SmsCountFacts
 import com.ismartcoding.plain.features.telephony.sms.SmsRowsFacts
@@ -91,7 +93,7 @@ class SystemProviderSerializationTest {
     fun systemProviderSerializationUsesOnlyJsonHelper() {
         val root = generateSequence(File(System.getProperty("user.dir"))) { it.parentFile }
             .first { File(it, "shared/src/commonMain").isDirectory }
-        val systemSources = File(root, "shared/src/commonMain/kotlin/com/ismartcoding/plain/rust/host/provider")
+        val systemSources = File(root, "shared/src/commonMain/kotlin/com/ismartcoding/plain/rust/host")
             .walkTopDown()
             .filter { it.isFile && it.extension == "kt" && it.name.startsWith("System") }
             .map { it.relativeTo(root).path }.toList()

@@ -1,9 +1,8 @@
 package com.ismartcoding.plain.rust.host.network
 
 import com.ismartcoding.plain.lib.JsonHelper
-import kotlinx.serialization.Serializable
-
 import com.ismartcoding.plain.platform.network.bleTransport
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 object NearbyScanHost {

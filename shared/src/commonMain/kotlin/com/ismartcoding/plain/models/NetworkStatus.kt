@@ -6,5 +6,4 @@ import kotlinx.serialization.Serializable
 data class NetworkStatus(
     val ipv4Addresses: List<String>,
     val primaryIpv4: String,
-    val vpnActive: Boolean,
 )

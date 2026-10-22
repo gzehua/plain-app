@@ -1,11 +1,10 @@
-package com.ismartcoding.plain.rust.host.provider
-
-import com.ismartcoding.plain.rust.host.PathsRequest
+package com.ismartcoding.plain.rust.host.files
 
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.files.queryFileTaskMedia
 import com.ismartcoding.plain.platform.files.scanFileTaskPaths
+import com.ismartcoding.plain.rust.host.PathsRequest
 import kotlinx.serialization.json.*
 
 object FileTaskHost {

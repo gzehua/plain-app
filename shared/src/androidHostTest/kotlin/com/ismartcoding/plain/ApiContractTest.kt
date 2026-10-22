@@ -15,7 +15,7 @@ class ApiContractTest {
             "setNotificationFilterMode", "clearNotificationFilterApps", "pairingCode", "isPairingRequestCurrent",
             "logoutPeer", "controlPeerStatus", "filePaths", "importNoteImage", "importPomodoroSound",
             "dlnaReceiver", "controlDlnaReceiver", "scanHistory", "addScanHistory", "removeScanHistory",
-            "acquireMdnsDebugSession", "releaseMdnsDebugSession")) {
+            "acquireMdnsDebugSession", "releaseMdnsDebugSession", "vpnActive")) {
             if (Regex("(?m)^\\s*$name(?:\\(|:)").containsMatchIn(sdl)) fail("Internal operation exposed: $name")
         }
     }

@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.rust.host
+package com.ismartcoding.plain.rust.host.audio
 
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.app.events.EventType

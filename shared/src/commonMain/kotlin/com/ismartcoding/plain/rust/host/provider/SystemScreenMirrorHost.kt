@@ -67,4 +67,3 @@ internal object SystemScreenMirrorHost {
 
 @Serializable
 private data class StartScreenMirrorRequest(val audio: Boolean)
-

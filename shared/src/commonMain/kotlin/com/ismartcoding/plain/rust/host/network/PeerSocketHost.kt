@@ -2,9 +2,9 @@ package com.ismartcoding.plain.rust.host.network
 
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.network.openAwareByteSocket
+import kotlin.io.encoding.Base64
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
-import kotlin.io.encoding.Base64
 
 object PeerSocketHost {
     @Serializable
