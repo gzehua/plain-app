@@ -1,7 +1,12 @@
 package com.ismartcoding.plain.rust.host.provider
 
 import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.platform.files.FileResourceHost
+import com.ismartcoding.plain.platform.media.audioIsPlayingFlow
+import com.ismartcoding.plain.platform.media.audioPlayerProgressAsync
 import com.ismartcoding.plain.platform.media.observeImageCatalog
+import com.ismartcoding.plain.platform.system.DataType
+import com.ismartcoding.plain.platform.system.deleteSystemProviderFacts
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -57,7 +62,7 @@ object SystemProviderHost {
             observeImageCatalog(JsonHelper.jsonDecodeFromElement<ObserveImageCatalogRequest>(params).enabled)
             JsonHelper.jsonEncodeToElement(true)
         }
-        "systemFileResource" -> com.ismartcoding.plain.platform.files.FileResourceHost.handle(params)
+        "systemFileResource" -> FileResourceHost.handle(params)
         "systemFileIndexId",
         "systemFileIndexRows",
         "systemFileIndexCount",
@@ -68,13 +73,13 @@ object SystemProviderHost {
         "systemMediaCount",
         "systemMediaIdsFacts" -> SystemMediaHost.handle(method, params)
         "systemAudioPlaybackState" -> JsonHelper.jsonEncodeToElement(AudioPlaybackFacts(
-            isPlaying = com.ismartcoding.plain.platform.media.audioIsPlayingFlow().value,
-            positionMs = com.ismartcoding.plain.platform.media.audioPlayerProgressAsync(),
+            isPlaying = audioIsPlayingFlow().value,
+            positionMs = audioPlayerProgressAsync(),
         ))
         "systemDeleteRecords" -> {
             val request = JsonHelper.jsonDecodeFromElement<DeleteRecordsRequest>(params)
-            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.deleteSystemProviderFacts(
-                com.ismartcoding.plain.platform.system.DataType.valueOf(request.provider), request.ids.toSet()))
+            JsonHelper.jsonEncodeToElement(deleteSystemProviderFacts(
+                DataType.valueOf(request.provider), request.ids.toSet()))
         }
         "systemSetClipboard",
         "systemPermissionFacts",

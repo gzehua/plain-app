@@ -1,13 +1,13 @@
 package com.ismartcoding.plain.rust.host.network
 
 import com.ismartcoding.plain.lib.JsonHelper
-import kotlinx.serialization.Serializable
-
+import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.network.ble.BlePairConnection
 import com.ismartcoding.plain.platform.network.bleTransport
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 object BlePairingHost {
@@ -66,7 +66,7 @@ object BlePairingHost {
         val active = mutex.withLock { handles.values.toList().also { handles.clear(); closed.clear() } }
         active.forEach {
             it.job?.cancel()
-            try { it.connection?.close() } catch (error: Exception) { com.ismartcoding.plain.lib.logcat.LogCat.e("BLE handle cleanup", error) }
+            try { it.connection?.close() } catch (error: Exception) { LogCat.e("BLE handle cleanup", error) }
         }
     }
 }

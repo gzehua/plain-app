@@ -1,13 +1,20 @@
 package com.ismartcoding.plain.rust.host.provider
 
-import kotlinx.serialization.Serializable
-
+import com.ismartcoding.plain.app.events.HRequestScreenMirrorAudioEvent
+import com.ismartcoding.plain.app.events.HStartScreenMirrorEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.platform.media.ScreenMirrorControlsFacts
 import com.ismartcoding.plain.platform.media.dispatchScreenMirrorControl
+import com.ismartcoding.plain.platform.media.getScreenMirrorVideoCodec
+import com.ismartcoding.plain.platform.media.isScreenMirrorControlEnabled
+import com.ismartcoding.plain.platform.media.isScreenMirrorRunning
+import com.ismartcoding.plain.platform.media.requestScreenMirrorKeyFrame
 import com.ismartcoding.plain.platform.media.resetScreenMirrorTouchStream
+import com.ismartcoding.plain.platform.media.stopScreenMirror
+import com.ismartcoding.plain.platform.permissions.Permission
+import com.ismartcoding.plain.platform.permissions.isGranted
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal object SystemScreenMirrorHost {
@@ -21,37 +28,37 @@ internal object SystemScreenMirrorHost {
             JsonNull
         }
         "systemScreenMirrorState" -> {
-            val codec = com.ismartcoding.plain.platform.media.getScreenMirrorVideoCodec()
+            val codec = getScreenMirrorVideoCodec()
             JsonHelper.jsonEncodeToElement(ScreenMirrorStateFacts(
-                running = com.ismartcoding.plain.platform.media.isScreenMirrorRunning(),
-                controlEnabled = com.ismartcoding.plain.platform.media.isScreenMirrorControlEnabled(),
+                running = isScreenMirrorRunning(),
+                controlEnabled = isScreenMirrorControlEnabled(),
                 codec = codec,
             ))
         }
         "systemStartScreenMirror" -> {
             val request = JsonHelper.jsonDecodeFromElement<StartScreenMirrorRequest>(params)
             sendEvent(
-                com.ismartcoding.plain.app.events.HStartScreenMirrorEvent(
+                HStartScreenMirrorEvent(
                     request.audio
                 )
             )
             JsonHelper.jsonEncodeToElement(true)
         }
         "systemStopScreenMirror" -> {
-            com.ismartcoding.plain.platform.media.stopScreenMirror()
+            stopScreenMirror()
             JsonHelper.jsonEncodeToElement(true)
         }
         "systemRequestScreenMirrorAudio" -> {
-            val granted = com.ismartcoding.plain.platform.permissions.Permission.RECORD_AUDIO.isGranted()
+            val granted = Permission.RECORD_AUDIO.isGranted()
             if (!granted) {
                 sendEvent(
-                    com.ismartcoding.plain.app.events.HRequestScreenMirrorAudioEvent()
+                    HRequestScreenMirrorAudioEvent()
                 )
             }
             JsonHelper.jsonEncodeToElement(granted)
         }
         "systemRequestScreenMirrorKeyFrame" -> {
-            com.ismartcoding.plain.platform.media.requestScreenMirrorKeyFrame()
+            requestScreenMirrorKeyFrame()
             JsonHelper.jsonEncodeToElement(true)
         }
         else -> error("Unsupported provider operation")

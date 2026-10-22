@@ -1,10 +1,13 @@
 package com.ismartcoding.plain.rust.host.provider
 
+import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.platform.system.getPackageInfoMap
+import com.ismartcoding.plain.platform.system.installPackage
+import com.ismartcoding.plain.platform.system.installedPackageFacts
+import com.ismartcoding.plain.platform.system.packageInstallProfile
+import com.ismartcoding.plain.platform.system.uninstallPackage
 import com.ismartcoding.plain.rust.host.*
 import kotlinx.serialization.Serializable
-
-import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.platform.system.installedPackageFacts
 import kotlinx.serialization.json.*
 
 internal object SystemPackagesHost {
@@ -12,12 +15,12 @@ internal object SystemPackagesHost {
         "systemPackageFacts" -> JsonHelper.jsonEncodeToElement(installedPackageFacts())
         "systemPackageStatuses" -> {
             val ids = JsonHelper.jsonDecodeFromElement<IdsRequest>(params).ids
-            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.getPackageInfoMap(ids))
+            JsonHelper.jsonEncodeToElement(getPackageInfoMap(ids))
         }
-        "systemPackageInstallProfile" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.packageInstallProfile())
+        "systemPackageInstallProfile" -> JsonHelper.jsonEncodeToElement(packageInstallProfile())
         "systemInstallPackage" -> {
             val request = JsonHelper.jsonDecodeFromElement<InstallPackageRequest>(params)
-            val result = com.ismartcoding.plain.platform.system.installPackage(request.paths, request.packageName, request.session)
+            val result = installPackage(request.paths, request.packageName, request.session)
             JsonHelper.jsonEncodeToElement(PackageInstallFacts(
                 packageName = result.packageName,
                 lastUpdateTime = result.lastUpdateTime?.toString(),
@@ -26,7 +29,7 @@ internal object SystemPackagesHost {
         }
         "systemUninstallPackages" -> {
             JsonHelper.jsonDecodeFromElement<IdsRequest>(params).ids.forEach {
-                com.ismartcoding.plain.platform.system.uninstallPackage(it)
+                uninstallPackage(it)
             }
             JsonHelper.jsonEncodeToElement(true)
         }

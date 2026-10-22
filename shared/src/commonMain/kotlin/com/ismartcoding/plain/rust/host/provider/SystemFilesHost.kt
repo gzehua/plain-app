@@ -1,25 +1,29 @@
 package com.ismartcoding.plain.rust.host.provider
 
-import com.ismartcoding.plain.rust.host.*
-
-import com.ismartcoding.plain.models.File as FileEntry
-
+import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.models.File as FileEntry
+import com.ismartcoding.plain.platform.files.storageVolumeFacts
+import com.ismartcoding.plain.platform.media.readImageBounds
+import com.ismartcoding.plain.platform.system.fileIndexCount
+import com.ismartcoding.plain.platform.system.fileIndexId
+import com.ismartcoding.plain.platform.system.fileIndexRows
+import com.ismartcoding.plain.rust.host.*
 import kotlinx.serialization.json.*
 
 internal object SystemFilesHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
-        "systemFileIndexId" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.fileIndexId(JsonHelper.jsonDecodeFromElement<PathRequest>(params).path))
-        "systemFileIndexCount" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.fileIndexCount(params.providerPlan()))
+        "systemFileIndexId" -> JsonHelper.jsonEncodeToElement(fileIndexId(JsonHelper.jsonDecodeFromElement<PathRequest>(params).path))
+        "systemFileIndexCount" -> JsonHelper.jsonEncodeToElement(fileIndexCount(params.providerPlan()))
         "systemFileIndexRows" -> {
             val request = JsonHelper.jsonDecodeFromElement<FileIndexRowsRequest>(params)
-            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.fileIndexRows(
+            JsonHelper.jsonEncodeToElement(fileIndexRows(
                 request.plan, request.limit, request.offset,
-                com.ismartcoding.plain.features.files.FileSortBy.valueOf(request.sortBy),
+                FileSortBy.valueOf(request.sortBy),
             ).map(::fileFacts))
         }
-        "systemMountFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.files.storageVolumeFacts())
-        "imageDecodeBounds" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.readImageBounds(JsonHelper.jsonDecodeFromElement<PathRequest>(params).path))
+        "systemMountFacts" -> JsonHelper.jsonEncodeToElement(storageVolumeFacts())
+        "imageDecodeBounds" -> JsonHelper.jsonEncodeToElement(readImageBounds(JsonHelper.jsonDecodeFromElement<PathRequest>(params).path))
         else -> error("Unsupported provider operation")
     }
 

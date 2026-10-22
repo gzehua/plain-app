@@ -1,38 +1,46 @@
 package com.ismartcoding.plain.rust.host.provider
 
-import kotlinx.serialization.Serializable
-
 import com.ismartcoding.plain.features.telephony.sms.MmsLaunchRequest
 import com.ismartcoding.plain.features.telephony.sms.MmsProviderRequest
+import com.ismartcoding.plain.features.telephony.sms.SmsDeleteRowsRequest
 import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.platform.media.deleteSmsRows
+import com.ismartcoding.plain.platform.media.divideSmsText
+import com.ismartcoding.plain.platform.media.getLatestSentMmsId
+import com.ismartcoding.plain.platform.media.launchDefaultSmsApp
+import com.ismartcoding.plain.platform.media.readSentMmsCandidates
+import com.ismartcoding.plain.platform.media.sendSmsParts
+import com.ismartcoding.plain.platform.system.systemSmsFacts
+import com.ismartcoding.plain.platform.telephony.getSims
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
 internal object SystemSmsHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
-        "systemMmsTextFacts", "systemSmsCountFacts", "systemSmsRowsFacts", "systemSmsIdsFacts", "systemSmsConversationFacts", "systemSmsThreadFacts" -> com.ismartcoding.plain.platform.system.systemSmsFacts(method, params)
+        "systemMmsTextFacts", "systemSmsCountFacts", "systemSmsRowsFacts", "systemSmsIdsFacts", "systemSmsConversationFacts", "systemSmsThreadFacts" -> systemSmsFacts(method, params)
         "systemDivideSmsText" -> {
             val request = JsonHelper.jsonDecodeFromElement<DivideSmsTextRequest>(params)
-            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.divideSmsText(request.body, request.subscriptionId))
+            JsonHelper.jsonEncodeToElement(divideSmsText(request.body, request.subscriptionId))
         }
         "systemSendSmsParts" -> {
-            com.ismartcoding.plain.platform.media.sendSmsParts(JsonHelper.jsonDecodeFromElement(params))
+            sendSmsParts(JsonHelper.jsonDecodeFromElement(params))
             JsonHelper.jsonEncodeToElement(true)
         }
         "systemDeleteSmsRows" -> {
-            val request = JsonHelper.jsonDecodeFromElement<com.ismartcoding.plain.features.telephony.sms.SmsDeleteRowsRequest>(params)
-            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.deleteSmsRows(request.ids))
+            val request = JsonHelper.jsonDecodeFromElement<SmsDeleteRowsRequest>(params)
+            JsonHelper.jsonEncodeToElement(deleteSmsRows(request.ids))
         }
-        "systemMmsLatest" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.getLatestSentMmsId())
+        "systemMmsLatest" -> JsonHelper.jsonEncodeToElement(getLatestSentMmsId())
         "systemMmsLaunch" -> {
             val request = JsonHelper.jsonDecodeFromElement<MmsLaunchRequest>(params)
-            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.launchDefaultSmsApp(request.number, request.body,
+            JsonHelper.jsonEncodeToElement(launchDefaultSmsApp(request.number, request.body,
                 request.attachments.map { it.path to it.contentType }))
         }
         "systemMmsCandidates" -> {
             val request = JsonHelper.jsonDecodeFromElement<MmsProviderRequest>(params)
-            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.media.readSentMmsCandidates(request.minimumId, request.launchTimeSec))
+            JsonHelper.jsonEncodeToElement(readSentMmsCandidates(request.minimumId, request.launchTimeSec))
         }
-        "systemSimFacts" -> JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.telephony.getSims())
+        "systemSimFacts" -> JsonHelper.jsonEncodeToElement(getSims())
         else -> error("Unsupported provider operation")
     }
 }
