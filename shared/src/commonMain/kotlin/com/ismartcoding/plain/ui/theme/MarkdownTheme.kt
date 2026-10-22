@@ -50,7 +50,7 @@ object MarkdownTheme {
      * [MaterialTheme.colorScheme] rather than relying on [isSystemInDarkTheme].
      *
      * This is critical because the app lets users override the theme via
-     * UserPrefs.darkTheme (FOLLOW_SYSTEM / LIGHT / DARK) independently of the system
+     * Prefs.darkTheme (FOLLOW_SYSTEM / LIGHT / DARK) independently of the system
      * night-mode flag. When the user picks DARK from DarkThemePage while the system
      * itself stays in light mode, `MaterialTheme.colorScheme.surface` correctly becomes
      * a dark color but `isSystemInDarkTheme()` would still return `false`, causing the

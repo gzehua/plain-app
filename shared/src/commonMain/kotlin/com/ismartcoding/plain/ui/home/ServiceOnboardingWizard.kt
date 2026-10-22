@@ -344,7 +344,7 @@ fun ServiceOnboardingWizard(
                                 busy = true
                                 storageRequest++
                                 scope.launch {
-                                    RustSystemState.setApiPermission(Permission.WRITE_EXTERNAL_STORAGE, true)
+                                    SecuritySettingsState.setApiPermission(Permission.WRITE_EXTERNAL_STORAGE, true)
                                     sendEvent(RequestPermissionsEvent(Permission.WRITE_EXTERNAL_STORAGE))
                                 }
                             },

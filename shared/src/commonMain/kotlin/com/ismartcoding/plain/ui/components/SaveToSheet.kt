@@ -65,12 +65,13 @@ fun SaveToSheet(
     downloadsAvailable: Boolean = getDownloadsDirPath().isNotEmpty(),
 ) {
     val scope = rememberCoroutineScope()
-    val recentDirs by UserPrefs.recentSaveDirs.collectAsState()
+    var recentDirs by remember { mutableStateOf<List<String>>(emptyList()) }
+    androidx.compose.runtime.LaunchedEffect(Unit) { recentDirs = SavedData.recentSaveDirs() }
     var showFolderPick by remember { mutableStateOf(false) }
 
     fun useDirectory(dir: String) {
         onDismiss()
-        scope.launch { UserPrefs.recordRecentSaveDir(dir) }
+        scope.launch { SavedData.recordSaveDir(dir) }
         onDirectory(dir)
     }
 

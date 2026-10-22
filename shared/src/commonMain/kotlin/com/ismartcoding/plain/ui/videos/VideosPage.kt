@@ -38,7 +38,7 @@ import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.platform.system.isGestureInteractionMode
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.components.NeedPermissionColumn
@@ -105,7 +105,7 @@ fun VideosPage(
     val previewerState = rememberPreviewerState()
     val tagsMapState by tagsVM.tagsMapFlow.collectAsState()
     val bucketsMap by mediaFoldersVM.bucketsMapFlow.collectAsState()
-    val cellsPerRow = remember { mutableIntStateOf(UserPrefs.videoGridCellsPerRow.value) }
+    val cellsPerRow = remember { mutableIntStateOf(Prefs.videoGridCellsPerRow.value) }
     val windowInfo = LocalWindowInfo.current
     val imageWidthPx = remember(cellsPerRow.value, windowInfo.containerSize.width) {
         with(density) {
@@ -134,8 +134,8 @@ fun VideosPage(
 
     val reloadAfterGrant: () -> Unit = {
         scope.launch(Dispatchers.Default) {
-            cellsPerRow.value = UserPrefs.videoGridCellsPerRow.value
-            videosVM.sortBy.value = UserPrefs.videoSortBy.value
+            cellsPerRow.value = Prefs.videoGridCellsPerRow.value
+            videosVM.sortBy.value = Prefs.videoSortBy.value
             videosVM.loadAsync(tagsVM)
             mediaFoldersVM.loadAsync()
         }
@@ -188,7 +188,7 @@ fun VideosPage(
                 scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
                 onSortSelected = { sortBy ->
                     scope.launch(Dispatchers.Default) {
-                        UserPrefs.videoSortBy.value = sortBy
+                        Prefs.videoSortBy.value = sortBy
                         videosVM.sortBy.value = sortBy
                         videosVM.loadAsync(tagsVM)
                     }
@@ -230,7 +230,7 @@ fun VideosPage(
                                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                                     .gridDragSelect(items = itemsState, state = dragSelectState)
                                     .pinchZoomGrid(cellsPerRow = cellsPerRow, hapticFeedback = hapticFeedback, scope = scope) {
-                                        UserPrefs.videoGridCellsPerRow.value = it
+                                        Prefs.videoGridCellsPerRow.value = it
                                     },
                                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                                 verticalArrangement = Arrangement.spacedBy(2.dp),

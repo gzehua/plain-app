@@ -178,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         installComposeUi()
         HttpServerManager.ensureStarted()
         lifecycleScope.launch(Dispatchers.Default) {
-            publishLauncherShortcuts(UserPrefs.selectedLauncherShortcuts(UserPrefs.launcherShortcuts.value))
+            publishLauncherShortcuts(Prefs.selectedLauncherShortcuts(Prefs.launcherShortcuts.value))
         }
     }
 

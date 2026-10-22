@@ -20,7 +20,7 @@ import com.ismartcoding.plain.ui.resources.phone_call as ui_drawable_phone_call
 import com.ismartcoding.plain.i18n.folder
 
 suspend fun checkEnabledAsync(permissions: Set<Permission>) {
-    val enabled = com.ismartcoding.plain.preferences.RustSystemState.state.value.apiPermissions
+    val enabled = com.ismartcoding.plain.preferences.SecuritySettingsState.state.value.apiPermissions
     val missing = permissions.map { it.name }.filterNot { it in enabled }
     if (missing.isNotEmpty()) {
         throw Exception("no_permission")
@@ -58,7 +58,7 @@ fun getWebList(): List<PermissionItem> {
  * snapshot.
  */
 suspend fun getGrantedWebPermissionsAsync(): List<Permission> {
-    val apiPermissions = RustSystemState.state.value.apiPermissions
+    val apiPermissions = SecuritySettingsState.state.value.apiPermissions
     val granted = Permission.entries.filter { apiPermissions.contains(it.name) && it.isGranted() }.toMutableList()
     if (Permission.RECORD_AUDIO.isGranted() && !granted.contains(Permission.RECORD_AUDIO)) {
         granted.add(Permission.RECORD_AUDIO)

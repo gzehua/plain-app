@@ -17,11 +17,11 @@ import kotlinx.coroutines.launch
 
 /**
  * Swipeable http/https address pager with page indicator dots. The selected
- * page is persisted to UserPrefs.https so every placement stays in sync.
+ * page is persisted to Prefs.https so every placement stays in sync.
  */
 @Composable
 fun WebAddressPager(modifier: Modifier = Modifier) {
-    val isHttps = UserPrefs.https.collectAsState()
+    val isHttps = Prefs.https.collectAsState()
     val pagerState = rememberPagerState(
         initialPage = if (isHttps.value) 1 else 0,
         pageCount = { 2 },
@@ -31,7 +31,7 @@ fun WebAddressPager(modifier: Modifier = Modifier) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
             val https = page == 1
             if (isHttps.value != https) {
-                scope.launch { UserPrefs.https.value = https }
+                scope.launch { Prefs.https.value = https }
             }
         }
     }

@@ -46,17 +46,17 @@ fun LauncherShortcutsPage(navController: NavHostController) {
         LauncherShortcutTools.ALL.associateWith { LauncherShortcutTools.featureItem(it) }
     }
 
-    val stored = UserPrefs.launcherShortcuts.collectAsStateValue()
+    val stored = Prefs.launcherShortcuts.collectAsStateValue()
 
     // Selected list order = shortcut display order (rank).
     var selected by remember(stored) {
-        mutableStateOf(UserPrefs.selectedLauncherShortcuts(stored))
+        mutableStateOf(Prefs.selectedLauncherShortcuts(stored))
     }
 
     fun persist(newTools: List<AppFeatureType>) {
         selected = newTools
         scope.launch(Dispatchers.Default) {
-            UserPrefs.launcherShortcuts.value = UserPrefs.formatLauncherShortcuts(newTools)
+            Prefs.launcherShortcuts.value = Prefs.formatLauncherShortcuts(newTools)
             publishLauncherShortcuts(newTools)
         }
     }

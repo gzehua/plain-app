@@ -64,7 +64,7 @@ fun OnboardingPage(navController: NavHostController) {
     val pagerState = rememberPagerState(pageCount = { PAGE_COUNT })
     // outline is near-invisible against the dark background; the inactive
     // dots need the mid gray there.
-    val inactiveDot = if (DarkTheme.isDarkTheme(UserPrefs.darkTheme.collectAsStateValue())) {
+    val inactiveDot = if (DarkTheme.isDarkTheme(Prefs.darkTheme.collectAsStateValue())) {
         MaterialTheme.colorScheme.onSurfaceVariant
     } else {
         MaterialTheme.colorScheme.outline
@@ -72,7 +72,7 @@ fun OnboardingPage(navController: NavHostController) {
 
     fun complete(navigateToHowToUse: Boolean) {
         scope.launch {
-            RustSystemState.completeOnboarding()
+            SecuritySettingsState.completeOnboarding()
             if (navigateToHowToUse) {
                 navController.navigate(Routing.HowToUse) {
                     popUpTo(Routing.Onboarding) { inclusive = true }

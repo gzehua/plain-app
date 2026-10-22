@@ -40,9 +40,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DarkThemePage(navController: NavHostController) {
-    val darkTheme = UserPrefs.darkTheme.collectAsStateValue()
-    val amoledDarkTheme = UserPrefs.amoledDarkTheme.collectAsStateValue()
-    val pdfFollowDarkTheme = UserPrefs.pdfFollowDarkTheme.collectAsStateValue()
+    val darkTheme = Prefs.darkTheme.collectAsStateValue()
+    val amoledDarkTheme = Prefs.amoledDarkTheme.collectAsStateValue()
+    val pdfFollowDarkTheme = Prefs.pdfFollowDarkTheme.collectAsStateValue()
     val scope = rememberCoroutineScope()
 
     PScaffold(
@@ -64,7 +64,7 @@ fun DarkThemePage(navController: NavHostController) {
                                 modifier = Modifier.selectable(
                                     selected = it == darkTheme,
                                     role = Role.RadioButton,
-                                    onClick = { UserPrefs.darkTheme.value = it },
+                                    onClick = { Prefs.darkTheme.value = it },
                                 ),
                                 title = it.getText(),
                             ) {
@@ -79,14 +79,14 @@ fun DarkThemePage(navController: NavHostController) {
                         PListItem(
                             modifier = Modifier.clickable {
                                 scope.launch {
-                                    UserPrefs.amoledDarkTheme.value = !amoledDarkTheme
+                                    Prefs.amoledDarkTheme.value = !amoledDarkTheme
                                 }
                             },
                             title = stringResource(Res.string.amoled_dark_theme),
                         ) {
                             Switch(checked = amoledDarkTheme, onCheckedChange = {
                                 scope.launch {
-                                    UserPrefs.amoledDarkTheme.value = !amoledDarkTheme
+                                    Prefs.amoledDarkTheme.value = !amoledDarkTheme
                                 }
                             })
                         }
@@ -96,7 +96,7 @@ fun DarkThemePage(navController: NavHostController) {
                         PListItem(
                             modifier = Modifier.clickable {
                                 scope.launch {
-                                    UserPrefs.pdfFollowDarkTheme.value = !pdfFollowDarkTheme
+                                    Prefs.pdfFollowDarkTheme.value = !pdfFollowDarkTheme
                                 }
                             },
                             title = stringResource(Res.string.pdf_follow_dark_theme),
@@ -104,7 +104,7 @@ fun DarkThemePage(navController: NavHostController) {
                         ) {
                             Switch(checked = pdfFollowDarkTheme, onCheckedChange = {
                                 scope.launch {
-                                    UserPrefs.pdfFollowDarkTheme.value = !pdfFollowDarkTheme
+                                    Prefs.pdfFollowDarkTheme.value = !pdfFollowDarkTheme
                                 }
                             })
                         }

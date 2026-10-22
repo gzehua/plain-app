@@ -123,8 +123,8 @@ fun ChatPage(
         }
     }
 
-    LaunchedEffect(Unit) {
-        inputValue = UserPrefs.chatInputText.value
+    LaunchedEffect(id) {
+        inputValue = SavedData.read("chat_input_text:${com.ismartcoding.plain.features.chat.data.ChatTarget.parseId(id).encodedToId}", "")
         scope.launch(Dispatchers.Default) {
             chatVM.initializeTargetAsync(id)
             chatVM.fetchAsync(chatVM.target.value.toId)
@@ -263,7 +263,7 @@ fun ChatPage(
                     onValueChange = {
                         inputValue = it
                         scope.launch(Dispatchers.Default) {
-                            UserPrefs.chatInputText.value = it
+                            SavedData.write("chat_input_text:${com.ismartcoding.plain.features.chat.data.ChatTarget.parseId(id).encodedToId}", it)
                         }
                     },
                     onSend = {
@@ -271,7 +271,7 @@ fun ChatPage(
                         scope.launch {
                             chatVM.sendTextMessage(inputValue)
                             inputValue = ""
-                            UserPrefs.chatInputText.value = ""
+                            SavedData.write("chat_input_text:${com.ismartcoding.plain.features.chat.data.ChatTarget.parseId(id).encodedToId}", "")
                         }
                     },
                     onShareFolder = { showFolderShareSheet = true })

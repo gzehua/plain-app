@@ -59,7 +59,7 @@ fun SettingsPage(navController: NavHostController, updateViewModel: UpdateViewMo
     val listState = rememberLazyListState()
     var cacheSize by remember { mutableLongStateOf(0L) }
     var fileSize by remember { mutableLongStateOf(0L) }
-    val isDiscoverable = UserPrefs.nearbyDiscoverable.collectAsStateValue()
+    val isDiscoverable = Prefs.nearbyDiscoverable.collectAsStateValue()
     LaunchedEffect(Unit) {
         scope.launch(Dispatchers.Default) {
             try {
@@ -124,7 +124,7 @@ fun SettingsPage(navController: NavHostController, updateViewModel: UpdateViewMo
                                 PFilledButton(text = stringResource(Res.string.check_update), buttonSize = ButtonSize.SMALL, onClick = {
                                     scope.launch {
                                         DialogHelper.showMessage(Res.string.checking_updates)
-                                        RustSystemState.patchUpdate(UpdateInfoPatch(skipVersion = ""))
+                                        SecuritySettingsState.setSkipVersion("")
                                         val r = withIO { checkAppUpdate(true) }
                                         if (r != null) {
                                             if (r) updateViewModel.showDialog()

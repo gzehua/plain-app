@@ -33,7 +33,7 @@ internal fun WebSettingsEffects(
     notificationListenerGranted: MutableState<Boolean>,
 ) {
     LaunchedEffect(Unit) {
-        RustSystemState.state.collect { permissionList.value = getWebList() }
+        SecuritySettingsState.state.collect { permissionList.value = getWebList() }
     }
     val sharedFlow = Channel.sharedFlow
 
@@ -45,7 +45,7 @@ internal fun WebSettingsEffects(
                     systemAlertWindow.value = Permission.SYSTEM_ALERT_WINDOW.isGranted()
                     notificationListenerGranted.value = Permission.NOTIFICATION_LISTENER.isGranted()
                     if (event.map[Permission.NOTIFICATION_LISTENER.toSysPermission()] == true) {
-                        toggleNotificationListener(UserPrefs.desktopAccess.value)
+                        toggleNotificationListener(Prefs.desktopAccess.value)
                     }
                 }
                 is WindowFocusChangedEvent -> {
@@ -67,9 +67,9 @@ internal fun WebSettingsEffects(
 
 internal fun togglePermission(scope: CoroutineScope, m: PermissionItem, enable: Boolean) {
     scope.launch {
-        RustSystemState.setApiPermission(m.permission, enable)
+        SecuritySettingsState.setApiPermission(m.permission, enable)
         if (m.permission == Permission.NOTIFICATION_LISTENER) {
-            val webEnabled = UserPrefs.desktopAccess.value
+            val webEnabled = Prefs.desktopAccess.value
             toggleNotificationListener(enable && webEnabled)
         }
         if (enable) {

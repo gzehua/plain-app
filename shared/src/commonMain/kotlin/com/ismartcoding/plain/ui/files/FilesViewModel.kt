@@ -53,7 +53,7 @@ class FilesViewModel : ISearchableViewModel<FileEntry>, ISelectableViewModel<Fil
                 viewModelScope.launchSafe {
                     val breadcrumbsCopy = breadcrumbs.toList()
                     val fullPath = if (breadcrumbsCopy.isNotEmpty()) breadcrumbsCopy.last().path else value
-                    UserPrefs.lastFilePath.value = FilePathData(rootPath = rootPath, fullPath = fullPath, selectedPath = value)
+                    SavedData.write("last_file_path", FilePathData(rootPath = rootPath, fullPath = fullPath, selectedPath = value))
                 }
             }
         }
@@ -130,7 +130,7 @@ class FilesViewModel : ISearchableViewModel<FileEntry>, ISelectableViewModel<Fil
     }
 
     suspend fun loadLastPathAsync() = withIO {
-        val data = UserPrefs.lastFilePath.value
+        val data = SavedData.read("last_file_path", FilePathData("", "", ""))
         if (data.selectedPath.isNotEmpty() && fileExists(data.selectedPath)) {
             type = inferFileTypeFromRoot(data.rootPath)
             initSelectedPath(data.rootPath, type, data.selectedPath, data.selectedPath)
@@ -222,7 +222,7 @@ class FilesViewModel : ISearchableViewModel<FileEntry>, ISelectableViewModel<Fil
     fun getQuery(): String = queryText.value.trim()
 
     suspend fun loadAsync() {
-        val showHiddenFiles = UserPrefs.showHiddenFiles.value
+        val showHiddenFiles = Prefs.showHiddenFiles.value
         withIO {
             isLoading.value = true
             val query = getQuery()

@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.pomodoro
 
-
 import com.ismartcoding.plain.ui.state.launchSafe
 
 import androidx.compose.runtime.mutableIntStateOf
@@ -19,17 +18,17 @@ class PomodoroViewModel : ViewModel() {
     var isRunning = mutableStateOf(false)
     var adjustJob = mutableStateOf<Job?>(null)
     var isPaused = mutableStateOf(false)
-    var timeLeft = mutableIntStateOf(UserPrefs.pomodoroSettings.value.workDurationMin * 60)
+    var timeLeft = mutableIntStateOf(Prefs.pomodoroSettings.value.workDurationMin * 60)
     var completedCount = mutableIntStateOf(0)
     var currentRound = mutableIntStateOf(1)
-    var settings = mutableStateOf(UserPrefs.pomodoroSettings.value)
+    var settings = mutableStateOf(Prefs.pomodoroSettings.value)
 
     val showSettings = mutableStateOf(false)
 
-    private var totalSeconds = UserPrefs.pomodoroSettings.value.workDurationMin * 60
+    private var totalSeconds = Prefs.pomodoroSettings.value.workDurationMin * 60
 
     suspend fun loadAsync() {
-        settings.value = UserPrefs.pomodoroSettings.value
+        settings.value = Prefs.pomodoroSettings.value
         refreshAsync()
     }
     suspend fun refreshAsync() { applySnapshot(PomodoroClient.today()) }

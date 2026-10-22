@@ -30,7 +30,7 @@ import com.ismartcoding.plain.ui.resources.sun_moon as ui_drawable_sun_moon
 
 @Composable
 internal fun SettingsCardItems(navController: NavHostController) {
-    val darkTheme = UserPrefs.darkTheme.collectAsStateValue()
+    val darkTheme = Prefs.darkTheme.collectAsStateValue()
     val scope = rememberCoroutineScope()
 
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
@@ -47,7 +47,7 @@ internal fun SettingsCardItems(navController: NavHostController) {
                 checked = DarkTheme.isDarkTheme(darkTheme),
                 onCheckedChange = {
                     scope.launch {
-                        UserPrefs.darkTheme.value = if (it) DarkTheme.ON else DarkTheme.OFF
+                        Prefs.darkTheme.value = if (it) DarkTheme.ON else DarkTheme.OFF
                     }
                 },
             )
@@ -60,7 +60,7 @@ internal fun SettingsCardItems(navController: NavHostController) {
                 navController.navigate(Routing.Language)
             },
             title = stringResource(Res.string.language),
-            subtitle = UserPrefs.parseLocale(UserPrefs.locale.collectAsStateValue())?.getElegantDisplayName() ?: stringResource(Res.string.use_device_language),
+            subtitle = Prefs.parseLocale(Prefs.locale.collectAsStateValue())?.getElegantDisplayName() ?: stringResource(Res.string.use_device_language),
             icon = UiRes.drawable.ui_drawable_languages,
             showMore = true,
         )

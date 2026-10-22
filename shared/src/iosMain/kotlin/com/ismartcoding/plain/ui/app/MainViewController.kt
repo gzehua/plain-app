@@ -80,8 +80,8 @@ fun MainViewController(): UIViewController {
     initIosApp()
     return ComposeUIViewController {
         AppTheme(
-            useDarkTheme = DarkTheme.isDarkTheme(UserPrefs.darkTheme.collectAsStateValue()),
-            amoledDarkTheme = UserPrefs.amoledDarkTheme.collectAsStateValue(),
+            useDarkTheme = DarkTheme.isDarkTheme(Prefs.darkTheme.collectAsStateValue()),
+            amoledDarkTheme = Prefs.amoledDarkTheme.collectAsStateValue(),
         ) {
             val navControllerState = remember { mutableStateOf<NavHostController?>(null) }
             // iOS has no reflection-based default ViewModel factory. Provide an

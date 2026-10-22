@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.scan
 
+import com.ismartcoding.plain.preferences.SavedData
+
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,7 +32,7 @@ import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.components.QrScanResultBottomSheet
@@ -123,10 +125,7 @@ fun ScanPage(navController: NavHostController) {
             },
             onScanResult = { value, onDismiss ->
                 scope.launch {
-                    val results = UserPrefs.scanHistory.value.toMutableList()
-                    results.removeAll { it == value }
-                    results.add(0, value)
-                    UserPrefs.scanHistory.value = results
+                    SavedData.addScan(value)
                 }
                 scanResult = value
                 resumeScannerAfterResult = onDismiss

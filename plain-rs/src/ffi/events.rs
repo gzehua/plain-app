@@ -13,30 +13,20 @@ pub(crate) fn install(
 ) {
     let _entered = runtime.enter();
     let host = Arc::new(server.host_events());
-    let user_changes = Arc::new(tokio::sync::Notify::new());
-    let system_changes = Arc::new(tokio::sync::Notify::new());
-    for (prefs_type, changes) in [
-        (plain_rs::prefs::PrefsType::User, user_changes.clone()),
-        (plain_rs::prefs::PrefsType::System, system_changes.clone()),
-    ] {
-        let weak = Arc::downgrade(&host);
-        runtime.spawn(async move {
-            let Some(host) = weak.upgrade() else { return };
-            loop {
-                tokio::select! {
-                    biased;
-                    _ = host.wait_disconnected() => return,
-                    _ = changes.notified() => host.prefs_changed(prefs_type).await,
-                }
+    let changes = Arc::new(tokio::sync::Notify::new());
+    let receiver = changes.clone();
+    let weak = Arc::downgrade(&host);
+    runtime.spawn(async move {
+        let Some(host) = weak.upgrade() else { return };
+        loop {
+            tokio::select! {
+                biased;
+                _ = host.wait_disconnected() => return,
+                _ = receiver.notified() => host.prefs_changed().await,
             }
-        });
-    }
-    server.preferences().expect("Core preferences initialized").set_change_hook(Some(Arc::new(move |prefs_type| {
-        match prefs_type {
-            plain_rs::prefs::PrefsType::User => user_changes.notify_one(),
-            plain_rs::prefs::PrefsType::System => system_changes.notify_one(),
         }
-    })));
+    });
+    server.preferences().expect("Core preferences initialized").set_change_hook(Some(Arc::new(move || changes.notify_one())));
     *BRIDGE.lock().unwrap() = Some((runtime.handle().clone(), host));
 }
 pub(crate) fn clear() {

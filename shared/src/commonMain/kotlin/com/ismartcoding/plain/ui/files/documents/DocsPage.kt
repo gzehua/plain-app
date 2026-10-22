@@ -13,7 +13,7 @@ import androidx.navigation.NavHostController
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.navigation.PBackHandler
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.components.NeedPermissionColumn
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
@@ -96,7 +96,7 @@ fun DocsPage(
                 scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
                 onSortSelected = { sortBy ->
                     scope.launch(Dispatchers.Default) {
-                        UserPrefs.docSortBy.value = sortBy
+                        Prefs.docSortBy.value = sortBy
                         docsVM.sortBy.value = sortBy
                         docsVM.loadAsync(tagsVM)
                     }

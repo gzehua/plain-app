@@ -63,7 +63,7 @@ fun HomePage(
     channelVM: ChannelViewModel,
     onTabSelected: (Int) -> Unit,
 ) {
-    val serviceEnabled = UserPrefs.service.collectAsStateValue()
+    val serviceEnabled = Prefs.backgroundServiceEnabled.collectAsStateValue()
     var systemAlertWindow by remember { mutableStateOf(Permission.SYSTEM_ALERT_WINDOW.isGranted()) }
     val refreshState = rememberRefreshLayoutState {
         PeerStatusClient.reconnectNow("home_pull_refresh")

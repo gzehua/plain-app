@@ -22,9 +22,9 @@ actual fun PdfView(
     modifier: Modifier,
 ) {
     val parsedUri = Uri.parse(uri)
-    val darkTheme = UserPrefs.darkTheme.collectAsStateValue()
+    val darkTheme = Prefs.darkTheme.collectAsStateValue()
     val isDarkTheme = DarkTheme.isDarkTheme(darkTheme)
-    val pdfFollowDarkTheme = UserPrefs.pdfFollowDarkTheme.collectAsStateValue()
+    val pdfFollowDarkTheme = Prefs.pdfFollowDarkTheme.collectAsStateValue()
     AndroidView(
         modifier = modifier,
         factory = { factoryContext ->

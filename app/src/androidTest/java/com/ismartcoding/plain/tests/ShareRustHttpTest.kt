@@ -7,7 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ismartcoding.plain.features.shares.SharedLinkClient
 import com.ismartcoding.plain.features.shares.SharesClient
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.network.*
 import com.ismartcoding.plain.testing.CryptoFixtures
 import kotlinx.coroutines.runBlocking
@@ -38,16 +38,16 @@ class ShareRustHttpTest {
         File(folder, "empty").mkdir()
         val outside = File(other, "secret.txt").apply { writeText("outside") }
         android.system.Os.symlink(outside.absolutePath, File(folder, "escape.txt").absolutePath)
-        val service = UserPrefs.service.value
+        val service = Prefs.backgroundServiceEnabled.value
         var id: String? = null
         try {
-            UserPrefs.service.value = true
+            Prefs.backgroundServiceEnabled.value = true
             withIO { RustRuntime.start() }
             val share = SharesClient.createShare(marker, listOf(folder.absolutePath), true, null)
             id = share.id
             val link = SharedLinkClient.ownLink(share.id, "127.0.0.1")
             val key = Base64.decode(link.token)
-            val base = "http://127.0.0.1:${UserPrefs.httpPort.value}"
+            val base = "http://127.0.0.1:${Prefs.httpPort.value}"
             assertTrue(SharesClient.buildLink(share, "127.0.0.1").contains("/s/${share.id}#"))
             createPlainHttpClient(PlainHttpClientSpec.Local()).use { client ->
                 suspend fun guest(path: String = "photos"): Pair<Int, JsonObject?> {
@@ -95,18 +95,18 @@ class ShareRustHttpTest {
                 }
                 assertNotNull(guest("photos/../other").second?.get("errors"))
                 client.get(resource("photos/escape.txt")).use { assertEquals(403, it.status.value) }
-                UserPrefs.service.value = false
+                Prefs.backgroundServiceEnabled.value = false
                 try {
                     assertEquals(403, guest().first)
                     client.get(fileUrl).use { assertEquals(403, it.status.value) }
                 } catch (error: IOException) {
                     ServerSocket().use { socket ->
                         socket.reuseAddress = true
-                        socket.bind(InetSocketAddress(UserPrefs.httpPort.value))
+                        socket.bind(InetSocketAddress(Prefs.httpPort.value))
                         assertTrue("Service shutdown must release the listener: $error", socket.isBound)
                     }
                 }
-                UserPrefs.service.value = true
+                Prefs.backgroundServiceEnabled.value = true
                 withIO { RustRuntime.start() }
                 SharesClient.updateShare(share.id, marker, null, listOf(other.absolutePath))
                 client.get(fileUrl).use { assertEquals(403, it.status.value) }
@@ -120,7 +120,7 @@ class ShareRustHttpTest {
             }
         } finally {
             id?.let { SharesClient.deleteShare(it) }
-            UserPrefs.service.value = service
+            Prefs.backgroundServiceEnabled.value = service
             root.deleteRecursively()
         }
     }

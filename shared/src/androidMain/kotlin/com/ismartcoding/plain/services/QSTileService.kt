@@ -10,7 +10,7 @@ import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.desktop_access
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.system.setDesktopAccessEnabled
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,7 +41,7 @@ class QSTileService : TileService() {
         super.onStartListening()
         stateEventJob?.cancel()
         stateEventJob = serviceScope.launch {
-            UserPrefs.desktopAccess.collect { updateTile(it) }
+            Prefs.desktopAccess.collect { updateTile(it) }
         }
     }
 
@@ -64,14 +64,14 @@ class QSTileService : TileService() {
             toggleJob = serviceScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
-                        setDesktopAccessEnabled(!UserPrefs.desktopAccess.value)
+                        setDesktopAccessEnabled(!Prefs.desktopAccess.value)
                     }
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (error: Exception) {
                     LogCat.e("Desktop access tile failed: ${error.message}")
                 } finally {
-                    updateTile(UserPrefs.desktopAccess.value)
+                    updateTile(Prefs.desktopAccess.value)
                 }
             }
         }

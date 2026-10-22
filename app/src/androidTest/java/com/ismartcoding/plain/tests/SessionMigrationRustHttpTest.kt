@@ -67,19 +67,19 @@ import java.util.UUID
 class SessionMigrationRustHttpTest {
     @Test
     fun encryptedLoginConfirmationSessionUiAndRevocationUseRust() = runBlocking {
-        val oldService = UserPrefs.service.value
-        val oldDesktop = UserPrefs.desktopAccess.value
-        val oldTwoFactor = RustSystemState.state.value.authTwoFactor
+        val oldService = Prefs.backgroundServiceEnabled.value
+        val oldDesktop = Prefs.desktopAccess.value
+        val oldTwoFactor = SecuritySettingsState.state.value.loginRequireApproval
         val id = "session-fixture-${UUID.randomUUID()}"
         var pendingId = ""
         val http = createPlainHttpClient(PlainHttpClientSpec.HttpHost)
         try {
-            UserPrefs.service.value = true
-            UserPrefs.desktopAccess.value = true
-            RustSystemState.setTwoFactor(true)
+            Prefs.backgroundServiceEnabled.value = true
+            Prefs.desktopAccess.value = true
+            SecuritySettingsState.setLoginRequireApproval(true)
             withIO { RustRuntime.start() }
             val client = generateECDHKeyPair()
-            val digest = java.security.MessageDigest.getInstance("SHA-512").digest(RustSystemState.state.value.password.encodeToByteArray()).joinToString("") { "%02x".format(it) }
+            val digest = java.security.MessageDigest.getInstance("SHA-512").digest(SecuritySettingsState.state.value.password.encodeToByteArray()).joinToString("") { "%02x".format(it) }
             val passwordKey = digest.take(32).encodeToByteArray()
             val request = AuthRequest(digest, "Fixture", "1", "Android", "1", true,
                 Base64Lenient.encode(client.publicKeyEncoded))
@@ -91,7 +91,7 @@ class SessionMigrationRustHttpTest {
                     }
                 }
             }
-            http.webSocket("ws://127.0.0.1:${UserPrefs.httpPort.value}/?cid=$id&auth=1") { socket ->
+            http.webSocket("ws://127.0.0.1:${Prefs.httpPort.value}/?cid=$id&auth=1") { socket ->
                 socket.sendBinary(chaCha20Encrypt(passwordKey, JsonHelper.jsonEncode(request)))
                 val pending = JsonHelper.jsonDecode<JsonObject>(requireNotNull(chaCha20Decrypt(passwordKey,
                     requireNotNull(withTimeout(10_000) { socket.incoming.receive() }.binary))).decodeToString())
@@ -122,9 +122,9 @@ class SessionMigrationRustHttpTest {
             http.close()
             if (pendingId.isNotEmpty()) RustWebLogin.cancel(pendingId)
             RustSessionStore.delete(id)
-            RustSystemState.setTwoFactor(oldTwoFactor)
-            UserPrefs.desktopAccess.value = oldDesktop
-            UserPrefs.service.value = oldService
+            SecuritySettingsState.setLoginRequireApproval(oldTwoFactor)
+            Prefs.desktopAccess.value = oldDesktop
+            Prefs.backgroundServiceEnabled.value = oldService
         }
     }
 }

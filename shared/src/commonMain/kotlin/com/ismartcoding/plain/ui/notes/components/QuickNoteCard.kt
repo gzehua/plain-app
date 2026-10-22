@@ -73,7 +73,7 @@ fun QuickNoteCard(
 
     LaunchedEffect(Unit) {
         if (QuickNoteDraftCache.text == null) {
-            val saved = UserPrefs.quickNoteDraft.value
+            val saved = SavedData.read("quick_note_draft", "")
             QuickNoteDraftCache.text = saved
             text = saved
         }
@@ -85,14 +85,14 @@ fun QuickNoteCard(
             .collectLatest { t ->
                 QuickNoteDraftCache.text = t
                 delay(300)
-                UserPrefs.quickNoteDraft.value = t
+                SavedData.write("quick_note_draft", t)
             }
     }
     DisposableEffect(Unit) {
         onDispose {
             val t = text
             QuickNoteDraftCache.text = t
-            coIO { UserPrefs.quickNoteDraft.value = t }
+            coIO { SavedData.write("quick_note_draft", t) }
         }
     }
 

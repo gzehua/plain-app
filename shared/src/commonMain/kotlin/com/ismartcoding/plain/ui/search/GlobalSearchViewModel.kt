@@ -39,7 +39,7 @@ class GlobalSearchViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            UserPrefs.recentSearches.collect { recentQueries.value = it }
+            recentQueries.value = SavedData.recentSearches()
         }
     }
 
@@ -75,19 +75,22 @@ class GlobalSearchViewModel : ViewModel() {
 
     fun removeRecent(q: String) {
         viewModelScope.launch {
-            UserPrefs.removeRecentSearch(q)
+            SavedData.removeSearch(q)
+            recentQueries.value = SavedData.recentSearches()
         }
     }
 
     fun clearRecent() {
         viewModelScope.launch {
-            UserPrefs.clearRecentSearches()
+            SavedData.write("recent_searches", emptyList<String>())
+            recentQueries.value = SavedData.recentSearches()
         }
     }
 
     private fun recordRecent(q: String) {
         viewModelScope.launch {
-            UserPrefs.recordRecentSearch(q)
+            SavedData.recordSearch(q)
+            recentQueries.value = SavedData.recentSearches()
         }
     }
 

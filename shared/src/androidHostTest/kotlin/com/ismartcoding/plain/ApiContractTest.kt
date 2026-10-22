@@ -181,8 +181,8 @@ class ApiContractTest {
 
     @Test
     fun legacyShapesAreGone() {
-                forbiddenPattern("prefsPath|prefEntries|deletePrefEntry|setPref|deletePref") {
-                    "legacy preference operations must not return; use userPrefs and setUserPref/removeUserPref: $it"
+                forbiddenPattern("prefsPath|prefEntries|deletePrefEntry|setSystemPref|setUserPref|deletePref") {
+                    "legacy preference operations must not return; use prefs and setPref/removePref: $it"
                 }
         forbiddenPattern("restoreImageSearch") { "Image model restoration belongs to shared Rust startup: $it" }
         forbiddenPattern("peerAwareConfig|PeerAwareConfig") { "Aware SDK parameters belong to shared Rust platform requests: $it" }

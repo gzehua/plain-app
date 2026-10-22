@@ -5,17 +5,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 object TempData {
 
-    val clientId: String get() = RustSystemState.state.value.clientId
+    val clientId: String get() = SecuritySettingsState.state.value.clientId
     val deviceName = MutableStateFlow("")
-    val urlToken: ByteArray get() = kotlin.io.encoding.Base64.decode(RustSystemState.state.value.urlToken)
-    val mdnsHostname: String get() = RustSystemState.state.value.mdnsHostname
+    val urlToken: ByteArray get() = kotlin.io.encoding.Base64.decode(SecuritySettingsState.state.value.urlToken)
+    val mdnsHostname: String get() = SecuritySettingsState.state.value.mdnsHostname
 
     val audioPlayerVisible = MutableStateFlow(false)
     /** Media path requested by a home-screen shortcut; null = no preview open. */
     val shortcutMediaPath = MutableStateFlow<String?>(null)
-
-
-
 
     val awareRunning = MutableStateFlow(false)
 
@@ -25,7 +22,6 @@ object TempData {
     // mediaId -> playback position in milliseconds; pre-loaded from DB on startup as cache.
     // Mutated from Compose playback callbacks and web/GraphQL routes concurrently, so a
     // plain mutableMapOf (LinkedHashMap) is not safe here.
-
 
     // Encoded target id of the chat page currently in the foreground. Set by
     // ChatPageEffects so the chat receiver can suppress notifications for the
@@ -39,12 +35,11 @@ object TempData {
      */
 
     fun canDesktopAccess(): Boolean {
-        return UserPrefs.desktopAccess.value
+        return Prefs.desktopAccess.value
     }
 
     fun canChatAccess(): Boolean {
         return com.ismartcoding.plain.app.HttpServerManager.serverState.value == com.ismartcoding.plain.features.settings.HttpServerState.ON
     }
-
 
 }

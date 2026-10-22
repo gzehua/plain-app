@@ -2,14 +2,14 @@ package com.ismartcoding.plain.rust.native
 
 import com.ismartcoding.plain.features.sessions.CreatedSession
 import com.ismartcoding.plain.features.settings.AppUpdateDownload
-import com.ismartcoding.plain.preferences.SystemSettings
+import com.ismartcoding.plain.preferences.SecuritySettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 
-import com.ismartcoding.plain.rustprefs.plain_system_settings
-import com.ismartcoding.plain.rustprefs.plain_user_settings
+import com.ismartcoding.plain.rustprefs.plain_complete_onboarding
+import com.ismartcoding.plain.rustprefs.plain_prefs_snapshot
 import com.ismartcoding.plain.rustprefs.plain_toggle_notification_app
 import com.ismartcoding.plain.rustprefs.plain_file_icon
 import com.ismartcoding.plain.rustprefs.plain_restart_http_server
@@ -188,15 +188,13 @@ internal actual object RustNativeApi {
             try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
         }
     }
-    actual suspend fun systemSettings(): SystemSettings = nativeCall {
-        memScoped {
-            val pointer = checkNotNull(plain_system_settings())
-            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
-        }
+    actual suspend fun completeOnboarding(): Boolean = nativeCall {
+        val pointer = checkNotNull(plain_complete_onboarding())
+        try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
     }
-    actual suspend fun userSettings(): JsonObject = nativeCall {
+    actual suspend fun prefsSnapshot(): JsonObject = nativeCall {
         memScoped {
-            val pointer = checkNotNull(plain_user_settings())
+            val pointer = checkNotNull(plain_prefs_snapshot())
             try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
         }
     }

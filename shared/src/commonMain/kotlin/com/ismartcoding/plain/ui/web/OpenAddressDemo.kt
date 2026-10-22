@@ -43,8 +43,8 @@ private const val DEMO_TYPING_MS = 2800L
 
 @Composable
 fun OpenAddressDemo() {
-    val isHttps = UserPrefs.https.collectAsState()
-    val port = if (isHttps.value) UserPrefs.httpsPort.collectAsState() else UserPrefs.httpPort.collectAsState()
+    val isHttps = Prefs.https.collectAsState()
+    val port = if (isHttps.value) Prefs.httpsPort.collectAsState() else Prefs.httpPort.collectAsState()
     val url = remember(isHttps.value, port.value) {
         UrlHelper.buildUrl(if (isHttps.value) "https" else "http", demoServerIp(), port.value)
     }

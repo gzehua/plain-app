@@ -67,7 +67,7 @@ fun Main(
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
     navControllerState.value = navController
-    val useDarkTheme = DarkTheme.isDarkTheme(UserPrefs.darkTheme.collectAsStateValue())
+    val useDarkTheme = DarkTheme.isDarkTheme(Prefs.darkTheme.collectAsStateValue())
 
     var confirmDialogEvent by remember { mutableStateOf<ConfirmDialogEvent?>(null) }
     var loadingDialogEvent by remember { mutableStateOf<LoadingDialogEvent?>(null) }
@@ -92,7 +92,7 @@ fun Main(
     }
 
     LaunchedEffect(Unit) {
-        if (!RustSystemState.state.value.onboardingCompleted) {
+        if (!SecuritySettingsState.state.value.onboardingCompleted) {
             // singleTop: this effect re-runs on activity recreation while the
             // onboarding is still showing and the pref is not yet written
             navController.navigate(Routing.Onboarding) {

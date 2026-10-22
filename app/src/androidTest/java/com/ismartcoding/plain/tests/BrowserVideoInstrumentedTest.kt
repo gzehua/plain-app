@@ -46,7 +46,7 @@ import com.ismartcoding.plain.ui.platform.system.*
 import com.ismartcoding.plain.ui.state.*
 import com.ismartcoding.plain.platform.telephony.*
 import com.ismartcoding.plain.network.*
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
@@ -66,14 +66,14 @@ class BrowserVideoInstrumentedTest {
         val capabilities = RustGraphqlApi.query("app { capabilities }").getValue("app").jsonObject
             .getValue("capabilities").jsonArray.map { it.jsonPrimitive.content }
         assumeTrue("HEVC transcoding is unavailable", "VIDEO_TRANSCODE" in capabilities)
-        val service = UserPrefs.service.value
-        val desktop = UserPrefs.desktopAccess.value
+        val service = Prefs.backgroundServiceEnabled.value
+        val desktop = Prefs.desktopAccess.value
         val output = File(appContext.cacheDir, "browser-video-${UUID.randomUUID()}.mp4")
         try {
-            UserPrefs.service.value = true
-            UserPrefs.desktopAccess.value = true
+            Prefs.backgroundServiceEnabled.value = true
+            Prefs.desktopAccess.value = true
             withIO { RustRuntime.start() }
-            val base = "http://127.0.0.1:${UserPrefs.httpPort.value}"
+            val base = "http://127.0.0.1:${Prefs.httpPort.value}"
             fun resource(file: File) = "$base/fs?id=${URLEncoder.encode(ResourceCrypto.encrypt(file.absolutePath), "UTF-8")}"
             createPlainHttpClient(PlainHttpClientSpec.Local()).use { client ->
                 client.get("${resource(source)}&probe=1").use { response ->
@@ -97,8 +97,8 @@ class BrowserVideoInstrumentedTest {
             }
         } finally {
             output.delete()
-            UserPrefs.desktopAccess.value = desktop
-            UserPrefs.service.value = service
+            Prefs.desktopAccess.value = desktop
+            Prefs.backgroundServiceEnabled.value = service
         }
     }
 }

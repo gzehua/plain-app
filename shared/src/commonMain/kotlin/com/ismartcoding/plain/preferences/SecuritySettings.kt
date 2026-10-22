@@ -5,13 +5,15 @@ import com.ismartcoding.plain.models.UpdateInfo
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SystemSettings(
+data class SecuritySettings(
     val password: String,
     val passwordType: Int,
-    val authTwoFactor: Boolean,
+    val loginRequireApproval: Boolean,
     val rotateUrlTokenOnRestart: Boolean,
     val adbToken: String,
     val updateInfo: UpdateInfo,
+    val autoCheckUpdate: Boolean,
+    val skipVersion: String,
     val appUpdateAvailable: Boolean = false,
     val urlToken: String,
     val apiPermissions: Set<String>,

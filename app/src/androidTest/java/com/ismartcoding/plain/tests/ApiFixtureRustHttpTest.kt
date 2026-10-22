@@ -15,8 +15,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.permissions.Permission
-import com.ismartcoding.plain.preferences.SystemPrefsClient
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.SecuritySettingsState
+import com.ismartcoding.plain.preferences.Prefs
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.delay
@@ -49,13 +49,12 @@ class ApiFixtureRustHttpTest {
         var clientId = ""
         var peerCreated = false
         var rootCreated = false
-        val oldAccess = UserPrefs.desktopAccess.value
-        UserPrefs.desktopAccess.value = true
+        val oldAccess = Prefs.desktopAccess.value
+        Prefs.desktopAccess.value = true
         withIO { RustRuntime.start() }
-        SystemPrefsClient.local.refresh()
-        val oldPermissions = SystemPrefsClient.local.system.value.apiPermissions
+        val oldPermissions = SecuritySettingsState.state.value.apiPermissions
         try {
-            SystemPrefsClient.local.set("api_permissions", JsonArray(setOf(Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEOS, Permission.READ_MEDIA_AUDIO, Permission.READ_CONTACTS, Permission.WRITE_CONTACTS, Permission.READ_CALL_LOG, Permission.WRITE_CALL_LOG, Permission.READ_SMS, Permission.SEND_SMS, Permission.QUERY_ALL_PACKAGES, Permission.NOTIFICATION_LISTENER).map { JsonPrimitive(it.name) }))
+            SecuritySettingsState.setApiPermissions(setOf(Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEOS, Permission.READ_MEDIA_AUDIO, Permission.READ_CONTACTS, Permission.WRITE_CONTACTS, Permission.READ_CALL_LOG, Permission.WRITE_CALL_LOG, Permission.READ_SMS, Permission.SEND_SMS, Permission.QUERY_ALL_PACKAGES, Permission.NOTIFICATION_LISTENER).map { it.name }.toSet())
             assertTrue(root.mkdirs())
             rootCreated = true
             val session = RustSessionStore.create("API emulator fixture")
@@ -104,8 +103,8 @@ class ApiFixtureRustHttpTest {
             if (channelId.isNotEmpty()) RustGraphqlApi.mutate("deleteChatChannel(id: ${JsonPrimitive(channelId)})")
             if (peerCreated) RustGraphqlApi.mutate("deletePeer(id: ${JsonPrimitive(peerId)})")
             if (rootCreated) root.deleteRecursively()
-            SystemPrefsClient.local.set("api_permissions", JsonArray(oldPermissions.map(::JsonPrimitive)))
-            UserPrefs.desktopAccess.value = oldAccess
+            SecuritySettingsState.setApiPermissions(oldPermissions)
+            Prefs.desktopAccess.value = oldAccess
         }
     }
 }

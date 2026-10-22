@@ -29,26 +29,26 @@ class FeedSettingsViewModel : ViewModel() {
     var clearFeedItemsTs = mutableLongStateOf(Constants.ONE_DAY * 7)
 
     init {
-        viewModelScope.launch { UserPrefs.feedAutoRefresh.collect { autoRefresh.value = it } }
-        viewModelScope.launch { UserPrefs.feedAutoRefreshInterval.collect { autoRefreshInterval.intValue = it } }
-        viewModelScope.launch { UserPrefs.feedAutoRefreshOnlyWifi.collect { autoRefreshOnlyWifi.value = it } }
+        viewModelScope.launch { Prefs.feedAutoRefresh.collect { autoRefresh.value = it } }
+        viewModelScope.launch { Prefs.feedAutoRefreshInterval.collect { autoRefreshInterval.intValue = it } }
+        viewModelScope.launch { Prefs.feedAutoRefreshOnlyWifi.collect { autoRefreshOnlyWifi.value = it } }
     }
 
     fun setAutoRefresh(value: Boolean) {
         viewModelScope.launchSafe {
-            UserPrefs.feedAutoRefresh.value = value
+            Prefs.feedAutoRefresh.value = value
         }
     }
 
     fun setAutoRefreshInterval(value: Int) {
         viewModelScope.launchSafe {
-            UserPrefs.feedAutoRefreshInterval.value = value
+            Prefs.feedAutoRefreshInterval.value = value
         }
     }
 
     fun setAutoRefreshOnlyWifi(value: Boolean) {
         viewModelScope.launchSafe {
-            UserPrefs.feedAutoRefreshOnlyWifi.value = value
+            Prefs.feedAutoRefreshOnlyWifi.value = value
         }
     }
 

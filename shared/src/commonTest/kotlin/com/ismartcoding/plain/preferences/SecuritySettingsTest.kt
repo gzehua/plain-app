@@ -11,16 +11,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class SystemSettingsTest {
+class SecuritySettingsTest {
     private fun fixture(): JsonObject = Json.parseToJsonElement(
         """{
-            "password":"fixture-password", "passwordType":1, "authTwoFactor":true,
+            "password":"fixture-password", "passwordType":1, "loginRequireApproval":true,
             "rotateUrlTokenOnRestart":true, "adbToken":"fixture-adb",
+            "autoCheckUpdate":true, "skipVersion":"8.0.0",
             "updateInfo":{
                 "newVersion":"9.0.0", "checkUpdateTime":4294967296,
-                "skipVersion":"8.0.0", "publishDate":"2026-01-01", "log":"fixture changes",
-                "downloadUrl":"", "size":1099511627776, "downloadedApkPath":"",
-                "autoCheckUpdate":true
+                "publishDate":"2026-01-01", "log":"fixture changes",
+                "downloadUrl":"", "size":1099511627776, "downloadedApkPath":""
             },
             "appUpdateAvailable":true, "urlToken":"fixture-url",
             "apiPermissions":["READ_SMS","READ_CONTACTS","READ_SMS"],
@@ -32,13 +32,13 @@ class SystemSettingsTest {
     @Test
     fun canonicalModelPreservesTypedUpdateDataAndPermissionSetWireShape() {
         val input = fixture()
-        val settings = JsonHelper.jsonDecodeFromElement<SystemSettings>(input)
+        val settings = JsonHelper.jsonDecodeFromElement<SecuritySettings>(input)
         assertEquals(setOf("READ_SMS", "READ_CONTACTS"), settings.apiPermissions)
         assertEquals(4294967296L, settings.updateInfo.checkUpdateTime)
         assertEquals(1099511627776L, settings.updateInfo.size)
         assertEquals("fixture changes", settings.updateInfo.log)
         assertTrue(settings.appUpdateAvailable)
-        assertTrue(settings.authTwoFactor)
+        assertTrue(settings.loginRequireApproval)
         assertTrue(settings.rotateUrlTokenOnRestart)
         val output = JsonHelper.jsonEncodeToElement(settings).jsonObject
         assertEquals(input["updateInfo"], output["updateInfo"])
@@ -51,9 +51,9 @@ class SystemSettingsTest {
     @Test
     fun missingAvailabilityKeepsTheRuntimeDefault() {
         val input = JsonObject(fixture().filterKeys { it != "appUpdateAvailable" })
-        val settings = JsonHelper.jsonDecodeFromElement<SystemSettings>(input)
+        val settings = JsonHelper.jsonDecodeFromElement<SecuritySettings>(input)
         assertFalse(settings.appUpdateAvailable)
-        assertTrue(settings.updateInfo.autoCheckUpdate)
+        assertTrue(settings.autoCheckUpdate)
         assertEquals("fixture-client", settings.clientId)
     }
 }

@@ -40,18 +40,18 @@ fun HomeFeaturesSelectionPage(navController: NavHostController) {
     val scope = rememberCoroutineScope()
     val allFeatureItems = remember { FeatureItem.getList(navController) }
 
-    val featuresStr = UserPrefs.homeFeatures.collectAsStateValue()
+    val featuresStr = Prefs.appHomeFeatures.collectAsStateValue()
 
     var enabledIds by remember(featuresStr) {
         mutableStateOf(
-            UserPrefs.parseFeatures(featuresStr)
+            Prefs.parseFeatures(featuresStr)
         )
     }
 
     fun persist(newList: List<String>) {
         enabledIds = newList
         scope.launch(Dispatchers.Default) {
-            UserPrefs.homeFeatures.value = UserPrefs.formatFeatures(newList)
+            Prefs.appHomeFeatures.value = Prefs.formatFeatures(newList)
         }
     }
 

@@ -25,7 +25,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             .block_on(core.server.http_ports())
             .is_none()
         {
-            let settings = plain_rs::prefs::user::snapshot(core.server.preferences()?)
+            let settings = plain_rs::prefs::settings::snapshot(core.server.preferences()?)
                 .map_err(|e| e.to_string())?;
             let (cert, key) = plain_server::services::tls_identity::identity(&paths.tls_identity())?;
             core.server
@@ -48,7 +48,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             std::path::Path::new(cache_directory),
         )?;
         let prefs = Arc::new(
-            plain_rs::prefs::Prefs::load_pair(&paths.system_prefs(), &paths.user_prefs())
+            plain_rs::prefs::Prefs::load(&paths.prefs())
                 .map_err(|e| e.to_string())?,
         );
         let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -61,7 +61,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             .ok_or("Startup system properties required")?
             .clone();
         properties.insert("debug".into(), config["debug"].clone());
-        let settings = plain_rs::prefs::user::snapshot(&prefs).map_err(|e| e.to_string())?;
+        let settings = plain_rs::prefs::settings::snapshot(&prefs).map_err(|e| e.to_string())?;
         let (cert, key) = plain_server::services::tls_identity::identity(&paths.tls_identity())?;
         let server = runtime.block_on(ContentServer::start_http(
             directory,
@@ -88,9 +88,9 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             .runtime
             .block_on(core.server.http_ports())
             .ok_or("HTTP server stopped during startup")?;
-        plain_rs::prefs::user::patch(
+        plain_rs::prefs::settings::patch(
             core.server.preferences()?,
-            plain_rs::prefs::user::UserSettingsPatch {
+            plain_rs::prefs::settings::SettingsPatch {
                 http_port: Some(http as i32),
                 https_port: Some(https as i32),
                 ..Default::default()

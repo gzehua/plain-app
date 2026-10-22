@@ -33,7 +33,7 @@ import com.ismartcoding.plain.i18n.cast
 
 @Composable
 fun DlnaReceiverSection(navController: NavHostController) {
-    val dlnaReceiverEnabled = UserPrefs.dlna.collectAsStateValue()
+    val dlnaReceiverEnabled = Prefs.dlna.collectAsStateValue()
     val scope = rememberCoroutineScope()
 
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
@@ -45,7 +45,7 @@ fun DlnaReceiverSection(navController: NavHostController) {
         ) {
             Switch(checked = dlnaReceiverEnabled, onCheckedChange = { enable ->
                 scope.launchSafe {
-                    UserPrefs.dlna.value = enable
+                    Prefs.dlna.value = enable
                 }
             })
         }

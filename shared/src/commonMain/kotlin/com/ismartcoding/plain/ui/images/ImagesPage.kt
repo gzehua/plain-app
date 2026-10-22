@@ -37,7 +37,7 @@ import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.platform.system.isGestureInteractionMode
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.components.NeedPermissionColumn
@@ -100,7 +100,7 @@ fun ImagesPage(
     val previewerState = rememberPreviewerState()
     val tagsMapState by tagsVM.tagsMapFlow.collectAsState()
     val bucketsMap by mediaFoldersVM.bucketsMapFlow.collectAsState()
-    val cellsPerRow = remember { mutableIntStateOf(UserPrefs.imageGridCellsPerRow.value) }
+    val cellsPerRow = remember { mutableIntStateOf(Prefs.imageGridCellsPerRow.value) }
     val density = LocalDensity.current
     val windowInfo = LocalWindowInfo.current
     val imageWidthPx = remember(cellsPerRow.value, windowInfo.containerSize.width) {
@@ -133,8 +133,8 @@ fun ImagesPage(
 
     val reloadAfterGrant: () -> Unit = {
         scope.launch {
-            cellsPerRow.value = UserPrefs.imageGridCellsPerRow.value
-            imagesVM.sortBy.value = UserPrefs.imageSortBy.value
+            cellsPerRow.value = Prefs.imageGridCellsPerRow.value
+            imagesVM.sortBy.value = Prefs.imageSortBy.value
             imagesVM.loadAsync(tagsVM)
             mediaFoldersVM.loadAsync()
         }
@@ -198,7 +198,7 @@ fun ImagesPage(
                 },
                 onSortSelected = { sortBy ->
                     scope.launch {
-                        UserPrefs.imageSortBy.value = sortBy
+                        Prefs.imageSortBy.value = sortBy
                         imagesVM.sortBy.value = sortBy
                         imagesVM.loadAsync(tagsVM)
                     }
@@ -242,7 +242,7 @@ fun ImagesPage(
                                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                                     .gridDragSelect(items = itemsState, state = dragSelectState)
                                     .pinchZoomGrid(cellsPerRow = cellsPerRow, hapticFeedback = hapticFeedback, scope = scope) {
-                                        UserPrefs.imageGridCellsPerRow.value = it
+                                        Prefs.imageGridCellsPerRow.value = it
                                     },
                                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                                 verticalArrangement = Arrangement.spacedBy(2.dp)

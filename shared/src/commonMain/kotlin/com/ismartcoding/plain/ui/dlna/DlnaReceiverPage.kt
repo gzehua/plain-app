@@ -44,7 +44,7 @@ import com.ismartcoding.plain.ui.resources.history as ui_drawable_history
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DlnaReceiverPage(navController: NavHostController) {
-    val enabled by UserPrefs.dlna.collectAsState()
+    val enabled by Prefs.dlna.collectAsState()
     val startError by DlnaRendererState.startError.collectAsState()
     val isRetrying by DlnaRendererState.isRetrying.collectAsState()
 
@@ -120,7 +120,7 @@ private fun DlnaReceiverDisabledScreen() {
                 text = stringResource(Res.string.dlna_receiver_turn_on),
                 onClick = {
                     scope.launchSafe {
-                        UserPrefs.dlna.value = true
+                        Prefs.dlna.value = true
                     }
                 },
             )

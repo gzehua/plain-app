@@ -58,7 +58,7 @@ fun AudioPlayerBarCard(
 ) {
     // Dark list items use cardBackgroundNormal (#2C2C2E) which equals surfaceVariant,
     // so lift the bar to surfaceContainerHighest to keep it visually apart.
-    val isDark = DarkTheme.isDarkTheme(UserPrefs.darkTheme.collectAsStateValue())
+    val isDark = DarkTheme.isDarkTheme(Prefs.darkTheme.collectAsStateValue())
     val containerColor =
         if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surfaceVariant
     ElevatedCard(

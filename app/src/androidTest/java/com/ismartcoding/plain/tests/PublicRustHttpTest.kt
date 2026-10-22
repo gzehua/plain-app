@@ -57,22 +57,22 @@ import java.util.UUID
 class PublicRustHttpTest {
     @Test
     fun rustPublicListenerServesTlsUploadsRangesAndPortal() = runBlocking {
-        val oldService = UserPrefs.service.value
-        val oldDesktop = UserPrefs.desktopAccess.value
-        val oldHttp = UserPrefs.httpPort.value
-        val oldHttps = UserPrefs.httpsPort.value
+        val oldService = Prefs.backgroundServiceEnabled.value
+        val oldDesktop = Prefs.desktopAccess.value
+        val oldHttp = Prefs.httpPort.value
+        val oldHttps = Prefs.httpsPort.value
         val fixtureName = "synthetic-http-${UUID.randomUUID()}"
         var clientId = ""
         var key = ByteArray(0)
         val root = File(appContext.cacheDir, fixtureName).apply { mkdirs() }
         val payload = ByteArray(512 * 1024 + 17) { (it % 251).toByte() }
         try {
-            UserPrefs.service.value = true
-            UserPrefs.desktopAccess.value = true
+            Prefs.backgroundServiceEnabled.value = true
+            Prefs.desktopAccess.value = true
             withIO { RustRuntime.start() }
             assertTrue(com.ismartcoding.plain.app.checkHttpServerAsync())
-            val port = UserPrefs.httpPort.value
-            val tlsPort = UserPrefs.httpsPort.value
+            val port = Prefs.httpPort.value
+            val tlsPort = Prefs.httpsPort.value
             val trust = object : javax.net.ssl.X509TrustManager {
                 override fun checkClientTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) = Unit
                 override fun checkServerTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) = Unit
@@ -128,17 +128,17 @@ class PublicRustHttpTest {
                     assertEquals(206, it.status.value)
                     assertArrayEquals(payload.copyOfRange(19, 40), it.bodyAsBytes())
                 }
-                UserPrefs.desktopAccess.value = false
+                Prefs.desktopAccess.value = false
                 client.get("http://127.0.0.1:$port/health").use { assertEquals(200, it.status.value) }
                 client.post("http://127.0.0.1:$port/graphql", "{}".encodeToByteArray(), "application/json").use { assertEquals(404, it.status.value) }
             }
         } finally {
             if (clientId.isNotEmpty()) com.ismartcoding.plain.features.sessions.RustSessionStore.delete(clientId)
             root.deleteRecursively()
-            UserPrefs.service.value = oldService
-            UserPrefs.desktopAccess.value = oldDesktop
-            UserPrefs.httpPort.value = oldHttp
-            UserPrefs.httpsPort.value = oldHttps
+            Prefs.backgroundServiceEnabled.value = oldService
+            Prefs.desktopAccess.value = oldDesktop
+            Prefs.httpPort.value = oldHttp
+            Prefs.httpsPort.value = oldHttps
         }
     }
 }

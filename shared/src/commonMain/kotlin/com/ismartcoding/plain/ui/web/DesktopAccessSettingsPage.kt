@@ -76,9 +76,9 @@ import com.ismartcoding.plain.i18n.devices
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun DesktopAccessSettingsPage(navController: NavHostController, webVM: DesktopAccessSettingsViewModel = viewModel { DesktopAccessSettingsViewModel() }) {
-    val keepAwake = UserPrefs.keepAwake.collectAsStateValue()
+    val keepAwake = Prefs.keepAwake.collectAsStateValue()
     val scope = rememberCoroutineScope()
-    val enabledPermissions = RustSystemState.state.collectAsStateValue().apiPermissions
+    val enabledPermissions = SecuritySettingsState.state.collectAsStateValue().apiPermissions
     val permissionList = remember { mutableStateOf(getWebList()) }
     val shouldIgnoreOptimize = remember { mutableStateOf(!isIgnoringBatteryOptimizations()) }
     val systemAlertWindow = remember { mutableStateOf(Permission.SYSTEM_ALERT_WINDOW.isGranted()) }

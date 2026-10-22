@@ -117,8 +117,7 @@ emit pomodoro_settings '{ pomodoroSettings { workDurationMin shortBreakDurationM
 emit image_editor_projects '{ imageEditorProjects { id canvasWidth layerCount } }'
 emit db_tables '{ dbTables }'
 emit db_table_info '{ dbTableInfo(table: "sessions") { idKey } }'
-emit user_prefs '{ userPrefs }'
-emit system_prefs '{ systemPrefs }'
+emit prefs '{ prefs }'
 emit app_logs '{ appLogs(offset: 0, limit: 5, query: "") }'
 
 # The served schema itself, so the contract snapshot can be put next to what

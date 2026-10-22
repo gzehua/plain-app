@@ -45,7 +45,7 @@ import com.ismartcoding.plain.i18n.devices
 
 @Composable
 fun DesktopAccessSection(navController: NavHostController) {
-    val desktopAccessEnabled = UserPrefs.desktopAccess.collectAsStateValue()
+    val desktopAccessEnabled = Prefs.desktopAccess.collectAsStateValue()
     val scope = rememberCoroutineScope()
     val onlineCount by onlineClientIds.map { it.size }.collectAsState(0)
 

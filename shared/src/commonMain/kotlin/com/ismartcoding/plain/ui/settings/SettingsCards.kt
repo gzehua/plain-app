@@ -49,15 +49,15 @@ internal fun DeveloperSettingsCard(
     navController: NavHostController,
 ) {
     val scope = rememberCoroutineScope()
-    val developerMode = UserPrefs.developerMode.collectAsStateValue()
-    val allowAnyHost = UserPrefs.allowAnyHost.collectAsStateValue()
+    val developerMode = Prefs.developerMode.collectAsStateValue()
+    val allowAnyHost = Prefs.allowAnyHost.collectAsStateValue()
 
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PListItem(title = stringResource(Res.string.client_id), value = TempData.clientId)
         PListItem(title = stringResource(Res.string.developer_mode)) {
             Switch(checked = developerMode, onCheckedChange = {
                 scope.launch(Dispatchers.Default) {
-                    UserPrefs.developerMode.value = it
+                    Prefs.developerMode.value = it
                 }
             })
         }
@@ -97,7 +97,7 @@ internal fun DeveloperSettingsCard(
                 ) {
                     Switch(checked = allowAnyHost, onCheckedChange = {
                         scope.launch(Dispatchers.Default) {
-                            UserPrefs.allowAnyHost.value = it
+                            Prefs.allowAnyHost.value = it
                             restartServer()
                         }
                     })

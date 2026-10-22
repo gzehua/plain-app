@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 
 fun setDesktopAccessEnabled(enabled: Boolean) {
-    UserPrefs.desktopAccess.value = enabled
+    Prefs.desktopAccess.value = enabled
 }

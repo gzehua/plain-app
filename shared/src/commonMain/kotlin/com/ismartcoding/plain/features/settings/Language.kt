@@ -27,7 +27,7 @@ object Language {
         )
 
     suspend fun initLocaleAsync() {
-        val locale = UserPrefs.localeValue()
+        val locale = Prefs.localeValue()
         if (locale != null) {
             setSystemLocale(locale)
         }

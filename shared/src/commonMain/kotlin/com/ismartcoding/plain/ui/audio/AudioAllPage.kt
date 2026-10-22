@@ -28,7 +28,7 @@ import com.ismartcoding.plain.i18n.sort
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.platform.media.audioIsPlayingFlow
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.ui.components.ActionButtonSearch
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.components.NavigationBackIcon
@@ -128,7 +128,7 @@ fun AudioAllPage(
                 scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
                 onSortSelected = { sortBy ->
                     scope.launch(Dispatchers.Default) {
-                        UserPrefs.audioSortBy.value = sortBy
+                        Prefs.audioSortBy.value = sortBy
                         audioVM.sortBy.value = sortBy
                         audioVM.loadAsync(tagsVM)
                     }

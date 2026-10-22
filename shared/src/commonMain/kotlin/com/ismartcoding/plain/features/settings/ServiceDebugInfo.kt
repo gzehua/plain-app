@@ -10,7 +10,7 @@ import com.ismartcoding.plain.app.getAwareAttachStatus
 import com.ismartcoding.plain.app.getAwareDiscoveredPeerCount
 import com.ismartcoding.plain.app.isHttpServerRunning
 import com.ismartcoding.plain.app.isMdnsRunning
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 
 data class ServiceDebugInfo(
     val httpServerRunning: Boolean = false,
@@ -45,8 +45,8 @@ fun getServiceDebugInfo(): ServiceDebugInfo {
     return ServiceDebugInfo(
         httpServerRunning = httpRunning,
         httpServerState = if (httpRunning) "ON" else "OFF",
-        httpPort = UserPrefs.httpPort.value,
-        httpsPort = UserPrefs.httpsPort.value,
+        httpPort = Prefs.httpPort.value,
+        httpsPort = Prefs.httpsPort.value,
         wsSessionCount = onlineClientIds.value.size,
         httpServerError = HttpServerManager.httpServerError.value,
 

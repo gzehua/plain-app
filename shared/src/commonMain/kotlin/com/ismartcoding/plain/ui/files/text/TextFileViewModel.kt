@@ -34,9 +34,9 @@ class TextFileViewModel : ViewModel() {
 
     fun loadConfigAsync() {
         viewModelScope.launchSafe {
-            controller.wrapContent.value = UserPrefs.editorWrapContent.value
-            controller.fontSizeSp.value = UserPrefs.editorFontSize.value
-            controller.statusBarVisible.value = UserPrefs.editorStatusBar.value
+            controller.wrapContent.value = Prefs.editorWrapContent.value
+            controller.fontSizeSp.value = Prefs.editorFontSize.value
+            controller.statusBarVisible.value = Prefs.editorStatusBar.value
         }
     }
 
@@ -55,7 +55,7 @@ class TextFileViewModel : ViewModel() {
 
     fun toggleWrapContent() {
         viewModelScope.launchSafe {
-            UserPrefs.editorWrapContent.value = !controller.wrapContent.value
+            Prefs.editorWrapContent.value = !controller.wrapContent.value
         }
         controller.toggleWrap()
     }

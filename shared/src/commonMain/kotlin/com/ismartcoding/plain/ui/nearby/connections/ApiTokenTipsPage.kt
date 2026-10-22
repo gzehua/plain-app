@@ -35,7 +35,7 @@ fun ApiTokenTipsPage(
     token: String,
 ) {
     val hostname = remember { TempData.mdnsHostname }
-    val httpPort = UserPrefs.httpPort.collectAsState()
+    val httpPort = Prefs.httpPort.collectAsState()
 
     val curlReal = remember(clientId, token, hostname, httpPort.value) {
         """curl -X POST "${UrlHelper.buildUrl("http", hostname, httpPort.value, "/graphql")}" -H "c-id: $clientId" -H "Authorization: Bearer $token" -H "Content-Type: application/json" --data '{"query":"{ app { appVersion } }"}'"""

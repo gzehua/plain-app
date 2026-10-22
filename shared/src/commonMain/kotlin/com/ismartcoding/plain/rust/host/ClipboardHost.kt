@@ -7,7 +7,7 @@ import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.observeClipboardChanges
-import com.ismartcoding.plain.preferences.RustSystemState
+import com.ismartcoding.plain.preferences.SecuritySettingsState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 internal suspend fun observeClipboardReports() = observeClipboardWhenEnabled(
-    RustSystemState.state.map { "CLIPBOARD" in it.apiPermissions },
+    SecuritySettingsState.state.map { "CLIPBOARD" in it.apiPermissions },
 ) {
     observeClipboardChanges { report ->
         try {

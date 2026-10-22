@@ -19,22 +19,22 @@ import kotlinx.serialization.json.JsonObject
  * so a local write and a change pushed by a remote client are handled the same
  * way — the source of the write never reaches this file.
  */
-internal object UserPrefsEffects {
+internal object PrefsEffects {
     /** Stopping the service is suspend; the rest of the effects are not. */
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     fun applyChanges(previous: JsonObject, current: JsonObject) {
         if (changed(previous, current, DEVICE_NAME)) {
-            TempData.deviceName.value = UserPrefs.deviceName.value
+            TempData.deviceName.value = Prefs.deviceName.value
         }
         if (changed(previous, current, SCREEN_MIRROR_QUALITY)) {
-            onScreenMirrorQualityChanged(UserPrefs.screenMirrorQuality.value.mode)
+            onScreenMirrorQualityChanged(Prefs.screenMirrorQuality.value.mode)
         }
         if (changed(previous, current, LOCALE)) {
-            setSystemLocale(UserPrefs.localeValue())
+            setSystemLocale(Prefs.localeValue())
         }
         if (changed(previous, current, SERVICE)) {
-            if (UserPrefs.service.value) HttpServerManager.requestStart(fromUi = false)
+            if (Prefs.backgroundServiceEnabled.value) HttpServerManager.requestStart(fromUi = false)
             else scope.launch { stopHttpServiceAsync() }
         }
     }
@@ -47,5 +47,5 @@ internal object UserPrefsEffects {
     private const val DEVICE_NAME = "deviceName"
     private const val SCREEN_MIRROR_QUALITY = "screenMirrorQuality"
     private const val LOCALE = "locale"
-    private const val SERVICE = "service"
+    private const val SERVICE = "backgroundServiceEnabled"
 }

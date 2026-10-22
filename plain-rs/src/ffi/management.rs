@@ -247,26 +247,26 @@ pub extern "C" fn plain_check_app_update(automatic: bool) -> *mut c_char {
     c_string(check_app_update(automatic))
 }
 
-fn system_settings() -> String {
+fn prefs_snapshot() -> String {
     reply!((|| {
         let (_, management) = parts()?;
-        management.system_settings()
+        management.prefs_snapshot()
     })())
 }
 #[unsafe(no_mangle)]
-pub extern "C" fn plain_system_settings() -> *mut c_char {
-    c_string(system_settings())
+pub extern "C" fn plain_prefs_snapshot() -> *mut c_char {
+    c_string(prefs_snapshot())
 }
 
-fn user_settings() -> String {
+fn complete_onboarding() -> String {
     reply!((|| {
         let (_, management) = parts()?;
-        management.user_settings()
+        management.complete_onboarding()
     })())
 }
 #[unsafe(no_mangle)]
-pub extern "C" fn plain_user_settings() -> *mut c_char {
-    c_string(user_settings())
+pub extern "C" fn plain_complete_onboarding() -> *mut c_char {
+    c_string(complete_onboarding())
 }
 
 fn toggle_notification_app(package_name: String) -> String {
@@ -489,22 +489,20 @@ mod android {
         .into_raw()
     }
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_systemSettingsNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_prefsSnapshotNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
-        env.with_env(|env| -> jni::errors::Result<_> { env.new_string(system_settings()) })
+        env.with_env(|env| -> jni::errors::Result<_> { env.new_string(prefs_snapshot()) })
             .resolve::<ThrowRuntimeExAndDefault>()
             .into_raw()
     }
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_userSettingsNative(
-        mut env: EnvUnowned<'_>,
-        _: JObject<'_>,
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_completeOnboardingNative(
+        mut env: EnvUnowned<'_>, _: JObject<'_>,
     ) -> jstring {
-        env.with_env(|env| -> jni::errors::Result<_> { env.new_string(user_settings()) })
-            .resolve::<ThrowRuntimeExAndDefault>()
-            .into_raw()
+        env.with_env(|env| -> jni::errors::Result<_> { env.new_string(complete_onboarding()) })
+            .resolve::<ThrowRuntimeExAndDefault>().into_raw()
     }
     #[unsafe(no_mangle)]
     pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_toggleNotificationAppNative(

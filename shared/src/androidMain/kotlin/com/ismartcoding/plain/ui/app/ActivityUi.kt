@@ -75,8 +75,8 @@ internal var MainActivity.pendingCrashReport: String?
 internal fun MainActivity.installComposeUi() {
     setContent {
             AppTheme(
-                useDarkTheme = DarkTheme.isDarkTheme(UserPrefs.darkTheme.collectAsStateValue()),
-                amoledDarkTheme = UserPrefs.amoledDarkTheme.collectAsStateValue(),
+                useDarkTheme = DarkTheme.isDarkTheme(Prefs.darkTheme.collectAsStateValue()),
+                amoledDarkTheme = Prefs.amoledDarkTheme.collectAsStateValue(),
             ) {
                 Main(
                     navControllerState, onLaunched = { handleIntent(intent) },

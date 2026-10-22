@@ -54,7 +54,7 @@ import com.ismartcoding.plain.ui.resources.triangle_alert as ui_drawable_triangl
 
 @Composable
 fun FaqCertDemo() {
-    val port = UserPrefs.httpsPort.collectAsState()
+    val port = Prefs.httpsPort.collectAsState()
     val host = UrlHelper.buildUrl("https", demoServerIp(), port.value).removePrefix("https://")
 
     DemoPlayer(

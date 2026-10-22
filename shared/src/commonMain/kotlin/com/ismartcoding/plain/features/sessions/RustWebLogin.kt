@@ -2,7 +2,6 @@ package com.ismartcoding.plain.features.sessions
 
 import com.ismartcoding.plain.rust.native.RustNativeApi
 
-
 import com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent
 
 object RustWebLogin {
@@ -10,6 +9,6 @@ object RustWebLogin {
         RustNativeApi.confirmWebLogin(requestId, allowed)
     }
     suspend fun cancel(requestId: String) { decide(requestId, false) }
-    suspend fun resetPassword() = com.ismartcoding.plain.preferences.RustSystemState.resetPassword()
+    suspend fun resetPassword() = com.ismartcoding.plain.preferences.SecuritySettingsState.resetPassword()
     suspend fun complete(event: HConfirmToAcceptLoginEvent) { decide(event.requestId, true) }
 }

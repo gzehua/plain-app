@@ -11,7 +11,7 @@ import com.ismartcoding.plain.features.pomodoro.PomodoroClient.today
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.ui.platform.media.playPomodoroCompletionSound
 import com.ismartcoding.plain.ui.platform.media.showPomodoroNotification
 import kotlinx.coroutines.CancellationException
@@ -36,7 +36,7 @@ internal object PomodoroProjection {
             LogCat.e("Pomodoro notification", error)
         }
         try {
-            playPomodoroCompletionSound(UserPrefs.pomodoroSettings.value)
+            playPomodoroCompletionSound(Prefs.pomodoroSettings.value)
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {

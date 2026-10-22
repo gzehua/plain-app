@@ -34,7 +34,7 @@ import com.ismartcoding.plain.i18n.collapsed
 import com.ismartcoding.plain.i18n.expanded
 import com.ismartcoding.plain.i18n.try_more_addresses
 import com.ismartcoding.plain.app.restartServer
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
 import org.jetbrains.compose.resources.painterResource
@@ -47,9 +47,9 @@ import com.ismartcoding.plain.ui.resources.chevron_up as ui_drawable_chevron_up
 fun WebAddressBar(
     isHttps: Boolean,
 ) {
-    val port = if (isHttps) UserPrefs.httpsPort.collectAsState() else UserPrefs.httpPort.collectAsState()
+    val port = if (isHttps) Prefs.httpsPort.collectAsState() else Prefs.httpPort.collectAsState()
     // Shared persisted state so the HTTP/HTTPS pager pages stay in sync.
-    val expanded = UserPrefs.webAddressBarExpanded.collectAsState()
+    val expanded = Prefs.webAddressBarExpanded.collectAsState()
     var portDialogVisible by remember { mutableStateOf(false) }
     var qrCodeDialogVisible by remember { mutableStateOf(false) }
     var mdnsEditDialogVisible by remember { mutableStateOf(false) }
@@ -119,7 +119,7 @@ fun WebAddressBar(
                     UiRes.drawable.ui_drawable_chevron_down
             ),
             onClick = {
-                scope.launch { UserPrefs.webAddressBarExpanded.value = !expanded.value }
+                scope.launch { Prefs.webAddressBarExpanded.value = !expanded.value }
             },
         )
     }
@@ -136,12 +136,12 @@ fun WebAddressBar(
                 mdnsEditDialogVisible = false
                 scope.launch {
                     if (hostnameChanged) {
-                        com.ismartcoding.plain.preferences.RustSystemState.setMdnsHostname(newHostname)
+                        com.ismartcoding.plain.preferences.SecuritySettingsState.setMdnsHostname(newHostname)
                         hostname = newHostname
                     }
                     if (portChanged) {
-                        if (isHttps) com.ismartcoding.plain.preferences.UserPrefs.httpsPort.value = newPort
-                        else com.ismartcoding.plain.preferences.UserPrefs.httpPort.value = newPort
+                        if (isHttps) com.ismartcoding.plain.preferences.Prefs.httpsPort.value = newPort
+                        else com.ismartcoding.plain.preferences.Prefs.httpPort.value = newPort
                     }
                     if (hostnameChanged || portChanged) restartServer()
                 }

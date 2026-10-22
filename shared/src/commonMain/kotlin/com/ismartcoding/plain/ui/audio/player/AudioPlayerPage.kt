@@ -68,8 +68,8 @@ fun AudioPlayerPage(audioQueueVM: AudioQueueViewModel, onDismissRequest: () -> U
     val scope = rememberCoroutineScope()
     var progress by remember { mutableFloatStateOf(0f) }
     val isPlaying by audioIsPlayingFlow().collectAsState()
-    val playMode by UserPrefs.audioPlayMode.collectAsState()
-    val playbackSpeed by UserPrefs.audioPlaybackSpeed.collectAsState()
+    val playMode by Prefs.audioPlayMode.collectAsState()
+    val playbackSpeed by Prefs.audioPlaybackSpeed.collectAsState()
     var showQueue by remember { mutableStateOf(false) }
     var showSleepTimer by remember { mutableStateOf(false) }
     var isDragging by remember { mutableStateOf(false) }

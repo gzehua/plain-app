@@ -36,7 +36,7 @@ fun WebDevPage(
     packageId: String,
     onResetToken: () -> Unit,
 ) {
-    val adbToken = RustSystemState.state.collectAsStateValue().adbToken
+    val adbToken = SecuritySettingsState.state.collectAsStateValue().adbToken
 
     PScaffold(
         topBar = {

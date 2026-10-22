@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.platform.permissions
 
-
 import com.ismartcoding.plain.preferences.*
 
 import com.ismartcoding.plain.app.events.RequestPermissionsEvent
@@ -41,7 +40,6 @@ enum class Permission {
     CLIPBOARD
     ;
 
-
     fun toSysPermission(): String {
         return "android.permission.${this.name}"
     }
@@ -81,7 +79,6 @@ expect suspend fun ensureNotificationPermissionAsync(): Boolean
  *     confirmation dialog when the permission is not yet granted.
  */
 
-
 fun Permission.grant(): Boolean {
     if (isGranted()) return true
     sendEvent(RequestPermissionsEvent(this))
@@ -90,11 +87,11 @@ fun Permission.grant(): Boolean {
 
 /**
  * Whether the user handed this permission to the web client. The list already
- * arrives with [com.ismartcoding.plain.preferences.SystemSettings] over the prefs
+ * arrives with [com.ismartcoding.plain.preferences.SecuritySettings] over the prefs
  * bridge, so this is a local read — the core has nothing to add.
  */
 suspend fun Permission.isEnabledAsync(): Boolean =
-    name in com.ismartcoding.plain.preferences.RustSystemState.state.value.apiPermissions
+    name in com.ismartcoding.plain.preferences.SecuritySettingsState.state.value.apiPermissions
 
 /** Enabled for the web client *and* granted by the OS. Both answers are local. */
 suspend fun Permission.enabledAndIsGrantedAsync(): Boolean = isEnabledAsync() && isGranted()
@@ -113,7 +110,6 @@ suspend fun Permission.checkEnabledAsync() {
  *
  * @param onOpenSettings Called when the user taps "Go to Settings".
  */
-
 
 /**
  * Show a notification permission confirmation dialog. Called from

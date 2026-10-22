@@ -10,7 +10,7 @@ import com.ismartcoding.plain.features.nearby.PeerStatus
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.models.Peer
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.ui.state.launchSafe
 import kotlinx.coroutines.CancellationException
@@ -59,7 +59,7 @@ class PeerViewModel : ViewModel() {
 
     fun updateDiscoverable(discoverable: Boolean) {
         viewModelScope.launchSafe {
-            UserPrefs.nearbyDiscoverable.value = discoverable
+            Prefs.nearbyDiscoverable.value = discoverable
         }
     }
 

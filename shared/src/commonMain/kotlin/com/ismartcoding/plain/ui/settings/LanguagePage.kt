@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguagePage(navController: NavHostController) {
-    val language = UserPrefs.parseLocale(UserPrefs.locale.collectAsStateValue())
+    val language = Prefs.parseLocale(Prefs.locale.collectAsStateValue())
     val scope = rememberCoroutineScope()
     val list = mutableListOf<Locale?>()
     list.add(null)
@@ -55,7 +55,7 @@ fun LanguagePage(navController: NavHostController) {
                     PListItem(
                         modifier = PlainTheme
                             .getCardModifier(index = if (index > 0) index - 1 else 0, size = if (index > 0) list.size - 1 else 1)
-                            .selectable(selected = selected, role = Role.RadioButton, onClick = { UserPrefs.locale.value = UserPrefs.formatLocale(item) }),
+                            .selectable(selected = selected, role = Role.RadioButton, onClick = { Prefs.locale.value = Prefs.formatLocale(item) }),
                         title = item?.getElegantDisplayName() ?: stringResource(Res.string.use_device_language),
                     ) {
                         RadioButton(selected = selected, onClick = null)

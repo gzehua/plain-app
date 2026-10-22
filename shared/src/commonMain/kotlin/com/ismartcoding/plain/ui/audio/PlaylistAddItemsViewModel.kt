@@ -38,7 +38,7 @@ class PlaylistAddItemsViewModel : ViewModel(), ISearchableViewModel<AudioTrack> 
 
     suspend fun searchAsync() {
         items.value = withIO {
-            MediaCatalogClient.rows(DataType.AUDIO, SearchHelper.buildTextFilter(queryText.value), 500, 0, UserPrefs.audioSortBy.value)
+            MediaCatalogClient.rows(DataType.AUDIO, SearchHelper.buildTextFilter(queryText.value), 500, 0, Prefs.audioSortBy.value)
         }.filterIsInstance<AudioTrack>()
     }
 }

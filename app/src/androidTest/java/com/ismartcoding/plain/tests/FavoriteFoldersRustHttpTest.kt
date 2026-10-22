@@ -6,7 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import com.ismartcoding.plain.features.files.FavoriteFoldersClient
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import kotlinx.coroutines.*
 import org.junit.Assert.*
 import org.junit.Test
@@ -28,7 +28,7 @@ class FavoriteFoldersRustHttpTest {
             assertEquals(listOf(second,first),updated.map { it.fullPath })
             assertEquals("旅行",updated.last().alias)
             assertEquals(first,updated.last().rootPath)
-            assertFalse(RustGraphqlApi.query("userPrefs").getValue("userPrefs").jsonObject["favorite_folders"]?.toString().orEmpty().contains(root))
+            assertFalse(RustGraphqlApi.query("prefs").getValue("prefs").jsonObject["favorite_folders"]?.toString().orEmpty().contains(root))
             var failed = false
             try { FavoriteFoldersClient.add(root,"$root-outside/folder") }
             catch (_: Exception) { failed = true }

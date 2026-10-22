@@ -63,7 +63,7 @@ class Pref<T> internal constructor(
 }
 
 /** Declares a preference whose stored form is [T]'s own JSON encoding. */
-internal inline fun <reified T> userPref(key: String, default: T): Pref<T> =
+internal inline fun <reified T> pref(key: String, default: T): Pref<T> =
     PrefStore.register(Pref(key, serializer(), default))
 
 /**
@@ -74,7 +74,7 @@ internal inline fun <reified T> userPref(key: String, default: T): Pref<T> =
  * unchanged, so existing files and the remote clients keep working while call
  * sites stop juggling `entries[index]` and `.ordinal`.
  */
-internal inline fun <reified T : Enum<T>> userEnumPref(
+internal inline fun <reified T : Enum<T>> enumPref(
     key: String,
     default: T,
     crossinline code: (T) -> Int = { it.ordinal },

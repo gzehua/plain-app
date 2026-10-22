@@ -8,7 +8,7 @@ import com.ismartcoding.plain.platform.system.setDesktopAccessEnabled
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.CancellationException
-import com.ismartcoding.plain.preferences.RustSystemState
+import com.ismartcoding.plain.preferences.SecuritySettingsState
 
 class DesktopAccessCommandReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -20,7 +20,7 @@ class DesktopAccessCommandReceiver : BroadcastReceiver() {
         val pending = goAsync()
         coIO {
             try {
-                if (!RustSystemState.verifyAdbToken(intent.getStringExtra("token").orEmpty())) return@coIO
+                if (!SecuritySettingsState.verifyAdbToken(intent.getStringExtra("token").orEmpty())) return@coIO
                 setDesktopAccessEnabled(enabled)
             } catch (cancelled: CancellationException) {
                 throw cancelled

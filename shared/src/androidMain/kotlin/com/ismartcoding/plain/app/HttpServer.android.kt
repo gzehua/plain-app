@@ -49,7 +49,7 @@ actual suspend fun onHttpServerStopped() {
 
 /** Starts optional background retention independently of the HTTP server. */
 actual fun startHttpServerService() {
-    if (!com.ismartcoding.plain.preferences.UserPrefs.service.value) return
+    if (!com.ismartcoding.plain.preferences.Prefs.backgroundServiceEnabled.value) return
     HttpServerManager.backgroundState.value = HttpServerState.STARTING
     HttpServerManager.backgroundError.value = ""
     coIO {

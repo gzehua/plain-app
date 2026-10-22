@@ -2,7 +2,7 @@ package com.ismartcoding.plain.rust.native
 
 import com.ismartcoding.plain.features.sessions.CreatedSession
 import com.ismartcoding.plain.features.settings.AppUpdateDownload
-import com.ismartcoding.plain.preferences.SystemSettings
+import com.ismartcoding.plain.preferences.SecuritySettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
@@ -57,10 +57,10 @@ internal actual object RustNativeApi {
     actual suspend fun exportAppBackup(): String = nativeCall { exportAppBackupNative() }
     private external fun createCrashReportNative(report: String): String
     actual suspend fun createCrashReport(report: String): String = nativeCall { createCrashReportNative(report) }
-    private external fun systemSettingsNative(): String
-    actual suspend fun systemSettings(): SystemSettings = nativeCall { systemSettingsNative() }
-    private external fun userSettingsNative(): String
-    actual suspend fun userSettings(): JsonObject = nativeCall { userSettingsNative() }
+    private external fun completeOnboardingNative(): String
+    actual suspend fun completeOnboarding(): Boolean = nativeCall { completeOnboardingNative() }
+    private external fun prefsSnapshotNative(): String
+    actual suspend fun prefsSnapshot(): JsonObject = nativeCall { prefsSnapshotNative() }
     private external fun toggleNotificationAppNative(packageName: String): String
     actual suspend fun toggleNotificationApp(packageName: String): Boolean = nativeCall { toggleNotificationAppNative(packageName) }
     private external fun verifyAdbTokenNative(token: String): String

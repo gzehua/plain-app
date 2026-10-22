@@ -50,16 +50,16 @@ fun HomeFeatureItemsGrid(
 ) {
     val scope = rememberCoroutineScope()
 
-    val featuresStr = UserPrefs.homeFeatures.collectAsStateValue()
+    val featuresStr = Prefs.appHomeFeatures.collectAsStateValue()
 
     var enabledIds by remember(featuresStr) {
-        mutableStateOf(UserPrefs.parseFeatures(featuresStr))
+        mutableStateOf(Prefs.parseFeatures(featuresStr))
     }
 
     fun persist(newList: List<String>) {
         enabledIds = newList
         scope.launch(Dispatchers.Default) {
-            UserPrefs.homeFeatures.value = UserPrefs.formatFeatures(newList)
+            Prefs.appHomeFeatures.value = Prefs.formatFeatures(newList)
         }
     }
 

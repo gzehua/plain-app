@@ -5,7 +5,7 @@ import com.ismartcoding.plain.rust.RustRuntime
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -29,11 +29,11 @@ class WebBundleAssetsTest {
                 }
             }
         }
-        val oldAccess = UserPrefs.desktopAccess.value
+        val oldAccess = Prefs.desktopAccess.value
         try {
-            UserPrefs.desktopAccess.value = true
+            Prefs.desktopAccess.value = true
             withIO { RustRuntime.start() }
-            val base = "http://127.0.0.1:${UserPrefs.httpPort.value}"
+            val base = "http://127.0.0.1:${Prefs.httpPort.value}"
             val shell = get("$base/", "text/html")
             assertTrue(shell.contains("<html"))
             assertTrue(shell.contains("window.__SERVER_TIME__="))
@@ -42,7 +42,7 @@ class WebBundleAssetsTest {
             assertTrue(get("$base$script", "application/javascript").isNotEmpty())
             assertTrue(get("$base/settings", "text/html").contains("window.__SERVER_TIME__="))
         } finally {
-            UserPrefs.desktopAccess.value = oldAccess
+            Prefs.desktopAccess.value = oldAccess
         }
     }
 

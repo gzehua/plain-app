@@ -4,7 +4,6 @@ import com.ismartcoding.plain.models.AudioAlbumCover
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
-
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -213,7 +212,7 @@ fun PlaylistDetailPage(
         scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
         onSortSelected = { sortBy ->
             scope.launch {
-                UserPrefs.audioSortBy.value = sortBy
+                Prefs.audioSortBy.value = sortBy
                 audioVM.sortBy.value = sortBy
             }
         },

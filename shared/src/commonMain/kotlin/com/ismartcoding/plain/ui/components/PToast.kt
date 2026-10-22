@@ -84,7 +84,7 @@ fun PToast(
                     },
                 shape = RoundedCornerShape(10.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (DarkTheme.isDarkTheme(UserPrefs.darkTheme.collectAsStateValue())) Color(0xCC3A3A3C) else Color(0xCC1C1C1E)
+                    containerColor = if (DarkTheme.isDarkTheme(Prefs.darkTheme.collectAsStateValue())) Color(0xCC3A3A3C) else Color(0xCC1C1C1E)
                 ),
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 6.dp

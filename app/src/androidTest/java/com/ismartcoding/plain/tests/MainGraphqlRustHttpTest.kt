@@ -5,7 +5,7 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.sessions.RustSessionStore
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
-import com.ismartcoding.plain.preferences.UserPrefs
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.network.PlainHttpClientSpec
 import com.ismartcoding.plain.network.createPlainHttpClient
@@ -23,13 +23,13 @@ class MainGraphqlRustHttpTest {
     @Test
     fun jniAndAuthenticatedHttpUseOneSchemaAndKeepCredentialReadsLocal() = runBlocking {
         val name = "main-contract-${UUID.randomUUID()}"
-        val oldService = UserPrefs.service.value
-        val oldAccess = UserPrefs.desktopAccess.value
+        val oldService = Prefs.backgroundServiceEnabled.value
+        val oldAccess = Prefs.desktopAccess.value
         var id: String? = null
         val httpClient = createPlainHttpClient(PlainHttpClientSpec.Local())
         try {
-            UserPrefs.service.value = true
-            UserPrefs.desktopAccess.value = true
+            Prefs.backgroundServiceEnabled.value = true
+            Prefs.desktopAccess.value = true
             val created = RustSessionStore.create(name)
             val clientId = created.clientId
             id = clientId
@@ -53,8 +53,8 @@ class MainGraphqlRustHttpTest {
             val schema = "__schema { queryType { name } mutationType { name } }"
             assertEquals(RustGraphqlApi.query(schema), httpQuery(schema))
             assertEquals(app.getValue("urlToken"), httpQuery("app { urlToken }").getValue("app").jsonObject.getValue("urlToken"))
-            com.ismartcoding.plain.preferences.RustSystemState.refresh()
-            assertEquals(app.getValue("urlToken").jsonPrimitive.content, com.ismartcoding.plain.preferences.RustSystemState.state.value.urlToken)
+            com.ismartcoding.plain.preferences.SecuritySettingsState.refresh()
+            assertEquals(app.getValue("urlToken").jsonPrimitive.content, com.ismartcoding.plain.preferences.SecuritySettingsState.state.value.urlToken)
             for (selection in listOf("systemPrefs", "systemSettings { password }", "userSettings { service }")) {
                 for (useHttp in listOf(false, true)) {
                     val failure = runCatching { if (useHttp) httpQuery(selection) else RustGraphqlApi.query(selection) }.exceptionOrNull()
@@ -69,8 +69,8 @@ class MainGraphqlRustHttpTest {
         } finally {
             httpClient.close()
             id?.let { RustSessionStore.delete(it) }
-            UserPrefs.service.value = oldService
-            UserPrefs.desktopAccess.value = oldAccess
+            Prefs.backgroundServiceEnabled.value = oldService
+            Prefs.desktopAccess.value = oldAccess
         }
     }
 

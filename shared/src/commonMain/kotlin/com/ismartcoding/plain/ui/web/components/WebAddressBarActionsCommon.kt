@@ -18,7 +18,7 @@ fun persistMdnsHostname(
     hostname: String,
 ) {
     scope.launch {
-        RustSystemState.setMdnsHostname(hostname)
+        SecuritySettingsState.setMdnsHostname(hostname)
     }
 }
 
@@ -29,9 +29,9 @@ fun persistPort(
 ) {
     scope.launch(Dispatchers.IO) {
         if (isHttps) {
-            UserPrefs.httpsPort.value = port
+            Prefs.httpsPort.value = port
         } else {
-            UserPrefs.httpPort.value = port
+            Prefs.httpPort.value = port
         }
     }
 }

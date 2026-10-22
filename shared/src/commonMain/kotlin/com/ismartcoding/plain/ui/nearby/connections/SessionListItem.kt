@@ -99,7 +99,7 @@ internal fun SessionListItem(
                 },
             )
 
-            if (m.isCustom || UserPrefs.developerMode.value) {
+            if (m.isCustom || Prefs.developerMode.value) {
                 PListItem(
                     title = stringResource(Res.string.client_id),
                     subtitle = m.clientId, action = {

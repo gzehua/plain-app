@@ -7,11 +7,14 @@ import com.ismartcoding.plain.ui.state.launchSafe
 import kotlinx.coroutines.flow.asStateFlow
 
 class ScanHistoryViewModel : ViewModel() {
-    val itemsFlow = UserPrefs.scanHistory.asStateFlow()
+    private val items = kotlinx.coroutines.flow.MutableStateFlow<List<String>>(emptyList())
+    val itemsFlow = items.asStateFlow()
+    init { viewModelScope.launchSafe { items.value = SavedData.scanHistory() } }
 
     fun delete(value: String) {
         viewModelScope.launchSafe {
-            UserPrefs.scanHistory.value = UserPrefs.scanHistory.value.filterNot { it == value }
+            SavedData.removeScan(value)
+            items.value = SavedData.scanHistory()
         }
     }
 }

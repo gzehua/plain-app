@@ -36,7 +36,7 @@ import com.ismartcoding.plain.ui.resources.demo_photo_6 as ui_drawable_demo_phot
 // The dark surface ramp is compressed, so containers tuned for light need a
 // visibly lifted dark equivalent to keep the illustrations readable.
 @Composable
-internal fun isDarkTheme() = DarkTheme.isDarkTheme(UserPrefs.darkTheme.collectAsStateValue())
+internal fun isDarkTheme() = DarkTheme.isDarkTheme(Prefs.darkTheme.collectAsStateValue())
 
 @Composable
 internal fun loopProgress(durationMillis: Int): State<Float> {

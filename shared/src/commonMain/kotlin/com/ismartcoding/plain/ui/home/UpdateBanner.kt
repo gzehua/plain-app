@@ -44,7 +44,7 @@ private const val GITHUB_RELEASES_URL = "https://github.com/plainhub/plain-app/r
 @Composable
 fun UpdateBanner(updateVM: UpdateViewModel) {
     if (!AppFeatureType.CHECK_UPDATES.has()) return
-    val system = RustSystemState.state.collectAsStateValue()
+    val system = SecuritySettingsState.state.collectAsStateValue()
     val updateInfo = system.updateInfo
     val newVersion = updateInfo.newVersion
     val isDownloading = updateVM.isDownloading.value
@@ -54,7 +54,6 @@ fun UpdateBanner(updateVM: UpdateViewModel) {
     val downloadedFilePath = updateVM.downloadedFilePath.value
 
     val needsUpdate = system.appUpdateAvailable
-
 
     when {
         isDownloading -> {

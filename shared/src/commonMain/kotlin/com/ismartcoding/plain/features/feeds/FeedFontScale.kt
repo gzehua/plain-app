@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.feeds
 
 // Discrete article text scale options for FeedEntryPage; the selected index
-// is persisted in UserPrefs.feedFontScale. Values multiply the density
+// is persisted in Prefs.feedFontScale. Values multiply the density
 // fontScale so only sp-based text sizes change.
 object FeedFontScale {
     val values = listOf(0.85f, 1.0f, 1.25f, 1.5f, 2.0f)

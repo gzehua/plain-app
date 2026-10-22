@@ -4,7 +4,6 @@ import kotlinx.coroutines.IO
 
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.preferences.PrefStore
-import com.ismartcoding.plain.preferences.SystemPrefsClient
 
 import com.ismartcoding.plain.platform.system.*
 import com.ismartcoding.plain.rust.native.RustNativeApi
@@ -47,8 +46,7 @@ object RustRuntime {
         if (!collectorsStarted) {
             kotlinx.coroutines.runBlocking(Dispatchers.IO) {
                 PrefStore.refresh()
-                SystemPrefsClient.local.refresh()
-            }
+                    }
             isCoreInitialized = true
             RustEventHandler.start(scope)
             RustHostApiHandler.start(scope)

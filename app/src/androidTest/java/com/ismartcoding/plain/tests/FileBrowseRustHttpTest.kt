@@ -7,7 +7,7 @@ import com.ismartcoding.plain.features.files.FilesClient
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ismartcoding.plain.features.files.FileSortBy
-import com.ismartcoding.plain.preferences.RustSystemState
+import com.ismartcoding.plain.preferences.SecuritySettingsState
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
@@ -23,7 +23,7 @@ class FileBrowseRustHttpTest {
     @Test
     fun sharedBrowserAndPublicQueriesUseRustFiltersPagesCountsAndZipAdapter() = runBlocking {
         val root = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir, "file-browse-${UUID.randomUUID()}").apply { mkdirs() }
-        val permissions = RustSystemState.state.value.apiPermissions
+        val permissions = SecuritySettingsState.state.value.apiPermissions
         try {
             val dir = File(root, "NeedleDir").apply { mkdirs() }
             File(dir, "NEEDLE 中文.txt").writeText("four")
@@ -48,7 +48,7 @@ class FileBrowseRustHttpTest {
             val zipped = FilesClient.search("file_size:>4", "${archive.path}!zip!/", FileSortBy.NAME_ASC)
             assertEquals(listOf("large.txt"), zipped.map { it.name })
             assertEquals("folder", FilesClient.search("", "${archive.path}!zip!/", FileSortBy.NAME_ASC).first().name)
-            RustSystemState.setApiPermissions(permissions + "WRITE_EXTERNAL_STORAGE")
+            SecuritySettingsState.setApiPermissions(permissions + "WRITE_EXTERNAL_STORAGE")
             suspend fun field(selection: String): JsonElement =
                 RustGraphqlApi.query(selection).values.first()
             assertEquals(true, field("""pathExists(path: "${root.path}")""").jsonPrimitive.boolean)
@@ -64,7 +64,7 @@ class FileBrowseRustHttpTest {
             assertEquals(2, field("""fileCount(root: "${root.path}", query: "text:needle")""").jsonPrimitive.int)
             assertEquals(0, field("""fileCount(root: "${File(root, "missing").path}", query: "")""").jsonPrimitive.int)
         } finally {
-            RustSystemState.setApiPermissions(permissions)
+            SecuritySettingsState.setApiPermissions(permissions)
             root.deleteRecursively()
         }
     }

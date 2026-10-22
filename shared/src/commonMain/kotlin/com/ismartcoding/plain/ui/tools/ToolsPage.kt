@@ -64,9 +64,9 @@ fun ToolsPage(
 ) {
     val currentUri by RustDlnaSender.currentUri.collectAsState()
     val featuresStr =
-        UserPrefs.homeFeatures.collectAsStateValue()
+        Prefs.appHomeFeatures.collectAsStateValue()
     val notesEnabled =
-        UserPrefs.parseFeatures(featuresStr)
+        Prefs.parseFeatures(featuresStr)
             .contains(AppFeatureType.NOTES.name) && AppFeatureType.NOTES.has()
 
     MainNavScaffold(

@@ -24,7 +24,7 @@ class NotificationSettingsViewModel : ViewModel() {
     private val _allAppsFlow = MutableStateFlow<List<DNotificationApp>>(emptyList())
     val allAppsFlow: StateFlow<List<DNotificationApp>> = _allAppsFlow
 
-    var filterData = mutableStateOf(UserPrefs.notificationFilter.value)
+    var filterData = mutableStateOf(Prefs.notificationFilter.value)
     var isLoading = mutableStateOf(true)
     var showAppSelector = mutableStateOf(false)
     var appsLoaded = mutableStateOf(false)
@@ -35,13 +35,13 @@ class NotificationSettingsViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            UserPrefs.notificationFilter.collect { filter ->
+            Prefs.notificationFilter.collect { filter ->
                 filterData.value = filter
                 try {
                     val apps = withIO {
                         filter.apps.mapNotNull { packageName ->
                             val app = getNotificationApp(packageName)
-                            if (app == null) UserPrefs.toggleNotificationApp(packageName)
+                            if (app == null) Prefs.toggleNotificationApp(packageName)
                             app
                         }
                     }
@@ -73,21 +73,21 @@ class NotificationSettingsViewModel : ViewModel() {
 
     suspend fun toggleModeAsync() {
         val newMode = if (filterData.value.mode == "allowlist") "blacklist" else "allowlist"
-        UserPrefs.setNotificationMode(newMode)
+        Prefs.setNotificationMode(newMode)
     }
 
     suspend fun removeAppAsync(packageName: String) {
-        UserPrefs.toggleNotificationApp(packageName)
+        Prefs.toggleNotificationApp(packageName)
     }
 
     suspend fun addAppsAsync(packageNames: List<String>) {
         packageNames.forEach { packageName ->
-            UserPrefs.toggleNotificationApp(packageName)
+            Prefs.toggleNotificationApp(packageName)
         }
     }
 
     suspend fun clearAllAsync() {
-        UserPrefs.clearNotificationApps()
+        Prefs.clearNotificationApps()
     }
 
     fun clearSelectedApps() {
