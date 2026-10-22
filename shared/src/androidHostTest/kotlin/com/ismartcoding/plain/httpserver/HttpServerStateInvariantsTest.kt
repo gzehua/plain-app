@@ -4,7 +4,7 @@ import com.ismartcoding.plain.app.HttpServerManager
 
 import com.ismartcoding.plain.features.settings.HttpServerState
 import com.ismartcoding.plain.app.startHttpServerAsync
-import com.ismartcoding.plain.app.onRustHttpServerFailed
+import com.ismartcoding.plain.app.refreshHttpServerState
 import com.ismartcoding.plain.app.stopHttpServerCoreAsync
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -72,9 +72,9 @@ class HttpServerStateInvariantsTest {
     }
 
     @Test
-    fun lateNativeFailureDoesNotChangeStoppedState() = runBlocking {
+    fun statusRefreshBeforeCoreInitializationKeepsStoppedState() = runBlocking {
         HttpServerManager.serverState.value = HttpServerState.OFF
-        onRustHttpServerFailed(1L, "late failure")
+        refreshHttpServerState()
         assertEquals(HttpServerState.OFF, HttpServerManager.serverState.value)
         assertEquals("", HttpServerManager.httpServerError.value)
     }

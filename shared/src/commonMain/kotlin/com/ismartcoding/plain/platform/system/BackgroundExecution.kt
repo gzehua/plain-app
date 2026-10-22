@@ -53,7 +53,7 @@ object BackgroundExecution {
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun run(deadlineMs: Long, id: String = Uuid.random().toString()): Boolean = coroutineScope {
-        if (RustRuntime.startedSession() == null) Prefs.load()
+        if (!RustRuntime.isCoreInitialized) Prefs.load()
         RustRuntime.start()
         val finished = async(start = CoroutineStart.UNDISPATCHED) {
             val event = RustEventHandler.events.first { event ->
@@ -86,7 +86,7 @@ object BackgroundExecution {
     }
 
     fun executionStateChanged() {
-        if (RustRuntime.startedSession() == null) return
+        if (!RustRuntime.isCoreInitialized) return
         scope.launch {
             try { sendEventToRust(HostEvent(EventType.EXECUTION_STATE_CHANGED, "{}")) }
             catch (error: Exception) { LogCat.e("Execution state report failed", error) }

@@ -3,7 +3,7 @@ use plain_server::native::management::NativeManagement;
 use std::ffi::c_char;
 use tokio::runtime::Handle;
 
-fn parts() -> Result<(Handle, NativeManagement), String> {
+pub(super) fn parts() -> Result<(Handle, NativeManagement), String> {
     super::server::with_core(|core| {
         core.server
             .native_management()
@@ -20,25 +20,20 @@ macro_rules! reply {
     };
 }
 
-fn port(value: i32) -> Result<Option<u16>, String> {
-    if value == -1 {
-        return Ok(None);
-    }
-    u16::try_from(value)
-        .map(Some)
-        .map_err(|_| "Invalid server port".into())
-}
-
-fn restart_http_server(http_port: i32, https_port: i32) -> String {
+fn restart_http_server() -> String {
     reply!((|| {
         let (runtime, management) = parts()?;
-        runtime.block_on(management.restart_http_server(port(http_port)?, port(https_port)?))
+        let state = runtime.block_on(management.restart_http_server(None, None))?;
+        if !state.error.is_empty() {
+            return Err(state.error);
+        }
+        Ok(true)
     })())
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn plain_restart_http_server(http_port: i32, https_port: i32) -> *mut c_char {
-    c_string(restart_http_server(http_port, https_port))
+pub extern "C" fn plain_restart_http_server() -> *mut c_char {
+    c_string(restart_http_server())
 }
 
 fn tls_certificate_signature() -> String {
@@ -295,18 +290,16 @@ mod android {
         EnvUnowned,
         errors::ThrowRuntimeExAndDefault,
         objects::{JByteArray, JObject, JString},
-        sys::{jboolean, jint, jstring},
+        sys::{jboolean, jstring},
     };
 
     #[unsafe(no_mangle)]
     pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_restartHttpServerNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
-        http_port: jint,
-        https_port: jint,
     ) -> jstring {
         env.with_env(|env| -> jni::errors::Result<_> {
-            let result = restart_http_server(http_port, https_port);
+            let result = restart_http_server();
             env.new_string(result)
         })
         .resolve::<ThrowRuntimeExAndDefault>()
@@ -526,7 +519,3 @@ mod android {
         .into_raw()
     }
 }
-
-#[cfg(test)]
-#[path = "../../tests/unit/ffi/management.rs"]
-mod tests;

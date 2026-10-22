@@ -18,7 +18,10 @@ internal expect object RustNativeApi {
     fun fileIcon(extension: String): String
     fun stop()
 
-    fun restartHttpServer(httpPort: Int, httpsPort: Int): String
+    suspend fun restartHttpServer(): Boolean
+    fun httpStatus(): String
+    suspend fun bleIncoming(remoteHost: String, characteristicUuid: String, bytes: ByteArray): ByteArray
+    suspend fun checkHttp(): Boolean
     suspend fun tlsCertificateSignature(): ByteArray
     suspend fun regenerateTlsCertificate(): ByteArray
     suspend fun importTlsCertificatePem(certificatePem: String, privateKeyPem: String): ByteArray

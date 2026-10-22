@@ -5,11 +5,8 @@ import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 
 import com.ismartcoding.plain.app.HttpServerManager
-import com.ismartcoding.plain.network.PlainHttpClientSpec
 import com.ismartcoding.plain.rust.RustRuntime
-import com.ismartcoding.plain.network.createPlainHttpClient
-import com.ismartcoding.plain.network.get
-import com.ismartcoding.plain.network.request
+import com.ismartcoding.plain.rust.RustHttpStatus
 
 import com.ismartcoding.plain.features.settings.HttpServerState
 import com.ismartcoding.plain.i18n.Res
@@ -24,9 +21,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.boolean
-import kotlinx.serialization.json.jsonPrimitive
 
 suspend fun getSSLSignature(): ByteArray = RustNativeApi.tlsCertificateSignature()
 
@@ -88,19 +82,11 @@ expect suspend fun onHttpServerStopped()
 expect fun startHttpServerService()
 expect suspend fun stopHttpServiceAsync()
 
-/**
- * Diagnostic for the desktop-access page. It deliberately goes over loopback
- * HTTP: a check for "is my HTTP server reachable" that skipped HTTP would pass
- * with a broken listener. Rust answers `/health` directly.
- */
+/** Rust probes the public listener over loopback HTTP, not just its in-memory state. */
 suspend fun checkHttpServerAsync(): Boolean = withIO {
-    val base = RustRuntime.startedSession()?.baseUrl
-    if (base == null) {
-        LogCat.e("Rust HTTP server diagnostic failed: core not started")
-        return@withIO false
-    }
+    if (!RustRuntime.isCoreInitialized) return@withIO false
     try {
-        createPlainHttpClient(PlainHttpClientSpec.Local(2)).get("$base/health").isOk()
+        RustNativeApi.checkHttp()
     } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (error: Exception) {
@@ -119,8 +105,7 @@ suspend fun startHttpServerAsync() = withIO {
         HttpServerManager.httpServerError.value = ""
         try {
             RustRuntime.startHttp()
-            onHttpServerStarted()
-            HttpServerManager.serverState.value = HttpServerState.ON
+            applyHttpServerStatus()
         } catch (error: Throwable) {
             withContext(NonCancellable) {
                 stopEngineAndHooks()
@@ -154,14 +139,35 @@ private suspend fun recordServerFailure(detail: String) {
     HttpServerManager.serverState.value = HttpServerState.ERROR
 }
 
-internal suspend fun onRustHttpServerFailed(generation: Long, message: String) = withIO {
+internal suspend fun refreshHttpServerState() = withIO {
+    if (!RustRuntime.isCoreInitialized) return@withIO
     withContext(NonCancellable) {
-        lifecycleMutex.withLock {
-            if (RustRuntime.httpFailed(generation)) {
-                stopHooks()
-                recordServerFailure(message)
-            }
+        lifecycleMutex.withLock { applyHttpServerStatus() }
+    }
+}
+
+private suspend fun applyHttpServerStatus() {
+    // Read Rust's current state after lifecycle commands, never replay an old event payload.
+    val status = JsonHelper.jsonDecode<RustHttpStatus>(RustNativeApi.httpStatus())
+    when (status.state) {
+        "started" -> {
+            if (HttpServerManager.serverState.value != HttpServerState.ON) onHttpServerStarted()
+            HttpServerManager.httpServerError.value = ""
+            HttpServerManager.serverState.value = HttpServerState.ON
         }
+        "error" -> {
+            stopHooks()
+            recordServerFailure(status.message)
+        }
+        "stopped" -> {
+            // Startup cleanup must not erase the error already reported by the start command.
+            if (HttpServerManager.serverState.value == HttpServerState.ERROR ||
+                HttpServerManager.serverState.value == HttpServerState.OFF) return
+            stopHooks()
+            HttpServerManager.httpServerError.value = ""
+            HttpServerManager.serverState.value = HttpServerState.OFF
+        }
+        else -> error("Unknown Rust HTTP state: ${status.state}")
     }
 }
 
@@ -184,12 +190,20 @@ suspend fun stopHttpServerCoreAsync() = withIO {
 
 fun restartServer() {
     coIO {
-        stopHttpServerCoreAsync()
-        startHttpServerAsync()
+        lifecycleMutex.withLock {
+            try {
+                RustNativeApi.restartHttpServer()
+                applyHttpServerStatus()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                recordServerFailure(error.message.orEmpty())
+            }
+        }
     }
 }
 
-fun isHttpServerRunning(): Boolean = RustRuntime.isHttpRunning
+fun isHttpServerRunning(): Boolean = HttpServerManager.serverState.value == HttpServerState.ON
 fun isMdnsRunning(): Boolean = com.ismartcoding.plain.features.nearby.RustMdnsRuntime.running
 expect fun getAwareAttachStatus(): String
 expect fun getAwareDiscoveredPeerCount(): Int

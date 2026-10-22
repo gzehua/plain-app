@@ -27,7 +27,14 @@ char *plain_resource_close(const char *id, bool failed);
 char *plain_events_next(const char *stream);
 char *plain_events_send(const char *action, const char *message, const uint8_t *bytes, size_t len);
 
-char *plain_restart_http_server(int32_t http_port, int32_t https_port);
+char *plain_restart_http_server(void);
+// BLE bytes on success (status 1), UTF-8 error bytes on failure (status -1).
+typedef struct { uint8_t *data; size_t len; int32_t status; } PlainBleIncomingBuffer;
+PlainBleIncomingBuffer plain_ble_incoming(const char *remote_host, const char *characteristic_uuid, const uint8_t *bytes, size_t len);
+void plain_ble_incoming_buffer_free(PlainBleIncomingBuffer buffer);
+char *plain_check_http(void);
+// Returns raw status JSON or NULL with an error. Free both strings with plain_prefs_string_free.
+char *plain_http_status(char **error);
 char *plain_tls_certificate_signature(void);
 char *plain_regenerate_tls_certificate(void);
 char *plain_import_tls_certificate_pem(const char *certificate_pem, const char *private_key_pem);

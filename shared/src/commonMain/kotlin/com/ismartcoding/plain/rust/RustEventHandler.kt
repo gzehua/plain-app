@@ -6,7 +6,7 @@ import com.ismartcoding.plain.app.events.HWebLoginClosedEvent
 import com.ismartcoding.plain.app.events.HWebRequestReceivedEvent
 import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.app.events.HostEventData
-import com.ismartcoding.plain.app.onRustHttpServerFailed
+import com.ismartcoding.plain.app.refreshHttpServerState
 import com.ismartcoding.plain.features.chat.ChatCacher
 import com.ismartcoding.plain.features.chat.ChatClient
 import com.ismartcoding.plain.features.chat.ChatMessageReceiver
@@ -96,14 +96,9 @@ object RustEventHandler {
             }
 
             EventType.MEDIA_ACTION_FINISHED.name -> MediaActionProjection.apply(payload)
-            EventType.HTTP_SERVER_STARTED.name -> {
-                val started = JsonHelper.jsonDecode<HttpServerStarted>(payload)
-                RustRuntime.httpStarted(started.generation, started.httpPort)
+            EventType.HTTP_SERVER_STATE_CHANGED.name -> {
+                refreshHttpServerState()
                 LocalDeviceState.refresh()
-            }
-            EventType.HTTP_SERVER_FAILED.name -> {
-                val failure = JsonHelper.jsonDecode<HttpServerFailure>(payload)
-                onRustHttpServerFailed(failure.generation, failure.message)
             }
             EventType.PEER_STATUS_UPDATED.name -> {
                 ChatCacher.load()

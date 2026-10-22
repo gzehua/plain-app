@@ -5,9 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class RustHttpServerResult(
-    val httpPort: Int = 0,
-    val httpsPort: Int = 0,
-    val generation: Long = 0,
     val logFile: String = "",
     val cacheDir: String = "",
     val imageCacheDir: String = "",

@@ -11,7 +11,7 @@ import kotlinx.coroutines.CancellationException
 
 object NetworkEvents {
     fun changed() {
-        if (RustRuntime.startedSession() == null) return
+        if (!RustRuntime.isCoreInitialized) return
         coIO {
             try { sendEventToRust(HostEvent(EventType.NETWORK_INTERFACES_CHANGED, "null")) }
             catch (cancelled: CancellationException) { throw cancelled }

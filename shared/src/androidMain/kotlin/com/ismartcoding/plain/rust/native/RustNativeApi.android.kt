@@ -3,6 +3,7 @@ package com.ismartcoding.plain.rust.native
 import com.ismartcoding.plain.features.sessions.CreatedSession
 import com.ismartcoding.plain.features.settings.AppUpdateDownload
 import com.ismartcoding.plain.preferences.SystemSettings
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 
 internal actual object RustNativeApi {
@@ -30,8 +31,15 @@ internal actual object RustNativeApi {
     actual fun resourceClose(id: String, failed: Boolean): String = resourceCloseNative(id, failed)
     actual fun stop() { val error = stopNative(); check(error.isEmpty()) { error } }
 
-    private external fun restartHttpServerNative(httpPort: Int, httpsPort: Int): String
-    actual fun restartHttpServer(httpPort: Int, httpsPort: Int): String = restartHttpServerNative(httpPort, httpsPort)
+    private external fun restartHttpServerNative(): String
+    actual suspend fun restartHttpServer(): Boolean = nativeCall { restartHttpServerNative() }
+    private external fun httpStatusNative(): String
+    actual fun httpStatus(): String = httpStatusNative()
+    private external fun bleIncomingNative(remoteHost: String, characteristicUuid: String, bytes: ByteArray): ByteArray
+    actual suspend fun bleIncoming(remoteHost: String, characteristicUuid: String, bytes: ByteArray): ByteArray =
+        withContext(RustDispatchers.requests) { bleIncomingNative(remoteHost, characteristicUuid, bytes) }
+    private external fun checkHttpNative(): String
+    actual suspend fun checkHttp(): Boolean = nativeCall { checkHttpNative() }
     private external fun tlsCertificateSignatureNative(): String
     actual suspend fun tlsCertificateSignature(): ByteArray = nativeCertificate { tlsCertificateSignatureNative() }
     private external fun regenerateTlsCertificateNative(): String
