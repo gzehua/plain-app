@@ -1,56 +1,17 @@
 package com.ismartcoding.plain.rust.request
 
 import com.ismartcoding.plain.rust.PlainRust
-import com.ismartcoding.plain.rust.request.gql
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.lib.JsonHelper
 
 import com.ismartcoding.plain.app.events.*
-import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.app.*
-import com.ismartcoding.plain.ui.app.*
-import com.ismartcoding.plain.features.chat.*
-import com.ismartcoding.plain.ui.chat.*
-import com.ismartcoding.plain.features.feeds.*
-import com.ismartcoding.plain.ui.feeds.*
-import com.ismartcoding.plain.features.images.search.*
-import com.ismartcoding.plain.features.sessions.*
-import com.ismartcoding.plain.ui.sessions.*
-import com.ismartcoding.plain.features.shares.*
-import com.ismartcoding.plain.ui.shares.*
-import com.ismartcoding.plain.platform.*
-import com.ismartcoding.plain.platform.contacts.*
-import com.ismartcoding.plain.platform.files.*
-import com.ismartcoding.plain.ui.platform.files.*
-import com.ismartcoding.plain.platform.media.*
-import com.ismartcoding.plain.ui.platform.media.*
-import com.ismartcoding.plain.platform.network.*
-import com.ismartcoding.plain.platform.permissions.*
-import com.ismartcoding.plain.app.*
-import com.ismartcoding.plain.ui.app.*
-import com.ismartcoding.plain.ui.navigation.*
-import com.ismartcoding.plain.features.sessions.*
-import com.ismartcoding.plain.ui.sessions.*
-import com.ismartcoding.plain.features.settings.*
-import com.ismartcoding.plain.ui.settings.*
-import com.ismartcoding.plain.platform.files.*
-import com.ismartcoding.plain.ui.platform.files.*
-import com.ismartcoding.plain.platform.media.*
-import com.ismartcoding.plain.ui.platform.media.*
-import com.ismartcoding.plain.platform.notifications.*
 import com.ismartcoding.plain.platform.system.*
-import com.ismartcoding.plain.ui.platform.system.*
-import com.ismartcoding.plain.ui.state.*
-import com.ismartcoding.plain.platform.telephony.*
 import com.ismartcoding.plain.rust.http.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.*
 import kotlin.concurrent.Volatile
 
 object RustContentApi {
     private val lock = PlatformLock()
-    private val client by lazy { createPlainHttpClient(PlainHttpClientSpec.Local()) }
 
     /** Endpoint description of this device's own Rust server, for the REST calls below. */
     @Volatile private var localSession: ContentApiSession? = null

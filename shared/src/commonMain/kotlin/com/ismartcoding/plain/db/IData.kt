@@ -6,7 +6,7 @@ interface IData : Identifiable {
     override var id: String
 }
 
-data class IDData(override var id: String) : IData
+data class IDData(override var id: String) : Identifiable
 
 interface IMedia {
     val path: String
