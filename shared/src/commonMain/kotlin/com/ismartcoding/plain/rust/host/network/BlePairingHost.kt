@@ -4,6 +4,7 @@ import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
 import com.ismartcoding.plain.platform.network.ble.BlePairConnection
+import com.ismartcoding.plain.platform.network.bleTransport
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -25,7 +26,7 @@ object BlePairingHost {
                     if (generation in closed || handles.containsKey(generation) || handles.size >= 2) return JsonPrimitive(false)
                     Handle(operation).also { handles[generation] = it }
                 }
-                val device = com.ismartcoding.plain.platform.network.bleTransport().createScanner()
+                val device = bleTransport().createScanner()
                     .createClient(request.shortId) ?: return JsonPrimitive(false)
                 val connection = BlePairConnection(device)
                 val installed = mutex.withLock {
