@@ -55,12 +55,11 @@ object BackgroundExecution {
     suspend fun run(deadlineMs: Long, id: String = Uuid.random().toString()): Boolean = coroutineScope {
         if (RustRuntime.startedSession() == null) Prefs.load()
         RustRuntime.start()
-        val finished = CompletableDeferred<Boolean>()
-        val observer = launch(start = CoroutineStart.UNDISPATCHED) {
+        val finished = async(start = CoroutineStart.UNDISPATCHED) {
             val event = RustEventHandler.events.first { event ->
                 event.type == "BACKGROUND_EXECUTION_FINISHED" && JsonHelper.jsonDecode<ExecutionResult>(event.payload).id == id
             }
-            finished.complete(requireNotNull(JsonHelper.jsonDecode<ExecutionResult>(event.payload).success))
+            requireNotNull(JsonHelper.jsonDecode<ExecutionResult>(event.payload).success)
         }
         try {
             withGrant(
@@ -69,7 +68,7 @@ object BackgroundExecution {
                 revoke = { sendEventToRust(HostEvent(EventType.BACKGROUND_EXECUTION_REVOKED, JsonHelper.jsonEncode(ExecutionRevocation(id)))) },
             )
         } finally {
-            withContext(NonCancellable) { observer.cancelAndJoin() }
+            withContext(NonCancellable) { finished.cancelAndJoin() }
         }
     }
 
