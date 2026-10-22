@@ -38,7 +38,7 @@ object AppFileStore {
 
     private suspend fun importPath(path: String, name: String, mime: String, deleteSource: Boolean): AppFile {
         val file = withContext(NonCancellable) {
-            RustGraphqlApi.mutate("importAppFile(source: ${gql(path)}, fileName: ${gql(name)}, mimeType: ${gql(mime)}, deleteSource: $deleteSource) { $FIELDS }", longRunning = true)
+            RustGraphqlApi.mutate("importAppFile(source: ${gql(path)}, fileName: ${gql(name)}, mimeType: ${gql(mime)}, deleteSource: $deleteSource) { $FIELDS }")
                 .getValue("importAppFile").file()
         }
         try {

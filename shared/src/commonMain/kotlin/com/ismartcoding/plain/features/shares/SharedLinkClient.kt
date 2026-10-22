@@ -29,13 +29,11 @@ object SharedLinkClient {
         RustGraphqlApi.graphql(
             "mutation(\$messageId: ID!, \$expected: SharedMessageCardInput!, \$virtualPath: String) { browseSharedLink(messageId: \$messageId, expected: \$expected, virtualPath: \$virtualPath) { info { $INFO_FIELDS } link { $LINK_FIELDS } card { $CARD_FIELDS } } }",
             mapOf("messageId" to JsonPrimitive(messageId), "expected" to json.encodeToJsonElement(expected), "virtualPath" to (virtualPath?.let(::JsonPrimitive) ?: JsonNull)),
-            longRunning = true,
         ).getValue("browseSharedLink").takeUnless { it is JsonNull }?.let { json.decodeFromJsonElement(it) }
 
     suspend fun cacheFile(link: SharedLink, urlToken: String, entry: SharedFileDto, thumbnail: Boolean = false): String =
         RustGraphqlApi.graphql(
             "mutation(\$link: SharedLinkInput!, \$urlToken: String!, \$entry: SharedEntryInput!, \$thumbnail: Boolean!) { cacheSharedFile(link: \$link, urlToken: \$urlToken, entry: \$entry, thumbnail: \$thumbnail) }",
             mapOf("link" to json.encodeToJsonElement(link), "urlToken" to JsonPrimitive(urlToken), "entry" to json.encodeToJsonElement(entry), "thumbnail" to JsonPrimitive(thumbnail)),
-            longRunning = true,
         ).getValue("cacheSharedFile").jsonPrimitive.content
 }

@@ -52,7 +52,7 @@ fun PomodoroSettingsDialog(
                     try {
                         val source = event.uris.first()
                         val info = checkNotNull(queryPickedFileInfo(source)) { "Unable to read selected sound" }
-                        val imported = RustGraphqlApi.mutate("importPomodoroSound(source: ${gql(source)})", longRunning = true)
+                        val imported = RustGraphqlApi.mutate("importPomodoroSound(source: ${gql(source)})")
                             .getValue("importPomodoroSound").jsonPrimitive.content
                         originalFileName = info.displayName
                         soundPath = imported

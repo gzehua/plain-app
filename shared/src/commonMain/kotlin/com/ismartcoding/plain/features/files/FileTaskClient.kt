@@ -14,7 +14,6 @@ object FileTaskClient {
         parse(RustGraphqlApi.graphql(
             "mutation(\$type:FileTaskType!,\$title:String!,\$ops:[FileTaskOpInput!]!){createFileTask(type:\$type,title:\$title,ops:\$ops,waitForCompletion:true){ $fields }}",
             mapOf("type" to JsonPrimitive(type.name), "title" to JsonPrimitive(type.name), "ops" to json.encodeToJsonElement(ops)),
-            longRunning = true,
         ).getValue("createFileTask"))
 
     private fun parse(value: JsonElement): FileTask = JsonHelper.jsonDecodeFromElement(value)

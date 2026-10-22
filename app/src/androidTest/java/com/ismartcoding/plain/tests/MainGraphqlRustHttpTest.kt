@@ -6,7 +6,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.sessions.RustSessionStore
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.preferences.UserPrefs
-import com.ismartcoding.plain.rust.graphql.ApiSession
+import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.network.PlainHttpClientSpec
+import com.ismartcoding.plain.network.createPlainHttpClient
+import com.ismartcoding.plain.network.postText
+import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
@@ -22,6 +26,7 @@ class MainGraphqlRustHttpTest {
         val oldService = UserPrefs.service.value
         val oldAccess = UserPrefs.desktopAccess.value
         var id: String? = null
+        val httpClient = createPlainHttpClient(PlainHttpClientSpec.Local())
         try {
             UserPrefs.service.value = true
             UserPrefs.desktopAccess.value = true
@@ -32,24 +37,37 @@ class MainGraphqlRustHttpTest {
             assertTrue(token.isNotEmpty())
             val app = RustGraphqlApi.query("app { httpPort urlToken capabilities }").getValue("app").jsonObject
             assertEquals(getDeviceCapabilities().map { it.name }.toSet(), app.getValue("capabilities").jsonArray.map { it.jsonPrimitive.content }.toSet())
-            val remote = ApiSession("http://127.0.0.1:${app.getValue("httpPort").jsonPrimitive.int}", clientId, token)
+            val baseUrl = "http://127.0.0.1:${app.getValue("httpPort").jsonPrimitive.int}"
+            suspend fun httpGraphql(document: String, variables: Map<String, JsonElement> = emptyMap()): JsonObject {
+                val body = JsonHelper.jsonEncode(GraphqlRequest(document, variables))
+                val headers = mapOf("c-id" to clientId, "Authorization" to "Bearer $token")
+                return httpClient.postText("$baseUrl/graphql", body, "application/json", headers).use { response ->
+                    check(response.isOk()) { "Rust API returned HTTP ${response.status}" }
+                    val envelope = JsonHelper.jsonDecode<JsonObject>(response.bodyAsText())
+                    val errors = envelope["errors"]?.takeUnless { it is JsonNull }?.jsonArray
+                    check(errors.isNullOrEmpty()) { errors?.joinToString { it.jsonObject["message"]?.jsonPrimitive?.contentOrNull ?: "Rust API error" } ?: "Rust API error" }
+                    requireNotNull(envelope["data"]?.takeUnless { it is JsonNull }?.jsonObject) { "Rust API response missing data" }
+                }
+            }
+            suspend fun httpQuery(selection: String): JsonObject = httpGraphql("query { $selection }")
             val schema = "__schema { queryType { name } mutationType { name } }"
-            assertEquals(RustGraphqlApi.query(schema), RustGraphqlApi.query(schema, remote))
-            assertEquals(app.getValue("urlToken"), RustGraphqlApi.query("app { urlToken }", remote).getValue("app").jsonObject.getValue("urlToken"))
+            assertEquals(RustGraphqlApi.query(schema), httpQuery(schema))
+            assertEquals(app.getValue("urlToken"), httpQuery("app { urlToken }").getValue("app").jsonObject.getValue("urlToken"))
             com.ismartcoding.plain.preferences.RustSystemState.refresh()
             assertEquals(app.getValue("urlToken").jsonPrimitive.content, com.ismartcoding.plain.preferences.RustSystemState.state.value.urlToken)
             for (selection in listOf("systemPrefs", "systemSettings { password }", "userSettings { service }")) {
-                for (session in listOf(null, remote)) {
-                    val failure = runCatching { RustGraphqlApi.query(selection, session) }.exceptionOrNull()
+                for (useHttp in listOf(false, true)) {
+                    val failure = runCatching { if (useHttp) httpQuery(selection) else RustGraphqlApi.query(selection) }.exceptionOrNull()
                     assertNotNull(failure)
                     assertTrue(failure.toString().contains("Unknown field"))
                 }
             }
-            assertTrue(runCatching { RustGraphqlApi.query("sessions { token }", remote) }.isFailure)
-            assertTrue(RustGraphqlApi.query("sessions { clientId }", remote).getValue("sessions").jsonArray.any { it.jsonObject.getValue("clientId").jsonPrimitive.content == clientId })
-            assertTrue(RustGraphqlApi.graphql("mutation(\$id:String!,\$name:String!){renameSession(clientId:\$id,name:\$name)}", mapOf("id" to JsonPrimitive(clientId), "name" to JsonPrimitive("$name renamed")), remote).getValue("renameSession").jsonPrimitive.boolean)
+            assertTrue(runCatching { httpQuery("sessions { token }") }.isFailure)
+            assertTrue(httpQuery("sessions { clientId }").getValue("sessions").jsonArray.any { it.jsonObject.getValue("clientId").jsonPrimitive.content == clientId })
+            assertTrue(httpGraphql("mutation(\$id:String!,\$name:String!){renameSession(clientId:\$id,name:\$name)}", mapOf("id" to JsonPrimitive(clientId), "name" to JsonPrimitive("$name renamed"))).getValue("renameSession").jsonPrimitive.boolean)
             assertEquals("$name renamed", RustSessionStore.list().single { it.clientId == clientId }.name)
         } finally {
+            httpClient.close()
             id?.let { RustSessionStore.delete(it) }
             UserPrefs.service.value = oldService
             UserPrefs.desktopAccess.value = oldAccess

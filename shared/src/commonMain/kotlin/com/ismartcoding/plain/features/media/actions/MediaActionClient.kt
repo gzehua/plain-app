@@ -18,7 +18,6 @@ object MediaActionClient {
         val destination = if (action == MediaAction.MOVE) ", destDir: ${gql(destDir)}" else ""
         return RustGraphqlApi.mutate(
             "$method(type: ${type.name}, query: ${gql(query)}$destination) { affectedCount }",
-            longRunning = true,
         ).getValue(method).jsonObject.getValue("affectedCount").jsonPrimitive.int
     }
 }

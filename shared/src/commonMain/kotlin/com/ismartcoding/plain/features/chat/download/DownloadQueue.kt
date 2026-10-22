@@ -85,7 +85,7 @@ object DownloadQueue {
             }
             Request.Snapshot -> error("Snapshot already handled")
         }
-        return RustGraphqlApi.mutate(operation, longRunning = true).getValue(operation.substringBefore('('))
+        return RustGraphqlApi.mutate(operation).getValue(operation.substringBefore('('))
     }
 
     private sealed interface Request {

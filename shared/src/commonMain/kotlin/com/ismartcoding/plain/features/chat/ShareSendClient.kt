@@ -22,6 +22,6 @@ object ShareSendClient {
         send("sendFolderShare", "targets: ${gqlIds(targets.map { it.encodedToId })}, path: ${gql(dirPath)}, name: ${gql(name)}, expiresAt: ${expiresAt?.toString()?.let(::gql) ?: "null"}")
 
     private suspend fun send(field: String, args: String): List<ChatItem> =
-        RustGraphqlApi.mutate("$field($args) { ${RustChatStore.FIELDS} }", longRunning = true)
+        RustGraphqlApi.mutate("$field($args) { ${RustChatStore.FIELDS} }")
             .getValue(field).jsonArray.map(RustChatStore::decodeGraphql)
 }

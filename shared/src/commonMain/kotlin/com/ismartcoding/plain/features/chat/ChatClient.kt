@@ -24,21 +24,21 @@ object ChatClient {
     suspend fun getChatItem(id: String): ChatItem? = ChatQueries.getChatItem(id)
 
     suspend fun sendContent(target: ChatTarget, content: MessageContent): ChatItem =
-        RustChatStore.decodeGraphql(RustGraphqlApi.mutate("sendChatItem(target: ${gql(target.encodedToId)}, content: ${gql(content.toJSONString())}) { ${RustChatStore.FIELDS} }", longRunning = true)
+        RustChatStore.decodeGraphql(RustGraphqlApi.mutate("sendChatItem(target: ${gql(target.encodedToId)}, content: ${gql(content.toJSONString())}) { ${RustChatStore.FIELDS} }")
             .getValue("sendChatItem").jsonArray.single())
 
     suspend fun sendText(target: ChatTarget, text: String): ChatItem =
         sendContent(target, MessageContent(MessageType.TEXT, MessageText(text)))
 
     suspend fun forward(id: String, targets: List<ChatTarget>): List<ChatItem> =
-        RustGraphqlApi.mutate("forwardChatItems(id: ${gql(id)}, targets: ${gqlIds(targets.map { it.encodedToId })}) { ${RustChatStore.FIELDS} }", longRunning = true)
+        RustGraphqlApi.mutate("forwardChatItems(id: ${gql(id)}, targets: ${gqlIds(targets.map { it.encodedToId })}) { ${RustChatStore.FIELDS} }")
             .getValue("forwardChatItems").jsonArray.map(RustChatStore::decodeGraphql)
 
     suspend fun deleteQuery(query: String): Int =
         RustGraphqlApi.mutate("deleteChatItems(query: ${gql(query)}) { affectedCount }").getValue("deleteChatItems").jsonObject.getValue("affectedCount").jsonPrimitive.int
 
     suspend fun deliver(id: String, recipients: List<String>? = null): ChatItem =
-        RustChatStore.decodeGraphql(RustGraphqlApi.mutate("deliverChatItem(id: ${gql(id)}, recipients: ${recipients?.let(::gqlIds) ?: "null"}) { ${RustChatStore.FIELDS} }", longRunning = true).getValue("deliverChatItem"))
+        RustChatStore.decodeGraphql(RustGraphqlApi.mutate("deliverChatItem(id: ${gql(id)}, recipients: ${recipients?.let(::gqlIds) ?: "null"}) { ${RustChatStore.FIELDS} }").getValue("deliverChatItem"))
 
     suspend fun deleteOne(id: String) {
         RustGraphqlApi.mutate("deleteChatItem(id: ${gql(id)})")

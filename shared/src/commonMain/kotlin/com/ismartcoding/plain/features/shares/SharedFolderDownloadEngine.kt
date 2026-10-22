@@ -69,7 +69,7 @@ object SharedFolderDownloadEngine {
     private const val QUEUE_FIELDS = "runtimeId revision tasks { id messageId type title targetDir link { host port sharedId token pageUrl } urlToken entries { name virtualPath isDir size mimeType hasThumb } zipName generation status error downloadedSize totalSize downloadSpeed totalFiles doneFiles failedFiles currentFile packing failures { path error } }"
     private suspend fun call(request: Request): JsonElement = when (request) {
         Request.Snapshot -> RustGraphqlApi.query("sharedDownloadQueue { $QUEUE_FIELDS }").getValue("sharedDownloadQueue")
-        is Request.Enqueue -> RustGraphqlApi.graphql("mutation(\$input: SharedDownloadInput!) { enqueueSharedDownload(input: \$input) }", mapOf("input" to JsonHelper.jsonEncodeToElement(request.input)), longRunning = true).getValue("enqueueSharedDownload")
+        is Request.Enqueue -> RustGraphqlApi.graphql("mutation(\$input: SharedDownloadInput!) { enqueueSharedDownload(input: \$input) }", mapOf("input" to JsonHelper.jsonEncodeToElement(request.input))).getValue("enqueueSharedDownload")
         is Request.Control -> {
             val operation = when (request.command) {
                 "retry" -> "retrySharedDownload"
@@ -77,7 +77,7 @@ object SharedFolderDownloadEngine {
                 "remove" -> "removeSharedDownload"
                 else -> error("Unknown shared download control")
             }
-            RustGraphqlApi.mutate("$operation(id: ${gql(request.id)})", longRunning = true).getValue(operation)
+            RustGraphqlApi.mutate("$operation(id: ${gql(request.id)})").getValue(operation)
         }
     }
 

@@ -19,7 +19,6 @@ internal object TestFileTaskClient {
         parse(RustGraphqlApi.graphql(
             "mutation(\$type:FileTaskType!,\$title:String!,\$ops:[FileTaskOpInput!]!,\$wait:Boolean!){createFileTask(type:\$type,title:\$title,ops:\$ops,waitForCompletion:\$wait){ $fields }}",
             mapOf("type" to JsonPrimitive(type.name), "title" to JsonPrimitive(title), "ops" to json.encodeToJsonElement(ops), "wait" to JsonPrimitive(wait)),
-            longRunning = wait,
         ).getValue("createFileTask"))
 
     suspend fun list(offset: Int, limit: Int, query: String): List<FileTask> = RustGraphqlApi.query("fileTasks(offset: $offset, limit: $limit, query: ${JsonHelper.jsonEncode(query)}) { $fields }").getValue("fileTasks").jsonArray.map(::parse)

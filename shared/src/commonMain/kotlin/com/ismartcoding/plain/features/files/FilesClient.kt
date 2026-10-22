@@ -18,23 +18,22 @@ object FilesClient {
         com.ismartcoding.plain.features.files.upload.RustUploadChunks.replace(path, chunks)
 
     suspend fun copyToPath(srcPath: String, targetPath: String, overwrite: Boolean): Boolean =
-        RustGraphqlApi.mutate("copyFile(src: ${gql(srcPath)}, dst: ${gql(targetPath)}, overwrite: $overwrite)", longRunning = true)
+        RustGraphqlApi.mutate("copyFile(src: ${gql(srcPath)}, dst: ${gql(targetPath)}, overwrite: $overwrite)")
             .getValue("copyFile").jsonPrimitive.boolean
 
     suspend fun copyToDirectory(srcPath: String, dirPath: String, fileName: String): String {
         val result = RustGraphqlApi.graphql(
             "mutation(\$src:String!,\$directory:String!,\$name:String!){copyFileToDirectory(src:\$src,directory:\$directory,name:\$name)}",
             mapOf("src" to JsonPrimitive(srcPath), "directory" to JsonPrimitive(dirPath), "name" to JsonPrimitive(fileName)),
-            longRunning = true,
         ).getValue("copyFileToDirectory")
         return if (result is JsonNull) "" else result.jsonPrimitive.content
     }
 
     suspend fun createZipArchive(paths: List<String>, target: String): Boolean = archiveOperation {
-        RustGraphqlApi.mutate("createZipArchive(paths: [${paths.joinToString(",") { gql(it) }}], target: ${gql(target)})", longRunning = true).getValue("createZipArchive").jsonPrimitive.content
+        RustGraphqlApi.mutate("createZipArchive(paths: [${paths.joinToString(",") { gql(it) }}], target: ${gql(target)})").getValue("createZipArchive").jsonPrimitive.content
     }
     suspend fun extractZipArchive(path: String, target: String): Boolean = archiveOperation {
-        RustGraphqlApi.mutate("extractZipArchive(path: ${gql(path)}, target: ${gql(target)})", longRunning = true).getValue("extractZipArchive").jsonPrimitive.content
+        RustGraphqlApi.mutate("extractZipArchive(path: ${gql(path)}, target: ${gql(target)})").getValue("extractZipArchive").jsonPrimitive.content
     }
 
     suspend fun cacheZipEntry(path: String): String? = try {
@@ -85,7 +84,6 @@ object FilesClient {
 
     suspend fun deleteMany(paths: List<String>): Int = RustGraphqlApi.mutate(
         "deleteFiles(paths: ${com.ismartcoding.plain.rust.graphql.gqlIds(paths)}) { affectedCount }",
-        longRunning = true,
     ).getValue("deleteFiles").jsonObject.getValue("affectedCount").jsonPrimitive.int
 
     private suspend fun read(root: String, query: String, sortBy: FileSortBy, offset: Int = 0, limit: Int? = null): List<FileEntry> =

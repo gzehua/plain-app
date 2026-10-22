@@ -25,7 +25,7 @@ fun PickImageEffect(imageUrl: MutableState<String>) {
                 try {
                     val info = checkNotNull(queryPickedFileInfo(source)) { "Unable to read selected image" }
                     imageUrl.value = RustGraphqlApi.mutate(
-                        "importNoteImage(source: ${gql(source)}, fileName: ${gql(info.displayName)})", longRunning = true,
+                        "importNoteImage(source: ${gql(source)}, fileName: ${gql(info.displayName)})",
                     ).getValue("importNoteImage").jsonPrimitive.content
                 } catch (error: CancellationException) {
                     throw error

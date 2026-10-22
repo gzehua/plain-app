@@ -9,5 +9,5 @@ import kotlinx.serialization.json.long
 suspend fun getCacheSize(): Long = RustGraphqlApi.query("appCacheSize").getValue("appCacheSize").jsonPrimitive.long
 
 suspend fun clearCacheAsync() {
-    check(RustGraphqlApi.mutate("clearAppCache", longRunning = true).getValue("clearAppCache").jsonPrimitive.boolean)
+    check(RustGraphqlApi.mutate("clearAppCache").getValue("clearAppCache").jsonPrimitive.boolean)
 }

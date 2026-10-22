@@ -20,7 +20,6 @@ internal suspend fun createChannelGraphql(name: String): ChatChannel = withIO {
     decodeChannel(
         RustGraphqlApi.mutate(
             "createChatChannel(name: ${gql(name)}) { $CHANNEL_FIELDS }",
-            longRunning = true,
         ).getValue("createChatChannel"),
     )
 }
@@ -29,7 +28,6 @@ internal suspend fun updateChannelGraphql(id: String, name: String): ChatChannel
     decodeChannel(
         RustGraphqlApi.mutate(
             "updateChatChannel(id: ${gql(id)}, name: ${gql(name)}) { $CHANNEL_FIELDS }",
-            longRunning = true,
         ).getValue("updateChatChannel"),
     )
 }
@@ -48,7 +46,6 @@ internal suspend fun addMemberGraphql(id: String, peerId: String): ChatChannel =
     decodeChannel(
         RustGraphqlApi.mutate(
             "addChatChannelMember(id: ${gql(id)}, peerId: ${gql(peerId)}) { $CHANNEL_FIELDS }",
-            longRunning = true,
         ).getValue("addChatChannelMember"),
     )
 }
@@ -57,14 +54,13 @@ internal suspend fun removeMemberGraphql(id: String, peerId: String): ChatChanne
     decodeChannel(
         RustGraphqlApi.mutate(
             "removeChatChannelMember(id: ${gql(id)}, peerId: ${gql(peerId)}) { $CHANNEL_FIELDS }",
-            longRunning = true,
         ).getValue("removeChatChannelMember"),
     )
 }
 
 internal suspend fun acceptInviteGraphql(id: String): GraphQLResponse = withIO {
     try {
-        RustGraphqlApi.mutate("acceptChatChannelInvite(id: ${gql(id)})", longRunning = true)
+        RustGraphqlApi.mutate("acceptChatChannelInvite(id: ${gql(id)})")
         GraphQLResponse(data = "true")
     } catch (e: Exception) {
         GraphQLResponse(exception = e)

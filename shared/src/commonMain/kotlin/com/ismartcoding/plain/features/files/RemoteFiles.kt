@@ -8,6 +8,6 @@ import kotlinx.serialization.json.jsonPrimitive
 object RemoteFiles {
     suspend fun cache(url: String, name: String = ""): String = RustGraphqlApi.graphql(
         "mutation(\$url: String!, \$name: String!) { cacheRemoteFile(url: \$url, name: \$name) }",
-        mapOf("url" to JsonPrimitive(url), "name" to JsonPrimitive(name)), longRunning = true,
+        mapOf("url" to JsonPrimitive(url), "name" to JsonPrimitive(name)),
     ).getValue("cacheRemoteFile").jsonPrimitive.content
 }
