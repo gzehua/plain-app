@@ -1,5 +1,28 @@
 package com.ismartcoding.plain.rust.native
 
+import com.ismartcoding.plain.rustprefs.plain_reset_password
+import com.ismartcoding.plain.rustprefs.plain_reset_url_token
+import com.ismartcoding.plain.rustprefs.plain_reset_adb_token
+import com.ismartcoding.plain.rustprefs.plain_set_notification_filter_mode
+import com.ismartcoding.plain.rustprefs.plain_clear_notification_filter_apps
+import com.ismartcoding.plain.rustprefs.plain_is_pairing_request_current
+import com.ismartcoding.plain.rustprefs.plain_reconnect_peers
+import com.ismartcoding.plain.rustprefs.plain_file_paths
+import com.ismartcoding.plain.rustprefs.plain_import_note_image
+import com.ismartcoding.plain.rustprefs.plain_import_pomodoro_sound
+import com.ismartcoding.plain.rustprefs.plain_dlna_receiver
+import com.ismartcoding.plain.rustprefs.plain_retry_dlna_receiver
+import com.ismartcoding.plain.rustprefs.plain_remove_dlna_rule
+import com.ismartcoding.plain.rustprefs.plain_accept_dlna_cast
+import com.ismartcoding.plain.rustprefs.plain_reject_dlna_cast
+import com.ismartcoding.plain.rustprefs.plain_scan_history
+import com.ismartcoding.plain.rustprefs.plain_add_scan_history
+import com.ismartcoding.plain.rustprefs.plain_remove_scan_history
+import com.ismartcoding.plain.rustprefs.plain_acquire_mdns_debug_session
+import com.ismartcoding.plain.rustprefs.plain_release_mdns_debug_session
+
+import com.ismartcoding.plain.lib.JsonHelper
+
 import com.ismartcoding.plain.features.sessions.CreatedSession
 import com.ismartcoding.plain.features.settings.AppUpdateDownload
 import com.ismartcoding.plain.preferences.SecuritySettings
@@ -225,6 +248,127 @@ internal actual object RustNativeApi {
     actual suspend fun checkAppUpdate(automatic: Boolean): String = nativeCall {
         memScoped {
             val pointer = checkNotNull(plain_check_app_update(automatic))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+
+    actual suspend fun resetPassword(): Boolean = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_reset_password())
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun resetUrlToken(): Boolean = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_reset_url_token())
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun resetAdbToken(): Boolean = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_reset_adb_token())
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun setNotificationFilterMode(mode: String): Boolean = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_set_notification_filter_mode(mode.cstr.ptr))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun clearNotificationFilterApps(): Boolean = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_clear_notification_filter_apps())
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun isPairingRequestCurrent(id: String, signature: String): Boolean = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_is_pairing_request_current(id.cstr.ptr, signature.cstr.ptr))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun reconnectPeers(): Boolean = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_reconnect_peers())
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun filePaths(paths: List<String>): List<String?> = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_file_paths(JsonHelper.jsonEncode(paths).cstr.ptr))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun importNoteImage(source: String, fileName: String): String = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_import_note_image(source.cstr.ptr, fileName.cstr.ptr))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun importPomodoroSound(source: String): String = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_import_pomodoro_sound(source.cstr.ptr))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun dlnaReceiver(): JsonObject = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_dlna_receiver())
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun retryDlnaReceiver(): JsonObject = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_retry_dlna_receiver())
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun removeDlnaRule(ip: String, allowed: Boolean): JsonObject = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_remove_dlna_rule(ip.cstr.ptr, allowed))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun acceptDlnaCast(remember: Boolean): JsonObject = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_accept_dlna_cast(remember))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun rejectDlnaCast(remember: Boolean): JsonObject = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_reject_dlna_cast(remember))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun scanHistory(): List<String> = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_scan_history())
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun addScanHistory(text: String): Boolean = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_add_scan_history(text.cstr.ptr))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun removeScanHistory(text: String): Boolean = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_remove_scan_history(text.cstr.ptr))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun acquireMdnsDebugSession(token: String): JsonObject = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_acquire_mdns_debug_session(token.cstr.ptr))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
+    }
+    actual suspend fun releaseMdnsDebugSession(token: String): JsonObject = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_release_mdns_debug_session(token.cstr.ptr))
             try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
         }
     }

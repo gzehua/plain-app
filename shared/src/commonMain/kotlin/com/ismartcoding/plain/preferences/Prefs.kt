@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.preferences
 
+import com.ismartcoding.plain.rust.native.RustNativeApi
+
 import com.ismartcoding.plain.models.Video as MediaVideo
 import com.ismartcoding.plain.features.files.FilePathData
 import com.ismartcoding.plain.features.notifications.NotificationFilterData
@@ -80,9 +82,9 @@ object Prefs {
     suspend fun toggleNotificationApp(packageName: String) =
         com.ismartcoding.plain.rust.native.RustNativeApi.toggleNotificationApp(packageName)
 
-    suspend fun setNotificationMode(mode: String) = PrefStore.runAction(PrefAction.SetNotificationMode(mode))
+    suspend fun setNotificationMode(mode: String) = RustNativeApi.setNotificationFilterMode(mode)
 
-    suspend fun clearNotificationApps() = PrefStore.runAction(PrefAction.ClearNotificationApps)
+    suspend fun clearNotificationApps() = RustNativeApi.clearNotificationFilterApps()
 
     fun parseFeatures(value: String): List<String> = value.split('|').filter { it.isNotBlank() }
 

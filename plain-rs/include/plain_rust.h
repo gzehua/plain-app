@@ -52,4 +52,25 @@ char *plain_start_app_update_download(void);
 char *plain_cancel_app_update_download(void);
 char *plain_check_app_update(bool automatic);
 
+char *plain_reset_password(void);
+char *plain_reset_url_token(void);
+char *plain_reset_adb_token(void);
+char *plain_set_notification_filter_mode(const char *mode);
+char *plain_clear_notification_filter_apps(void);
+char *plain_is_pairing_request_current(const char *id, const char *signature);
+char *plain_reconnect_peers(void);
+char *plain_file_paths(const char *paths);
+char *plain_import_note_image(const char *source, const char *file_name);
+char *plain_import_pomodoro_sound(const char *source);
+char *plain_dlna_receiver(void);
+char *plain_retry_dlna_receiver(void);
+char *plain_remove_dlna_rule(const char *ip, bool allowed);
+char *plain_accept_dlna_cast(bool remember);
+char *plain_reject_dlna_cast(bool remember);
+char *plain_scan_history(void);
+char *plain_add_scan_history(const char *text);
+char *plain_remove_scan_history(const char *text);
+char *plain_acquire_mdns_debug_session(const char *token);
+char *plain_release_mdns_debug_session(const char *token);
+
 #endif

@@ -20,6 +20,8 @@ macro_rules! reply {
     };
 }
 
+pub(super) use reply;
+
 fn restart_http_server() -> String {
     reply!((|| {
         let (runtime, management) = parts()?;

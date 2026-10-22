@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.preferences
 
 import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import kotlinx.serialization.json.JsonNull
 
@@ -17,7 +18,7 @@ object SavedData {
     suspend fun removeSearch(term: String) = write("recent_searches", recentSearches().filterNot { it.equals(term, ignoreCase = true) })
     suspend fun recentSaveDirs(): List<String> = read("recent_save_dirs", emptyList())
     suspend fun recordSaveDir(path: String) = write("recent_save_dirs", (listOf(path) + recentSaveDirs().filterNot { it == path }).take(5))
-    suspend fun scanHistory(): List<String> = JsonHelper.jsonDecodeFromElement(RustGraphqlApi.graphql("query { scanHistory }").getValue("scanHistory"))
-    suspend fun addScan(text: String) { RustGraphqlApi.graphql("mutation(\$text: String!) { addScanHistory(text: \$text) }", mapOf("text" to JsonHelper.jsonEncodeToElement(text))) }
-    suspend fun removeScan(text: String) { RustGraphqlApi.graphql("mutation(\$text: String!) { removeScanHistory(text: \$text) }", mapOf("text" to JsonHelper.jsonEncodeToElement(text))) }
+    suspend fun scanHistory(): List<String> = RustNativeApi.scanHistory()
+    suspend fun addScan(text: String) { RustNativeApi.addScanHistory(text) }
+    suspend fun removeScan(text: String) { RustNativeApi.removeScanHistory(text) }
 }

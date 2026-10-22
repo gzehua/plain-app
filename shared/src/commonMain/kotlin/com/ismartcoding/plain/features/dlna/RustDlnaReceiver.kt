@@ -1,18 +1,14 @@
 package com.ismartcoding.plain.features.dlna
 
-import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-
-import com.ismartcoding.plain.lib.JsonHelper
-import kotlinx.serialization.json.*
+import com.ismartcoding.plain.rust.native.RustNativeApi
+import kotlinx.serialization.json.JsonObject
 
 internal object RustDlnaReceiver {
     suspend fun call(command: ReceiverCommand): JsonObject = when (command) {
-        ReceiverCommand.Snapshot -> RustGraphqlApi.query("dlnaReceiver").getValue("dlnaReceiver").jsonObject
-        else -> RustGraphqlApi.graphql(
-            "mutation(\$input: DlnaReceiverInput!) { controlDlnaReceiver(input: \$input) }",
-            mapOf("input" to command.input()),
-        ).getValue("controlDlnaReceiver").jsonObject
+        ReceiverCommand.Snapshot -> RustNativeApi.dlnaReceiver()
+        ReceiverCommand.Retry -> RustNativeApi.retryDlnaReceiver()
+        is ReceiverCommand.RemoveRule -> RustNativeApi.removeDlnaRule(command.ip, command.allowed)
+        is ReceiverCommand.Accept -> RustNativeApi.acceptDlnaCast(command.remember)
+        is ReceiverCommand.Reject -> RustNativeApi.rejectDlnaCast(command.remember)
     }
 }
-
-internal fun ReceiverCommand.input(): JsonObject = JsonHelper.jsonEncodeToElement<ReceiverCommand>(this).jsonObject

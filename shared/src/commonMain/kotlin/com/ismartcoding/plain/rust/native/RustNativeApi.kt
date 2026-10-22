@@ -37,4 +37,25 @@ internal expect object RustNativeApi {
     suspend fun startAppUpdateDownload(): AppUpdateDownload
     suspend fun cancelAppUpdateDownload(): AppUpdateDownload
     suspend fun checkAppUpdate(automatic: Boolean): String
+
+    suspend fun resetPassword(): Boolean
+    suspend fun resetUrlToken(): Boolean
+    suspend fun resetAdbToken(): Boolean
+    suspend fun setNotificationFilterMode(mode: String): Boolean
+    suspend fun clearNotificationFilterApps(): Boolean
+    suspend fun isPairingRequestCurrent(id: String, signature: String): Boolean
+    suspend fun reconnectPeers(): Boolean
+    suspend fun filePaths(paths: List<String>): List<String?>
+    suspend fun importNoteImage(source: String, fileName: String): String
+    suspend fun importPomodoroSound(source: String): String
+    suspend fun dlnaReceiver(): JsonObject
+    suspend fun retryDlnaReceiver(): JsonObject
+    suspend fun removeDlnaRule(ip: String, allowed: Boolean): JsonObject
+    suspend fun acceptDlnaCast(remember: Boolean): JsonObject
+    suspend fun rejectDlnaCast(remember: Boolean): JsonObject
+    suspend fun scanHistory(): List<String>
+    suspend fun addScanHistory(text: String): Boolean
+    suspend fun removeScanHistory(text: String): Boolean
+    suspend fun acquireMdnsDebugSession(token: String): JsonObject
+    suspend fun releaseMdnsDebugSession(token: String): JsonObject
 }

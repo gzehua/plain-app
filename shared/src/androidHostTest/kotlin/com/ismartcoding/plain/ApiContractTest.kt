@@ -9,8 +9,13 @@ class ApiContractTest {
     private val sdl: String = readMainSchema()
 
     @Test
-    fun internalPreferenceSnapshotsAreNotGraphqlRoots() {
-        for (name in listOf("systemPrefs", "systemSettings", "userSettings", "toggleNotificationApp", "cycleAudioPlayMode")) {
+    fun localManagementOperationsAreNotGraphqlRoots() {
+        for (name in listOf("systemPrefs", "systemSettings", "userSettings", "toggleNotificationApp", "cycleAudioPlayMode",
+            "tlsCertificateSignature", "resetPassword", "resetUrlToken", "resetAdbToken",
+            "setNotificationFilterMode", "clearNotificationFilterApps", "pairingCode", "isPairingRequestCurrent",
+            "logoutPeer", "controlPeerStatus", "filePaths", "importNoteImage", "importPomodoroSound",
+            "dlnaReceiver", "controlDlnaReceiver", "scanHistory", "addScanHistory", "removeScanHistory",
+            "acquireMdnsDebugSession", "releaseMdnsDebugSession")) {
             if (Regex("(?m)^\\s*$name(?:\\(|:)").containsMatchIn(sdl)) fail("Internal operation exposed: $name")
         }
     }
@@ -55,10 +60,10 @@ class ApiContractTest {
     fun sdlSnapshotCoversTheWholeContract() {
         val queries = operationFieldNamesIn("Query")
         val mutations = operationFieldNamesIn("Mutation")
-        if (queries.size != 132 || mutations.size != 218) {
+        if (queries.size != 128 || mutations.size != 202) {
             fail(
                 "Shared Rust schema fragments declare ${queries.size} Query / ${mutations.size} " +
-                    "Mutation operations — the contract has 132 / 218. The snapshot looks truncated or " +
+                    "Mutation operations — the contract has 128 / 202. The snapshot looks truncated or " +
                     "drifted; every check in this class reads it, so they would pass on an empty file.",
             )
         }

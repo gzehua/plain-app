@@ -61,7 +61,4 @@ internal object PrefStore {
         }
     }
 
-    suspend fun runAction(action: PrefAction) {
-        RustGraphqlApi.mutate(action.selection())
-    }
 }

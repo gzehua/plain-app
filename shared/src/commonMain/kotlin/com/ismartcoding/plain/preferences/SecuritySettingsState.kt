@@ -4,7 +4,6 @@ import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.features.permissions.getGrantedWebPermissionsAsync
-import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.json.JsonObject
 
@@ -29,18 +28,15 @@ object SecuritySettingsState {
             ))
         }
     }
-    private suspend fun reset(field: String) {
-        RustGraphqlApi.graphql("mutation { $field }")
-    }
     private suspend inline fun <reified T> set(key: String, value: T) = PrefStore.write(key, JsonHelper.jsonEncodeToElement(value))
 
     suspend fun setPassword(password: String) = set("password", password)
     suspend fun setPasswordType(value: PasswordType) = set("password_type", value.value)
     suspend fun setLoginRequireApproval(enabled: Boolean) = set("login_require_approval", enabled)
     suspend fun setRotateUrlToken(enabled: Boolean) = set("rotate_url_token_on_restart", enabled)
-    suspend fun resetPassword() = reset("resetPassword")
-    suspend fun resetUrlToken() = reset("resetUrlToken")
-    suspend fun resetAdbToken() = reset("resetAdbToken")
+    suspend fun resetPassword() = RustNativeApi.resetPassword()
+    suspend fun resetUrlToken() = RustNativeApi.resetUrlToken()
+    suspend fun resetAdbToken() = RustNativeApi.resetAdbToken()
     suspend fun setApiPermission(permission: Permission, enabled: Boolean) = set("api_permissions", mapOf(permission.name to enabled))
     suspend fun setApiPermissions(permissions: Set<String>) = set("api_permissions", permissions)
     suspend fun completeOnboarding() = RustNativeApi.completeOnboarding()

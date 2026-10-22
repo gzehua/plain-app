@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.files
 
-import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+import com.ismartcoding.plain.rust.native.RustNativeApi
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -85,10 +85,7 @@ internal class FilePathResolver(
 
 object FilePaths {
     private val resolver = FilePathResolver(CoroutineScope(SupervisorJob() + Dispatchers.IO), { references ->
-        RustGraphqlApi.graphql(
-            "query(\$paths:[String!]!){filePaths(paths:\$paths)}",
-            mapOf("paths" to JsonArray(references.map(::JsonPrimitive))),
-        ).getValue("filePaths").jsonArray.map { if (it is JsonNull) null else it.jsonPrimitive.content }
+        RustNativeApi.filePaths(references)
     })
 
     suspend fun resolve(reference: String): String = resolver.resolve(reference)
