@@ -4,8 +4,9 @@ import kotlinx.serialization.Serializable
 
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.bridge.RustCoreBridge
-import com.ismartcoding.plain.rust.host.provider.ImageCatalogHost
 import com.ismartcoding.plain.platform.media.audioLibraryResolve
+import com.ismartcoding.plain.platform.media.disconnectImageCatalogHost
+import com.ismartcoding.plain.platform.media.handleImageCatalogHost
 import com.ismartcoding.plain.rust.host.media.AudioEngineHost
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -69,7 +70,7 @@ internal object RustHostApi {
                                         method == "audioEngineCommand" -> AudioEngineHost.handle(method, params)
                                         method == "fileTaskScan" || method == "fileTaskMediaSnapshot" -> com.ismartcoding.plain.rust.host.provider.FileTaskHost.handle(method,params)
                                         (method == "mediaProviderRows" || method == "mediaProviderWrite") -> handleMediaProvider(method, params)
-                                        method.startsWith("imageCatalog") -> ImageCatalogHost.handle(method, params)
+                                        method.startsWith("imageCatalog") -> handleImageCatalogHost(method, params)
                                         method == "audioLibraryResolve" -> {
                                             val input = JsonHelper.jsonDecodeFromElement<AudioLibraryResolveRequest>(params)
                                             JsonHelper.jsonEncodeToElement(audioLibraryResolve(input.ids, input.paths))
@@ -102,7 +103,7 @@ internal object RustHostApi {
         cleanup("Peer socket") { com.ismartcoding.plain.rust.host.network.PeerSocketHost.disconnect() }
         cleanup("Multicast permission") { com.ismartcoding.plain.rust.host.network.MdnsMulticastHost.disconnect() }
         cleanup("BLE handle") { com.ismartcoding.plain.rust.host.network.BlePairingHost.disconnect() }
-        cleanup("Image index") { ImageCatalogHost.disconnect() }
+        cleanup("Image index") { disconnectImageCatalogHost() }
     }
 
     private suspend fun cleanup(name: String, block: suspend () -> Unit) {
