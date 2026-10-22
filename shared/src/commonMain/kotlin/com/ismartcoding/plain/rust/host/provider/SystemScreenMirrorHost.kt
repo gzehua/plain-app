@@ -5,10 +5,21 @@ import kotlinx.serialization.Serializable
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.permissions.isGranted
+import com.ismartcoding.plain.platform.media.ScreenMirrorControlsFacts
+import com.ismartcoding.plain.platform.media.dispatchScreenMirrorControl
+import com.ismartcoding.plain.platform.media.resetScreenMirrorTouchStream
 import kotlinx.serialization.json.*
 
 internal object SystemScreenMirrorHost {
     suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
+        "systemScreenMirrorControls" -> {
+            JsonHelper.jsonDecodeFromElement<ScreenMirrorControlsFacts>(params).inputs.forEach { dispatchScreenMirrorControl(it) }
+            JsonNull
+        }
+        "systemScreenMirrorResetTouch" -> {
+            resetScreenMirrorTouchStream()
+            JsonNull
+        }
         "systemScreenMirrorState" -> {
             val codec = com.ismartcoding.plain.platform.media.getScreenMirrorVideoCodec()
             JsonHelper.jsonEncodeToElement(ScreenMirrorStateFacts(
@@ -24,7 +35,6 @@ internal object SystemScreenMirrorHost {
         }
         "systemStartScreenMirror" -> {
             val request = JsonHelper.jsonDecodeFromElement<StartScreenMirrorRequest>(params)
-            com.ismartcoding.plain.platform.media.applyScreenMirrorQualityPreference()
             sendEvent(
                 com.ismartcoding.plain.app.events.HStartScreenMirrorEvent(
                     request.audio

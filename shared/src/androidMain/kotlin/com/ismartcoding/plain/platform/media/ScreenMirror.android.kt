@@ -29,11 +29,6 @@ actual fun stopScreenMirror() {
     ScreenMirrorService.instance = null
 }
 
-actual fun applyScreenMirrorQualityPreference() {
-    // The service reads ScreenMirrorService.qualityData lazily; this is a no-op
-    // hook kept for symmetry with Android's pre-start quality seeding.
-}
-
 actual fun dispatchScreenMirrorControl(input: ScreenMirrorControlInput): Boolean {
     val service = PlainAccessibilityService.instance ?: return false
     val screenSize = PlainAccessibilityService.getScreenSize(appContext)

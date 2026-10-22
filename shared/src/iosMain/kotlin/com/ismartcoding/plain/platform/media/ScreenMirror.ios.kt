@@ -14,8 +14,6 @@ actual fun onScreenMirrorQualityChanged(mode: ScreenMirrorMode) = Unit
 
 actual fun stopScreenMirror() = Unit
 
-actual fun applyScreenMirrorQualityPreference() = Unit
-
 actual fun dispatchScreenMirrorControl(input: ScreenMirrorControlInput): Boolean = false
 
 actual fun requestScreenMirrorKeyFrame() = Unit

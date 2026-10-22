@@ -32,12 +32,6 @@ expect fun onScreenMirrorQualityChanged(mode: ScreenMirrorMode)
 expect fun stopScreenMirror()
 
 /**
- * Apply the cached quality preference to the running screen mirror service.
- * Used at start time to seed the service with the current user preference.
- */
-expect fun applyScreenMirrorQualityPreference()
-
-/**
  * Dispatch a remote-control event to the accessibility service. Returns true on
  * success, false if the service is not enabled or the platform doesn't support
  * screen mirror control.
