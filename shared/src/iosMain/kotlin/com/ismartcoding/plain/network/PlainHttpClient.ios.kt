@@ -2,7 +2,9 @@
 
 package com.ismartcoding.plain.network
 
-import com.ismartcoding.plain.platform.IODispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+
 
 import com.ismartcoding.plain.network.httpLogSink
 import com.ismartcoding.plain.lib.toNSData
@@ -143,7 +145,7 @@ internal class IosPlainClient(
         )
         val task = session.dataTaskWithRequest(req.toNSRequest(spec))
         val channel = ByteChannel(autoFlush = true)
-        val scope = CoroutineScope(IODispatcher + SupervisorJob())
+        val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         val pump: Job = scope.launch {
             try {
                 for (chunk in chunks) channel.writeFully(chunk)
@@ -224,7 +226,7 @@ private class IosWebSocketSession(
     private val bounded: Boolean = false,
 ) : PlainWebSocketSession {
     override val incoming = Channel<PlainWsFrame>(if (bounded) 4 else Channel.UNLIMITED)
-    private val scope = CoroutineScope(IODispatcher + SupervisorJob())
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     fun startReading() {
         scope.launch {

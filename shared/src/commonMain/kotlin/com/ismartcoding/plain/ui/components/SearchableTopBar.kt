@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.components
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+
 import com.ismartcoding.plain.ui.base.*
 import androidx.navigation.NavHostController
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -12,7 +15,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.ismartcoding.plain.IData
-import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.ui.state.ISearchableViewModel
 import kotlinx.coroutines.launch
 
@@ -38,7 +40,7 @@ fun <T : IData> SearchableTopBar(
             viewModel = viewModel,
             onSearch = {
                 viewModel.searchActive.value = false
-                scope.launch(IODispatcher) {
+                scope.launch(Dispatchers.IO) {
                     onSearchAction(it)
                 }
             }

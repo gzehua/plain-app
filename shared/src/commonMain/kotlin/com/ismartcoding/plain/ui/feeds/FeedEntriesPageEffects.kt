@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.feeds
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -8,7 +11,6 @@ import com.ismartcoding.plain.app.events.HFeedStatusEvent
 import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
 import com.ismartcoding.plain.models.Feed
 import com.ismartcoding.plain.lib.Channel
-import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshLayoutState
@@ -38,7 +40,7 @@ internal fun FeedEntriesPageEffects(
         }
         feedsVM.loadAsync(withCount = true)
         scope.launchSafe { FeedWorkerState.refresh() }
-        scope.launch(IODispatcher) { feedEntriesVM.loadAsync(tagsVM) }
+        scope.launch(Dispatchers.IO) { feedEntriesVM.loadAsync(tagsVM) }
     }
 
     LaunchedEffect(feedEntriesVM, feedsVM, tagsVM) {
@@ -46,7 +48,7 @@ internal fun FeedEntriesPageEffects(
             if (event.type == EventType.CONTENT_CHANGED) {
                 feedsVM.loadAsync(withCount = true)
                 feedsVM.refreshSelectedItemAsync()
-                scope.launch(IODispatcher) { feedEntriesVM.loadAsync(tagsVM) }
+                scope.launch(Dispatchers.IO) { feedEntriesVM.loadAsync(tagsVM) }
             }
         }
     }
@@ -62,7 +64,7 @@ internal fun FeedEntriesPageEffects(
                     // banner, drawer dots and the open feed sheet reflect the new state.
                     feedsVM.loadAsync(withCount = true)
                     feedsVM.refreshSelectedItemAsync()
-                    scope.launch(IODispatcher) { feedEntriesVM.loadAsync(tagsVM) }
+                    scope.launch(Dispatchers.IO) { feedEntriesVM.loadAsync(tagsVM) }
                 }
             }
         }

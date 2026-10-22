@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.feeds
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -29,7 +32,6 @@ import com.ismartcoding.plain.i18n.feed_catalog
 import com.ismartcoding.plain.i18n.retry
 import com.ismartcoding.plain.i18n.subscribe
 import com.ismartcoding.plain.i18n.unsubscribe
-import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.NoDataColumn
 import com.ismartcoding.plain.ui.base.PCard
@@ -66,7 +68,7 @@ fun FeedCatalogContent(
             ) {
                 TopSpace()
                 PFilledButton(text = stringResource(Res.string.retry), onClick = {
-                    scope.launch(IODispatcher) { catalogVM.loadAsync() }
+                    scope.launch(Dispatchers.IO) { catalogVM.loadAsync() }
                 })
             }
         }

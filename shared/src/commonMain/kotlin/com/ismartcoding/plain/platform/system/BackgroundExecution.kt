@@ -9,7 +9,6 @@ import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.rust.RustRuntime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
@@ -18,7 +17,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 object BackgroundExecution {
-    private val scope = CoroutineScope(SupervisorJob() + IODispatcher)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val lock = PlatformLock()
     private val jobs = mutableMapOf<String, Job>()
 

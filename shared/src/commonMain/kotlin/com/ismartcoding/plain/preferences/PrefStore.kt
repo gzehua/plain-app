@@ -1,10 +1,12 @@
 package com.ismartcoding.plain.preferences
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.PlatformLock
-import com.ismartcoding.plain.platform.IODispatcher
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -34,7 +36,7 @@ internal object PrefStore {
 
     /** Reads the authoritative snapshot and publishes it to every flow. */
     fun refresh() {
-        val stored = runBlocking(IODispatcher) { readUserSettings() }
+        val stored = runBlocking(Dispatchers.IO) { readUserSettings() }
         val previous = lock.withLock {
             val previous = snapshot
             snapshot = stored
@@ -54,7 +56,7 @@ internal object PrefStore {
     fun write(key: String, value: JsonElement) {
         val (previous, current) = lock.withLock {
             val previous = snapshot ?: JsonObject(emptyMap())
-            runBlocking(IODispatcher) {
+            runBlocking(Dispatchers.IO) {
                 RustGraphqlApi.graphql(
                     "mutation(\$key: String!, \$value: JSON!) { setUserPref(key: \$key, value: \$value) }",
                     mapOf("key" to JsonHelper.jsonEncodeToElement(userPreferenceKey(key)), "value" to value),

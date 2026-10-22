@@ -1,8 +1,10 @@
 package com.ismartcoding.plain.ui.web.components
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+
 import com.ismartcoding.plain.preferences.*
 
-import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
@@ -25,7 +27,7 @@ fun persistPort(
     isHttps: Boolean,
     port: Int,
 ) {
-    scope.launch(IODispatcher) {
+    scope.launch(Dispatchers.IO) {
         if (isHttps) {
             UserPrefs.httpsPort.value = port
         } else {

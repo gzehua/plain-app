@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.notes
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+
 import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.layout.Column
@@ -20,7 +23,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.MediaSidebarTagItem
@@ -55,7 +57,7 @@ fun NotesSidebarDrawer(
     var tagsExpanded by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
-        scope.launch(IODispatcher) { tagsVM.loadAsync() }
+        scope.launch(Dispatchers.IO) { tagsVM.loadAsync() }
     }
 
     Column(

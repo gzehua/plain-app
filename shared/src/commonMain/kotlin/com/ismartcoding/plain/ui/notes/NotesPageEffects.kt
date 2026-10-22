@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.notes
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -9,7 +12,6 @@ import androidx.compose.runtime.MutableState
 import com.ismartcoding.plain.ui.media.extensions.reset
 import com.ismartcoding.plain.ui.notes.NotesViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
-import com.ismartcoding.plain.platform.IODispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -22,7 +24,7 @@ internal fun NotesPageEffects(
     scope: CoroutineScope, isFirstTime: MutableState<Boolean>,
 ) {
     LaunchedEffect(Unit) {
-        scope.launch(IODispatcher) { NotesViewModel.loadAsync(tagsVM) }
+        scope.launch(Dispatchers.IO) { NotesViewModel.loadAsync(tagsVM) }
     }
 
     LaunchedEffect(NotesViewModel.selectMode.value) {
@@ -32,6 +34,6 @@ internal fun NotesPageEffects(
     LaunchedEffect(NotesViewModel.trash.value, NotesViewModel.tag.value) {
         if (isFirstTime.value) { isFirstTime.value = false; return@LaunchedEffect }
         scope.launch { scrollBehavior.reset(); scrollState.scrollToItem(0) }
-        scope.launch(IODispatcher) { NotesViewModel.loadAsync(tagsVM) }
+        scope.launch(Dispatchers.IO) { NotesViewModel.loadAsync(tagsVM) }
     }
 }

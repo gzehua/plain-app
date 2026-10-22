@@ -60,7 +60,6 @@ import com.ismartcoding.plain.ui.markdown.compose.Markdown
 import com.ismartcoding.plain.ui.markdown.compose.MarkdownElement
 import com.ismartcoding.plain.ui.markdown.model.State
 import com.ismartcoding.plain.ui.markdown.model.rememberMarkdownState
-import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.features.feeds.fetchContentAsync

@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.notes
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -34,7 +37,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.components.ActionButtonSearch
 import com.ismartcoding.plain.ui.base.HorizontalSpace
@@ -98,7 +100,7 @@ fun NotesPage(navController: NavHostController, tagsVM: TagsViewModel) {
         else stringResource(Res.string.notes)
     ViewNoteBottomSheet(tagsVM, tagsMapState, tagsState)
     if (NotesViewModel.showTagsDialog.value) { TagsBottomSheet(tagsVM) { NotesViewModel.showTagsDialog.value = false } }
-    val onSearch: (String) -> Unit = { NotesViewModel.searchActive.value = false; NotesViewModel.showLoading.value = true; scope.launch { scrollState.scrollToItem(0) }; scope.launch(IODispatcher) { NotesViewModel.loadAsync(tagsVM) } }
+    val onSearch: (String) -> Unit = { NotesViewModel.searchActive.value = false; NotesViewModel.showLoading.value = true; scope.launch { scrollState.scrollToItem(0) }; scope.launch(Dispatchers.IO) { NotesViewModel.loadAsync(tagsVM) } }
     PBackHandler(enabled = NotesViewModel.selectMode.value || NotesViewModel.showSearchBar.value || drawerState.isOpen) {
         when {
             drawerState.isOpen -> scope.launch { drawerState.close() }
@@ -164,7 +166,7 @@ fun NotesPage(navController: NavHostController, tagsVM: TagsViewModel) {
                                 }
                                 item {
                                     if (itemsState.isNotEmpty() && !NotesViewModel.noMore.value) {
-                                        LaunchedEffect(Unit) { scope.launch(IODispatcher) { NotesViewModel.moreAsync(tagsVM) } }
+                                        LaunchedEffect(Unit) { scope.launch(Dispatchers.IO) { NotesViewModel.moreAsync(tagsVM) } }
                                     }
                                     LoadMoreRefreshContent(NotesViewModel.noMore.value)
                                 }

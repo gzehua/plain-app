@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.feeds
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -44,7 +47,6 @@ import com.ismartcoding.plain.i18n.settings
 import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.feeds.FeedsPageEffects
-import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.system.formatName
 import com.ismartcoding.plain.ui.base.*
@@ -114,7 +116,7 @@ fun FeedEntriesPage(
         feedEntriesVM.tag.value = tag
         feedEntriesVM.clusterExpandedOverrides.clear()
         scope.launch { scrollState.scrollToItem(0) }
-        scope.launch(IODispatcher) { feedEntriesVM.loadAsync(tagsVM) }
+        scope.launch(Dispatchers.IO) { feedEntriesVM.loadAsync(tagsVM) }
     }
     val onSelectDrawerItem: (String, FeedEntryFilterType, Tag?) -> Unit = { newFeedId, filterType, tag ->
         applyFilter(newFeedId, filterType, tag)
@@ -124,7 +126,7 @@ fun FeedEntriesPage(
     FeedEntriesPageEffects(feedEntriesVM, feedsVM, tagsVM, feedId, scope, topRefreshLayoutState) {
         feedEntriesVM.showLoading.value = true
         scope.launch { scrollState.scrollToItem(0) }
-        scope.launch(IODispatcher) { feedEntriesVM.loadAsync(tagsVM) }
+        scope.launch(Dispatchers.IO) { feedEntriesVM.loadAsync(tagsVM) }
     }
     FeedsPageEffects(feedsVM)
 
@@ -163,7 +165,7 @@ fun FeedEntriesPage(
             feedEntriesVM.feedId.value = ""
             feedEntriesVM.filterType.value = FeedEntryFilterType.DEFAULT
         }
-        scope.launch(IODispatcher) { feedEntriesVM.loadAsync(tagsVM) }
+        scope.launch(Dispatchers.IO) { feedEntriesVM.loadAsync(tagsVM) }
     })
 
     ModalNavigationDrawer(
@@ -229,8 +231,8 @@ fun FeedEntriesPage(
                     FeedSyncBanner(
                         failedFeeds = failingFeeds,
                         singleFeed = feedEntriesVM.feedId.value.isNotEmpty(),
-                        onRetry = { id -> scope.launch(IODispatcher) { FeedsClient.sync(id) } },
-                        onRetryAll = { failingFeeds.forEach { f -> scope.launch(IODispatcher) { FeedsClient.sync(f.id) } } },
+                        onRetry = { id -> scope.launch(Dispatchers.IO) { FeedsClient.sync(id) } },
+                        onRetryAll = { failingFeeds.forEach { f -> scope.launch(Dispatchers.IO) { FeedsClient.sync(f.id) } } },
                     )
                 }
                 PullToRefresh(
@@ -312,7 +314,7 @@ fun FeedEntriesPage(
                                     }
                                     item(key = "bottom") {
                                         if (!feedEntriesVM.noMore.value) {
-                                            LaunchedEffect(Unit) { scope.launch(IODispatcher) { feedEntriesVM.moreAsync(tagsVM) } }
+                                            LaunchedEffect(Unit) { scope.launch(Dispatchers.IO) { feedEntriesVM.moreAsync(tagsVM) } }
                                         }
                                         LoadMoreRefreshContent(feedEntriesVM.noMore.value)
                                         VerticalSpace(dp = paddingValues.calculateBottomPadding().value.dp)

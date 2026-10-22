@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.ui.feeds
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+
 import com.ismartcoding.plain.i18n.*
 
 import com.ismartcoding.plain.features.feeds.FeedFontScale
@@ -22,7 +25,6 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.lib.extensions.getMarkdownTitle
 import com.ismartcoding.plain.features.notes.NotesClient
-import com.ismartcoding.plain.platform.IODispatcher
 import com.ismartcoding.plain.platform.system.shareText
 import com.ismartcoding.plain.platform.system.launchUrl
 import com.ismartcoding.plain.ui.components.ActionButtonMoreWithMenu
@@ -75,7 +77,7 @@ internal fun FeedEntryTopBar(
                     leadingIcon = { Icon(painter = painterResource(UiRes.drawable.ui_drawable_save), contentDescription = stringResource(Res.string.save_to_notes)) },
                     onClick = {
                         dismiss(); val m = feedEntryVM.item.value ?: return@PDropdownMenuItem
-                        scope.launch(IODispatcher) {
+                        scope.launch(Dispatchers.IO) {
                             NotesClient.saveFeedEntryAsync(m.id)
                             DialogHelper.showMessage(Res.string.saved)
                         }
