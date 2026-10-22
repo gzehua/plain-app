@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +46,7 @@ import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.components.DialogHelper
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
+import com.ismartcoding.plain.ui.state.launchSafe
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
@@ -65,6 +67,9 @@ import com.ismartcoding.plain.i18n.download
  */
 @Composable
 fun DlnaReceiverOverlay() {
+    LaunchedEffect(Unit) {
+        launchSafe { DlnaRendererState.refresh() }
+    }
     DlnaCastRequestDialog()
     DlnaMediaPlayerOverlay()
 }
