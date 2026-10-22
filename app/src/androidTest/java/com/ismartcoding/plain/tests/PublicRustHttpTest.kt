@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.rust.RustRuntime
+
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.app.*
@@ -67,8 +70,8 @@ class PublicRustHttpTest {
         try {
             UserPrefs.service.value = true
             UserPrefs.desktopAccess.value = true
-            stopHttpEngineAsync()
-            startHttpEngineAsync()
+            stopHttpServerCoreAsync()
+            withIO { RustRuntime.start() }
             assertTrue(com.ismartcoding.plain.app.checkHttpServerAsync())
             val port = UserPrefs.httpPort.value
             val tlsPort = UserPrefs.httpsPort.value
@@ -131,12 +134,12 @@ class PublicRustHttpTest {
                 client.get("http://127.0.0.1:$port/health").use { assertEquals(200, it.status.value) }
                 client.post("http://127.0.0.1:$port/graphql", "{}".encodeToByteArray(), "application/json").use { assertEquals(404, it.status.value) }
             }
-            stopHttpEngineAsync()
+            stopHttpServerCoreAsync()
             for (released in listOf(port, tlsPort)) {
                 ServerSocket().use { it.reuseAddress = true; it.bind(java.net.InetSocketAddress(released)); assertTrue(it.isBound) }
             }
         } finally {
-            stopHttpEngineAsync()
+            stopHttpServerCoreAsync()
             if (clientId.isNotEmpty()) com.ismartcoding.plain.features.sessions.RustSessionStore.delete(clientId)
             root.deleteRecursively()
             UserPrefs.service.value = oldService

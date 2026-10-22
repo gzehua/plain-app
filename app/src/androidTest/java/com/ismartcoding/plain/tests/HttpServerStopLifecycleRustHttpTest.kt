@@ -1,11 +1,12 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.rust.RustRuntime
+
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.settings.HttpServerState
 import com.ismartcoding.plain.app.HttpServerManager
-import com.ismartcoding.plain.app.startHttpEngineAsync
-import com.ismartcoding.plain.app.stopHttpEngineAsync
 import com.ismartcoding.plain.app.stopHttpServerCoreAsync
 import com.ismartcoding.plain.preferences.UserPrefs
 import kotlinx.coroutines.runBlocking
@@ -48,8 +49,8 @@ class HttpServerStopLifecycleRustHttpTest {
         try {
             UserPrefs.service.value = true
             UserPrefs.desktopAccess.value = true
-            stopHttpEngineAsync()
-            startHttpEngineAsync()
+            stopHttpServerCoreAsync()
+            withIO { RustRuntime.start() }
             assertTrue(com.ismartcoding.plain.app.checkHttpServerAsync())
             val port = UserPrefs.httpPort.value
             HttpServerManager.serverState.value = HttpServerState.ON
@@ -65,7 +66,7 @@ class HttpServerStopLifecycleRustHttpTest {
             )
             assertTrue("port $port still accepts connections after stop", isPortClosed(port))
         } finally {
-            stopHttpEngineAsync()
+            stopHttpServerCoreAsync()
             HttpServerManager.serverState.value = HttpServerState.OFF
             UserPrefs.service.value = oldService
             UserPrefs.desktopAccess.value = oldDesktop

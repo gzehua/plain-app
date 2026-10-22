@@ -5,7 +5,6 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.*
 import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.rust.host.RustHostApiHandler
-import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Dispatchers
@@ -57,11 +56,5 @@ object RustRuntime {
             RustHostApiHandler.start(scope)
             collectorsStarted = true
         }
-    }
-
-    internal suspend fun startHttp(): Unit = withIO { start() }
-
-    internal suspend fun stopHttp(): Unit = withIO {
-        lock.withLock { RustNativeApi.stop() }
     }
 }

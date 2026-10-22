@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.rust.RustRuntime
+
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 import com.ismartcoding.plain.features.media.MediaClient
@@ -69,7 +72,7 @@ class BrowserVideoInstrumentedTest {
         try {
             UserPrefs.service.value = true
             UserPrefs.desktopAccess.value = true
-            startHttpEngineAsync()
+            withIO { RustRuntime.start() }
             val base = "http://127.0.0.1:${UserPrefs.httpPort.value}"
             fun resource(file: File) = "$base/fs?id=${URLEncoder.encode(ResourceCrypto.encrypt(file.absolutePath), "UTF-8")}"
             createPlainHttpClient(PlainHttpClientSpec.Local()).use { client ->
@@ -94,10 +97,10 @@ class BrowserVideoInstrumentedTest {
             }
         } finally {
             output.delete()
-            stopHttpEngineAsync()
+            stopHttpServerCoreAsync()
             UserPrefs.desktopAccess.value = desktop
             UserPrefs.service.value = service
-            if (service) startHttpEngineAsync()
+            if (service) withIO { RustRuntime.start() }
         }
     }
 }

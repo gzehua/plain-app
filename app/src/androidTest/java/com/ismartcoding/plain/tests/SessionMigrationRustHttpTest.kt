@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.rust.RustRuntime
+
 import com.ismartcoding.plain.rust.RustEventHandler
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -74,7 +77,7 @@ class SessionMigrationRustHttpTest {
             UserPrefs.service.value = true
             UserPrefs.desktopAccess.value = true
             RustSystemState.setTwoFactor(true)
-            startHttpEngineAsync()
+            withIO { RustRuntime.start() }
             val client = generateECDHKeyPair()
             val digest = java.security.MessageDigest.getInstance("SHA-512").digest(RustSystemState.state.value.password.encodeToByteArray()).joinToString("") { "%02x".format(it) }
             val passwordKey = digest.take(32).encodeToByteArray()

@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.rust.RustRuntime
+import com.ismartcoding.plain.app.stopHttpServerCoreAsync
+
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 import com.ismartcoding.plain.features.sessions.RustSessionStore
@@ -9,8 +13,6 @@ import android.os.Build
 import androidx.test.platform.app.InstrumentationRegistry
 import android.os.Environment
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ismartcoding.plain.app.startHttpEngineAsync
-import com.ismartcoding.plain.app.stopHttpEngineAsync
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.permissions.Permission
@@ -50,7 +52,7 @@ class ApiFixtureRustHttpTest {
         var rootCreated = false
         val oldAccess = UserPrefs.desktopAccess.value
         UserPrefs.desktopAccess.value = true
-        startHttpEngineAsync()
+        withIO { RustRuntime.start() }
         SystemPrefsClient.local.refresh()
         val oldPermissions = SystemPrefsClient.local.system.value.apiPermissions
         try {
@@ -105,7 +107,7 @@ class ApiFixtureRustHttpTest {
             if (rootCreated) root.deleteRecursively()
             SystemPrefsClient.local.set("api_permissions", JsonArray(oldPermissions.map(::JsonPrimitive)))
             UserPrefs.desktopAccess.value = oldAccess
-            stopHttpEngineAsync()
+            stopHttpServerCoreAsync()
         }
     }
 }

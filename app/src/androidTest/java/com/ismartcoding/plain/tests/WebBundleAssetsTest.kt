@@ -1,8 +1,10 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.rust.RustRuntime
+
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.ismartcoding.plain.app.startHttpEngineAsync
 import com.ismartcoding.plain.preferences.UserPrefs
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -30,7 +32,7 @@ class WebBundleAssetsTest {
         val oldAccess = UserPrefs.desktopAccess.value
         try {
             UserPrefs.desktopAccess.value = true
-            startHttpEngineAsync()
+            withIO { RustRuntime.start() }
             val base = "http://127.0.0.1:${UserPrefs.httpPort.value}"
             val shell = get("$base/", "text/html")
             assertTrue(shell.contains("<html"))

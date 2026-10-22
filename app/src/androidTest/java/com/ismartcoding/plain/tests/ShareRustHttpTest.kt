@@ -1,8 +1,10 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.rust.RustRuntime
+
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.ismartcoding.plain.app.startHttpEngineAsync
 import com.ismartcoding.plain.features.shares.SharedLinkClient
 import com.ismartcoding.plain.features.shares.SharesClient
 import com.ismartcoding.plain.preferences.UserPrefs
@@ -40,7 +42,7 @@ class ShareRustHttpTest {
         var id: String? = null
         try {
             UserPrefs.service.value = true
-            startHttpEngineAsync()
+            withIO { RustRuntime.start() }
             val share = SharesClient.createShare(marker, listOf(folder.absolutePath), true, null)
             id = share.id
             val link = SharedLinkClient.ownLink(share.id, "127.0.0.1")
@@ -105,7 +107,7 @@ class ShareRustHttpTest {
                     }
                 }
                 UserPrefs.service.value = true
-                startHttpEngineAsync()
+                withIO { RustRuntime.start() }
                 SharesClient.updateShare(share.id, marker, null, listOf(other.absolutePath))
                 client.get(fileUrl).use { assertEquals(403, it.status.value) }
                 SharesClient.updateShare(share.id, marker, Instant.parse("2000-01-01T00:00:00Z"))

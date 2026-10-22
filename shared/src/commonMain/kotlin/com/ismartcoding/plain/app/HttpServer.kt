@@ -74,9 +74,6 @@ suspend fun replaceSSLKeyStoreAsync(
  */
 suspend fun resetPasswordAsync(): String = com.ismartcoding.plain.features.sessions.RustWebLogin.resetPassword()
 
-suspend fun startHttpEngineAsync() = RustRuntime.startHttp()
-suspend fun stopHttpEngineAsync() = RustRuntime.stopHttp()
-
 expect suspend fun onHttpServerStarted()
 expect suspend fun onHttpServerStopped()
 expect fun startHttpServerService()
@@ -104,7 +101,7 @@ suspend fun startHttpServerAsync() = withIO {
         HttpServerManager.serverState.value = HttpServerState.STARTING
         HttpServerManager.httpServerError.value = ""
         try {
-            RustRuntime.startHttp()
+            RustRuntime.start()
             applyHttpServerStatus()
         } catch (error: Throwable) {
             withContext(NonCancellable) {
@@ -126,7 +123,7 @@ private suspend fun stopHooks() {
 }
 
 private suspend fun stopEngineAndHooks() {
-    runCatching { RustRuntime.stopHttp() }
+    runCatching { RustNativeApi.stop() }
         .onFailure { LogCat.e("HTTP server engine stop failed: ${it.message}") }
     stopHooks()
 }
