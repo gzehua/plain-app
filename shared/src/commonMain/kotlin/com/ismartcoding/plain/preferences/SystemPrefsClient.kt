@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.preferences
 
 
-import com.ismartcoding.plain.rust.request.RustApi
+import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +22,7 @@ class SystemPrefsClient {
     }
 
     suspend fun set(key: String, value: kotlinx.serialization.json.JsonElement) = mutex.withLock {
-        RustApi.graphql(
+        PlainRust.mainGraphql(
             "mutation(\$key: String!, \$value: JSON!) { setSystemPref(key: \$key, value: \$value) { affectedCount } }",
             mapOf("key" to JsonHelper.jsonEncodeToElement(key), "value" to value),
         )
@@ -34,7 +34,7 @@ class SystemPrefsClient {
     suspend fun resetAdbToken() = reset("resetAdbToken")
 
     private suspend fun reset(field: String) = mutex.withLock {
-        RustApi.graphql("mutation { $field }")
+        PlainRust.mainGraphql("mutation { $field }")
         refreshLocked()
     }
 

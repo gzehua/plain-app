@@ -103,7 +103,7 @@ object UserPrefs {
     }
 
     suspend fun clearRecentSearches() {
-        val result = com.ismartcoding.plain.rust.request.RustApi.mutate(
+        val result = com.ismartcoding.plain.rust.PlainRust.mainMutate(
             "setUserPref(key: \"recent_searches\", value: [])",
         ).getValue("setUserPref")
         check(com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<Boolean>(result)) {

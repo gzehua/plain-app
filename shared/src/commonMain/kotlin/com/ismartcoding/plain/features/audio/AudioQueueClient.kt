@@ -7,12 +7,11 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.*
-import com.ismartcoding.plain.rust.request.RustApi
 import kotlinx.serialization.json.*
 
 object AudioQueueClient {
     suspend fun playback(): AudioPlayback = JsonHelper.jsonDecodeFromElement(
-        RustApi.query("audioPlayback { mediaId path mode isPlaying positionMs revision }").getValue("audioPlayback"))
+        PlainRust.mainQuery("audioPlayback { mediaId path mode isPlaying positionMs revision }").getValue("audioPlayback"))
 
     suspend fun resolveNext(isNext: Boolean, shuffle: Boolean = false): AudioItem? {
         val current = playback()
@@ -24,16 +23,16 @@ object AudioQueueClient {
         return if (track is JsonNull) null else JsonHelper.jsonDecodeFromElement(track)
     }
 
-    suspend fun clearQueue() { RustApi.mutate("clearAudioQueue") }
+    suspend fun clearQueue() { PlainRust.mainMutate("clearAudioQueue") }
 
     suspend fun enqueue(items: List<AudioItem>) {
         val ids = items.mapNotNull { it.mediaId }.filter { it.isNotEmpty() }
         if (ids.isNotEmpty()) add(selectionQuery(ids.toSet()))
     }
 
-    suspend fun add(query: String) { RustApi.mutate("addAudioToQueue(query: ${gql(query)})") }
-    suspend fun removeQueued(mediaId: String) { RustApi.mutate("removeAudioFromQueue(mediaId: ${gql(mediaId)})") }
-    suspend fun reorderQueued(mediaIds: List<String>) { RustApi.mutate("reorderAudioQueue(mediaIds: ${gqlIds(mediaIds)})") }
+    suspend fun add(query: String) { PlainRust.mainMutate("addAudioToQueue(query: ${gql(query)})") }
+    suspend fun removeQueued(mediaId: String) { PlainRust.mainMutate("removeAudioFromQueue(mediaId: ${gql(mediaId)})") }
+    suspend fun reorderQueued(mediaIds: List<String>) { PlainRust.mainMutate("reorderAudioQueue(mediaIds: ${gqlIds(mediaIds)})") }
     suspend fun queuedMediaIds(): Set<String> = PlainRust.mainQuery(
         "audioQueueItems(query: \"\", offset: 0, limit: ${Int.MAX_VALUE}) { mediaId }",
     ).getValue("audioQueueItems").let { JsonHelper.jsonDecodeFromElement<List<QueuedMediaId>>(it) }.mapNotNull { it.mediaId }.toSet()
@@ -52,10 +51,10 @@ object AudioQueueClient {
         ))
     }
 
-    suspend fun queueTotal(): Int = RustApi.query("audioQueueItemCount").getValue("audioQueueItemCount").jsonPrimitive.int
+    suspend fun queueTotal(): Int = PlainRust.mainQuery("audioQueueItemCount").getValue("audioQueueItemCount").jsonPrimitive.int
     suspend fun queuePage(offset: Int, limit: Int): List<AudioItem> = queuePageFiltered("",offset,limit)
     suspend fun queuePageFiltered(query: String, offset: Int, limit: Int): List<AudioItem> =
-        RustApi.query("audioQueueItems(offset: $offset, limit: $limit, query: ${gql(query)}) { $AUDIO_TRACK_FIELDS }")
+        PlainRust.mainQuery("audioQueueItems(offset: $offset, limit: $limit, query: ${gql(query)}) { $AUDIO_TRACK_FIELDS }")
             .getValue("audioQueueItems").jsonArray.map { it.audioTrack() }
 }
 

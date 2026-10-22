@@ -4,14 +4,14 @@ import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.models.TagRelation
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.DataType
-import com.ismartcoding.plain.rust.request.RustApi
+import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
 import com.ismartcoding.plain.rust.request.gqlIds
 import kotlinx.serialization.json.*
 
 internal object RustContentTags : TagsApi(
-    query = { RustApi.query(it) },
-    mutate = { RustApi.mutate(it) },
+    query = { PlainRust.mainQuery(it) },
+    mutate = { PlainRust.mainMutate(it) },
 )
 
 internal open class TagsApi(

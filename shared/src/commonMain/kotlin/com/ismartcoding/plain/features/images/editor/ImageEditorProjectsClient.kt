@@ -1,4 +1,5 @@
 package com.ismartcoding.plain.features.images.editor
+import com.ismartcoding.plain.rust.PlainRust
 
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
@@ -14,13 +15,13 @@ object ImageEditorProjectsClient {
     private const val FIELDS = "$SUMMARY_FIELDS stateB64 createdAt"
 
     suspend fun listAsync(): List<ImageEditorProjectSummary> =
-        RustApi.query("imageEditorProjects { $SUMMARY_FIELDS }")
+        PlainRust.mainQuery("imageEditorProjects { $SUMMARY_FIELDS }")
             .getValue("imageEditorProjects").let { JsonHelper.jsonDecodeFromElement<List<ProjectSummary>>(it) }.map { row ->
                 ImageEditorProjectSummary(ID(row.id), row.thumbnail, row.canvasWidth, row.canvasHeight, row.layerCount, row.updatedAt)
             }
 
     suspend fun getByIdAsync(id: String): ImageEditorProject? =
-        RustApi.query("imageEditorProject(id: ${gql(id)}) { $FIELDS }")
+        PlainRust.mainQuery("imageEditorProject(id: ${gql(id)}) { $FIELDS }")
             .getValue("imageEditorProject").takeUnless { it is JsonNull }?.project()
 
     suspend fun addOrUpdateAsync(id: String, updateItem: ImageEditorProject.() -> Unit): ImageEditorProject {
@@ -28,12 +29,12 @@ object ImageEditorProjectsClient {
         project.updateItem()
         val thumbnail = project.thumbnail?.let(::gql) ?: "null"
         val input = "{ stateB64: ${gql(project.stateB64)}, thumbnail: $thumbnail, canvasWidth: ${project.canvasWidth}, canvasHeight: ${project.canvasHeight}, layerCount: ${project.layerCount} }"
-        return RustApi.mutate("saveImageEditorProject(id: ${gql(id)}, input: $input) { $FIELDS }")
+        return PlainRust.mainMutate("saveImageEditorProject(id: ${gql(id)}, input: $input) { $FIELDS }")
             .getValue("saveImageEditorProject").project()
     }
 
     suspend fun deleteAsync(id: String) {
-        RustApi.mutate("deleteImageEditorProject(id: ${gql(id)})")
+        PlainRust.mainMutate("deleteImageEditorProject(id: ${gql(id)})")
     }
 
     private fun JsonElement.project(): ImageEditorProject = JsonHelper.jsonDecodeFromElement<ImageEditorProject>(this)

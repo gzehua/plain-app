@@ -3,7 +3,7 @@ package com.ismartcoding.plain.preferences
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.PlatformLock
 import com.ismartcoding.plain.platform.IODispatcher
-import com.ismartcoding.plain.rust.request.RustApi
+import com.ismartcoding.plain.rust.PlainRust
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -56,7 +56,7 @@ internal object PrefStore {
         val (previous, current) = lock.withLock {
             val previous = snapshot ?: JsonObject(emptyMap())
             runBlocking(IODispatcher) {
-                RustApi.graphql(
+                PlainRust.mainGraphql(
                     "mutation(\$key: String!, \$value: JSON!) { setUserPref(key: \$key, value: \$value) }",
                     mapOf("key" to JsonHelper.jsonEncodeToElement(userPreferenceKey(key)), "value" to value),
                 )
@@ -74,7 +74,7 @@ internal object PrefStore {
      * named.
      */
     suspend fun runAction(action: UserAction) {
-        RustApi.mutate(action.selection())
+        PlainRust.mainMutate(action.selection())
         refresh()
     }
 }

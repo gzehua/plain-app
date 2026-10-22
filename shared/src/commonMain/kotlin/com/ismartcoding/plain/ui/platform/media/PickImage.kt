@@ -10,7 +10,7 @@ import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.app.events.PickFileResultEvent
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.rust.request.gql
-import com.ismartcoding.plain.rust.request.RustApi
+import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.jsonPrimitive
@@ -23,7 +23,7 @@ fun PickImageEffect(imageUrl: MutableState<String>) {
                 val source = event.uris.firstOrNull() ?: return@collect
                 try {
                     val info = checkNotNull(queryPickedFileInfo(source)) { "Unable to read selected image" }
-                    imageUrl.value = RustApi.mutate(
+                    imageUrl.value = PlainRust.mainMutate(
                         "importNoteImage(source: ${gql(source)}, fileName: ${gql(info.displayName)})", longRunning = true,
                     ).getValue("importNoteImage").jsonPrimitive.content
                 } catch (error: CancellationException) {

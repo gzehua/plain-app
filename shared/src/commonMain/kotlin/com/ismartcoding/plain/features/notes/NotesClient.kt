@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.notes
 
 import com.ismartcoding.plain.models.Note
-import com.ismartcoding.plain.rust.request.RustApi
+import com.ismartcoding.plain.rust.PlainRust
 import com.ismartcoding.plain.rust.request.gql
 import com.ismartcoding.plain.rust.request.selectionQuery
 import kotlinx.serialization.json.JsonNull
@@ -12,8 +12,8 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 object NotesClient : NotesApi(
-    query = { RustApi.query(it) },
-    mutate = { RustApi.mutate(it) },
+    query = { PlainRust.mainQuery(it) },
+    mutate = { PlainRust.mainMutate(it) },
 )
 
 open class NotesApi internal constructor(

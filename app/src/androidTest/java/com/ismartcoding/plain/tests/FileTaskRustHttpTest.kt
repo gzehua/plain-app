@@ -1,4 +1,5 @@
 package com.ismartcoding.plain.tests
+import com.ismartcoding.plain.rust.PlainRust
 
 import android.os.Environment
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -12,10 +13,7 @@ import com.ismartcoding.plain.features.notes.*
 import com.ismartcoding.plain.ui.notes.*
 import com.ismartcoding.plain.features.tags.*
 import com.ismartcoding.plain.ui.tags.*
-import com.ismartcoding.plain.rust.request.*
 import com.ismartcoding.plain.rust.http.*
-import com.ismartcoding.plain.features.files.*
-import com.ismartcoding.plain.ui.files.*
 import com.ismartcoding.plain.preferences.RustSystemState
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
@@ -80,13 +78,13 @@ class FileTaskRustHttpTest {
             try { TestFileTaskClient.create(FileTaskType.COPY,listOf(FileTaskOp("/system/test",File(root,"forbidden").path))) }
             catch (_: Exception) { rejected = true }
             assertTrue(rejected)
-            val spoofedCaller = runCatching { RustApi.query("fileTasks(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, query: \"\", offset: 0, limit: 1) { id }") }
+            val spoofedCaller = runCatching { PlainRust.mainQuery("fileTasks(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, query: \"\", offset: 0, limit: 1) { id }") }
             assertTrue(spoofedCaller.isFailure)
             RustSystemState.setApiPermissions(originalPermissions + "WRITE_EXTERNAL_STORAGE")
-            assertEquals(true, RustApi.mutate("""copyFile(src: "${source.path}", dst: "${File(root,"public-copy.txt").path}", overwrite: false)""").getValue("copyFile").jsonPrimitive.boolean)
+            assertEquals(true, PlainRust.mainMutate("""copyFile(src: "${source.path}", dst: "${File(root,"public-copy.txt").path}", overwrite: false)""").getValue("copyFile").jsonPrimitive.boolean)
             assertEquals("synthetic",File(root,"public-copy.txt").readText())
             var publicFailed = false
-            try { RustApi.mutate("""copyFile(src: "/system/test", dst: "${File(root,"public-never").path}", overwrite: false)""") }
+            try { PlainRust.mainMutate("""copyFile(src: "/system/test", dst: "${File(root,"public-never").path}", overwrite: false)""") }
             catch (_: Exception) { publicFailed = true }
             assertTrue(publicFailed)
         } finally {
