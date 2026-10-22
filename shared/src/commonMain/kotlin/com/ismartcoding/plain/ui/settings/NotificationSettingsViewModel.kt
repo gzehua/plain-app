@@ -1,11 +1,16 @@
 package com.ismartcoding.plain.ui.settings
 
+import kotlinx.coroutines.flow.collect
+
 import com.ismartcoding.plain.preferences.*
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 import androidx.lifecycle.ViewModel
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.features.notifications.NotificationFilterData
+import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.notifications.DNotificationApp
 import com.ismartcoding.plain.platform.notifications.getAllNotificationApps
 import com.ismartcoding.plain.platform.notifications.getNotificationApp
@@ -28,25 +33,28 @@ class NotificationSettingsViewModel : ViewModel() {
     // For multiple selection in app selector
     val selectedAppIds = mutableStateListOf<String>()
 
-    suspend fun loadDataAsync() {
-        try {
-            filterData.value = UserPrefs.notificationFilter.value
-            val apps = mutableListOf<DNotificationApp>()
-            withIO {
-                filterData.value.apps.forEach { packageName ->
-                    try {
-                        val app = getNotificationApp(packageName) ?: throw IllegalStateException("not installed")
-                        apps.add(app)
-                    } catch (e: Exception) {
-                        // App might be uninstalled, remove from list
-                        UserPrefs.toggleNotificationApp(packageName)
+    init {
+        viewModelScope.launch {
+            UserPrefs.notificationFilter.collect { filter ->
+                filterData.value = filter
+                try {
+                    val apps = withIO {
+                        filter.apps.mapNotNull { packageName ->
+                            val app = getNotificationApp(packageName)
+                            if (app == null) UserPrefs.toggleNotificationApp(packageName)
+                            app
+                        }
                     }
+                    _selectedAppsFlow.value = apps.sortedBy { it.name }
+                    appsLoaded.value = false
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    LogCat.e("Notification filter apps", error)
+                } finally {
+                    isLoading.value = false
                 }
             }
-            _selectedAppsFlow.value = apps.sortedBy { it.name }
-            isLoading.value = false
-        } catch (e: Exception) {
-            isLoading.value = false
         }
     }
 
@@ -66,41 +74,20 @@ class NotificationSettingsViewModel : ViewModel() {
     suspend fun toggleModeAsync() {
         val newMode = if (filterData.value.mode == "allowlist") "blacklist" else "allowlist"
         UserPrefs.setNotificationMode(newMode)
-        filterData.value = filterData.value.copy(mode = newMode)
     }
 
     suspend fun removeAppAsync(packageName: String) {
         UserPrefs.toggleNotificationApp(packageName)
-        filterData.value = UserPrefs.notificationFilter.value
-        loadSelectedApps()
     }
 
     suspend fun addAppsAsync(packageNames: List<String>) {
         packageNames.forEach { packageName ->
             UserPrefs.toggleNotificationApp(packageName)
         }
-        filterData.value = UserPrefs.notificationFilter.value
-        loadSelectedApps()
     }
 
     suspend fun clearAllAsync() {
         UserPrefs.clearNotificationApps()
-        filterData.value = UserPrefs.notificationFilter.value
-        _selectedAppsFlow.value = emptyList()
-    }
-
-    private suspend fun loadSelectedApps() = withIO {
-        val apps = mutableListOf<DNotificationApp>()
-        filterData.value.apps.forEach { packageName ->
-            try {
-                val app = getNotificationApp(packageName) ?: throw IllegalStateException("not installed")
-                apps.add(app)
-            } catch (e: Exception) {
-                // App might be uninstalled, remove from list
-                UserPrefs.toggleNotificationApp(packageName)
-            }
-        }
-        _selectedAppsFlow.value = apps.sortedBy { it.name }
     }
 
     fun clearSelectedApps() {

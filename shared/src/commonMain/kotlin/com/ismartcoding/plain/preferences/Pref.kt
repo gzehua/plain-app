@@ -13,18 +13,8 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.serializer
 
-/**
- * One persisted user preference, exposed as a plain [MutableStateFlow].
- *
- * Reading is a field access, `collect` is an ordinary state subscription, and
- * assigning `value` persists through the native bridge. The storage key, the
- * JSON codec and the rollback on a rejected write stay private, so callers
- * never build patches or hand-roll keys.
- *
- * The value becomes observable before the write returns, so the UI updates on
- * assignment; if Rust rejects it the previous value is restored and the
- * failure is rethrown.
- */
+/** A user preference whose writes are submitted to Rust and whose state is
+ * published only from committed snapshots received through the Host API. */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class Pref<T> internal constructor(
     internal val key: String,
@@ -36,15 +26,7 @@ class Pref<T> internal constructor(
     override var value: T
         get() = state.value
         set(next) {
-            val previous = state.value
-            if (next == previous) return
-            state.value = next
-            try {
-                PrefStore.write(key, JsonHelper.json.encodeToJsonElement(serializer, next))
-            } catch (error: Throwable) {
-                state.value = previous
-                throw error
-            }
+            PrefStore.write(key, JsonHelper.json.encodeToJsonElement(serializer, next))
         }
 
     override val replayCache: List<T> get() = listOf(state.value)

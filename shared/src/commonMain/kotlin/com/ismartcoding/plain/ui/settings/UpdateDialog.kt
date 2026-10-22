@@ -50,7 +50,7 @@ fun UpdateDialog(updateVM: UpdateViewModel) {
     val newVersionSize = updateInfo.size
     val scope = rememberCoroutineScope()
 
-    if (updateVM.updateDialogVisible.value) {
+    if (updateVM.updateDialogVisible.value && newVersionPublishDate.isNotBlank()) {
         AlertDialog(
             containerColor = MaterialTheme.colorScheme.dialogSheetBackground,
             modifier = Modifier.heightIn(max = 400.dp),

@@ -72,7 +72,7 @@ suspend fun replaceSSLKeyStoreAsync(
  * Reset the web console password to a new random value and persist it.
  * @return the new password
  */
-suspend fun resetPasswordAsync(): String = com.ismartcoding.plain.features.sessions.RustWebLogin.resetPassword()
+suspend fun resetPasswordAsync() = com.ismartcoding.plain.features.sessions.RustWebLogin.resetPassword()
 
 expect suspend fun onHttpServerStarted()
 expect suspend fun onHttpServerStopped()

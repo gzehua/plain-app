@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.feeds
 
+import kotlinx.coroutines.flow.collect
+
 import com.ismartcoding.plain.ui.state.launchSafe
 
 import com.ismartcoding.plain.preferences.*
@@ -26,30 +28,25 @@ class FeedSettingsViewModel : ViewModel() {
     var showClearFeedsDialog = mutableStateOf(false)
     var clearFeedItemsTs = mutableLongStateOf(Constants.ONE_DAY * 7)
 
-    fun loadSettings() {
-        viewModelScope.launch {
-            autoRefresh.value = UserPrefs.feedAutoRefresh.value
-            autoRefreshInterval.intValue = UserPrefs.feedAutoRefreshInterval.value
-            autoRefreshOnlyWifi.value = UserPrefs.feedAutoRefreshOnlyWifi.value
-        }
+    init {
+        viewModelScope.launch { UserPrefs.feedAutoRefresh.collect { autoRefresh.value = it } }
+        viewModelScope.launch { UserPrefs.feedAutoRefreshInterval.collect { autoRefreshInterval.intValue = it } }
+        viewModelScope.launch { UserPrefs.feedAutoRefreshOnlyWifi.collect { autoRefreshOnlyWifi.value = it } }
     }
 
     fun setAutoRefresh(value: Boolean) {
-        autoRefresh.value = value
         viewModelScope.launchSafe {
             UserPrefs.feedAutoRefresh.value = value
         }
     }
 
     fun setAutoRefreshInterval(value: Int) {
-        autoRefreshInterval.value = value
         viewModelScope.launchSafe {
             UserPrefs.feedAutoRefreshInterval.value = value
         }
     }
 
     fun setAutoRefreshOnlyWifi(value: Boolean) {
-        autoRefreshOnlyWifi.value = value
         viewModelScope.launchSafe {
             UserPrefs.feedAutoRefreshOnlyWifi.value = value
         }

@@ -10,6 +10,6 @@ object RustWebLogin {
         RustNativeApi.confirmWebLogin(requestId, allowed)
     }
     suspend fun cancel(requestId: String) { decide(requestId, false) }
-    suspend fun resetPassword(): String = com.ismartcoding.plain.preferences.RustSystemState.resetPassword()
+    suspend fun resetPassword() = com.ismartcoding.plain.preferences.RustSystemState.resetPassword()
     suspend fun complete(event: HConfirmToAcceptLoginEvent) { decide(event.requestId, true) }
 }

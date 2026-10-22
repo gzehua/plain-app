@@ -54,10 +54,6 @@ internal object SystemScreenMirrorHost {
             com.ismartcoding.plain.platform.media.requestScreenMirrorKeyFrame()
             JsonHelper.jsonEncodeToElement(true)
         }
-        "systemUpdateScreenMirrorQuality" -> {
-            com.ismartcoding.plain.preferences.PrefStore.refresh()
-            JsonHelper.jsonEncodeToElement(true)
-        }
         else -> error("Unsupported provider operation")
     }
 }

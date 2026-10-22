@@ -42,10 +42,6 @@ fun FeedSettingsPage(
     navController: NavHostController,
     feedSettingsVM: FeedSettingsViewModel = viewModel { FeedSettingsViewModel() }
 ) {
-    LaunchedEffect(Unit) {
-        feedSettingsVM.loadSettings()
-    }
-
     if (feedSettingsVM.showIntervalDialog.value) {
         val options = remember {
             setOf(900, 1800, 3600, 7200, 21600, 43200, 86400).map { FeedAutoRefreshInterval(it) }

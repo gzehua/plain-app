@@ -61,8 +61,15 @@ object HttpServerManager {
     /** The service preference controls background retention, not HTTP availability. */
     fun setBackgroundEnabled(enable: Boolean, fromUi: Boolean = true) = coIO {
         check(!enable || Capability.BACKGROUND_SERVICE in getDeviceCapabilities()) { "Unsupported capability BACKGROUND_SERVICE" }
+        val unchanged = enable == UserPrefs.service.value
         UserPrefs.service.value = enable
-        if (enable) requestStart(fromUi = fromUi) else stopHttpServiceAsync()
+        if (unchanged) {
+            if (enable) requestStart(fromUi) else stopHttpServiceAsync()
+            return@coIO
+        }
+        if (enable && fromUi && !Permission.POST_NOTIFICATIONS.isGranted()) {
+            sendEvent(com.ismartcoding.plain.app.events.RequestPermissionsEvent(Permission.POST_NOTIFICATIONS))
+        }
     }
 
     fun ensureStarted() {

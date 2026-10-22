@@ -63,6 +63,14 @@ internal object RustHostApiHandler {
                                 val params = request.params
                                 val reply = try {
                                     val result = when {
+                                        method == "prefsChanged" -> {
+                                            when (params.jsonObject.getValue("store").jsonPrimitive.content) {
+                                                "user" -> com.ismartcoding.plain.preferences.PrefStore.refresh()
+                                                "system" -> com.ismartcoding.plain.preferences.SystemPrefsClient.local.refresh()
+                                                else -> error("Unknown preferences store")
+                                            }
+                                            JsonNull
+                                        }
                                         method == "fileResourceStream" -> { com.ismartcoding.plain.platform.files.FileResourceStreamHost.start(exchangeScope, params); JsonNull }
                                         method == "thumbnailDecode" -> ThumbnailHost.decode(params)
                                         method.startsWith("blePair") -> com.ismartcoding.plain.rust.host.network.BlePairingHost.handle(method, params)

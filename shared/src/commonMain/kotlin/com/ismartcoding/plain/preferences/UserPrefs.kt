@@ -85,21 +85,12 @@ object UserPrefs {
     fun formatLocale(value: Locale?): String =
         value?.let { it.language + if (it.country.isEmpty()) "" else "-${it.country}" }.orEmpty()
 
-    // --- Commands ---
-    //
-    // These stay named because they are Rust-side rules, not field writes:
-    // de-duplicating a search, trimming a list to its limit, or rewriting a
-    // playlist entry. Each returns after re-reading, so the caller gets the
-    // committed list rather than a guess.
-
-    suspend fun recordRecentSearch(term: String): List<String> {
+    suspend fun recordRecentSearch(term: String) {
         PrefStore.runAction(UserAction.RecordSearch(term))
-        return recentSearches.value
     }
 
-    suspend fun removeRecentSearch(term: String): List<String> {
+    suspend fun removeRecentSearch(term: String) {
         PrefStore.runAction(UserAction.RemoveSearch(term))
-        return recentSearches.value
     }
 
     suspend fun clearRecentSearches() {
@@ -109,16 +100,14 @@ object UserPrefs {
         check(com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<Boolean>(result)) {
             "Recent searches update was refused"
         }
-        PrefStore.refresh()
     }
 
-    suspend fun recordRecentSaveDir(directory: String): List<String> {
+    suspend fun recordRecentSaveDir(directory: String) {
         PrefStore.runAction(UserAction.RecordSaveDirectory(directory))
-        return recentSaveDirs.value
     }
 
     suspend fun toggleNotificationApp(packageName: String) =
-        com.ismartcoding.plain.rust.native.RustNativeApi.toggleNotificationApp(packageName).also { PrefStore.refresh() }
+        com.ismartcoding.plain.rust.native.RustNativeApi.toggleNotificationApp(packageName)
 
     suspend fun setNotificationMode(mode: String) = PrefStore.runAction(UserAction.SetNotificationMode(mode))
 

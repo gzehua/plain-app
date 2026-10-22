@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.web
 
+import kotlinx.coroutines.flow.collect
+
 import com.ismartcoding.plain.preferences.*
 
 import androidx.compose.runtime.Composable
@@ -7,16 +9,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.coIO
-import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.IgnoreBatteryOptimizationResultEvent
 import com.ismartcoding.plain.app.events.PermissionsResultEvent
 import com.ismartcoding.plain.app.events.RequestPermissionsEvent
-import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.app.events.WindowFocusChangedEvent
-import com.ismartcoding.plain.lib.JsonHelper.jsonEncode
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.ui.permissions.PermissionItem
-import com.ismartcoding.plain.features.permissions.getGrantedWebPermissionsAsync
 import com.ismartcoding.plain.features.permissions.getWebList
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.permissions.isGranted
@@ -34,6 +32,9 @@ internal fun WebSettingsEffects(
     systemAlertWindow: MutableState<Boolean>,
     notificationListenerGranted: MutableState<Boolean>,
 ) {
+    LaunchedEffect(Unit) {
+        RustSystemState.state.collect { permissionList.value = getWebList() }
+    }
     val sharedFlow = Channel.sharedFlow
 
     LaunchedEffect(sharedFlow) {
@@ -67,10 +68,6 @@ internal fun WebSettingsEffects(
 internal fun togglePermission(scope: CoroutineScope, m: PermissionItem, enable: Boolean) {
     scope.launch {
         RustSystemState.setApiPermission(m.permission, enable)
-        // The web `permissions` list is backed by this preference and toggling
-        // a switch never produces a PermissionsResultEvent — push the fresh
-        // snapshot so web clients refetch.
-        sendEvent(HostEvent(EventType.PERMISSIONS_UPDATED, jsonEncode(getGrantedWebPermissionsAsync())))
         if (m.permission == Permission.NOTIFICATION_LISTENER) {
             val webEnabled = UserPrefs.desktopAccess.value
             toggleNotificationListener(enable && webEnabled)

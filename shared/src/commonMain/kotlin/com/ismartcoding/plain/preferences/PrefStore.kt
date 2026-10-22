@@ -7,6 +7,8 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.PlatformLock
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -21,6 +23,7 @@ import kotlinx.serialization.json.JsonObject
  */
 internal object PrefStore {
     private val lock = PlatformLock()
+    private val refreshLock = Mutex()
     private val flows = mutableListOf<Pref<*>>()
 
     /** Null until the first load; that first read seeds the flows without
@@ -35,8 +38,8 @@ internal object PrefStore {
     }
 
     /** Reads the authoritative snapshot and publishes it to every flow. */
-    fun refresh() {
-        val stored = runBlocking(Dispatchers.IO) { readUserSettings() }
+    suspend fun refresh() = refreshLock.withLock {
+        val stored = readUserSettings()
         val previous = lock.withLock {
             val previous = snapshot
             snapshot = stored
@@ -46,36 +49,17 @@ internal object PrefStore {
         previous?.let { UserPrefsEffects.applyChanges(it, stored) }
     }
 
-    /**
-     * Persists one field through Rust, then folds it into the cached snapshot.
-     *
-     * The native call happens under the lock so concurrent writes to different
-     * fields cannot interleave; the platform effects derived from the change run
-     * after it, outside the lock, because they start services and are slow.
-     */
+    /** Submit only; the Host notification publishes the committed snapshot. */
     fun write(key: String, value: JsonElement) {
-        val (previous, current) = lock.withLock {
-            val previous = snapshot ?: JsonObject(emptyMap())
-            runBlocking(Dispatchers.IO) {
-                RustGraphqlApi.graphql(
-                    "mutation(\$key: String!, \$value: JSON!) { setUserPref(key: \$key, value: \$value) }",
-                    mapOf("key" to JsonHelper.jsonEncodeToElement(userPreferenceKey(key)), "value" to value),
-                )
-            }
-            val current = JsonObject(previous + (key to value))
-            snapshot = current
-            previous to current
+        runBlocking(Dispatchers.IO) {
+            RustGraphqlApi.graphql(
+                "mutation(\$key: String!, \$value: JSON!) { setUserPref(key: \$key, value: \$value) }",
+                mapOf("key" to JsonHelper.jsonEncodeToElement(userPreferenceKey(key)), "value" to value),
+            )
         }
-        UserPrefsEffects.applyChanges(previous, current)
     }
 
-    /**
-     * Runs a Rust-side command, then re-reads the snapshot so the flows pick up
-     * whatever the command rewrote — an action may touch fields the App never
-     * named.
-     */
     suspend fun runAction(action: UserAction) {
         RustGraphqlApi.mutate(action.selection())
-        refresh()
     }
 }

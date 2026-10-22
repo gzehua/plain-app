@@ -43,13 +43,8 @@ fun ScanHistoryPage(
     val itemsState by scanHistoryVM.itemsFlow.collectAsState()
     val refreshState =
         rememberRefreshLayoutState {
-            scanHistoryVM.fetch()
             setRefreshState(RefreshContentState.Finished)
         }
-
-    LaunchedEffect(Unit) {
-        scanHistoryVM.fetch()
-    }
 
     PScaffold(
         topBar = {

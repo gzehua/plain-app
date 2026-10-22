@@ -44,12 +44,12 @@ object RustRuntime {
         require(result.sharedPreviewDir.startsWith('/')) { "Rust shared preview cache path required" }
         logPath = result.logFile
         sharedPreviewPath = result.sharedPreviewDir
-        kotlinx.coroutines.runBlocking(Dispatchers.IO) {
-            PrefStore.refresh()
-            SystemPrefsClient.local.refresh()
-        }
-        isCoreInitialized = true
         if (!collectorsStarted) {
+            kotlinx.coroutines.runBlocking(Dispatchers.IO) {
+                PrefStore.refresh()
+                SystemPrefsClient.local.refresh()
+            }
+            isCoreInitialized = true
             RustEventHandler.start(scope)
             RustHostApiHandler.start(scope)
             collectorsStarted = true

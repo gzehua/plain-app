@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,16 +65,12 @@ fun SaveToSheet(
     downloadsAvailable: Boolean = getDownloadsDirPath().isNotEmpty(),
 ) {
     val scope = rememberCoroutineScope()
-    var recentDirs by remember { mutableStateOf<List<String>>(emptyList()) }
+    val recentDirs by UserPrefs.recentSaveDirs.collectAsState()
     var showFolderPick by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        recentDirs = UserPrefs.recentSaveDirs.value
-    }
 
     fun useDirectory(dir: String) {
         onDismiss()
-        scope.launch { recentDirs = UserPrefs.recordRecentSaveDir(dir) }
+        scope.launch { UserPrefs.recordRecentSaveDir(dir) }
         onDirectory(dir)
     }
 

@@ -17,7 +17,7 @@ object RustSystemState {
     suspend fun setPasswordType(value: PasswordType) = set("password_type", value.value)
     suspend fun setTwoFactor(enabled: Boolean) = set("auth_two_factor", enabled)
     suspend fun setRotateUrlToken(enabled: Boolean) = set("rotate_url_token_on_restart", enabled)
-    suspend fun resetPassword(): String { SystemPrefsClient.local.resetPassword(); return state.value.password }
+    suspend fun resetPassword() = SystemPrefsClient.local.resetPassword()
     suspend fun resetUrlToken() = SystemPrefsClient.local.resetUrlToken()
     suspend fun resetAdbToken() = SystemPrefsClient.local.resetAdbToken()
     suspend fun setApiPermission(permission: Permission, enabled: Boolean) = set("api_permissions", mapOf(permission.name to enabled))

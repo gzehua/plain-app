@@ -61,7 +61,7 @@ fun WebSecurityPage(navController: NavHostController) {
     val password = RustSystemState.state.collectAsStateValue().password
     val authTwoFactor = RustSystemState.state.collectAsStateValue().authTwoFactor
     val rotateUrlTokenOnRestart = RustSystemState.state.collectAsStateValue().rotateUrlTokenOnRestart
-    var urlToken by remember { mutableStateOf(Base64.encode(TempData.urlToken)) }
+    val urlToken = RustSystemState.state.collectAsStateValue().urlToken
     var sslSignature by remember { mutableStateOf("") }
     val editPassword = remember { mutableStateOf("") }
 
@@ -107,7 +107,7 @@ fun WebSecurityPage(navController: NavHostController) {
                                 modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 16.dp),
                                 text = stringResource(Res.string.generate_password),
                                 buttonSize = ButtonSize.MEDIUM,
-                                onClick = { scope.launch(Dispatchers.Default) { editPassword.value = resetPasswordAsync() } })
+                                onClick = { scope.launch(Dispatchers.Default) { resetPasswordAsync() } })
                         }
                     }
                 }
@@ -184,7 +184,6 @@ fun WebSecurityPage(navController: NavHostController) {
                         onClick = {
                             scope.launch(Dispatchers.Default) {
                                 RustSystemState.resetUrlToken()
-                                urlToken = Base64.encode(TempData.urlToken)
                                 DialogHelper.showMessage(Res.string.the_token_is_reset)
                             }
                         })

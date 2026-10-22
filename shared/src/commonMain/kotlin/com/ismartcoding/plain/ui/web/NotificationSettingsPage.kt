@@ -48,10 +48,6 @@ fun NotificationSettingsPage(
     val scope = rememberCoroutineScope()
     val selectedAppsState by vm.selectedAppsFlow.collectAsState()
 
-    LaunchedEffect(Unit) {
-        scope.launch(Dispatchers.Default) { vm.loadDataAsync() }
-    }
-
     PScaffold(
         topBar = {
             PTopAppBar(
