@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.features.nearby.RustMdnsRuntime
 import com.ismartcoding.plain.features.settings.ServiceDebugInfo
 import com.ismartcoding.plain.features.settings.getServiceDebugInfo
 import com.ismartcoding.plain.ui.base.BottomSpace
@@ -26,6 +27,7 @@ import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.state.launchSafe
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,6 +36,10 @@ fun ServiceDebugPage(navController: NavHostController) {
     var info by remember { mutableStateOf(getServiceDebugInfo()) }
 
     LaunchedEffect(Unit) {
+        launchSafe {
+            RustMdnsRuntime.refresh()
+            info = getServiceDebugInfo()
+        }
         while (true) {
             delay(2000)
             info = getServiceDebugInfo()

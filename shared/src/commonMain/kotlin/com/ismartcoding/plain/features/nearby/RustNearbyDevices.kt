@@ -16,7 +16,11 @@ object RustNearbyDevices {
     suspend fun observeDiscovery() {
         val token = kotlin.uuid.Uuid.random().toString()
         discoverySession(token,
-            acquire = { RustGraphqlApi.mutate("acquireDiscovery(token: ${com.ismartcoding.plain.rust.graphql.gql(it)})"); apply(snapshot()) },
+            acquire = {
+                RustGraphqlApi.mutate("acquireDiscovery(token: ${com.ismartcoding.plain.rust.graphql.gql(it)})")
+                apply(snapshot())
+                RustMdnsRuntime.refresh()
+            },
             release = { RustGraphqlApi.mutate("releaseDiscovery(token: ${com.ismartcoding.plain.rust.graphql.gql(it)})") },
         )
     }
