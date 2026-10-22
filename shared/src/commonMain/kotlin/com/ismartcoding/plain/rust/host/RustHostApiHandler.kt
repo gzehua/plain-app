@@ -14,7 +14,6 @@ import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.platform.media.audioLibraryResolve
 import com.ismartcoding.plain.platform.media.disconnectImageCatalogHost
 import com.ismartcoding.plain.platform.media.handleImageCatalogHost
-import com.ismartcoding.plain.rust.host.media.AudioEngineHost
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.files.handleMediaProvider
@@ -82,7 +81,7 @@ internal object RustHostApiHandler {
                                         method.startsWith("peerTransportSocket") -> PeerSocketHost.handle(method, params)
                                         method == "peerTransportBleExchange" -> PeerBleExchange.exchange(params)
                                         com.ismartcoding.plain.rust.host.provider.SystemProviderHost.accepts(method) -> com.ismartcoding.plain.rust.host.provider.SystemProviderHost.handle(method, params)
-                                        method == "audioEngineCommand" -> AudioEngineHost.handle(method, params)
+                                        method == "audioEngineCommand" -> AudioEngineHost.command(params)
                                         method == "fileTaskScan" || method == "fileTaskMediaSnapshot" -> com.ismartcoding.plain.rust.host.provider.FileTaskHost.handle(method,params)
                                         (method == "mediaProviderRows" || method == "mediaProviderWrite") -> handleMediaProvider(method, params)
                                         method.startsWith("imageCatalog") -> handleImageCatalogHost(method, params)

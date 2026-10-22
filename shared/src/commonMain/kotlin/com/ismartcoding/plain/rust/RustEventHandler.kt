@@ -36,7 +36,7 @@ import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent as sendAppEvent
 import com.ismartcoding.plain.platform.notifications.sendWebLoginNotification
 import com.ismartcoding.plain.preferences.Prefs
-import com.ismartcoding.plain.rust.host.media.AudioEngineHost
+import com.ismartcoding.plain.rust.host.AudioEngineHost
 import com.ismartcoding.plain.rust.native.RustDispatchers
 import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.rust.native.readRustStream

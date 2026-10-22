@@ -16,7 +16,7 @@ import com.ismartcoding.plain.preferences.*
  */
 suspend fun initCommonPreferences() {
     com.ismartcoding.plain.features.videos.VideoProgressHost.restore()
-    com.ismartcoding.plain.rust.host.media.AudioEngineHost.start()
+    com.ismartcoding.plain.rust.host.AudioEngineHost.start()
     TempData.deviceName.value = UserPrefs.deviceName.value
     com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
     ChannelCacher.load()

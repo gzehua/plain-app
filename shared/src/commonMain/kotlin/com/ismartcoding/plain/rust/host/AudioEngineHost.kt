@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.rust.host.media
+package com.ismartcoding.plain.rust.host
 
 import com.ismartcoding.plain.rust.sendEventToRust
 
@@ -76,43 +76,40 @@ object AudioEngineHost {
         }
     }
 
-    suspend fun handle(method: String, params: JsonObject): JsonElement = when (method) {
-        "audioEngineCommand" -> withContext(Dispatchers.Main) {
-            mutex.withLock {
-                val player = engine()
-                val command = JsonHelper.jsonDecodeFromElement<AudioEngineCommand>(params)
-                val requestedRevision = command.playback.revision
-                val position = command.playback.positionMs
-                val speed = command.speed
-                require(position >= 0 && requestedRevision >= 0 && speed.isFinite() && speed > 0)
-                val action = command.action
-                player.bindRevision(requestedRevision)
-                var loaded = false
-                when (action) {
-                    "PLAY", "SEEK" -> {
-                        val track = requireNotNull(command.track) { "Audio track required for $action" }
-                        if (action == "PLAY" && !command.newTrack && player.currentPath == track.path) {
-                            player.seekTo(position)
-                            player.setPlaybackSpeed(speed)
-                            player.play()
-                        } else if (action == "SEEK" && player.currentPath == track.path) {
-                            player.seekTo(position)
-                        } else { player.load(track, position, speed, requestedRevision); loaded = true }
-                    }
-                    "PAUSE" -> player.pause()
-                    "CLEAR" -> player.clear()
-                    "RESTART" -> player.restartIfPlaying()
-                    "SET_SPEED" -> player.setPlaybackSpeed(speed)
-                    else -> error("Unknown audio engine command: $action")
+    suspend fun command(params: JsonObject): JsonElement = withContext(Dispatchers.Main) {
+        mutex.withLock {
+            val player = engine()
+            val command = JsonHelper.jsonDecodeFromElement<AudioEngineCommand>(params)
+            val requestedRevision = command.playback.revision
+            val position = command.playback.positionMs
+            val speed = command.speed
+            require(position >= 0 && requestedRevision >= 0 && speed.isFinite() && speed > 0)
+            val action = command.action
+            player.bindRevision(requestedRevision)
+            var loaded = false
+            when (action) {
+                "PLAY", "SEEK" -> {
+                    val track = requireNotNull(command.track) { "Audio track required for $action" }
+                    if (action == "PLAY" && !command.newTrack && player.currentPath == track.path) {
+                        player.seekTo(position)
+                        player.setPlaybackSpeed(speed)
+                        player.play()
+                    } else if (action == "SEEK" && player.currentPath == track.path) {
+                        player.seekTo(position)
+                    } else { player.load(track, position, speed, requestedRevision); loaded = true }
                 }
-                revision = requestedRevision
-                val reported = report(player)
-                JsonHelper.jsonEncodeToElement(AudioEngineReport(
-                    reported.path, if (action == "PLAY" || action == "SEEK") position else reported.positionMs, reported.revision, loaded,
-                ))
+                "PAUSE" -> player.pause()
+                "CLEAR" -> player.clear()
+                "RESTART" -> player.restartIfPlaying()
+                "SET_SPEED" -> player.setPlaybackSpeed(speed)
+                else -> error("Unknown audio engine command: $action")
             }
+            revision = requestedRevision
+            val reported = report(player)
+            JsonHelper.jsonEncodeToElement(AudioEngineReport(
+                reported.path, if (action == "PLAY" || action == "SEEK") position else reported.positionMs, reported.revision, loaded,
+            ))
         }
-        else -> error("Unknown audio engine method: $method")
     }
     private fun report(player: AudioPlayer) = AudioProgressReport(player.currentPath, player.progress.coerceAtLeast(0), revision)
 }

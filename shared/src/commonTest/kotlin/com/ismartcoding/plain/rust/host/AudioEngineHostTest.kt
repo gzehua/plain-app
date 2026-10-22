@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.rust.host.media
+package com.ismartcoding.plain.rust.host
 
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.JsonHelper
@@ -48,7 +48,7 @@ class AudioEngineHostTest {
         val player = Player()
         val previous = AudioEngineHost.install(player)
         try {
-            val result = async { AudioEngineHost.handle("audioEngineCommand", command(false)) }
+            val result = async { AudioEngineHost.command(command(false)) }
             runCurrent()
             assertFalse(result.isCompleted)
             assertEquals(listOf("bind:5", "seek"), player.calls)
@@ -70,7 +70,7 @@ class AudioEngineHostTest {
         val player = Player().apply { currentPath = "other" }
         val previous = AudioEngineHost.install(player)
         try {
-            val result = async { AudioEngineHost.handle("audioEngineCommand", command(true)) }
+            val result = async { AudioEngineHost.command(command(true)) }
             runCurrent()
             assertFalse(result.isCompleted)
             assertEquals(listOf("bind:5", "load"), player.calls)
@@ -91,7 +91,7 @@ class AudioEngineHostTest {
         val previous = AudioEngineHost.install(player)
         val position = com.ismartcoding.plain.app.TempData.audioPlayPosition
         try {
-            AudioEngineHost.handle("audioEngineCommand", command(true))
+            AudioEngineHost.command(command(true))
             com.ismartcoding.plain.app.TempData.audioPlayPosition = 777
             AudioEngineHost.restore(buildJsonObject { put("path", "song"); put("revision", 4); put("positionMs", 0) })
             assertEquals(777L, com.ismartcoding.plain.app.TempData.audioPlayPosition)
