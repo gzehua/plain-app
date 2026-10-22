@@ -19,7 +19,7 @@ class EventDirectionRustHttpTest {
             EventType.MESSAGE_CREATED, EventType.DOWNLOAD_PROGRESS, EventType.CONTENT_CHANGED,
             EventType.DEVICE_NAME_UPDATED, EventType.POMODORO_SETTINGS_UPDATE, EventType.NOTIFICATION_REFRESHED)) {
             val error = runCatching { sendEventToRust(HostEvent(type, "{}")) }.exceptionOrNull()
-            assertTrue("$type must be rejected before sending", error is IllegalArgumentException)
+            assertTrue("$type must be rejected by Rust", error is IllegalArgumentException)
         }
     }
 }

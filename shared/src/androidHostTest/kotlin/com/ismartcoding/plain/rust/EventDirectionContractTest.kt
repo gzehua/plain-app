@@ -15,7 +15,7 @@ import java.io.File
 
 class EventDirectionContractTest {
     @Test
-    fun wirePacketsAndHostEventTypesUseNamesWithoutNumericAliases() {
+    fun wirePacketsUseNamesWithoutNumericAliases() {
         val packet = JsonHelper.jsonEncodeToElement(mapOf("type" to EventType.SCREEN_MIRROR_VIDEO_CODEC.name, "payload" to "{}"))
         val kind = packet.jsonObject.getValue("type").jsonPrimitive
         assertTrue(kind.isString)
@@ -24,13 +24,6 @@ class EventDirectionContractTest {
         val greeting = JsonHelper.jsonDecode<RustEvent>("""{"type":"CONTENT_CHANGED","payload":"{}","reconcile":true}""")
         assertEquals(EventType.CONTENT_CHANGED.name, greeting.type)
         assertTrue(greeting.reconcile)
-        val types = JsonHelper.jsonDecode<HostEventTypes>(
-            """{"textTypes":["SCREEN_MIRROR_VIDEO_CODEC"],"binaryTypes":["SCREEN_MIRROR_VIDEO"]}""",
-        )
-        assertTrue(EventType.SCREEN_MIRROR_VIDEO_CODEC.name in types.textTypes)
-        assertTrue(EventType.SCREEN_MIRROR_VIDEO.name in types.binaryTypes)
-        assertFalse(EventType.SCREEN_MIRROR_VIDEO.name in types.textTypes)
-        assertFalse(EventType.PAIRING_REQUEST_RECEIVED.name in types.textTypes)
         assertTrue(EventType.entries.all { it.name.matches(Regex("[A-Z_]+")) })
     }
 

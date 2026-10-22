@@ -16,14 +16,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
-private val hostEventTypes = MutableStateFlow<HostEventTypes?>(null)
-
 suspend fun sendEventToRust(event: HostEvent) {
-    val types = withTimeoutOrNull(5_000) { hostEventTypes.filterNotNull().first() } ?: error("Rust host event channel unavailable")
-    require(event.type.name in when (event.data) {
-        is HostEventData.Text -> types.textTypes
-        is HostEventData.Binary -> types.binaryTypes
-    }) { "${event.type} is not a host-produced event" }
     val error = withContext(RustDispatchers.requests) {
         when (val data = event.data) {
             is HostEventData.Text -> RustNativeApi.send("text", JsonHelper.jsonEncode(mapOf("type" to event.type.name, "payload" to data.value)), byteArrayOf())
@@ -38,7 +31,6 @@ object RustEventHandler {
     val events: SharedFlow<RustEvent> = incoming.asSharedFlow()
 
     internal fun start(scope: CoroutineScope) {
-        hostEventTypes.value = JsonHelper.jsonDecode(RustNativeApi.next("capabilities"))
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
             events.collect { event ->
                 try {
@@ -173,12 +165,6 @@ data class RustEvent(
     val type: String,
     val payload: String,
     val reconcile: Boolean = false,
-)
-
-@Serializable
-internal data class HostEventTypes(
-    val textTypes: Set<String>,
-    val binaryTypes: Set<String>,
 )
 
 @Serializable

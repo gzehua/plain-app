@@ -26,9 +26,6 @@ fn bridge() -> Result<(Handle, Arc<HostEvents>), String> {
 }
 fn next(stream: &str) -> Result<String, String> {
     let (runtime, bridge) = bridge()?;
-    if stream == "capabilities" {
-        return Ok(bridge.capabilities().to_string());
-    }
     runtime.block_on(async {
         let result = tokio::time::timeout(std::time::Duration::from_secs(1), async {
             match stream {
