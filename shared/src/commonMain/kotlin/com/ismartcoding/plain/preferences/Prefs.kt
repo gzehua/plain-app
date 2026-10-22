@@ -7,7 +7,6 @@ object Prefs {
     fun load() {
         RustPrefsBridge.open(RustRuntime.dataDir, RustRuntime.cacheDir)
         RustRuntime.start()
-        PrefStore.load()
     }
 
     suspend fun refresh() {

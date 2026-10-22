@@ -16,7 +16,6 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
     if prefs.path() != paths.system_prefs() || prefs.user_path() != paths.user_prefs() {
         return Err("Preferences and core must share one data directory".into());
     }
-    let (cert, key) = plain_server::services::tls_identity::identity(&paths.tls_identity())?;
     if let Some(core) = guard.as_mut() {
         if core.directory != PathBuf::from(data_dir)
             || core.token != token
@@ -26,19 +25,17 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
         }
         if core
             .runtime
-            .block_on(core.server.public_generation())
+            .block_on(core.server.http_ports())
             .is_none()
         {
+            let settings = plain_rs::prefs::user::snapshot(&prefs).map_err(|e| e.to_string())?;
+            let (cert, key) = plain_server::services::tls_identity::identity(&paths.tls_identity())?;
             core.server
                 .set_build_debug(config["debug"].as_bool().unwrap_or(false));
             let (http, _) = core.runtime.block_on(
                 core.server.start_public(
-                    plain_rs::prefs::user::snapshot(&prefs)
-                        .map_err(|e| e.to_string())?
-                        .http_port as u16,
-                    plain_rs::prefs::user::snapshot(&prefs)
-                        .map_err(|e| e.to_string())?
-                        .https_port as u16,
+                    settings.http_port as u16,
+                    settings.https_port as u16,
                     cert,
                     key,
                 ),
@@ -56,17 +53,15 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             .ok_or("Startup system properties required")?
             .clone();
         properties.insert("debug".into(), config["debug"].clone());
+        let settings = plain_rs::prefs::user::snapshot(&prefs).map_err(|e| e.to_string())?;
+        let (cert, key) = plain_server::services::tls_identity::identity(&paths.tls_identity())?;
         let server = runtime.block_on(ContentServer::start_http(
             directory,
             token,
             prefs.clone(),
             properties,
-            plain_rs::prefs::user::snapshot(&prefs)
-                .map_err(|e| e.to_string())?
-                .http_port as u16,
-            plain_rs::prefs::user::snapshot(&prefs)
-                .map_err(|e| e.to_string())?
-                .https_port as u16,
+            settings.http_port as u16,
+            settings.https_port as u16,
             cert,
             key,
             config["debug"].as_bool().unwrap_or(false),

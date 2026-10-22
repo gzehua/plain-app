@@ -33,8 +33,6 @@ internal object PrefStore {
     }
 
     /** Reads the authoritative snapshot and publishes it to every flow. */
-    fun load() = refresh()
-
     fun refresh() {
         val stored = runBlocking(IODispatcher) { readUserSettings() }
         val previous = lock.withLock {

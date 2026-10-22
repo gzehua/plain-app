@@ -53,8 +53,7 @@ object BackgroundExecution {
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun run(deadlineMs: Long, id: String = Uuid.random().toString()): Boolean = coroutineScope {
-        if (!RustRuntime.isCoreInitialized) Prefs.load()
-        RustRuntime.start()
+        if (!RustRuntime.isCoreInitialized) Prefs.load() else RustRuntime.start()
         val finished = async(start = CoroutineStart.UNDISPATCHED) {
             val event = RustEventHandler.events.first { event ->
                 event.type == "BACKGROUND_EXECUTION_FINISHED" && JsonHelper.jsonDecode<ExecutionResult>(event.payload).id == id
