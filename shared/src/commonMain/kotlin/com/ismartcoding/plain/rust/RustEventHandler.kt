@@ -1,16 +1,52 @@
 package com.ismartcoding.plain.rust
 
 import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent
+import com.ismartcoding.plain.app.events.HWebLoginClosedEvent
+import com.ismartcoding.plain.app.events.HWebRequestReceivedEvent
 import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.app.events.HostEventData
-import com.ismartcoding.plain.app.events.HWebRequestReceivedEvent
+import com.ismartcoding.plain.app.onRustHttpServerFailed
+import com.ismartcoding.plain.features.chat.ChatCacher
+import com.ismartcoding.plain.features.chat.ChatClient
+import com.ismartcoding.plain.features.chat.ChatMessageReceiver
+import com.ismartcoding.plain.features.chat.RustChatStore
+import com.ismartcoding.plain.features.chat.channel.ChannelCacher
+import com.ismartcoding.plain.features.chat.channel.ChannelSystemMessageReceiver
+import com.ismartcoding.plain.features.chat.channel.channelGraphql
+import com.ismartcoding.plain.features.chat.data.ChatTarget
+import com.ismartcoding.plain.features.chat.download.DownloadQueue
+import com.ismartcoding.plain.features.chat.peer.PeerTransportProjection
+import com.ismartcoding.plain.features.chat.peer.RustPeerStore
+import com.ismartcoding.plain.features.dlna.DlnaRendererState
+import com.ismartcoding.plain.features.dlna.sender.RustDlnaSender
+import com.ismartcoding.plain.features.files.FavoriteFoldersClient
+import com.ismartcoding.plain.features.images.search.RustImageModels
+import com.ismartcoding.plain.features.nearby.PairingProjection
+import com.ismartcoding.plain.features.nearby.RustMdnsRuntime
+import com.ismartcoding.plain.features.nearby.RustNearbyDevices
+import com.ismartcoding.plain.features.sessions.WebLoginClosedFacts
+import com.ismartcoding.plain.features.sessions.WebLoginCompletedFacts
+import com.ismartcoding.plain.features.sessions.WebLoginRequestFacts
+import com.ismartcoding.plain.features.sessions.setOnlineClientIds
+import com.ismartcoding.plain.features.settings.AppUpdateDownloads
+import com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent as sendAppEvent
-import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.platform.notifications.sendWebLoginNotification
+import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.rust.host.media.AudioEngineHost
 import com.ismartcoding.plain.rust.native.RustDispatchers
+import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.rust.native.readRustStream
+import com.ismartcoding.plain.ui.app.LocalDeviceState
+import com.ismartcoding.plain.ui.chat.ChatViewModel
+import com.ismartcoding.plain.ui.feeds.FeedSyncUpdate
+import com.ismartcoding.plain.ui.feeds.FeedWorkerState
+import com.ismartcoding.plain.ui.media.actions.MediaActionProjection
 import com.ismartcoding.plain.ui.notes.NotesViewModel
+import com.ismartcoding.plain.ui.pomodoro.PomodoroProjection
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.Serializable
@@ -52,109 +88,109 @@ object RustEventHandler {
         val type = event.type
         val payload = event.payload
         when (type) {
-            EventType.NETWORK_CHANGED.name -> com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
+            EventType.NETWORK_CHANGED.name -> LocalDeviceState.refresh()
             EventType.WEB_LOGIN_COMPLETED.name -> {
-                val facts = JsonHelper.jsonDecode<com.ismartcoding.plain.features.sessions.WebLoginCompletedFacts>(payload)
+                val facts = JsonHelper.jsonDecode<WebLoginCompletedFacts>(payload)
                 val request = facts.request
-                com.ismartcoding.plain.platform.notifications.sendWebLoginNotification(request.browserName, request.browserVersion, request.osName, request.osVersion, facts.clientIp)
+                sendWebLoginNotification(request.browserName, request.browserVersion, request.osName, request.osVersion, facts.clientIp)
             }
 
-            EventType.MEDIA_ACTION_FINISHED.name -> com.ismartcoding.plain.ui.media.actions.MediaActionProjection.apply(payload)
+            EventType.MEDIA_ACTION_FINISHED.name -> MediaActionProjection.apply(payload)
             EventType.HTTP_SERVER_STARTED.name -> {
                 val started = JsonHelper.jsonDecode<HttpServerStarted>(payload)
                 RustRuntime.httpStarted(started.generation, started.httpPort)
-                com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
+                LocalDeviceState.refresh()
             }
             EventType.HTTP_SERVER_FAILED.name -> {
                 val failure = JsonHelper.jsonDecode<HttpServerFailure>(payload)
-                com.ismartcoding.plain.app.onRustHttpServerFailed(failure.generation, failure.message)
+                onRustHttpServerFailed(failure.generation, failure.message)
             }
             EventType.PEER_STATUS_UPDATED.name -> {
-                com.ismartcoding.plain.features.chat.ChatCacher.load()
+                ChatCacher.load()
             }
-            EventType.PEER_TRANSPORT_UPDATED.name -> com.ismartcoding.plain.features.chat.peer.PeerTransportProjection.apply(JsonHelper.jsonDecode<JsonArray>(payload))
-            EventType.MDNS_UPDATED.name, EventType.NEARBY_DISCOVERY_STARTED.name, EventType.NEARBY_DISCOVERY_STOPPED.name -> com.ismartcoding.plain.features.nearby.RustMdnsRuntime.refresh()
-            EventType.DLNA_RENDERER_UPDATED.name -> com.ismartcoding.plain.features.dlna.DlnaRendererState.apply(
+            EventType.PEER_TRANSPORT_UPDATED.name -> PeerTransportProjection.apply(JsonHelper.jsonDecode<JsonArray>(payload))
+            EventType.MDNS_UPDATED.name, EventType.NEARBY_DISCOVERY_STARTED.name, EventType.NEARBY_DISCOVERY_STOPPED.name -> RustMdnsRuntime.refresh()
+            EventType.DLNA_RENDERER_UPDATED.name -> DlnaRendererState.apply(
                 JsonHelper.jsonDecode<JsonObject>(payload).getValue("renderer").jsonObject)
             EventType.NEARBY_DEVICES_UPDATED.name -> {
-                val devices = com.ismartcoding.plain.features.nearby.RustNearbyDevices.snapshot()
-                com.ismartcoding.plain.features.nearby.RustNearbyDevices.apply(devices)
+                val devices = RustNearbyDevices.snapshot()
+                RustNearbyDevices.apply(devices)
             }
-            EventType.PAIRING_REQUEST_RECEIVED.name -> com.ismartcoding.plain.features.nearby.PairingProjection.request(payload)
-            EventType.PAIRING_STATE_CHANGED.name -> com.ismartcoding.plain.features.nearby.PairingProjection.applyState(JsonHelper.jsonDecode<JsonObject>(payload))
-            EventType.PAIRING_STARTED.name -> com.ismartcoding.plain.features.nearby.PairingProjection.started(payload)
-            EventType.PAIRING_CANCELED.name -> com.ismartcoding.plain.features.nearby.PairingProjection.canceled(payload)
-            EventType.PAIRING_SUCCESS.name -> com.ismartcoding.plain.features.nearby.PairingProjection.success(payload)
-            EventType.PAIRING_FAILED.name -> com.ismartcoding.plain.features.nearby.PairingProjection.timeout(payload)
+            EventType.PAIRING_REQUEST_RECEIVED.name -> PairingProjection.request(payload)
+            EventType.PAIRING_STATE_CHANGED.name -> PairingProjection.applyState(JsonHelper.jsonDecode<JsonObject>(payload))
+            EventType.PAIRING_STARTED.name -> PairingProjection.started(payload)
+            EventType.PAIRING_CANCELED.name -> PairingProjection.canceled(payload)
+            EventType.PAIRING_SUCCESS.name -> PairingProjection.success(payload)
+            EventType.PAIRING_FAILED.name -> PairingProjection.timeout(payload)
             EventType.MESSAGE_CREATED.name -> {
                 JsonHelper.jsonDecode<List<PeerIdEvent>>(payload).forEach { value ->
-                    com.ismartcoding.plain.features.chat.RustChatStore.getById(value.id)?.let { item ->
+                    RustChatStore.getById(value.id)?.let { item ->
                         if (item.fromId == "me") {
-                            val target = if (item.channelId.isNullOrEmpty()) com.ismartcoding.plain.features.chat.data.ChatTarget.parseId("peer:" + item.toId)
-                                else com.ismartcoding.plain.features.chat.data.ChatTarget.parseId("channel:" + item.channelId)
-                            com.ismartcoding.plain.ui.chat.ChatViewModel.onMessagesCreated(target, listOf(item), scroll = true)
-                            com.ismartcoding.plain.features.chat.ChatCacher.load()
-                        } else com.ismartcoding.plain.features.chat.peer.RustPeerStore.getById(item.fromId)?.let { peer ->
-                            val channel = item.channelId?.takeIf { it.isNotEmpty() }?.let { com.ismartcoding.plain.features.chat.channel.channelGraphql(it) }
-                            com.ismartcoding.plain.features.chat.ChatMessageReceiver.applyCommitted(item, peer, channel)
+                            val target = if (item.channelId.isNullOrEmpty()) ChatTarget.parseId("peer:" + item.toId)
+                                else ChatTarget.parseId("channel:" + item.channelId)
+                            ChatViewModel.onMessagesCreated(target, listOf(item), scroll = true)
+                            ChatCacher.load()
+                        } else RustPeerStore.getById(item.fromId)?.let { peer ->
+                            val channel = item.channelId?.takeIf { it.isNotEmpty() }?.let { channelGraphql(it) }
+                            ChatMessageReceiver.applyCommitted(item, peer, channel)
                         }
                     }
                 }
             }
             EventType.MESSAGE_DELETED.name -> {
                 val target = JsonHelper.jsonDecode<String>(payload)
-                if (target.startsWith("ids=")) com.ismartcoding.plain.ui.chat.ChatViewModel.onMessagesDeleted(target.removePrefix("ids=").split(',').filter { it.isNotEmpty() }.toSet())
-                else com.ismartcoding.plain.ui.chat.ChatViewModel.onConversationCleared(target)
-                com.ismartcoding.plain.features.chat.ChatCacher.load()
+                if (target.startsWith("ids=")) ChatViewModel.onMessagesDeleted(target.removePrefix("ids=").split(',').filter { it.isNotEmpty() }.toSet())
+                else ChatViewModel.onConversationCleared(target)
+                ChatCacher.load()
             }
             EventType.CHANNELS_UPDATED.name -> {
                 val result = JsonHelper.jsonDecode<JsonElement>(payload).jsonObject
-                com.ismartcoding.plain.features.chat.channel.ChannelSystemMessageReceiver.applyCommitted(result)
+                ChannelSystemMessageReceiver.applyCommitted(result)
             }
             EventType.MESSAGE_UPDATED.name -> {
                 val items = JsonHelper.jsonDecode<List<PeerIdEvent>>(payload).mapNotNull { value ->
-                    com.ismartcoding.plain.features.chat.RustChatStore.getById(value.id)
+                    RustChatStore.getById(value.id)
                 }
-                items.forEach { com.ismartcoding.plain.ui.chat.ChatViewModel.update(it) }
-                com.ismartcoding.plain.features.chat.ChatCacher.load()
+                items.forEach { ChatViewModel.update(it) }
+                ChatCacher.load()
             }
             EventType.DOWNLOAD_PROGRESS.name -> {
-                com.ismartcoding.plain.features.chat.download.DownloadQueue.refresh()
+                DownloadQueue.refresh()
             }
-            EventType.ONLINE_CLIENTS_UPDATED.name -> com.ismartcoding.plain.features.sessions.setOnlineClientIds(
+            EventType.ONLINE_CLIENTS_UPDATED.name -> setOnlineClientIds(
                 JsonHelper.jsonDecode<Set<String>>(payload))
             EventType.PREFS_UPDATED.name -> {
-                com.ismartcoding.plain.preferences.Prefs.refresh()
-                com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
+                Prefs.refresh()
+                LocalDeviceState.refresh()
             }
-            EventType.IMAGE_MODELS_UPDATED.name -> com.ismartcoding.plain.features.images.search.RustImageModels.apply(JsonHelper.jsonDecode<JsonObject>(payload))
-            EventType.DLNA_SENDER_UPDATED.name -> com.ismartcoding.plain.features.dlna.sender.RustDlnaSender.apply(JsonHelper.jsonDecode<JsonObject>(payload))
+            EventType.IMAGE_MODELS_UPDATED.name -> RustImageModels.apply(JsonHelper.jsonDecode<JsonObject>(payload))
+            EventType.DLNA_SENDER_UPDATED.name -> RustDlnaSender.apply(JsonHelper.jsonDecode<JsonObject>(payload))
             EventType.WEB_LOGIN_REQUESTED.name -> {
-                val facts = JsonHelper.jsonDecode<com.ismartcoding.plain.features.sessions.WebLoginRequestFacts>(payload)
-                sendAppEvent(com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent(
+                val facts = JsonHelper.jsonDecode<WebLoginRequestFacts>(payload)
+                sendAppEvent(HConfirmToAcceptLoginEvent(
                     facts.clientId, facts.request, facts.requestId, facts.clientIp))
             }
             EventType.WEB_LOGIN_CLOSED.name -> {
-                val facts = JsonHelper.jsonDecode<com.ismartcoding.plain.features.sessions.WebLoginClosedFacts>(payload)
-                sendAppEvent(com.ismartcoding.plain.app.events.HWebLoginClosedEvent(facts.requestId))
+                val facts = JsonHelper.jsonDecode<WebLoginClosedFacts>(payload)
+                sendAppEvent(HWebLoginClosedEvent(facts.requestId))
             }
             EventType.WEB_REQUEST_RECEIVED.name -> {
                 sendAppEvent(HWebRequestReceivedEvent())
             }
-            EventType.SHARED_FOLDER_DOWNLOAD_UPDATED.name -> com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine.refresh()
-            EventType.AUDIO_PLAYBACK_UPDATED.name -> com.ismartcoding.plain.rust.host.media.AudioEngineHost.restore(JsonHelper.jsonDecode<JsonObject>(payload))
-            EventType.APP_UPDATE_DOWNLOAD_UPDATED.name -> com.ismartcoding.plain.features.settings.AppUpdateDownloads.apply(JsonHelper.jsonDecode(payload))
-            EventType.FEED_SYNC_UPDATED.name -> com.ismartcoding.plain.ui.feeds.FeedWorkerState.apply(JsonHelper.jsonDecode<com.ismartcoding.plain.ui.feeds.FeedSyncUpdate>(payload))
+            EventType.SHARED_FOLDER_DOWNLOAD_UPDATED.name -> SharedFolderDownloadEngine.refresh()
+            EventType.AUDIO_PLAYBACK_UPDATED.name -> AudioEngineHost.restore(JsonHelper.jsonDecode<JsonObject>(payload))
+            EventType.APP_UPDATE_DOWNLOAD_UPDATED.name -> AppUpdateDownloads.apply(JsonHelper.jsonDecode(payload))
+            EventType.FEED_SYNC_UPDATED.name -> FeedWorkerState.apply(JsonHelper.jsonDecode<FeedSyncUpdate>(payload))
             EventType.CONTENT_CHANGED.name -> {
-                com.ismartcoding.plain.preferences.Prefs.refresh()
-                com.ismartcoding.plain.features.chat.channel.ChannelCacher.load()
-                com.ismartcoding.plain.features.chat.ChatClient.refreshLatestChats()
-                try { com.ismartcoding.plain.features.files.FavoriteFoldersClient.refresh() }
+                Prefs.refresh()
+                ChannelCacher.load()
+                ChatClient.refreshLatestChats()
+                try { FavoriteFoldersClient.refresh() }
                 catch (cancelled: CancellationException) { throw cancelled }
-                catch (error: Exception) { com.ismartcoding.plain.lib.logcat.LogCat.e("Favorite folders refresh",error) }
+                catch (error: Exception) { LogCat.e("Favorite folders refresh",error) }
                 NotesViewModel.reloadAsync()
             }
-            EventType.POMODORO_ACTION.name -> com.ismartcoding.plain.ui.pomodoro.PomodoroProjection.apply(payload)
+            EventType.POMODORO_ACTION.name -> PomodoroProjection.apply(payload)
         }
     }
 
