@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.dlna
 
-import com.ismartcoding.plain.rust.event.RustEventHandler
+import com.ismartcoding.plain.rust.RustEventHandler
 
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HostEvent
@@ -9,7 +9,7 @@ import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
 internal object DlnaPlayerReports {
-    private fun report(event: HostEvent) { coIO { RustEventHandler.publish(event) } }
+    private fun report(event: HostEvent) { coIO { RustEventHandler.sendEvent(event) } }
     fun reportPosition(mediaUri: String, positionMs: Long, durationMs: Long) = report(position(mediaUri, positionMs, durationMs))
     fun reportSeekConsumed(mediaUri: String, positionMs: Long) = report(seekConsumed(mediaUri, positionMs))
     fun reportPlaybackState(mediaUri: String, state: DlnaPlaybackState) = report(playback(mediaUri, state))

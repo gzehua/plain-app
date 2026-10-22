@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.rust.event
+package com.ismartcoding.plain.rust
 
 import com.ismartcoding.plain.models.PomodoroState
 import com.ismartcoding.plain.models.PomodoroToday
@@ -21,10 +21,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class PomodoroProjectionTest {
+class PomodoroEventsTest {
     private val snapshot = """{"date":"2026-10-15T16:00:00.000Z","completedCount":2,"currentRound":3,"timeLeftSec":120,"totalTimeSec":300,"isRunning":true,"isPaused":false,"state":"SHORT_BREAK"}"""
 
-    @Test fun progress_events_project_without_querying_a_running_core() = runTest {
+    @Test fun progress_events_update_state_without_querying_a_running_core() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val received = mutableListOf<PomodoroToday>()
         val collector = backgroundScope.launch(start = CoroutineStart.UNDISPATCHED) {
@@ -32,7 +32,7 @@ class PomodoroProjectionTest {
         }
         try {
         repeat(32) {
-            RustEventProjection.apply(RustEvent(
+            RustEventHandler.handleEvent(RustEvent(
                 EventType.POMODORO_ACTION.name,
                 """{"action":"progress","today":$snapshot,"completedState":null}""",
             ))

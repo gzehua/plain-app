@@ -1,40 +1,67 @@
-package com.ismartcoding.plain.rust.event
-
-import kotlinx.serialization.Serializable
+package com.ismartcoding.plain.rust
 
 import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.app.events.HostEventData
 import com.ismartcoding.plain.app.events.HWebRequestReceivedEvent
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.rust.host.*
+import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.lib.sendEvent as sendAppEvent
+import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.rust.native.RustDispatchers
+import com.ismartcoding.plain.rust.native.readRustStream
 import com.ismartcoding.plain.ui.notes.NotesViewModel
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
-internal object RustEventProjection {
-    suspend fun reconcile() {
-        com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
-        com.ismartcoding.plain.ui.feeds.FeedWorkerState.refresh()
-        com.ismartcoding.plain.features.videos.VideoProgressHost.restore()
-        com.ismartcoding.plain.preferences.Prefs.refresh()
-        com.ismartcoding.plain.features.chat.download.DownloadQueue.refresh()
-        com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine.refresh()
-        com.ismartcoding.plain.features.nearby.PairingProjection.reconcile()
-        val devices = com.ismartcoding.plain.features.nearby.RustNearbyDevices.snapshot()
-        com.ismartcoding.plain.features.nearby.RustNearbyDevices.apply(devices)
-        com.ismartcoding.plain.features.nearby.RustMdnsRuntime.refresh()
-        com.ismartcoding.plain.features.dlna.DlnaRendererState.refresh()
-        com.ismartcoding.plain.ui.pomodoro.PomodoroProjection.refresh()
-        com.ismartcoding.plain.ui.chat.peer.PeerCacher.refreshOnline()
-        com.ismartcoding.plain.ui.chat.peer.PeerCacher.load()
-        com.ismartcoding.plain.features.chat.channel.ChannelCacher.load()
-        com.ismartcoding.plain.ui.chat.ChatViewModel.refreshLoaded()
-        com.ismartcoding.plain.features.chat.ChatCacher.load()
+object RustEventHandler {
+    private val incoming = MutableSharedFlow<RustEvent>(extraBufferCapacity = 64)
+    val events: SharedFlow<RustEvent> = incoming.asSharedFlow()
+    private val hostEventTypes = MutableStateFlow<HostEventTypes?>(null)
+
+    internal fun start(scope: CoroutineScope) {
+        hostEventTypes.value = JsonHelper.jsonDecode(RustNativeApi.next("capabilities"))
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            events.collect { event ->
+                try {
+                    handleEvent(event)
+                    if (event.reconcile) refreshState()
+                } catch (cancelled: CancellationException) { throw cancelled }
+                catch (error: Exception) { LogCat.e("Handle Rust event", error) }
+            }
+        }
+        scope.launch {
+            try { refreshState() }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (error: Exception) { LogCat.e("Refresh Rust state", error) }
+            readRustStream(
+                next = { withContext(RustDispatchers.events) { RustNativeApi.next("events") } },
+                consume = { incoming.emit(JsonHelper.jsonDecode<RustEvent>(it)) },
+                closed = {},
+            )
+        }
     }
 
-    suspend fun apply(message: RustEvent) {
-        val type = message.type
-        val payload = message.payload
+    suspend fun sendEvent(event: HostEvent) {
+        val types = withTimeoutOrNull(5_000) { hostEventTypes.filterNotNull().first() } ?: error("Rust host event channel unavailable")
+        require(event.type.name in when (event.data) {
+            is HostEventData.Text -> types.textTypes
+            is HostEventData.Binary -> types.binaryTypes
+        }) { "${event.type} is not a host-produced event" }
+        val error = withContext(RustDispatchers.requests) {
+            when (val data = event.data) {
+                is HostEventData.Text -> RustNativeApi.send("text", JsonHelper.jsonEncode(mapOf("type" to event.type.name, "payload" to data.value)), byteArrayOf())
+                is HostEventData.Binary -> RustNativeApi.send("binary", event.type.name, data.value)
+            }
+        }
+        require(error.isEmpty()) { error }
+    }
+
+    internal suspend fun handleEvent(event: RustEvent) {
+        val type = event.type
+        val payload = event.payload
         when (type) {
             EventType.NETWORK_CHANGED.name -> com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
             EventType.WEB_LOGIN_COMPLETED.name -> {
@@ -46,12 +73,12 @@ internal object RustEventProjection {
 
             EventType.MEDIA_ACTION_FINISHED.name -> com.ismartcoding.plain.ui.media.actions.MediaActionProjection.apply(payload)
             EventType.HTTP_SERVER_STARTED.name -> {
-                val started = JsonHelper.jsonDecode<com.ismartcoding.plain.rust.HttpServerStarted>(payload)
-                com.ismartcoding.plain.rust.RustRuntime.httpStarted(started.generation, started.httpPort)
+                val started = JsonHelper.jsonDecode<HttpServerStarted>(payload)
+                RustRuntime.httpStarted(started.generation, started.httpPort)
                 com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
             }
             EventType.HTTP_SERVER_FAILED.name -> {
-                val failure = JsonHelper.jsonDecode<com.ismartcoding.plain.rust.HttpServerFailure>(payload)
+                val failure = JsonHelper.jsonDecode<HttpServerFailure>(payload)
                 com.ismartcoding.plain.app.onRustHttpServerFailed(failure.generation, failure.message)
             }
             EventType.PEER_UPDATED.name -> {
@@ -132,15 +159,15 @@ internal object RustEventProjection {
             EventType.DLNA_SENDER_UPDATED.name -> com.ismartcoding.plain.features.dlna.sender.RustDlnaSender.apply(JsonHelper.jsonDecode<JsonObject>(payload))
             EventType.WEB_LOGIN_REQUESTED.name -> {
                 val facts = JsonHelper.jsonDecode<com.ismartcoding.plain.features.sessions.WebLoginRequestFacts>(payload)
-                sendEvent(com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent(
+                sendAppEvent(com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent(
                     facts.clientId, facts.request, facts.requestId, facts.clientIp))
             }
             EventType.WEB_LOGIN_CLOSED.name -> {
                 val facts = JsonHelper.jsonDecode<com.ismartcoding.plain.features.sessions.WebLoginClosedFacts>(payload)
-                sendEvent(com.ismartcoding.plain.app.events.HWebLoginClosedEvent(facts.requestId))
+                sendAppEvent(com.ismartcoding.plain.app.events.HWebLoginClosedEvent(facts.requestId))
             }
             EventType.WEB_REQUEST_RECEIVED.name -> {
-                sendEvent(HWebRequestReceivedEvent())
+                sendAppEvent(HWebRequestReceivedEvent())
             }
             EventType.SHARED_FOLDER_DOWNLOAD_UPDATED.name -> com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine.refresh()
             EventType.AUDIO_PLAYBACK_UPDATED.name -> com.ismartcoding.plain.rust.host.media.AudioEngineHost.restore(JsonHelper.jsonDecode<JsonObject>(payload))
@@ -159,7 +186,40 @@ internal object RustEventProjection {
             EventType.POMODORO_ACTION.name -> com.ismartcoding.plain.ui.pomodoro.PomodoroProjection.apply(payload)
         }
     }
+
+    private suspend fun refreshState() {
+        com.ismartcoding.plain.ui.app.LocalDeviceState.refresh()
+        com.ismartcoding.plain.ui.feeds.FeedWorkerState.refresh()
+        com.ismartcoding.plain.features.videos.VideoProgressHost.restore()
+        com.ismartcoding.plain.preferences.Prefs.refresh()
+        com.ismartcoding.plain.features.chat.download.DownloadQueue.refresh()
+        com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine.refresh()
+        com.ismartcoding.plain.features.nearby.PairingProjection.reconcile()
+        val devices = com.ismartcoding.plain.features.nearby.RustNearbyDevices.snapshot()
+        com.ismartcoding.plain.features.nearby.RustNearbyDevices.apply(devices)
+        com.ismartcoding.plain.features.nearby.RustMdnsRuntime.refresh()
+        com.ismartcoding.plain.features.dlna.DlnaRendererState.refresh()
+        com.ismartcoding.plain.ui.pomodoro.PomodoroProjection.refresh()
+        com.ismartcoding.plain.ui.chat.peer.PeerCacher.refreshOnline()
+        com.ismartcoding.plain.ui.chat.peer.PeerCacher.load()
+        com.ismartcoding.plain.features.chat.channel.ChannelCacher.load()
+        com.ismartcoding.plain.ui.chat.ChatViewModel.refreshLoaded()
+        com.ismartcoding.plain.features.chat.ChatCacher.load()
+    }
 }
+
+@Serializable
+data class RustEvent(
+    val type: String,
+    val payload: String,
+    val reconcile: Boolean = false,
+)
+
+@Serializable
+internal data class HostEventTypes(
+    val textTypes: Set<String>,
+    val binaryTypes: Set<String>,
+)
 
 @Serializable
 private data class PeerIdEvent(val id: String)

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.rust.event.RustEventHandler
+import com.ismartcoding.plain.rust.RustEventHandler
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.app.events.EventType

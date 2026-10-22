@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.rust.event.RustEventHandler
+import com.ismartcoding.plain.rust.RustEventHandler
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.app.events.EventType
@@ -18,7 +18,7 @@ class EventDirectionRustHttpTest {
             EventType.NEARBY_DEVICE_FOUND, EventType.NEARBY_DISCOVERY_STARTED,
             EventType.MESSAGE_CREATED, EventType.DOWNLOAD_PROGRESS, EventType.CONTENT_CHANGED,
             EventType.DEVICE_NAME_UPDATED, EventType.POMODORO_SETTINGS_UPDATE, EventType.NOTIFICATION_REFRESHED)) {
-            val error = runCatching { RustEventHandler.publish(HostEvent(type, "{}")) }.exceptionOrNull()
+            val error = runCatching { RustEventHandler.sendEvent(HostEvent(type, "{}")) }.exceptionOrNull()
             assertTrue("$type must be rejected before sending", error is IllegalArgumentException)
         }
     }

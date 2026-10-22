@@ -6,7 +6,6 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.*
 import com.ismartcoding.plain.rust.graphql.ApiSession
 import com.ismartcoding.plain.rust.native.RustNativeApi
-import com.ismartcoding.plain.rust.event.RustEventHandler
 import com.ismartcoding.plain.rust.host.RustHostApiHandler
 import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.CoroutineScope

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.audio
 
-import com.ismartcoding.plain.rust.event.RustEventHandler
+import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 import kotlinx.serialization.Serializable

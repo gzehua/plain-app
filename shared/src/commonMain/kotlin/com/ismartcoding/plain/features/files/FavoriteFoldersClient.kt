@@ -14,7 +14,6 @@ import com.ismartcoding.plain.ui.notes.*
 import com.ismartcoding.plain.features.tags.*
 import com.ismartcoding.plain.ui.tags.*
 import com.ismartcoding.plain.rust.graphql.*
-import com.ismartcoding.plain.rust.event.*
 import com.ismartcoding.plain.rust.host.*
 import com.ismartcoding.plain.network.*
 import kotlinx.coroutines.flow.MutableStateFlow

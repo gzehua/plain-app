@@ -161,7 +161,7 @@ object AppEvents {
 
                     is HostEvent -> {
                         coIO {
-                            com.ismartcoding.plain.rust.event.RustEventHandler.publish(event)
+                            com.ismartcoding.plain.rust.RustEventHandler.sendEvent(event)
                         }
                     }
 

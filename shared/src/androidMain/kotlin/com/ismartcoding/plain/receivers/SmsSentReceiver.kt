@@ -21,7 +21,7 @@ class SmsSentReceiver : BroadcastReceiver() {
             try {
                 val report = com.ismartcoding.plain.features.telephony.sms.SmsPartSentReport(requestId, partIndex, partCount,
                     broadcastResultCode == Activity.RESULT_OK, broadcastResultCode)
-                com.ismartcoding.plain.rust.event.RustEventHandler.publish(com.ismartcoding.plain.app.events.HostEvent(
+                com.ismartcoding.plain.rust.RustEventHandler.sendEvent(com.ismartcoding.plain.app.events.HostEvent(
                     com.ismartcoding.plain.app.events.EventType.SMS_PART_SENT_REPORTED, com.ismartcoding.plain.lib.JsonHelper.jsonEncode(report)))
             } finally {
                 pendingResult.finish()

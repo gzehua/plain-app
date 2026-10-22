@@ -40,7 +40,7 @@ internal fun FeedEntriesPageEffects(
     }
 
     LaunchedEffect(feedEntriesVM, feedsVM, tagsVM) {
-        com.ismartcoding.plain.rust.event.RustEventHandler.events.collect { event ->
+        com.ismartcoding.plain.rust.RustEventHandler.events.collect { event ->
             if (event.type == EventType.CONTENT_CHANGED.name) {
                 feedsVM.loadAsync(withCount = true)
                 feedsVM.refreshSelectedItemAsync()
