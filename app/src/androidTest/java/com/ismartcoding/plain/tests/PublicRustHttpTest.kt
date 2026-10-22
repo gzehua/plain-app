@@ -51,13 +51,12 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
-import java.net.ServerSocket
 import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class PublicRustHttpTest {
     @Test
-    fun rustPublicListenerServesTlsUploadsRangesPortalAndStops() = runBlocking {
+    fun rustPublicListenerServesTlsUploadsRangesAndPortal() = runBlocking {
         val oldService = UserPrefs.service.value
         val oldDesktop = UserPrefs.desktopAccess.value
         val oldHttp = UserPrefs.httpPort.value
@@ -70,7 +69,6 @@ class PublicRustHttpTest {
         try {
             UserPrefs.service.value = true
             UserPrefs.desktopAccess.value = true
-            stopHttpServerCoreAsync()
             withIO { RustRuntime.start() }
             assertTrue(com.ismartcoding.plain.app.checkHttpServerAsync())
             val port = UserPrefs.httpPort.value
@@ -134,12 +132,7 @@ class PublicRustHttpTest {
                 client.get("http://127.0.0.1:$port/health").use { assertEquals(200, it.status.value) }
                 client.post("http://127.0.0.1:$port/graphql", "{}".encodeToByteArray(), "application/json").use { assertEquals(404, it.status.value) }
             }
-            stopHttpServerCoreAsync()
-            for (released in listOf(port, tlsPort)) {
-                ServerSocket().use { it.reuseAddress = true; it.bind(java.net.InetSocketAddress(released)); assertTrue(it.isBound) }
-            }
         } finally {
-            stopHttpServerCoreAsync()
             if (clientId.isNotEmpty()) com.ismartcoding.plain.features.sessions.RustSessionStore.delete(clientId)
             root.deleteRecursively()
             UserPrefs.service.value = oldService

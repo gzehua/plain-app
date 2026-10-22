@@ -7,7 +7,7 @@ import kotlinx.serialization.json.JsonObject
 
 /** Local-only JNI (Android) / C (iOS) boundary; no HTTP or session routing. */
 internal expect object RustNativeApi {
-    fun start(dataDir: String, token: String, configJson: String): String
+    fun startCore(dataDir: String, token: String, configJson: String): String
     fun graphql(request: String): String
     fun next(stream: String): String
     fun send(action: String, message: String, bytes: ByteArray): String
@@ -16,7 +16,6 @@ internal expect object RustNativeApi {
     fun resourceWrite(id: String, bytes: ByteArray): String
     fun resourceClose(id: String, failed: Boolean): String
     fun fileIcon(extension: String): String
-    fun stop()
 
     suspend fun restartHttpServer(): Boolean
     fun httpStatus(): String

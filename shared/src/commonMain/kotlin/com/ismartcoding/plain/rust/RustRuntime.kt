@@ -27,13 +27,13 @@ object RustRuntime {
     private var collectorsStarted = false
 
     private val startupConfig by lazy {
-        RustHttpServerConfig(isDebugBuild(), startupSystemProperties())
+        RustStartupConfig(isDebugBuild(), startupSystemProperties())
     }
 
     fun start() = lock.withLock {
         val token = sessionToken ?: generateChaCha20Key().also { sessionToken = it }
         val config = startupConfig
-        val result = JsonHelper.jsonDecode<RustHttpServerResult>(RustNativeApi.start(
+        val result = JsonHelper.jsonDecode<RustStartupResult>(RustNativeApi.startCore(
             dataDir, token, JsonHelper.jsonEncode(config)))
         check(result.errorCode.isEmpty()) { result.error }
         require(result.logFile.startsWith('/')) { "Rust log file path required" }

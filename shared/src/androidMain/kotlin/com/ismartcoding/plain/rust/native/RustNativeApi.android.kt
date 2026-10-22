@@ -10,9 +10,8 @@ internal actual object RustNativeApi {
     init { System.loadLibrary("plain_rust") }
     private external fun fileIconNative(extension: String): String
     actual fun fileIcon(extension: String): String = fileIconNative(extension)
-    private external fun startNative(dataDir: String, token: String, configJson: String): String
-    private external fun stopNative(): String
-    actual fun start(dataDir: String, token: String, configJson: String): String = startNative(dataDir, token, configJson)
+    private external fun startCoreNative(dataDir: String, token: String, configJson: String): String
+    actual fun startCore(dataDir: String, token: String, configJson: String): String = startCoreNative(dataDir, token, configJson)
     private external fun graphqlNative(request: String): String
     actual fun graphql(request: String): String = graphqlNative(request)
     private external fun nextNative(stream: String): String
@@ -29,7 +28,6 @@ internal actual object RustNativeApi {
     actual fun resourceOpen(id: String): String = resourceOpenNative(id)
     actual fun resourceWrite(id: String, bytes: ByteArray): String = resourceWriteNative(id, bytes)
     actual fun resourceClose(id: String, failed: Boolean): String = resourceCloseNative(id, failed)
-    actual fun stop() { val error = stopNative(); check(error.isEmpty()) { error } }
 
     private external fun restartHttpServerNative(): String
     actual suspend fun restartHttpServer(): Boolean = nativeCall { restartHttpServerNative() }

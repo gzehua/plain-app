@@ -4,13 +4,13 @@ import com.ismartcoding.plain.lib.JsonHelper
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class RustHttpServerResultTest {
+class RustStartupResultTest {
     @Test
     fun startupCarriesTheSharedPreviewPathAsAFixedRustOwnedValue() {
-        val result = JsonHelper.jsonDecode<RustHttpServerResult>(
+        val result = JsonHelper.jsonDecode<RustStartupResult>(
             """{"sharedPreviewDir":"/system/cache/share_open"}""",
         )
         assertEquals("/system/cache/share_open", result.sharedPreviewDir)
-        assertEquals(result, JsonHelper.jsonDecode<RustHttpServerResult>(JsonHelper.jsonEncode(result)))
+        assertEquals(result, JsonHelper.jsonDecode<RustStartupResult>(JsonHelper.jsonEncode(result)))
     }
 }

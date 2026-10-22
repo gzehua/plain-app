@@ -2,7 +2,6 @@ package com.ismartcoding.plain.tests
 
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.rust.RustRuntime
-import com.ismartcoding.plain.app.stopHttpServerCoreAsync
 
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
@@ -107,7 +106,6 @@ class ApiFixtureRustHttpTest {
             if (rootCreated) root.deleteRecursively()
             SystemPrefsClient.local.set("api_permissions", JsonArray(oldPermissions.map(::JsonPrimitive)))
             UserPrefs.desktopAccess.value = oldAccess
-            stopHttpServerCoreAsync()
         }
     }
 }

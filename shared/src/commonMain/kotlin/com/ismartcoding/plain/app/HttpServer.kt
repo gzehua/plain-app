@@ -105,12 +105,12 @@ suspend fun startHttpServerAsync() = withIO {
             applyHttpServerStatus()
         } catch (error: Throwable) {
             withContext(NonCancellable) {
-                stopEngineAndHooks()
-                if (error is CancellationException) {
-                    HttpServerManager.serverState.value = HttpServerState.OFF
-                } else {
-                    recordServerFailure(error.message ?: error::class.simpleName.orEmpty())
-                }
+                stopHooks()
+                // A failed App startup does not mean the Rust listener has stopped.
+                recordServerFailure(
+                    if (error is CancellationException) "App startup cancelled"
+                    else error.message ?: error::class.simpleName.orEmpty(),
+                )
             }
             if (error is CancellationException) throw error
         }
@@ -120,12 +120,6 @@ suspend fun startHttpServerAsync() = withIO {
 private suspend fun stopHooks() {
     runCatching { withTimeout(STOP_HOOK_TIMEOUT_MS) { onHttpServerStopped() } }
         .onFailure { LogCat.e("HTTP server stop hook failed: ${it.message}") }
-}
-
-private suspend fun stopEngineAndHooks() {
-    runCatching { RustNativeApi.stop() }
-        .onFailure { LogCat.e("HTTP server engine stop failed: ${it.message}") }
-    stopHooks()
 }
 
 private suspend fun recordServerFailure(detail: String) {
@@ -168,25 +162,12 @@ private suspend fun applyHttpServerStatus() {
     }
 }
 
-internal suspend fun finishHttpServerStopAsync() = withIO {
-    withContext(NonCancellable) {
-        lifecycleMutex.withLock {
-            stopEngineAndHooks()
-            HttpServerManager.httpServerError.value = ""
-            HttpServerManager.serverState.value = HttpServerState.OFF
-        }
-    }
-}
-
-suspend fun stopHttpServerCoreAsync() = withIO {
-    withContext(NonCancellable) {
-        HttpServerManager.serverState.value = HttpServerState.STOPPING
-        finishHttpServerStopAsync()
-    }
-}
-
 fun restartServer() {
     coIO {
+        if (!RustRuntime.isCoreInitialized) {
+            startHttpServerAsync()
+            return@coIO
+        }
         lifecycleMutex.withLock {
             try {
                 RustNativeApi.restartHttpServer()

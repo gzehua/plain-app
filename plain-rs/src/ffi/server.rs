@@ -71,7 +71,7 @@ mod android {
         sys::jstring,
     };
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_startNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_startCoreNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         path: JString<'_>,
@@ -88,20 +88,6 @@ mod android {
                 Err(e) => public_error(e),
             };
             env.new_string(result)
-        })
-        .resolve::<ThrowRuntimeExAndDefault>()
-        .into_raw()
-    }
-    #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_stopNative(
-        mut env: EnvUnowned<'_>,
-        _: JObject<'_>,
-    ) -> jstring {
-        env.with_env(|env| -> jni::errors::Result<_> {
-            env.new_string(match public_stop() {
-                Ok(()) => String::new(),
-                Err(e) => e,
-            })
         })
         .resolve::<ThrowRuntimeExAndDefault>()
         .into_raw()

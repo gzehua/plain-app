@@ -28,8 +28,8 @@ object HttpServerManager {
     val notificationId: Int by lazy { generateNotificationId() }
 
     // ----------------------------------------------------------------------------------
-    // Service lifecycle intent. All serverState writes stay inside the start
-    // orchestrator and the NonCancellable stop body (single-owner state);
+    // Service lifecycle intent. All serverState writes stay inside the startup
+    // and Rust-status handlers;
     // these entry points only dispatch commands and gate on permissions.
     // ----------------------------------------------------------------------------------
 

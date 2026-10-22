@@ -16,6 +16,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
     if prefs.path() != paths.system_prefs() || prefs.user_path() != paths.user_prefs() {
         return Err("Preferences and core must share one data directory".into());
     }
+    let mut started_listener = false;
     if let Some(core) = guard.as_mut() {
         if core.directory != PathBuf::from(data_dir)
             || core.token != token
@@ -41,6 +42,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
                 ),
             )?;
             core.server.port = http;
+            started_listener = true;
         }
     } else {
         let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -66,6 +68,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             key,
             config["debug"].as_bool().unwrap_or(false),
         ))?;
+        started_listener = true;
         crate::ffi::events::install(&runtime, &server);
         *guard = Some(crate::ffi::server::Core {
             directory: PathBuf::from(data_dir),
@@ -75,20 +78,26 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
         });
     }
     let core = guard.as_ref().unwrap();
-    let (http, https) = core
-        .runtime
-        .block_on(core.server.http_ports())
-        .ok_or("HTTP server stopped during startup")?;
-    plain_rs::prefs::user::patch(
-        &prefs,
-        plain_rs::prefs::user::UserSettingsPatch {
-            http_port: Some(http as i32),
-            https_port: Some(https as i32),
-            ..Default::default()
-        },
-    )
-    .map_err(|e| e.to_string())?;
-    Ok(serde_json::json!({
-        "logFile":core.server.log_file()?,
-        "sharedPreviewDir":core.server.cache_paths().shared_previews()}).to_string())
+    let result: Result<String, String> = (|| {
+        let (http, https) = core
+            .runtime
+            .block_on(core.server.http_ports())
+            .ok_or("HTTP server stopped during startup")?;
+        plain_rs::prefs::user::patch(
+            &prefs,
+            plain_rs::prefs::user::UserSettingsPatch {
+                http_port: Some(http as i32),
+                https_port: Some(https as i32),
+                ..Default::default()
+            },
+        )
+        .map_err(|e| e.to_string())?;
+        Ok(serde_json::json!({
+            "logFile":core.server.log_file()?,
+            "sharedPreviewDir":core.server.cache_paths().shared_previews()}).to_string())
+    })();
+    if result.is_err() && started_listener {
+        core.runtime.block_on(core.server.stop_public());
+    }
+    result
 }

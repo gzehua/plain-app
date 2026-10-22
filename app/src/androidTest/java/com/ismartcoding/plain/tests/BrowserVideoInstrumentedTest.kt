@@ -97,10 +97,8 @@ class BrowserVideoInstrumentedTest {
             }
         } finally {
             output.delete()
-            stopHttpServerCoreAsync()
             UserPrefs.desktopAccess.value = desktop
             UserPrefs.service.value = service
-            if (service) withIO { RustRuntime.start() }
         }
     }
 }

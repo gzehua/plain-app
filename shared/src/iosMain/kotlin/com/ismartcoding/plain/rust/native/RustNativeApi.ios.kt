@@ -33,7 +33,6 @@ import com.ismartcoding.plain.rustprefs.plain_events_next
 import com.ismartcoding.plain.rustprefs.plain_events_send
 import kotlinx.serialization.json.*
 import com.ismartcoding.plain.rustprefs.plain_graphql
-import com.ismartcoding.plain.rustprefs.plain_http_stop
 import com.ismartcoding.plain.rustprefs.plain_core_start
 import com.ismartcoding.plain.rustprefs.plain_prefs_string_free
 import com.ismartcoding.plain.rustprefs.plain_resource_close
@@ -49,7 +48,7 @@ internal actual object RustNativeApi {
         val pointer = checkNotNull(plain_file_icon(extension.cstr.ptr))
         try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
     }
-    actual fun start(dataDir: String, token: String, configJson: String): String = memScoped {
+    actual fun startCore(dataDir: String, token: String, configJson: String): String = memScoped {
         val result = plain_core_start(dataDir.cstr.ptr, token.cstr.ptr, configJson.cstr.ptr) ?: error("Rust core returned no response")
         try { result.toKString() } finally { plain_prefs_string_free(result) }
     }
@@ -93,10 +92,6 @@ internal actual object RustNativeApi {
     actual fun resourceClose(id: String, failed: Boolean): String = memScoped {
         val pointer = checkNotNull(plain_resource_close(id.cstr.ptr, failed))
         try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
-    }
-    actual fun stop() {
-        val result = plain_http_stop() ?: return
-        try { error(result.toKString()) } finally { plain_prefs_string_free(result) }
     }
 
     actual suspend fun restartHttpServer(): Boolean = nativeCall {
