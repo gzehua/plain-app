@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.rust.host.provider
 
+import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.platform.media.observeImageCatalog
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
@@ -50,7 +53,10 @@ object SystemProviderHost {
         "systemRequestScreenMirrorAudio",
         "systemRequestScreenMirrorKeyFrame",
         "systemUpdateScreenMirrorQuality" -> SystemScreenMirrorHost.handle(method, params)
-        "systemImageModelsObserve" -> SystemImageSearchHost.handle(method, params)
+        "systemImageModelsObserve" -> {
+            observeImageCatalog(JsonHelper.jsonDecodeFromElement<ObserveImageCatalogRequest>(params).enabled)
+            JsonHelper.jsonEncodeToElement(true)
+        }
         "systemFileResource" -> com.ismartcoding.plain.platform.files.FileResourceHost.handle(params)
         "systemFileIndexId",
         "systemFileIndexRows",
@@ -61,8 +67,15 @@ object SystemProviderHost {
         "systemMediaRows",
         "systemMediaCount",
         "systemMediaIdsFacts" -> SystemMediaHost.handle(method, params)
-        "systemAudioPlaybackState" -> SystemAudioHost.handle(method, params)
-        "systemDeleteRecords" -> SystemRecordsHost.handle(method, params)
+        "systemAudioPlaybackState" -> JsonHelper.jsonEncodeToElement(AudioPlaybackFacts(
+            isPlaying = com.ismartcoding.plain.platform.media.audioIsPlayingFlow().value,
+            positionMs = com.ismartcoding.plain.platform.media.audioPlayerProgressAsync(),
+        ))
+        "systemDeleteRecords" -> {
+            val request = JsonHelper.jsonDecodeFromElement<DeleteRecordsRequest>(params)
+            JsonHelper.jsonEncodeToElement(com.ismartcoding.plain.platform.system.deleteSystemProviderFacts(
+                com.ismartcoding.plain.platform.system.DataType.valueOf(request.provider), request.ids.toSet()))
+        }
         "systemSetClipboard",
         "systemPermissionFacts",
         "systemOpenAccessibilitySettings",
@@ -79,3 +92,9 @@ object SystemProviderHost {
         else -> error("Unsupported provider operation")
     }
 }
+
+@Serializable
+private data class ObserveImageCatalogRequest(val enabled: Boolean)
+
+@Serializable
+private data class DeleteRecordsRequest(val provider: String, val ids: List<String>)

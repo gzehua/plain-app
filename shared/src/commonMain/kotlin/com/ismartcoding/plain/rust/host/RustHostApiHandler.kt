@@ -1,6 +1,12 @@
 package com.ismartcoding.plain.rust.host
 
 import com.ismartcoding.plain.rust.sendEventToRust
+import com.ismartcoding.plain.features.chat.peer.transport.PeerTransportType
+import com.ismartcoding.plain.platform.network.isWifiAwareSupported
+import com.ismartcoding.plain.platform.network.isBleReady
+import com.ismartcoding.plain.platform.network.ble.PeerBleExchange
+import com.ismartcoding.plain.rust.host.network.PeerTransportPrewarmHost
+import com.ismartcoding.plain.rust.host.network.PeerSocketHost
 
 import kotlinx.serialization.Serializable
 
@@ -68,7 +74,13 @@ internal object RustHostApiHandler {
                                         method == "nearbyScanFacts" -> com.ismartcoding.plain.rust.host.network.NearbyScanHost.facts()
                                         method == "pairingNotification" -> com.ismartcoding.plain.rust.host.network.PairingNotificationHost.handle(params)
                                         method == "peerStartAware" || method == "peerStopAware" -> com.ismartcoding.plain.rust.host.network.PeerAwareHost.handle(method, params)
-                                        method.startsWith("peerTransport") -> com.ismartcoding.plain.rust.host.network.PeerTransportHost.handle(method, params)
+                                        method == "peerTransportPrewarmScan" -> PeerTransportPrewarmHost.scan(params)
+                                        method == "peerTransportCapabilities" -> JsonHelper.jsonEncodeToElement(buildList {
+                                            if (isWifiAwareSupported) add(PeerTransportType.AWARE)
+                                            if (isBleReady()) add(PeerTransportType.BLE)
+                                        })
+                                        method.startsWith("peerTransportSocket") -> PeerSocketHost.handle(method, params)
+                                        method == "peerTransportBleExchange" -> PeerBleExchange.exchange(params)
                                         com.ismartcoding.plain.rust.host.provider.SystemProviderHost.accepts(method) -> com.ismartcoding.plain.rust.host.provider.SystemProviderHost.handle(method, params)
                                         method == "audioEngineCommand" -> AudioEngineHost.handle(method, params)
                                         method == "fileTaskScan" || method == "fileTaskMediaSnapshot" -> com.ismartcoding.plain.rust.host.provider.FileTaskHost.handle(method,params)
