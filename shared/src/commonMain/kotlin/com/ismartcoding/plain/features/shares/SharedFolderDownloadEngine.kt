@@ -1,9 +1,9 @@
 package com.ismartcoding.plain.features.shares
 
+import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.api.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.graphql.gql
 import com.ismartcoding.plain.features.downloads.*
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.*
@@ -66,18 +66,13 @@ object SharedFolderDownloadEngine {
         }
         DownloadCenter.replaceExternal(DOWNLOAD_KIND_SHARE, tasks)
     }
-    private const val QUEUE_FIELDS = "runtimeId revision tasks { id messageId type title targetDir link { host port sharedId token pageUrl } urlToken entries { name virtualPath isDir size mimeType hasThumb } zipName generation status error downloadedSize totalSize downloadSpeed totalFiles doneFiles failedFiles currentFile packing failures { path error } }"
+
     private suspend fun call(request: Request): JsonElement = when (request) {
-        Request.Snapshot -> RustGraphqlApi.query("sharedDownloadQueue { $QUEUE_FIELDS }").getValue("sharedDownloadQueue")
-        is Request.Enqueue -> RustGraphqlApi.graphql("mutation(\$input: SharedDownloadInput!) { enqueueSharedDownload(input: \$input) }", mapOf("input" to JsonHelper.jsonEncodeToElement(request.input))).getValue("enqueueSharedDownload")
+        Request.Snapshot -> RustGraphqlApi.graphql(Query.sharedDownloadQueue()).getValue("sharedDownloadQueue")
+        is Request.Enqueue -> RustGraphqlApi.graphql(Mutation.enqueueSharedDownload(request.input)).getValue("enqueueSharedDownload")
         is Request.Control -> {
-            val operation = when (request.command) {
-                "retry" -> "retrySharedDownload"
-                "cancel" -> "cancelSharedDownload"
-                "remove" -> "removeSharedDownload"
-                else -> error("Unknown shared download control")
-            }
-            RustGraphqlApi.mutate("$operation(id: ${gql(request.id)})").getValue(operation)
+            val operation = Mutation.sharedDownloadControl(request.command, request.id)
+            RustGraphqlApi.graphql(operation).getValue(operation.field)
         }
     }
 

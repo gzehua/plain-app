@@ -2,10 +2,10 @@ package com.ismartcoding.plain.features.chat
 
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.graphql.gql
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.*
 import kotlin.time.Instant
 
@@ -20,7 +20,7 @@ class ChatSnapshotClientTest {
         val ids = (0 until 130).map { "message-$it" }
         val sizes = mutableListOf<Int>()
         val snapshot = readChatSnapshot(ids + ids.first()) { selection ->
-            val size = selection.split("chatItem(").size - 1
+            val size = selection.query.split("chatItem(").size - 1
             sizes += size
             JsonObject((0 until size).associate { "message$it" to JsonNull })
         }
@@ -34,7 +34,7 @@ class ChatSnapshotClientTest {
     fun preservesLiteralIdsAndRequiresAnExplicitAliasResult() = runTest {
         val id = "quoted\"\nidentifier"
         val snapshot = readChatSnapshot(listOf(id)) { selection ->
-            assertTrue(selection.contains("chatItem(id:${gql(id)})"))
+            assertEquals(id, selection.variables.getValue("id0").jsonPrimitive.content)
             JsonObject(mapOf("message0" to JsonHelper.jsonEncodeToElement(chat(id))))
         }
         assertEquals(id, snapshot.getValue(id)?.id)

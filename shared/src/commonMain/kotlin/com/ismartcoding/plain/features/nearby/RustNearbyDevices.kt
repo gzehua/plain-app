@@ -1,15 +1,12 @@
 package com.ismartcoding.plain.features.nearby
 
+import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.api.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-
-
 import com.ismartcoding.plain.models.NearbyDevice
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.ui.nearby.NearbyViewModel
 import kotlinx.serialization.json.jsonArray
-
-private const val NEARBY_DEVICE_FIELDS =
-    "id name ips port deviceType version platform lastSeen discoveryMethods bestIp status"
 
 object RustNearbyDevices {
     @OptIn(kotlin.uuid.ExperimentalUuidApi::class)
@@ -17,11 +14,11 @@ object RustNearbyDevices {
         val token = kotlin.uuid.Uuid.random().toString()
         discoverySession(token,
             acquire = {
-                RustGraphqlApi.mutate("acquireDiscovery(token: ${com.ismartcoding.plain.rust.graphql.gql(it)})")
+                RustGraphqlApi.graphql(Mutation.acquireDiscovery(it))
                 apply(snapshot())
                 RustMdnsRuntime.refresh()
             },
-            release = { RustGraphqlApi.mutate("releaseDiscovery(token: ${com.ismartcoding.plain.rust.graphql.gql(it)})") },
+            release = { RustGraphqlApi.graphql(Mutation.releaseDiscovery(it)) },
         )
     }
 
@@ -30,7 +27,7 @@ object RustNearbyDevices {
      * handler — the event payload only carries the revision.
      */
     suspend fun snapshot(): List<NearbyDevice> =
-        RustGraphqlApi.query("nearbyDevices { $NEARBY_DEVICE_FIELDS }")
+        RustGraphqlApi.graphql(Query.nearbyDevices())
             .getValue("nearbyDevices")
             .jsonArray
             .map { JsonHelper.jsonDecode<NearbyDevice>(it.toString()) }

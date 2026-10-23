@@ -1,9 +1,9 @@
 package com.ismartcoding.plain.features.shares
 
+import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.api.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-
 import com.ismartcoding.plain.features.chat.models.MessageShare
-import com.ismartcoding.plain.rust.graphql.gql
 import kotlinx.serialization.json.*
 
 object SharedLinkClient {
@@ -11,29 +11,21 @@ object SharedLinkClient {
 
     fun pageUrl(link: SharedLink): String = link.pageUrl
 
-    private const val LINK_FIELDS = "host port sharedId token pageUrl"
-    private const val ENTRY_FIELDS = "name virtualPath isDir size mimeType hasThumb"
-    private const val INFO_FIELDS = "name readOnly requiresPassword expiresAt urlToken entries { $ENTRY_FIELDS }"
-    private const val CARD_FIELDS = "shareId urlToken peerInfo { id ip port } name itemCount totalSize expiresAt"
-
     suspend fun ownLink(id: String, host: String? = null): SharedLink =
-        json.decodeFromJsonElement(RustGraphqlApi.query("shareLink(id: ${gql(id)}, host: ${host?.let(::gql) ?: "null"}) { $LINK_FIELDS }").getValue("shareLink"))
+        json.decodeFromJsonElement(RustGraphqlApi.graphql(Query.shareLink(id, host)).getValue("shareLink"))
 
     suspend fun initialLink(messageId: String, expected: MessageShare): SharedLink =
         json.decodeFromJsonElement(RustGraphqlApi.graphql(
-            "query(\$messageId: ID!, \$expected: SharedMessageCardInput!) { initialSharedLink(messageId: \$messageId, expected: \$expected) { $LINK_FIELDS } }",
-            mapOf("messageId" to JsonPrimitive(messageId), "expected" to json.encodeToJsonElement(expected)),
+            Query.initialSharedLink(messageId, expected),
         ).getValue("initialSharedLink"))
 
     suspend fun browse(messageId: String, expected: MessageShare, virtualPath: String?): SharedBrowseResult? =
         RustGraphqlApi.graphql(
-            "mutation(\$messageId: ID!, \$expected: SharedMessageCardInput!, \$virtualPath: String) { browseSharedLink(messageId: \$messageId, expected: \$expected, virtualPath: \$virtualPath) { info { $INFO_FIELDS } link { $LINK_FIELDS } card { $CARD_FIELDS } } }",
-            mapOf("messageId" to JsonPrimitive(messageId), "expected" to json.encodeToJsonElement(expected), "virtualPath" to (virtualPath?.let(::JsonPrimitive) ?: JsonNull)),
+            Mutation.browseSharedLink(messageId, expected, virtualPath),
         ).getValue("browseSharedLink").takeUnless { it is JsonNull }?.let { json.decodeFromJsonElement(it) }
 
     suspend fun cacheFile(link: SharedLink, urlToken: String, entry: SharedFileDto, thumbnail: Boolean = false): String =
         RustGraphqlApi.graphql(
-            "mutation(\$link: SharedLinkInput!, \$urlToken: String!, \$entry: SharedEntryInput!, \$thumbnail: Boolean!) { cacheSharedFile(link: \$link, urlToken: \$urlToken, entry: \$entry, thumbnail: \$thumbnail) }",
-            mapOf("link" to json.encodeToJsonElement(link), "urlToken" to JsonPrimitive(urlToken), "entry" to json.encodeToJsonElement(entry), "thumbnail" to JsonPrimitive(thumbnail)),
+            Mutation.cacheSharedFile(link, urlToken, entry, thumbnail),
         ).getValue("cacheSharedFile").jsonPrimitive.content
 }

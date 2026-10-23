@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.chat
 
+import com.ismartcoding.plain.api.graphql.Mutation
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-
 import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.features.chat.models.MessageContent
@@ -10,8 +10,6 @@ import com.ismartcoding.plain.features.chat.models.MessageType
 import com.ismartcoding.plain.features.chat.models.toJSONString
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.rust.graphql.gql
-import com.ismartcoding.plain.rust.graphql.gqlIds
 import com.ismartcoding.plain.rust.graphql.selectionQuery
 import kotlinx.serialization.json.*
 
@@ -20,7 +18,6 @@ object ChatClient {
     suspend fun writeDraft(id: String, value: String) = RustGraphqlApi.writeSavedValue(draftKey(id), value)
     private fun draftKey(id: String) = "chat_input_text:${ChatTarget.parseId(id).encodedToId}"
 
-
     suspend fun refreshLatestChats() = withIO {
         ChatCacher.load()
     }
@@ -28,24 +25,24 @@ object ChatClient {
     suspend fun getChatItem(id: String): ChatItem? = ChatQueries.getChatItem(id)
 
     suspend fun sendContent(target: ChatTarget, content: MessageContent): ChatItem =
-        RustChatStore.decodeGraphql(RustGraphqlApi.mutate("sendChatItem(target: ${gql(target.encodedToId)}, content: ${gql(content.toJSONString())}) { ${RustChatStore.FIELDS} }")
+        RustChatStore.decodeGraphql(RustGraphqlApi.graphql(Mutation.sendChatItem(target.encodedToId, content.toJSONString()))
             .getValue("sendChatItem").jsonArray.single())
 
     suspend fun sendText(target: ChatTarget, text: String): ChatItem =
         sendContent(target, MessageContent(MessageType.TEXT, MessageText(text)))
 
     suspend fun forward(id: String, targets: List<ChatTarget>): List<ChatItem> =
-        RustGraphqlApi.mutate("forwardChatItems(id: ${gql(id)}, targets: ${gqlIds(targets.map { it.encodedToId })}) { ${RustChatStore.FIELDS} }")
+        RustGraphqlApi.graphql(Mutation.forwardChatItems(id, targets.map { it.encodedToId }))
             .getValue("forwardChatItems").jsonArray.map(RustChatStore::decodeGraphql)
 
     suspend fun deleteQuery(query: String): Int =
-        RustGraphqlApi.mutate("deleteChatItems(query: ${gql(query)}) { affectedCount }").getValue("deleteChatItems").jsonObject.getValue("affectedCount").jsonPrimitive.int
+        RustGraphqlApi.graphql(Mutation.deleteChatItems(query)).getValue("deleteChatItems").jsonObject.getValue("affectedCount").jsonPrimitive.int
 
     suspend fun deliver(id: String, recipients: List<String>? = null): ChatItem =
-        RustChatStore.decodeGraphql(RustGraphqlApi.mutate("deliverChatItem(id: ${gql(id)}, recipients: ${recipients?.let(::gqlIds) ?: "null"}) { ${RustChatStore.FIELDS} }").getValue("deliverChatItem"))
+        RustChatStore.decodeGraphql(RustGraphqlApi.graphql(Mutation.deliverChatItem(id, recipients)).getValue("deliverChatItem"))
 
     suspend fun deleteOne(id: String) {
-        RustGraphqlApi.mutate("deleteChatItem(id: ${gql(id)})")
+        RustGraphqlApi.graphql(Mutation.deleteChatItem(id))
     }
 
     suspend fun deleteByIds(ids: Set<String>) {
@@ -58,5 +55,4 @@ object ChatClient {
         val id = target.toId.replace("\\", "\\\\").replace("\"", "\\\"")
         deleteQuery("$field:=\"$id\"")
     }
-
 }

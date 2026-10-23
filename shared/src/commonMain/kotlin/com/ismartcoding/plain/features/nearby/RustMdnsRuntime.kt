@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.nearby
 
+import com.ismartcoding.plain.api.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-
 import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -52,8 +52,8 @@ object RustMdnsRuntime {
     }
     suspend fun debugStart(token: String) = enqueue(Request.DebugStart(token)).await()
     fun debugStop(token: String) = enqueue(Request.DebugStop(token))
-    suspend fun snapshot(): JsonObject = RustGraphqlApi.query("mdnsState { $STATE_FIELDS }").getValue("mdnsState").jsonObject.also { apply(it) }
-    private const val STATE_FIELDS = "runtimeId revision receiver running scanning published manualScanning debugSessionCount capturing services { serviceType instanceName instanceFqdn hostname port txtRecords ips ipv6 complete } packetsIn { time direction srcIp srcPort dstIp dstPort size summary detail } packetsOut { time direction srcIp srcPort dstIp dstPort size summary detail }"
+    suspend fun snapshot(): JsonObject = RustGraphqlApi.graphql(Query.mdnsState()).getValue("mdnsState").jsonObject.also { apply(it) }
+
     private suspend fun call(request: Request): JsonObject = when (request) {
         is Request.DebugStart -> RustNativeApi.acquireMdnsDebugSession(request.token)
         is Request.DebugStop -> RustNativeApi.releaseMdnsDebugSession(request.token)

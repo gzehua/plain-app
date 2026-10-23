@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.rust.graphql
 
+import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
@@ -12,7 +13,7 @@ class SelectionQueryTest {
         val ids = listOf(" second ", "=opaque", "second", " second ")
         val expected = "ids:=\\ second\\ ,=opaque,second"
         assertEquals(expected, selectionQuery(ids))
-        assertEquals(expected, Json.parseToJsonElement(gql(selectionQuery(ids))).jsonPrimitive.content)
+        assertEquals(expected, Json.parseToJsonElement(JsonHelper.jsonEncode(selectionQuery(ids))).jsonPrimitive.content)
     }
 
     @Test

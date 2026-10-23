@@ -2,7 +2,6 @@ package com.ismartcoding.plain.features
 
 import com.ismartcoding.plain.models.FavoriteFolder
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.graphql.gql
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
@@ -52,14 +51,14 @@ class FavoriteFolderHelperTest {
 
     @Test
     fun escapes_quotes_and_backslashes_in_paths() {
-        assertEquals("\"内部存储/Documents\"", gql("内部存储/Documents"))
-        assertEquals(""""/sdcard/\"My\" Folder"""", gql("/sdcard/\"My\" Folder"))
-        assertEquals(""""/sdcard/a\\b"""", gql("/sdcard/a\\b"))
+        assertEquals("\"内部存储/Documents\"", JsonHelper.jsonEncode("内部存储/Documents"))
+        assertEquals(""""/sdcard/\"My\" Folder"""", JsonHelper.jsonEncode("/sdcard/\"My\" Folder"))
+        assertEquals(""""/sdcard/a\\b"""", JsonHelper.jsonEncode("/sdcard/a\\b"))
     }
 
     @Test
     fun escapes_newline_so_arguments_stay_on_one_line() {
-        val argument = gql("a\nb")
+        val argument = JsonHelper.jsonEncode("a\nb")
         assertTrue(argument.contains("\\n"))
         assertFalse(argument.contains("\n"))
     }

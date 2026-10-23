@@ -50,8 +50,11 @@ class TrashCascadeGuardTest {
             assertTrue(functionBody(bridge,name).contains("MediaActionClient.run"), "$name must route through Rust")
         }
         val helper = source("shared/src/commonMain/kotlin/com/ismartcoding/plain/features/media/actions/MediaActionClient.kt")
+        assertTrue(helper.contains("Mutation.mediaAction(action, type.name, query, destDir)"))
+        assertTrue(helper.contains("RustGraphqlApi.graphql(request)"))
+        val mutations = source("shared/src/commonMain/kotlin/com/ismartcoding/plain/api/graphql/Mutation.kt")
         for (method in listOf("trashMediaItems", "restoreMediaItems", "deleteMediaItems", "moveMediaItems")) {
-            assertTrue(helper.contains(method))
+            assertTrue(mutations.contains(method))
         }
         assertTrue(!helper.contains("failedIds"))
         assertTrue(!helper.contains("mediaAction(type:"))

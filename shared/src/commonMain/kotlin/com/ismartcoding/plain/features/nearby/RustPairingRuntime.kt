@@ -1,22 +1,20 @@
 package com.ismartcoding.plain.features.nearby
 
+import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.api.graphql.Query
 import com.ismartcoding.plain.rust.native.RustNativeApi
-
 import com.ismartcoding.plain.rust.sendEventToRust
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-
 import com.ismartcoding.plain.models.NearbyDevice
 import com.ismartcoding.plain.models.PairingRequestInput
 import com.ismartcoding.plain.models.PairingDeviceInput
-import com.ismartcoding.plain.rust.graphql.gql
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HostEvent
 import kotlinx.serialization.json.*
 
 object RustPairingRuntime {
-    const val STATE_FIELDS = "deviceId generation mode phase error verificationCode"
-    suspend fun states(): JsonArray = RustGraphqlApi.query("pairingStates { $STATE_FIELDS }").getValue("pairingStates").jsonArray
+    suspend fun states(): JsonArray = RustGraphqlApi.graphql(Query.pairingStates()).getValue("pairingStates").jsonArray
 
     suspend fun start(device: NearbyDevice, mode: String = "CHAT"): JsonObject {
         val ip = if ("QR" in device.discoveryMethods) device.bestIp.takeIf { it.isNotBlank() } ?: device.ips.firstOrNull() else null
@@ -25,10 +23,9 @@ object RustPairingRuntime {
     }
     suspend fun submit(generation: String, password: String): JsonObject = execute(PairingDeviceInput(generation = generation, password = password))
     private suspend fun execute(input: PairingDeviceInput): JsonObject = RustGraphqlApi.graphql(
-        "mutation(\$input: PairingDeviceInput!) { pairDevice(input: \$input) { $STATE_FIELDS } }",
-        mapOf("input" to JsonHelper.jsonEncodeToElement(input)),
+        Mutation.pairDevice(input),
     ).getValue("pairDevice").jsonObject
-    suspend fun cancelGeneration(generation: String): JsonElement = RustGraphqlApi.mutate("cancelPairing(generation: ${gql(generation)})").getValue("cancelPairing")
+    suspend fun cancelGeneration(generation: String): JsonElement = RustGraphqlApi.graphql(Mutation.cancelPairing(generation)).getValue("cancelPairing")
     suspend fun cancel(id: String): JsonElement {
         val attempt = JsonHelper.jsonDecodeFromElement<List<PairingState>>(states()).lastOrNull { it.deviceId == id && it.phase !in setOf("SUCCEEDED", "FAILED", "CANCELLED") } ?: return JsonPrimitive(false)
         return cancelGeneration(attempt.generation)
@@ -40,5 +37,5 @@ object RustPairingRuntime {
         sendEventToRust(HostEvent(EventType.PAIRING_RESPONSE_REPORTED, payload))
     }
     suspend fun respond(request: PairingRequestInput, accepted: Boolean): JsonElement =
-        RustGraphqlApi.graphql("mutation(\$input: PairingRequestInput!, \$accepted: Boolean!) { respondToPairing(input: \$input, accepted: \$accepted) }", mapOf("input" to JsonHelper.jsonEncodeToElement(request), "accepted" to JsonPrimitive(accepted))).getValue("respondToPairing")
+        RustGraphqlApi.graphql(Mutation.respondToPairing(request, accepted)).getValue("respondToPairing")
 }

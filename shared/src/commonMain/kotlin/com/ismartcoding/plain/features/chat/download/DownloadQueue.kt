@@ -1,17 +1,16 @@
 package com.ismartcoding.plain.features.chat.download
 
+import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.api.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-
 import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.models.Peer
-import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 import com.ismartcoding.plain.features.downloads.DOWNLOAD_KIND_CHAT
 import com.ismartcoding.plain.features.downloads.DownloadCenter
 import com.ismartcoding.plain.features.downloads.DownloadQueueVersion
 import com.ismartcoding.plain.features.downloads.DownloadStatus
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.rust.graphql.gql
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,24 +67,15 @@ object DownloadQueue {
         downloadProgress.value = tasks
         DownloadCenter.replaceExternal(DOWNLOAD_KIND_CHAT, tasks.values.toList())
     }
-    private const val QUEUE_FIELDS = "runtimeId revision tasks { id messageId status error downloaded total speed file { id: fileId uri size durationMs width height summary fileName } peer { id name ip key publicKey status port deviceType token createdAt updatedAt } }"
+
     private suspend fun call(request: Request): JsonElement {
-        if (request == Request.Snapshot) return RustGraphqlApi.query("chatDownloadQueue { $QUEUE_FIELDS }").getValue("chatDownloadQueue")
+        if (request == Request.Snapshot) return RustGraphqlApi.graphql(Query.chatDownloadQueue()).getValue("chatDownloadQueue")
         val operation = when (request) {
-            is Request.Enqueue -> "enqueueChatDownload(messageId: ${gql(request.messageId)}, fileId: ${gql(request.fileId)}, peerId: ${gql(request.peerId)})"
-            is Request.Control -> {
-                val field = when (request.command) {
-                    "pause" -> "pauseChatDownload"
-                    "resume" -> "resumeChatDownload"
-                    "retry" -> "retryChatDownload"
-                    "remove" -> "removeChatDownload"
-                    else -> error("Unknown chat download control")
-                }
-                "$field(id: ${gql(request.id)})"
-            }
+            is Request.Enqueue -> Mutation.enqueueChatDownload(request.messageId, request.fileId, request.peerId)
+            is Request.Control -> Mutation.chatDownloadControl(request.command, request.id)
             Request.Snapshot -> error("Snapshot already handled")
         }
-        return RustGraphqlApi.mutate(operation).getValue(operation.substringBefore('('))
+        return RustGraphqlApi.graphql(operation).getValue(operation.field)
     }
 
     private sealed interface Request {

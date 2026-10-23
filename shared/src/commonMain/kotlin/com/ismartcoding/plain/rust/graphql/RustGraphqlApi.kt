@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.rust.graphql
 
+import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.api.graphql.Query
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.native.RustNativeApi
 import kotlinx.coroutines.Dispatchers
@@ -12,25 +14,27 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-/** Executes App GraphQL requests through the native bridge. */
 object RustGraphqlApi {
     suspend inline fun <reified T> readSavedValue(key: String, default: T): T {
-        val value = graphql("query(\$key: String!) { savedValue(key: \$key) }", mapOf("key" to JsonHelper.jsonEncodeToElement(key))).getValue("savedValue")
+        val value = graphql(Query.savedValue(key)).getValue("savedValue")
         return if (value == JsonNull) default else JsonHelper.jsonDecodeFromElement(value)
     }
 
     suspend inline fun <reified T> writeSavedValue(key: String, value: T) {
-        graphql("mutation(\$key: String!, \$value: JSON!) { setSavedValue(key: \$key, value: \$value) }", mapOf("key" to JsonHelper.jsonEncodeToElement(key), "value" to JsonHelper.jsonEncodeToElement(value)))
+        graphql(Mutation.setSavedValue(key, JsonHelper.jsonEncodeToElement(value)))
     }
 
-    suspend fun query(selection: String): JsonObject = graphql("query { $selection }")
+    suspend fun query(selection: String): JsonObject = graphql(GraphqlRequest($$"query { $${selection} }"))
 
-    suspend fun mutate(selection: String): JsonObject = graphql("mutation { $selection }")
+    suspend fun mutate(selection: String): JsonObject = graphql(GraphqlRequest($$"mutation { $${selection} }"))
 
     suspend fun graphql(document: String, variables: Map<String, JsonElement> = emptyMap()): JsonObject =
+        graphql(GraphqlRequest(document, variables))
+
+    suspend fun graphql(request: GraphqlRequest): JsonObject =
         withContext(Dispatchers.IO) {
             val response = JsonHelper.jsonDecode<JsonObject>(
-                RustNativeApi.graphql(JsonHelper.jsonEncode(GraphqlRequest(document, variables))),
+                RustNativeApi.graphql(JsonHelper.jsonEncode(request)),
             )
             response["errors"]?.let { errors ->
                 error(errors.jsonArray.joinToString { it.jsonObject.getValue("message").jsonPrimitive.content })

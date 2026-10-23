@@ -1,9 +1,8 @@
 package com.ismartcoding.plain.ui.app
 
+import com.ismartcoding.plain.api.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-
 import kotlinx.serialization.Serializable
-
 import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.platform.network.vpnActive
 import com.ismartcoding.plain.models.NetworkStatus
@@ -22,7 +21,7 @@ object LocalDeviceState {
 
     suspend fun refresh() = refreshLock.withLock {
         try {
-            val app = JsonHelper.jsonDecodeFromElement<LocalAppInfo>(RustGraphqlApi.query("app { clientId deviceName deviceType httpsPort network { ipv4Addresses primaryIpv4 } }").getValue("app"))
+            val app = JsonHelper.jsonDecodeFromElement<LocalAppInfo>(RustGraphqlApi.graphql(Query.app()).getValue("app"))
             val network = app.network
             peer.value = Peer(
                 key = "",

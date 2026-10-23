@@ -1,8 +1,7 @@
 package com.ismartcoding.plain.features.dlna.sender
 
+import com.ismartcoding.plain.api.graphql.Mutation
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-
-import com.ismartcoding.plain.rust.graphql.gql
 import com.ismartcoding.plain.IMedia
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.coIO
@@ -28,28 +27,11 @@ internal object RustDlnaSender {
     val durationMs = MutableStateFlow(0f)
     val supportsCallback = MutableStateFlow(false)
 
-    private const val fields = "version devices { id hostAddress name } currentDevice { id hostAddress name } items { path title albumArt artist durationMs audio } currentUri playing progressMs durationMs supportsCallback"
     suspend fun call(command: CastCommand) {
-        val operation = when (command) {
-            CastCommand.StartScan -> "startDlnaScan"
-            CastCommand.StopScan -> "stopDlnaScan"
-            is CastCommand.Select -> "selectDlnaDevice(id: ${gql(command.id)})"
-            is CastCommand.Cast -> "castDlnaMedia(item: ${input(command.item)})"
-            CastCommand.Play -> "playDlna"
-            CastCommand.Pause -> "pauseDlna"
-            is CastCommand.Seek -> "seekDlna(positionMs: ${command.positionMs})"
-            CastCommand.Stop -> "stopDlna"
-            CastCommand.Exit -> "exitDlna"
-            is CastCommand.Add -> "addDlnaItem(item: ${input(command.item)})"
-            is CastCommand.Remove -> "removeDlnaItem(path: ${gql(command.path)})"
-            is CastCommand.RemoveAt -> "removeDlnaItemAt(index: ${command.index})"
-            is CastCommand.Reorder -> "reorderDlnaItems(from: ${command.from}, to: ${command.to})"
-            CastCommand.Clear -> "clearDlnaItems"
-        }
-        val row = RustGraphqlApi.mutate("$operation { $fields }").getValue(operation.substringBefore('('))
+        val request = Mutation.dlna(command)
+        val row = RustGraphqlApi.graphql(request).getValue(request.field)
         apply(row.jsonObject)
     }
-    private fun input(item: CastItem): String = "{path: ${gql(item.path)}, title: ${gql(item.title)}, albumArt: ${gql(item.albumArt)}, artist: ${gql(item.artist)}, durationMs: ${item.durationMs}, audio: ${item.audio}}"
     fun addItem(item: IMedia) { coIO { call(CastCommand.Add(CastItem.from(item))) } }
     fun removeItem(item: IMedia) { coIO { call(CastCommand.Remove(item.path)) } }
     fun startScan() { coIO { call(CastCommand.StartScan) } }

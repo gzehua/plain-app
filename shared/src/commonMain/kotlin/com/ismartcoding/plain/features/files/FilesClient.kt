@@ -1,43 +1,41 @@
 package com.ismartcoding.plain.features.files
 
+import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.api.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-
 import com.ismartcoding.plain.models.File as FileEntry
-
-import com.ismartcoding.plain.rust.graphql.gql
 import kotlinx.coroutines.CancellationException
 import io.ktor.http.Url
 import io.ktor.http.decodeURLPart
 import kotlinx.serialization.json.*
 
 object FilesClient {
-    suspend fun size(path: String): Long = RustGraphqlApi.query("fileInfo(path: ${gql(path)}) { size }")
+    suspend fun size(path: String): Long = RustGraphqlApi.graphql(Query.fileInfo(path))
         .getValue("fileInfo").jsonObject.getValue("size").jsonPrimitive.long
 
     suspend fun writeChunks(path: String, chunks: Iterator<ByteArray>): Boolean =
         com.ismartcoding.plain.features.files.upload.RustUploadChunks.replace(path, chunks)
 
     suspend fun copyToPath(srcPath: String, targetPath: String, overwrite: Boolean): Boolean =
-        RustGraphqlApi.mutate("copyFile(src: ${gql(srcPath)}, dst: ${gql(targetPath)}, overwrite: $overwrite)")
+        RustGraphqlApi.graphql(Mutation.copyFile(srcPath, targetPath, overwrite))
             .getValue("copyFile").jsonPrimitive.boolean
 
     suspend fun copyToDirectory(srcPath: String, dirPath: String, fileName: String): String {
         val result = RustGraphqlApi.graphql(
-            "mutation(\$src:String!,\$directory:String!,\$name:String!){copyFileToDirectory(src:\$src,directory:\$directory,name:\$name)}",
-            mapOf("src" to JsonPrimitive(srcPath), "directory" to JsonPrimitive(dirPath), "name" to JsonPrimitive(fileName)),
+            Mutation.copyFileToDirectory(srcPath, dirPath, fileName),
         ).getValue("copyFileToDirectory")
         return if (result is JsonNull) "" else result.jsonPrimitive.content
     }
 
     suspend fun createZipArchive(paths: List<String>, target: String): Boolean = archiveOperation {
-        RustGraphqlApi.mutate("createZipArchive(paths: [${paths.joinToString(",") { gql(it) }}], target: ${gql(target)})").getValue("createZipArchive").jsonPrimitive.content
+        RustGraphqlApi.graphql(Mutation.createZipArchive(paths, target)).getValue("createZipArchive").jsonPrimitive.content
     }
     suspend fun extractZipArchive(path: String, target: String): Boolean = archiveOperation {
-        RustGraphqlApi.mutate("extractZipArchive(path: ${gql(path)}, target: ${gql(target)})").getValue("extractZipArchive").jsonPrimitive.content
+        RustGraphqlApi.graphql(Mutation.extractZipArchive(path, target)).getValue("extractZipArchive").jsonPrimitive.content
     }
 
     suspend fun cacheZipEntry(path: String): String? = try {
-        RustGraphqlApi.mutate("cacheZipEntry(path: ${gql(path)})").getValue("cacheZipEntry").jsonPrimitive.content
+        RustGraphqlApi.graphql(Mutation.cacheZipEntry(path)).getValue("cacheZipEntry").jsonPrimitive.content
     } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (_: Exception) {
@@ -58,13 +56,13 @@ object FilesClient {
         read(root, query, sortBy, offset, limit)
 
     suspend fun indexed(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<FileEntry> =
-        RustGraphqlApi.query("indexedFiles(query: ${gql(query)}, limit: $limit, offset: $offset, sortBy: ${sortBy.name}) { $fields }").getValue("indexedFiles").jsonArray.map { decode(it.jsonObject) }
+        RustGraphqlApi.graphql(Query.indexedFiles(query, limit, offset, sortBy.name)).getValue("indexedFiles").jsonArray.map { decode(it.jsonObject) }
     suspend fun recent(): List<FileEntry> =
         com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(
-            RustGraphqlApi.query("recentFiles { $fields }").getValue("recentFiles")
+            RustGraphqlApi.graphql(Query.recentFiles()).getValue("recentFiles")
         )
 
-    suspend fun indexedCount(query: String): Int = RustGraphqlApi.query("indexedFileCount(query: ${gql(query)})").getValue("indexedFileCount").jsonPrimitive.int
+    suspend fun indexedCount(query: String): Int = RustGraphqlApi.graphql(Query.indexedFileCount(query)).getValue("indexedFileCount").jsonPrimitive.int
 
     private suspend fun archiveOperation(operation: suspend () -> String): Boolean = try {
         operation()
@@ -75,19 +73,18 @@ object FilesClient {
         false
     }
 
-    private const val fields = "name path permission createdAt updatedAt size isDir childCount mediaId"
     suspend fun rename(path: String, name: String): String? {
-        val value = RustGraphqlApi.mutate("renameFile(path: ${gql(path)}, name: ${gql(name)})").getValue("renameFile")
+        val value = RustGraphqlApi.graphql(Mutation.renameFile(path, name)).getValue("renameFile")
         return if (value is JsonNull) null else value.jsonPrimitive.content
     }
     suspend fun delete(path: String): Boolean = deleteMany(listOf(path)) > 0
 
-    suspend fun deleteMany(paths: List<String>): Int = RustGraphqlApi.mutate(
-        "deleteFiles(paths: ${com.ismartcoding.plain.rust.graphql.gqlIds(paths)}) { affectedCount }",
+    suspend fun deleteMany(paths: List<String>): Int = RustGraphqlApi.graphql(
+        Mutation.deleteFiles(paths),
     ).getValue("deleteFiles").jsonObject.getValue("affectedCount").jsonPrimitive.int
 
     private suspend fun read(root: String, query: String, sortBy: FileSortBy, offset: Int = 0, limit: Int? = null): List<FileEntry> =
-        RustGraphqlApi.query("files(root: ${gql(root)}, query: ${gql(query)}, sortBy: ${sortBy.name}, offset: $offset, limit: ${limit ?: Int.MAX_VALUE}) { $fields }")
+        RustGraphqlApi.graphql(Query.files(root, query, sortBy.name, offset, limit ?: Int.MAX_VALUE))
             .getValue("files").jsonArray.map { decode(it.jsonObject) }
 
     internal fun literalNameQuery(text: String): String = buildString {
@@ -100,13 +97,8 @@ object FilesClient {
 
     private suspend fun write(action: String, path: String, content: String = "", overwrite: Boolean = false): FileEntry {
         val target = if (path.startsWith("file://")) Url(path).encodedPath.decodeURLPart() else path
-        val operation = when (action) {
-            "createDirectory" -> "createDir(path: ${gql(target)})"
-            "createFile" -> "createFile(path: ${gql(target)})"
-            "writeText" -> "writeTextFile(path: ${gql(target)}, content: ${gql(content)}, overwrite: $overwrite)"
-            else -> error("Unknown file write action")
-        }
-        return decode(RustGraphqlApi.mutate("$operation { $fields }").getValue(operation.substringBefore('(')).jsonObject)
+        val operation = Mutation.fileWrite(action, target, content, overwrite)
+        return decode(RustGraphqlApi.graphql(operation).getValue(operation.field).jsonObject)
     }
 
     private fun decode(row: JsonObject): FileEntry = com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(row)

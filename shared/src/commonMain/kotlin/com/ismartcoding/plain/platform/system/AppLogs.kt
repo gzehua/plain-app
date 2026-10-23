@@ -1,7 +1,8 @@
 package com.ismartcoding.plain.platform.system
 
+import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.api.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.no_logs_error
 import com.ismartcoding.plain.lib.coMain
@@ -12,17 +13,17 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
 suspend fun getLogFileSize(): Long =
-    RustGraphqlApi.query("appLogFilesSize").getValue("appLogFilesSize").jsonPrimitive.long
+    RustGraphqlApi.graphql(Query.appLogFilesSize()).getValue("appLogFilesSize").jsonPrimitive.long
 
 suspend fun clearLogsAsync() {
-    RustGraphqlApi.mutate("clearAppLogs")
+    RustGraphqlApi.graphql(Mutation.clearAppLogs())
 }
 
 fun exportLogsAsync() {
     coMain {
         DialogHelper.showLoading()
         try {
-            val path = RustGraphqlApi.mutate("exportAppLogs").getValue("exportAppLogs")
+            val path = RustGraphqlApi.graphql(Mutation.exportAppLogs()).getValue("exportAppLogs")
             if (path is JsonNull) {
                 DialogHelper.showMessage(Res.string.no_logs_error)
             } else {
