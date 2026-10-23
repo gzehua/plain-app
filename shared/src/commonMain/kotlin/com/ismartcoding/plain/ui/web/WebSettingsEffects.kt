@@ -33,7 +33,7 @@ internal fun WebSettingsEffects(
     notificationListenerGranted: MutableState<Boolean>,
 ) {
     LaunchedEffect(Unit) {
-        SecuritySettingsState.state.collect { permissionList.value = getWebList() }
+        Prefs.state.collect { permissionList.value = getWebList() }
     }
     val sharedFlow = Channel.sharedFlow
 
@@ -67,7 +67,7 @@ internal fun WebSettingsEffects(
 
 internal fun togglePermission(scope: CoroutineScope, m: PermissionItem, enable: Boolean) {
     scope.launch {
-        SecuritySettingsState.setApiPermission(m.permission, enable)
+        Prefs.setApiPermission(m.permission, enable)
         if (m.permission == Permission.NOTIFICATION_LISTENER) {
             val webEnabled = Prefs.desktopAccess.value
             toggleNotificationListener(enable && webEnabled)

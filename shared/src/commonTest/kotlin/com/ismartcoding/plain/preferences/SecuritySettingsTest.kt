@@ -8,11 +8,12 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
+import kotlin.test.assertFailsWith
+import kotlinx.serialization.SerializationException
 import kotlin.test.assertTrue
 
 class SecuritySettingsTest {
-    private fun fixture(): JsonObject = Json.parseToJsonElement(
+    internal fun fixture(): JsonObject = Json.parseToJsonElement(
         """{
             "password":"fixture-password", "passwordType":1, "loginRequireApproval":true,
             "rotateUrlTokenOnRestart":true, "adbToken":"fixture-adb",
@@ -49,11 +50,8 @@ class SecuritySettingsTest {
     }
 
     @Test
-    fun missingAvailabilityKeepsTheRuntimeDefault() {
+    fun missingSnapshotFieldsAreRejectedInsteadOfUsingKotlinDefaults() {
         val input = JsonObject(fixture().filterKeys { it != "appUpdateAvailable" })
-        val settings = JsonHelper.jsonDecodeFromElement<SecuritySettings>(input)
-        assertFalse(settings.appUpdateAvailable)
-        assertTrue(settings.autoCheckUpdate)
-        assertEquals("fixture-client", settings.clientId)
+        assertFailsWith<SerializationException> { JsonHelper.jsonDecodeFromElement<SecuritySettings>(input) }
     }
 }

@@ -15,7 +15,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.permissions.Permission
-import com.ismartcoding.plain.preferences.SecuritySettingsState
 import com.ismartcoding.plain.preferences.Prefs
 import java.io.File
 import java.util.UUID
@@ -52,9 +51,9 @@ class ApiFixtureRustHttpTest {
         val oldAccess = Prefs.desktopAccess.value
         Prefs.desktopAccess.value = true
         withIO { RustRuntime.start() }
-        val oldPermissions = SecuritySettingsState.state.value.apiPermissions
+        val oldPermissions = Prefs.state.value.apiPermissions
         try {
-            SecuritySettingsState.setApiPermissions(setOf(Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEOS, Permission.READ_MEDIA_AUDIO, Permission.READ_CONTACTS, Permission.WRITE_CONTACTS, Permission.READ_CALL_LOG, Permission.WRITE_CALL_LOG, Permission.READ_SMS, Permission.SEND_SMS, Permission.QUERY_ALL_PACKAGES, Permission.NOTIFICATION_LISTENER).map { it.name }.toSet())
+            Prefs.setApiPermissions(setOf(Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEOS, Permission.READ_MEDIA_AUDIO, Permission.READ_CONTACTS, Permission.WRITE_CONTACTS, Permission.READ_CALL_LOG, Permission.WRITE_CALL_LOG, Permission.READ_SMS, Permission.SEND_SMS, Permission.QUERY_ALL_PACKAGES, Permission.NOTIFICATION_LISTENER).map { it.name }.toSet())
             assertTrue(root.mkdirs())
             rootCreated = true
             val session = RustSessionStore.create("API emulator fixture")
@@ -103,7 +102,7 @@ class ApiFixtureRustHttpTest {
             if (channelId.isNotEmpty()) RustGraphqlApi.mutate("deleteChatChannel(id: ${JsonPrimitive(channelId)})")
             if (peerCreated) RustGraphqlApi.mutate("deletePeer(id: ${JsonPrimitive(peerId)})")
             if (rootCreated) root.deleteRecursively()
-            SecuritySettingsState.setApiPermissions(oldPermissions)
+            Prefs.setApiPermissions(oldPermissions)
             Prefs.desktopAccess.value = oldAccess
         }
     }

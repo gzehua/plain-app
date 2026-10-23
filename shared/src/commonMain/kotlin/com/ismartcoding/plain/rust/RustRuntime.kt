@@ -3,7 +3,7 @@ package com.ismartcoding.plain.rust
 import kotlinx.coroutines.IO
 
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.preferences.PrefStore
+import com.ismartcoding.plain.preferences.Prefs
 
 import com.ismartcoding.plain.platform.system.*
 import com.ismartcoding.plain.rust.native.RustNativeApi
@@ -45,8 +45,8 @@ object RustRuntime {
         sharedPreviewPath = result.sharedPreviewDir
         if (!collectorsStarted) {
             kotlinx.coroutines.runBlocking(Dispatchers.IO) {
-                PrefStore.refresh()
-                    }
+                Prefs.load()
+            }
             isCoreInitialized = true
             RustEventHandler.start(scope)
             RustHostApiHandler.start(scope)

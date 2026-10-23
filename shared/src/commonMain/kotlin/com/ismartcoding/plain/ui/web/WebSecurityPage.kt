@@ -57,11 +57,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun WebSecurityPage(navController: NavHostController) {
     val scope = rememberCoroutineScope()
-    val passwordType = SecuritySettingsState.state.collectAsStateValue().passwordType
-    val password = SecuritySettingsState.state.collectAsStateValue().password
-    val loginRequireApproval = SecuritySettingsState.state.collectAsStateValue().loginRequireApproval
-    val rotateUrlTokenOnRestart = SecuritySettingsState.state.collectAsStateValue().rotateUrlTokenOnRestart
-    val urlToken = SecuritySettingsState.state.collectAsStateValue().urlToken
+    val passwordType = Prefs.state.collectAsStateValue().passwordType
+    val password = Prefs.state.collectAsStateValue().password
+    val loginRequireApproval = Prefs.state.collectAsStateValue().loginRequireApproval
+    val rotateUrlTokenOnRestart = Prefs.state.collectAsStateValue().rotateUrlTokenOnRestart
+    val urlToken = Prefs.state.collectAsStateValue().urlToken
     var sslSignature by remember { mutableStateOf("") }
     val editPassword = remember { mutableStateOf("") }
 
@@ -85,14 +85,14 @@ fun WebSecurityPage(navController: NavHostController) {
                     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                         PListItem(modifier = Modifier.clickable {
                             scope.launch(Dispatchers.Default) {
-                                SecuritySettingsState.setPasswordType(
+                                Prefs.setPasswordType(
                                     if (passwordType == PasswordType.NONE.value) PasswordType.FIXED else PasswordType.NONE
                                 )
                             }
                         }, title = stringResource(Res.string.require_password)) {
                             Switch(checked = passwordType != PasswordType.NONE.value, onCheckedChange = {
                                 scope.launch(Dispatchers.Default) {
-                                    SecuritySettingsState.setPasswordType(
+                                    Prefs.setPasswordType(
                                         if (passwordType == PasswordType.NONE.value) PasswordType.FIXED else PasswordType.NONE
                                     )
                                 }
@@ -102,7 +102,7 @@ fun WebSecurityPage(navController: NavHostController) {
                         if (passwordType != PasswordType.NONE.value) {
                             PasswordTextField(
                                 value = editPassword.value, isChanged = { editPassword.value != password },
-                                onValueChange = { editPassword.value = it }, onConfirm = { scope.launch(Dispatchers.Default) { SecuritySettingsState.setPassword(it )} })
+                                onValueChange = { editPassword.value = it }, onConfirm = { scope.launch(Dispatchers.Default) { Prefs.setPassword(it )} })
                             PFilledButton(
                                 modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 16.dp),
                                 text = stringResource(Res.string.generate_password),
@@ -115,11 +115,11 @@ fun WebSecurityPage(navController: NavHostController) {
                     VerticalSpace(dp = 16.dp)
                     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                         PListItem(
-                            modifier = Modifier.clickable { scope.launch(Dispatchers.Default) { SecuritySettingsState.setLoginRequireApproval(!loginRequireApproval )} },
+                            modifier = Modifier.clickable { scope.launch(Dispatchers.Default) { Prefs.setLoginRequireApproval(!loginRequireApproval )} },
                             title = stringResource(Res.string.require_confirmation)
                         ) {
                             Switch(checked = loginRequireApproval, onCheckedChange = {
-                                scope.launch(Dispatchers.Default) { SecuritySettingsState.setLoginRequireApproval(it )}
+                                scope.launch(Dispatchers.Default) { Prefs.setLoginRequireApproval(it )}
                             })
                         }
                     }
@@ -167,10 +167,10 @@ fun WebSecurityPage(navController: NavHostController) {
                     VerticalSpace(dp = 16.dp)
                     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                         PListItem(modifier = Modifier.clickable {
-                            scope.launch(Dispatchers.Default) { SecuritySettingsState.setRotateUrlToken(!rotateUrlTokenOnRestart )}
+                            scope.launch(Dispatchers.Default) { Prefs.setRotateUrlToken(!rotateUrlTokenOnRestart )}
                         }, title = stringResource(Res.string.rotate_url_token_on_restart)) {
                             Switch(checked = rotateUrlTokenOnRestart, onCheckedChange = {
-                                scope.launch(Dispatchers.Default) { SecuritySettingsState.setRotateUrlToken(it )}
+                                scope.launch(Dispatchers.Default) { Prefs.setRotateUrlToken(it )}
                             })
                         }
                     }
@@ -183,7 +183,7 @@ fun WebSecurityPage(navController: NavHostController) {
                         type = ButtonType.DANGER,
                         onClick = {
                             scope.launch(Dispatchers.Default) {
-                                SecuritySettingsState.resetUrlToken()
+                                Prefs.resetUrlToken()
                                 DialogHelper.showMessage(Res.string.the_token_is_reset)
                             }
                         })

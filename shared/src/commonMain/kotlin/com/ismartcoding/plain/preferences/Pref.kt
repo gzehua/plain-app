@@ -23,8 +23,10 @@ class Pref<T> private constructor(
     override var value: T
         get() = state.value
         set(next) {
-            PrefStore.write(key, JsonHelper.json.encodeToJsonElement(serializer, next))
+            Prefs.write(key, JsonHelper.json.encodeToJsonElement(serializer, next))
         }
+
+    internal fun restoreElement(value: JsonElement) = restore(decode(value, this.value))
 
     internal fun restore(next: T) {
         state.value = next
@@ -34,14 +36,17 @@ class Pref<T> private constructor(
         element?.let { runCatching { JsonHelper.json.decodeFromJsonElement(serializer, it) }.getOrNull() } ?: default
 }
 
-internal inline fun <reified T> pref(key: String, default: T): Pref<T> =
-    PrefStore.register(Pref(key, serializer(), default))
+internal inline fun <reified T> pref(key: String): Pref<T> =
+    Prefs.register(Pref(key, serializer(), JsonHelper.json.decodeFromJsonElement(serializer<T>(), Prefs.initialValue(key))))
 
 internal inline fun <reified T : Enum<T>> enumPref(
     key: String,
-    default: T,
     crossinline code: (T) -> Int = { it.ordinal },
-): Pref<T> = PrefStore.register(Pref(key, enumCodeSerializer(default, code), default))
+): Pref<T> {
+    val defaultCode = JsonHelper.json.decodeFromJsonElement(serializer<Int>(), Prefs.initialValue(key))
+    val default = enumValues<T>().first { code(it) == defaultCode }
+    return Prefs.register(Pref(key, enumCodeSerializer(default, code), default))
+}
 
 internal inline fun <reified T : Enum<T>> enumCodeSerializer(
     default: T,

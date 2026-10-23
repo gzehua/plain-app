@@ -32,17 +32,9 @@ import com.ismartcoding.plain.platform.media.*
 import com.ismartcoding.plain.ui.platform.media.*
 import com.ismartcoding.plain.platform.network.*
 import com.ismartcoding.plain.platform.permissions.*
-import com.ismartcoding.plain.app.*
-import com.ismartcoding.plain.ui.app.*
 import com.ismartcoding.plain.ui.navigation.*
-import com.ismartcoding.plain.features.sessions.*
-import com.ismartcoding.plain.ui.sessions.*
 import com.ismartcoding.plain.features.settings.*
 import com.ismartcoding.plain.ui.settings.*
-import com.ismartcoding.plain.platform.files.*
-import com.ismartcoding.plain.ui.platform.files.*
-import com.ismartcoding.plain.platform.media.*
-import com.ismartcoding.plain.ui.platform.media.*
 import com.ismartcoding.plain.platform.notifications.*
 import com.ismartcoding.plain.ui.platform.notifications.*
 import com.ismartcoding.plain.platform.system.*
@@ -69,17 +61,17 @@ class SessionMigrationRustHttpTest {
     fun encryptedLoginConfirmationSessionUiAndRevocationUseRust() = runBlocking {
         val oldService = Prefs.backgroundServiceEnabled.value
         val oldDesktop = Prefs.desktopAccess.value
-        val oldTwoFactor = SecuritySettingsState.state.value.loginRequireApproval
+        val oldTwoFactor = Prefs.state.value.loginRequireApproval
         val id = "session-fixture-${UUID.randomUUID()}"
         var pendingId = ""
         val http = createPlainHttpClient(PlainHttpClientSpec.HttpHost)
         try {
             Prefs.backgroundServiceEnabled.value = true
             Prefs.desktopAccess.value = true
-            SecuritySettingsState.setLoginRequireApproval(true)
+            Prefs.setLoginRequireApproval(true)
             withIO { RustRuntime.start() }
             val client = generateECDHKeyPair()
-            val digest = java.security.MessageDigest.getInstance("SHA-512").digest(SecuritySettingsState.state.value.password.encodeToByteArray()).joinToString("") { "%02x".format(it) }
+            val digest = java.security.MessageDigest.getInstance("SHA-512").digest(Prefs.state.value.password.encodeToByteArray()).joinToString("") { "%02x".format(it) }
             val passwordKey = digest.take(32).encodeToByteArray()
             val request = AuthRequest(digest, "Fixture", "1", "Android", "1", true,
                 Base64Lenient.encode(client.publicKeyEncoded))
@@ -122,7 +114,7 @@ class SessionMigrationRustHttpTest {
             http.close()
             if (pendingId.isNotEmpty()) RustWebLogin.cancel(pendingId)
             RustSessionStore.delete(id)
-            SecuritySettingsState.setLoginRequireApproval(oldTwoFactor)
+            Prefs.setLoginRequireApproval(oldTwoFactor)
             Prefs.desktopAccess.value = oldDesktop
             Prefs.backgroundServiceEnabled.value = oldService
         }

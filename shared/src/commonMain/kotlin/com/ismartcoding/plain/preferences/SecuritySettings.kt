@@ -14,7 +14,7 @@ data class SecuritySettings(
     val updateInfo: UpdateInfo,
     val autoCheckUpdate: Boolean,
     val skipVersion: String,
-    val appUpdateAvailable: Boolean = false,
+    val appUpdateAvailable: Boolean,
     val urlToken: String,
     val apiPermissions: Set<String>,
     val onboardingCompleted: Boolean,

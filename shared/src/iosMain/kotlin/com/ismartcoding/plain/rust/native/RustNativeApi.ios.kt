@@ -32,6 +32,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 
 import com.ismartcoding.plain.rustprefs.plain_complete_onboarding
+import com.ismartcoding.plain.rustprefs.plain_set_pref
 import com.ismartcoding.plain.rustprefs.plain_prefs_snapshot
 import com.ismartcoding.plain.rustprefs.plain_toggle_notification_app
 import com.ismartcoding.plain.rustprefs.plain_file_icon
@@ -214,6 +215,12 @@ internal actual object RustNativeApi {
     actual suspend fun completeOnboarding(): Boolean = nativeCall {
         val pointer = checkNotNull(plain_complete_onboarding())
         try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+    }
+    actual suspend fun setPref(key: String, value: JsonElement): Boolean = nativeCall {
+        memScoped {
+            val pointer = checkNotNull(plain_set_pref(key.cstr.ptr, value.toString().cstr.ptr))
+            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+        }
     }
     actual suspend fun prefsSnapshot(): JsonObject = nativeCall {
         memScoped {

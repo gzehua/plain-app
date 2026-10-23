@@ -7,6 +7,7 @@ import com.ismartcoding.plain.features.settings.AppUpdateDownload
 import com.ismartcoding.plain.preferences.SecuritySettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 internal actual object RustNativeApi {
@@ -61,6 +62,8 @@ internal actual object RustNativeApi {
     actual suspend fun createCrashReport(report: String): String = nativeCall { createCrashReportNative(report) }
     private external fun completeOnboardingNative(): String
     actual suspend fun completeOnboarding(): Boolean = nativeCall { completeOnboardingNative() }
+    private external fun setPrefNative(key: String, value: String): String
+    actual suspend fun setPref(key: String, value: JsonElement): Boolean = nativeCall { setPrefNative(key, value.toString()) }
     private external fun prefsSnapshotNative(): String
     actual suspend fun prefsSnapshot(): JsonObject = nativeCall { prefsSnapshotNative() }
     private external fun toggleNotificationAppNative(packageName: String): String

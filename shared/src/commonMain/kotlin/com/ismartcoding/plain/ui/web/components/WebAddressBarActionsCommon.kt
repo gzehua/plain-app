@@ -18,7 +18,7 @@ fun persistMdnsHostname(
     hostname: String,
 ) {
     scope.launch {
-        SecuritySettingsState.setMdnsHostname(hostname)
+        Prefs.setMdnsHostname(hostname)
     }
 }
 

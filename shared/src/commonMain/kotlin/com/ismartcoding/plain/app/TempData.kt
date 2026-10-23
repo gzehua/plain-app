@@ -5,10 +5,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 object TempData {
 
-    val clientId: String get() = SecuritySettingsState.state.value.clientId
+    val clientId: String get() = Prefs.state.value.clientId
     val deviceName = MutableStateFlow("")
-    val urlToken: ByteArray get() = kotlin.io.encoding.Base64.decode(SecuritySettingsState.state.value.urlToken)
-    val mdnsHostname: String get() = SecuritySettingsState.state.value.mdnsHostname
+    val urlToken: ByteArray get() = kotlin.io.encoding.Base64.decode(Prefs.state.value.urlToken)
+    val mdnsHostname: String get() = Prefs.state.value.mdnsHostname
 
     val audioPlayerVisible = MutableStateFlow(false)
     /** Media path requested by a home-screen shortcut; null = no preview open. */

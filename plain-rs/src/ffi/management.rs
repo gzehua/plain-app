@@ -249,11 +249,26 @@ pub extern "C" fn plain_check_app_update(automatic: bool) -> *mut c_char {
     c_string(check_app_update(automatic))
 }
 
-fn prefs_snapshot() -> String {
+fn set_pref(key: String, value: String) -> String {
     reply!((|| {
-        let (_, management) = parts()?;
-        management.prefs_snapshot()
+        let (runtime, management) = parts()?;
+        let value = serde_json::from_str(&value).map_err(|e| e.to_string())?;
+        runtime.block_on(management.set_pref(&key, value))
     })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_set_pref(key: *const c_char, value: *const c_char) -> *mut c_char {
+    c_string(
+        match input(key).and_then(|key| input(value).map(|value| set_pref(key, value))) {
+            Ok(result) => result,
+            Err(error) => reply!(Err::<(), String>(error)),
+        },
+    )
+}
+
+fn prefs_snapshot() -> String {
+    reply!(super::events::prefs_snapshot())
 }
 #[unsafe(no_mangle)]
 pub extern "C" fn plain_prefs_snapshot() -> *mut c_char {
@@ -486,6 +501,19 @@ mod android {
         env.with_env(|env| -> jni::errors::Result<_> {
             let result = check_app_update(automatic);
             env.new_string(result)
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_setPrefNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        key: JString<'_>,
+        value: JString<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            env.new_string(set_pref(key.to_string(), value.to_string()))
         })
         .resolve::<ThrowRuntimeExAndDefault>()
         .into_raw()

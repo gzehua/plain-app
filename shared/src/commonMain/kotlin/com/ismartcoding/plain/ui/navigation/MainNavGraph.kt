@@ -250,7 +250,7 @@ fun MainNavGraph(
         }
         composable<Routing.WebDev> {
             WebDevPage(navController, packageId = getOwnPackageName(), onResetToken = {
-                coIO { SecuritySettingsState.resetAdbToken() }
+                coIO { Prefs.resetAdbToken() }
             })
         }
         composable<Routing.WebSecurity> { WebSecurityPage(navController) }

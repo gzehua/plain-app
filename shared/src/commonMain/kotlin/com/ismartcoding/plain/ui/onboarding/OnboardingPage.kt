@@ -72,7 +72,7 @@ fun OnboardingPage(navController: NavHostController) {
 
     fun complete(navigateToHowToUse: Boolean) {
         scope.launch {
-            SecuritySettingsState.completeOnboarding()
+            Prefs.completeOnboarding()
             if (navigateToHowToUse) {
                 navController.navigate(Routing.HowToUse) {
                     popUpTo(Routing.Onboarding) { inclusive = true }

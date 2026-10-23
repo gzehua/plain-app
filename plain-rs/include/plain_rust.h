@@ -45,6 +45,7 @@ char *plain_export_app_backup(void);
 char *plain_create_crash_report(const char *report);
 char *plain_file_icon(const char *extension);
 char *plain_prefs_snapshot(void);
+char *plain_set_pref(const char *key, const char *value);
 char *plain_complete_onboarding(void);
 char *plain_toggle_notification_app(const char *package_name);
 char *plain_verify_adb_token(const char *token);

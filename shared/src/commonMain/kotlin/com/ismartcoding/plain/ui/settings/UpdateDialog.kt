@@ -43,7 +43,7 @@ import com.ismartcoding.plain.ui.resources.rocket as ui_drawable_rocket
 @Composable
 fun UpdateDialog(updateVM: UpdateViewModel) {
     if (!AppFeatureType.CHECK_UPDATES.has()) return
-    val updateInfo = SecuritySettingsState.state.collectAsStateValue().updateInfo
+    val updateInfo = Prefs.state.collectAsStateValue().updateInfo
     val newVersion = updateInfo.newVersion
     val newVersionPublishDate = updateInfo.publishDate
     val newVersionLog = updateInfo.log
@@ -98,7 +98,7 @@ fun UpdateDialog(updateVM: UpdateViewModel) {
                     text = stringResource(Res.string.skip_this_version),
                     onClick = {
                         scope.launch {
-                            SecuritySettingsState.setSkipVersion(newVersion.toString())
+                            Prefs.setSkipVersion(newVersion.toString())
                             updateVM.hideDialog()
                         }
                     },

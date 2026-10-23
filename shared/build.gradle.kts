@@ -24,6 +24,13 @@ listOf(rustupExe, cargoExe).forEach {
     require(it.canExecute()) { "Rust tool not found or not executable: ${it.absolutePath}" }
 }
 
+val generatePrefKeys = tasks.register<Exec>("generatePrefKeys") {
+    val output = layout.buildDirectory.file("generated/prefKeys/PrefKeys.kt")
+    commandLine("python3", rootProject.file("scripts/generate-pref-keys.py"), "--cargo", cargoExe, "--output", output.get().asFile)
+    outputs.dir(layout.buildDirectory.dir("generated/prefKeys"))
+    outputs.upToDateWhen { false }
+}
+
 kotlin {
     jvmToolchain(17)
 
@@ -102,6 +109,7 @@ kotlin {
     }
 
     sourceSets {
+        commonMain { kotlin.srcDir(generatePrefKeys) }
         commonMain.dependencies {
             api(project(":plain-common"))
             api(libs.atomicfu)

@@ -3,6 +3,7 @@ package com.ismartcoding.plain.rust.native
 import com.ismartcoding.plain.features.sessions.CreatedSession
 import com.ismartcoding.plain.features.settings.AppUpdateDownload
 import com.ismartcoding.plain.preferences.SecuritySettings
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 /** Local-only JNI (Android) / C (iOS) boundary; no HTTP or session routing. */
@@ -32,6 +33,7 @@ internal expect object RustNativeApi {
     suspend fun createCrashReport(report: String): String
     suspend fun completeOnboarding(): Boolean
     suspend fun prefsSnapshot(): JsonObject
+    suspend fun setPref(key: String, value: JsonElement): Boolean
     suspend fun toggleNotificationApp(packageName: String): Boolean
     suspend fun verifyAdbToken(token: String): Boolean
     suspend fun startAppUpdateDownload(): AppUpdateDownload

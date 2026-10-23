@@ -8,7 +8,7 @@ import android.os.Environment
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ismartcoding.plain.platform.files.scanFileTaskPaths
-import com.ismartcoding.plain.preferences.SecuritySettingsState
+import com.ismartcoding.plain.preferences.Prefs
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
@@ -23,7 +23,7 @@ class FileWritesRustHttpTest {
     fun sharedAndPublicFileWritesUseRustAndPreserveExistingContent() = runBlocking {
         val root = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir, "file-writes-${UUID.randomUUID()}")
         val external = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "file-writes-${UUID.randomUUID()}")
-        val originalPermissions = SecuritySettingsState.state.value.apiPermissions
+        val originalPermissions = Prefs.state.value.apiPermissions
         try {
             val dir = FilesClient.createDirectory(File(root, "nested/child").path)
             assertTrue(dir.isDir)
@@ -46,7 +46,7 @@ class FileWritesRustHttpTest {
             assertTrue(runCatching { FilesClient.createFile(File(root, "missing/never.txt").path) }.isFailure)
             assertFalse(File(root, "missing/never.txt").exists())
             assertTrue(runCatching { FilesClient.createDirectory("/system/plain-synthetic-${UUID.randomUUID()}") }.isFailure)
-            SecuritySettingsState.setApiPermissions(originalPermissions + "WRITE_EXTERNAL_STORAGE")
+            Prefs.setApiPermissions(originalPermissions + "WRITE_EXTERNAL_STORAGE")
             val publicDir = File(root, "public")
             RustGraphqlApi.mutate("""createDir(path: "${publicDir.path}")""")
             assertTrue(publicDir.isDirectory)
@@ -60,7 +60,7 @@ class FileWritesRustHttpTest {
             FilesClient.writeText(externalFile.path, content, false)
             assertEquals(content, externalFile.readText())
         } finally {
-            SecuritySettingsState.setApiPermissions(originalPermissions)
+            Prefs.setApiPermissions(originalPermissions)
             root.deleteRecursively()
             external.deleteRecursively()
             scanFileTaskPaths(listOf(File(external, "synthetic.txt").path, external.path))

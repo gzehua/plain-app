@@ -91,7 +91,7 @@ fun Permission.grant(): Boolean {
  * bridge, so this is a local read — the core has nothing to add.
  */
 suspend fun Permission.isEnabledAsync(): Boolean =
-    name in com.ismartcoding.plain.preferences.SecuritySettingsState.state.value.apiPermissions
+    name in com.ismartcoding.plain.preferences.Prefs.state.value.apiPermissions
 
 /** Enabled for the web client *and* granted by the OS. Both answers are local. */
 suspend fun Permission.enabledAndIsGrantedAsync(): Boolean = isEnabledAsync() && isGranted()

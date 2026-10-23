@@ -124,7 +124,7 @@ fun SettingsPage(navController: NavHostController, updateViewModel: UpdateViewMo
                                 PFilledButton(text = stringResource(Res.string.check_update), buttonSize = ButtonSize.SMALL, onClick = {
                                     scope.launch {
                                         DialogHelper.showMessage(Res.string.checking_updates)
-                                        SecuritySettingsState.setSkipVersion("")
+                                        Prefs.setSkipVersion("")
                                         val r = withIO { checkAppUpdate(true) }
                                         if (r != null) {
                                             if (r) updateViewModel.showDialog()

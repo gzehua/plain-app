@@ -22,7 +22,8 @@ import com.ismartcoding.plain.platform.network.isWifiAwareSupported
 import com.ismartcoding.plain.platform.network.stopAware
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.platform.system.deleteSystemProviderFacts
-import com.ismartcoding.plain.preferences.PrefStore
+import kotlinx.serialization.json.jsonObject
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
 import com.ismartcoding.plain.rust.host.audio.MediaCatalogChange
 import com.ismartcoding.plain.rust.host.audio.audioCatalogNotifications
@@ -142,7 +143,7 @@ internal suspend fun executeHostRequest(
     val params = request.params
     return when (method) {
         "prefsChanged" -> {
-            PrefStore.refresh()
+            Prefs.update(params["values"]!!.jsonObject)
             hostResult()
         }
         "fileResourceStream" -> { FileResourceStreamHost.start(exchangeScope, params); hostResult() }

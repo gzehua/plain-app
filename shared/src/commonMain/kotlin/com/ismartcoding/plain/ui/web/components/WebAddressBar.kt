@@ -136,7 +136,7 @@ fun WebAddressBar(
                 mdnsEditDialogVisible = false
                 scope.launch {
                     if (hostnameChanged) {
-                        com.ismartcoding.plain.preferences.SecuritySettingsState.setMdnsHostname(newHostname)
+                        com.ismartcoding.plain.preferences.Prefs.setMdnsHostname(newHostname)
                         hostname = newHostname
                     }
                     if (portChanged) {

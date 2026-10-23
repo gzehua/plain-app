@@ -15,7 +15,7 @@ import com.ismartcoding.plain.ui.notes.*
 import com.ismartcoding.plain.features.tags.*
 import com.ismartcoding.plain.ui.tags.*
 import com.ismartcoding.plain.network.*
-import com.ismartcoding.plain.preferences.SecuritySettingsState
+import com.ismartcoding.plain.preferences.Prefs
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
@@ -38,7 +38,7 @@ class FileTaskRustHttpTest {
     fun fileTasksCopyMoveTrackActualTargetsAndReportRealFailures() = runBlocking {
         val root = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir,"file-task-${UUID.randomUUID()}").apply { mkdirs() }
         val external = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"file-task-${UUID.randomUUID()}")
-        val originalPermissions = SecuritySettingsState.state.value.apiPermissions
+        val originalPermissions = Prefs.state.value.apiPermissions
         try {
             val source = File(root,"source.txt").apply { writeText("synthetic") }
             val target = File(root,"target.txt").apply { writeText("existing") }
@@ -81,7 +81,7 @@ class FileTaskRustHttpTest {
             assertTrue(rejected)
             val spoofedCaller = runCatching { RustGraphqlApi.query("fileTasks(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, query: \"\", offset: 0, limit: 1) { id }") }
             assertTrue(spoofedCaller.isFailure)
-            SecuritySettingsState.setApiPermissions(originalPermissions + "WRITE_EXTERNAL_STORAGE")
+            Prefs.setApiPermissions(originalPermissions + "WRITE_EXTERNAL_STORAGE")
             assertEquals(true, RustGraphqlApi.mutate("""copyFile(src: "${source.path}", dst: "${File(root,"public-copy.txt").path}", overwrite: false)""").getValue("copyFile").jsonPrimitive.boolean)
             assertEquals("synthetic",File(root,"public-copy.txt").readText())
             var publicFailed = false
@@ -89,7 +89,7 @@ class FileTaskRustHttpTest {
             catch (_: Exception) { publicFailed = true }
             assertTrue(publicFailed)
         } finally {
-            SecuritySettingsState.setApiPermissions(originalPermissions)
+            Prefs.setApiPermissions(originalPermissions)
             root.deleteRecursively()
             external.deleteRecursively()
             com.ismartcoding.plain.platform.files.scanFileTaskPaths(listOf(File(external,"source.txt").path,File(external,"moved.txt").path))
