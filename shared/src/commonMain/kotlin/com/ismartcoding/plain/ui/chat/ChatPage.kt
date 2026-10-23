@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.chat
 
+import com.ismartcoding.plain.features.chat.ChatClient
+
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,7 +47,6 @@ import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
 import com.ismartcoding.plain.ui.navigation.PBackHandler
-import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.components.ActionButtonMore
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.base.BottomActionButtons
@@ -124,7 +125,7 @@ fun ChatPage(
     }
 
     LaunchedEffect(id) {
-        inputValue = SavedData.read("chat_input_text:${com.ismartcoding.plain.features.chat.data.ChatTarget.parseId(id).encodedToId}", "")
+        inputValue = ChatClient.readDraft(id)
         scope.launch(Dispatchers.Default) {
             chatVM.initializeTargetAsync(id)
             chatVM.fetchAsync(chatVM.target.value.toId)
@@ -263,7 +264,7 @@ fun ChatPage(
                     onValueChange = {
                         inputValue = it
                         scope.launch(Dispatchers.Default) {
-                            SavedData.write("chat_input_text:${com.ismartcoding.plain.features.chat.data.ChatTarget.parseId(id).encodedToId}", it)
+                            ChatClient.writeDraft(id, it)
                         }
                     },
                     onSend = {
@@ -271,7 +272,7 @@ fun ChatPage(
                         scope.launch {
                             chatVM.sendTextMessage(inputValue)
                             inputValue = ""
-                            SavedData.write("chat_input_text:${com.ismartcoding.plain.features.chat.data.ChatTarget.parseId(id).encodedToId}", "")
+                            ChatClient.writeDraft(id, "")
                         }
                     },
                     onShareFolder = { showFolderShareSheet = true })

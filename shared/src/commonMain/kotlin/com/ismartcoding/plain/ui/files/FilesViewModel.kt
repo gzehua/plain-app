@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.files
 
+import com.ismartcoding.plain.features.files.FileLocationClient
+
 import com.ismartcoding.plain.features.files.FilesClient
 
 import com.ismartcoding.plain.features.files.BreadcrumbItem
@@ -10,7 +12,7 @@ import com.ismartcoding.plain.ui.state.launchSafe
 
 import com.ismartcoding.plain.models.File as FileEntry
 
-import com.ismartcoding.plain.preferences.*
+import com.ismartcoding.plain.preferences.Prefs
 
 import com.ismartcoding.plain.i18n.*
 
@@ -53,7 +55,7 @@ class FilesViewModel : ISearchableViewModel<FileEntry>, ISelectableViewModel<Fil
                 viewModelScope.launchSafe {
                     val breadcrumbsCopy = breadcrumbs.toList()
                     val fullPath = if (breadcrumbsCopy.isNotEmpty()) breadcrumbsCopy.last().path else value
-                    SavedData.write("last_file_path", FilePathData(rootPath = rootPath, fullPath = fullPath, selectedPath = value))
+                    FileLocationClient.saveLastPath(FilePathData(rootPath = rootPath, fullPath = fullPath, selectedPath = value))
                 }
             }
         }
@@ -130,7 +132,7 @@ class FilesViewModel : ISearchableViewModel<FileEntry>, ISelectableViewModel<Fil
     }
 
     suspend fun loadLastPathAsync() = withIO {
-        val data = SavedData.read("last_file_path", FilePathData("", "", ""))
+        val data = FileLocationClient.lastPath()
         if (data.selectedPath.isNotEmpty() && fileExists(data.selectedPath)) {
             type = inferFileTypeFromRoot(data.rootPath)
             initSelectedPath(data.rootPath, type, data.selectedPath, data.selectedPath)

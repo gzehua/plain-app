@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.scan
 
-import com.ismartcoding.plain.preferences.SavedData
+import com.ismartcoding.plain.rust.native.RustNativeApi
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -125,7 +125,7 @@ fun ScanPage(navController: NavHostController) {
             },
             onScanResult = { value, onDismiss ->
                 scope.launch {
-                    SavedData.addScan(value)
+                    RustNativeApi.addScanHistory(value)
                 }
                 scanResult = value
                 resumeScannerAfterResult = onDismiss

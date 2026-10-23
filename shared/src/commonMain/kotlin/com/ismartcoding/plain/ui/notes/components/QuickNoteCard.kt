@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.notes.components
 
-import com.ismartcoding.plain.preferences.*
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
@@ -73,7 +72,7 @@ fun QuickNoteCard(
 
     LaunchedEffect(Unit) {
         if (QuickNoteDraftCache.text == null) {
-            val saved = SavedData.read("quick_note_draft", "")
+            val saved = NotesClient.readDraft()
             QuickNoteDraftCache.text = saved
             text = saved
         }
@@ -85,14 +84,14 @@ fun QuickNoteCard(
             .collectLatest { t ->
                 QuickNoteDraftCache.text = t
                 delay(300)
-                SavedData.write("quick_note_draft", t)
+                NotesClient.writeDraft(t)
             }
     }
     DisposableEffect(Unit) {
         onDispose {
             val t = text
             QuickNoteDraftCache.text = t
-            coIO { SavedData.write("quick_note_draft", t) }
+            coIO { NotesClient.writeDraft(t) }
         }
     }
 

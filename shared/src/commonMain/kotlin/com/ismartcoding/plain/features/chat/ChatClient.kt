@@ -16,6 +16,10 @@ import com.ismartcoding.plain.rust.graphql.selectionQuery
 import kotlinx.serialization.json.*
 
 object ChatClient {
+    suspend fun readDraft(id: String): String = RustGraphqlApi.readSavedValue(draftKey(id), "")
+    suspend fun writeDraft(id: String, value: String) = RustGraphqlApi.writeSavedValue(draftKey(id), value)
+    private fun draftKey(id: String) = "chat_input_text:${ChatTarget.parseId(id).encodedToId}"
+
 
     suspend fun refreshLatestChats() = withIO {
         ChatCacher.load()

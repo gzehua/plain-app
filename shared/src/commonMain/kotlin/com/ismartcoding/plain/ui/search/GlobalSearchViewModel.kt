@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.search
 
 import kotlinx.coroutines.flow.collect
 
-import com.ismartcoding.plain.preferences.*
+import com.ismartcoding.plain.features.search.SearchHistoryClient
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -39,7 +39,7 @@ class GlobalSearchViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            recentQueries.value = SavedData.recentSearches()
+            recentQueries.value = SearchHistoryClient.read()
         }
     }
 
@@ -75,22 +75,22 @@ class GlobalSearchViewModel : ViewModel() {
 
     fun removeRecent(q: String) {
         viewModelScope.launch {
-            SavedData.removeSearch(q)
-            recentQueries.value = SavedData.recentSearches()
+            SearchHistoryClient.remove(q)
+            recentQueries.value = SearchHistoryClient.read()
         }
     }
 
     fun clearRecent() {
         viewModelScope.launch {
-            SavedData.write("recent_searches", emptyList<String>())
-            recentQueries.value = SavedData.recentSearches()
+            SearchHistoryClient.clear()
+            recentQueries.value = SearchHistoryClient.read()
         }
     }
 
     private fun recordRecent(q: String) {
         viewModelScope.launch {
-            SavedData.recordSearch(q)
-            recentQueries.value = SavedData.recentSearches()
+            SearchHistoryClient.record(q)
+            recentQueries.value = SearchHistoryClient.read()
         }
     }
 

@@ -2,7 +2,8 @@
 
 package com.ismartcoding.plain.ui.components
 
-import com.ismartcoding.plain.preferences.*
+import com.ismartcoding.plain.features.files.FileLocationClient
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -66,12 +67,12 @@ fun SaveToSheet(
 ) {
     val scope = rememberCoroutineScope()
     var recentDirs by remember { mutableStateOf<List<String>>(emptyList()) }
-    androidx.compose.runtime.LaunchedEffect(Unit) { recentDirs = SavedData.recentSaveDirs() }
+    androidx.compose.runtime.LaunchedEffect(Unit) { recentDirs = FileLocationClient.recentSaveDirs() }
     var showFolderPick by remember { mutableStateOf(false) }
 
     fun useDirectory(dir: String) {
         onDismiss()
-        scope.launch { SavedData.recordSaveDir(dir) }
+        scope.launch { FileLocationClient.recordSaveDir(dir) }
         onDirectory(dir)
     }
 

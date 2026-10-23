@@ -15,7 +15,10 @@ import kotlinx.serialization.json.jsonPrimitive
 object NotesClient : NotesApi(
     query = { RustGraphqlApi.query(it) },
     mutate = { RustGraphqlApi.mutate(it) },
-)
+) {
+    suspend fun readDraft(): String = RustGraphqlApi.readSavedValue("quick_note_draft", "")
+    suspend fun writeDraft(value: String) = RustGraphqlApi.writeSavedValue("quick_note_draft", value)
+}
 
 open class NotesApi internal constructor(
     private val query: suspend (String) -> JsonObject,
