@@ -8,13 +8,14 @@ import java.io.File
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
+import android.os.ParcelFileDescriptor
 
 actual fun openByteSource(path: String): ByteSource {
     val channel: FileChannel = if (path.startsWith("content://")) {
         val pfd = appContext.contentResolver.openFileDescriptor(Uri.parse(path), "r")
             ?: throw IllegalArgumentException("cannot open $path")
         try {
-            android.os.ParcelFileDescriptor.AutoCloseInputStream(pfd).channel
+            ParcelFileDescriptor.AutoCloseInputStream(pfd).channel
         } catch (e: Exception) {
             runCatching { pfd.close() }
             throw e

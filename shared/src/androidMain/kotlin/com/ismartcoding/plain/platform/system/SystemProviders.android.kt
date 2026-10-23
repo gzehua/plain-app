@@ -9,6 +9,17 @@ import android.provider.ContactsContract
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.features.audio.AudioMediaStoreHelper
+import com.ismartcoding.plain.features.files.FileSortBy
+import com.ismartcoding.plain.features.telephony.sms.SmsHelper
+import com.ismartcoding.plain.platform.media.provider.DocMediaStoreHelper
+import com.ismartcoding.plain.platform.media.provider.FileMediaStoreHelper
+import com.ismartcoding.plain.platform.media.provider.ImageMediaStoreHelper
+import com.ismartcoding.plain.platform.media.provider.VideoMediaStoreHelper
+import com.ismartcoding.plain.rust.host.provider.MediaBucketItemFacts
+import com.ismartcoding.plain.rust.host.provider.ProviderPlan
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 
 actual suspend fun deleteSystemProviderFacts(provider: DataType, ids: Set<String>): Set<String> = withIO {
     val uri = when (provider) {
@@ -25,19 +36,19 @@ actual suspend fun deleteSystemProviderFacts(provider: DataType, ids: Set<String
     }.toSet()
 }
 
-actual suspend fun systemSmsFacts(method: String, params: kotlinx.serialization.json.JsonObject): kotlinx.serialization.json.JsonElement =
-    com.ismartcoding.plain.features.telephony.sms.SmsHelper.facts(appContext, method, params)
+actual suspend fun systemSmsFacts(method: String, params: JsonObject): JsonElement =
+    SmsHelper.facts(appContext, method, params)
 
-actual suspend fun mediaBucketItemFacts(dataType: DataType, plan: com.ismartcoding.plain.rust.host.provider.ProviderPlan): List<com.ismartcoding.plain.rust.host.provider.MediaBucketItemFacts> = when (dataType) {
-    DataType.IMAGE -> com.ismartcoding.plain.platform.media.provider.ImageMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where())
-    DataType.VIDEO -> com.ismartcoding.plain.platform.media.provider.VideoMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where())
-    DataType.AUDIO -> if (com.ismartcoding.plain.platform.isQPlus()) com.ismartcoding.plain.features.audio.AudioMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where()) else emptyList()
-    DataType.DOC -> if (isQPlus()) com.ismartcoding.plain.platform.media.provider.DocMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where()) else emptyList()
+actual suspend fun mediaBucketItemFacts(dataType: DataType, plan: ProviderPlan): List<MediaBucketItemFacts> = when (dataType) {
+    DataType.IMAGE -> ImageMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where())
+    DataType.VIDEO -> VideoMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where())
+    DataType.AUDIO -> if (isQPlus()) AudioMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where()) else emptyList()
+    DataType.DOC -> if (isQPlus()) DocMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where()) else emptyList()
     else -> emptyList()
 }
 
-actual suspend fun fileIndexId(path: String): String? = com.ismartcoding.plain.lib.withIO { com.ismartcoding.plain.platform.media.provider.FileMediaStoreHelper.getIdByPathAsync(com.ismartcoding.plain.appContext, path) }
-actual suspend fun fileIndexRows(plan: com.ismartcoding.plain.rust.host.provider.ProviderPlan, limit: Int, offset: Int, sortBy: com.ismartcoding.plain.features.files.FileSortBy): List<com.ismartcoding.plain.models.File> = com.ismartcoding.plain.platform.media.provider.FileMediaStoreHelper.searchAsync(com.ismartcoding.plain.appContext, plan.where(), limit, offset, sortBy)
-actual suspend fun fileIndexCount(plan: com.ismartcoding.plain.rust.host.provider.ProviderPlan): Int = com.ismartcoding.plain.lib.withIO {
-    plan.wheres().sumOf { com.ismartcoding.plain.platform.media.provider.FileMediaStoreHelper.countAsync(com.ismartcoding.plain.appContext, it) }
+actual suspend fun fileIndexId(path: String): String? = withIO { FileMediaStoreHelper.getIdByPathAsync(appContext, path) }
+actual suspend fun fileIndexRows(plan: ProviderPlan, limit: Int, offset: Int, sortBy: FileSortBy): List<FileEntry> = FileMediaStoreHelper.searchAsync(appContext, plan.where(), limit, offset, sortBy)
+actual suspend fun fileIndexCount(plan: ProviderPlan): Int = withIO {
+    plan.wheres().sumOf { FileMediaStoreHelper.countAsync(appContext, it) }
 }

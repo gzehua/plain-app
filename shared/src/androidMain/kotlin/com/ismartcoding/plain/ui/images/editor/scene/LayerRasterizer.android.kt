@@ -27,6 +27,7 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 internal data class LayerCacheEntry(
     val hash: String,
@@ -514,7 +515,7 @@ internal fun makeGradientShader(value: String, w: Float, h: Float): Shader? {
     val rad = ((angle - 90f) * Math.PI.toFloat() / 180f)
     val cx = w / 2f
     val cy = h / 2f
-    val diag = (kotlin.math.sqrt((w * w + h * h).toDouble()) / 2).toFloat()
+    val diag = (sqrt((w * w + h * h).toDouble()) / 2).toFloat()
     val dx = cos(rad.toDouble()).toFloat() * diag
     val dy = sin(rad.toDouble()).toFloat() * diag
     val positions = if (colors.size == 1) floatArrayOf(0f) else null

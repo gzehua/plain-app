@@ -67,6 +67,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import androidx.compose.ui.unit.Density
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -145,7 +146,7 @@ fun FileListItem(
 
 @Composable
 private fun FileListItemThumbnail(
-    file: FileEntry, itemState: TransformItemState, previewerState: MediaPreviewerState, density: androidx.compose.ui.unit.Density,
+    file: FileEntry, itemState: TransformItemState, previewerState: MediaPreviewerState, density: Density,
 ) {
     val isMedia = file.path.isImageFast() || file.path.isVideoFast()
     val isZipEntry = ZipBrowserHelper.isZipPath(file.path)

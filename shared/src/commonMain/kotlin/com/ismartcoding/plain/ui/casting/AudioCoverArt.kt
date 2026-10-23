@@ -23,10 +23,11 @@ import com.ismartcoding.plain.ui.platform.media.loadAudioCoverBitmap
 import org.jetbrains.compose.resources.painterResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.music2 as ui_drawable_music2
+import androidx.compose.ui.graphics.ImageBitmap
 
 @Composable
 fun AudioCoverArt(path: String, modifier: Modifier = Modifier) {
-    var coverBitmap by remember(path) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    var coverBitmap by remember(path) { mutableStateOf<ImageBitmap?>(null) }
     var loaded by remember(path) { mutableStateOf(false) }
 
     LaunchedEffect(path) {

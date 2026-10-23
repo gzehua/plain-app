@@ -26,6 +26,10 @@ import com.ismartcoding.plain.features.audio.AudioAction
 import com.ismartcoding.plain.platform.media.AndroidAudioPlayer
 import com.ismartcoding.plain.features.audio.AudioCommands
 import com.ismartcoding.plain.features.audio.AudioServiceAction
+import com.ismartcoding.plain.platform.media.audioPause
+import com.ismartcoding.plain.platform.media.audioPlay
+import com.ismartcoding.plain.platform.media.audioSeekTo
+import com.ismartcoding.plain.platform.media.audioSetPlaybackSpeed
 
 @OptIn(UnstableApi::class)
 class AudioPlayerService : MediaLibraryService() {
@@ -91,11 +95,11 @@ class AudioPlayerService : MediaLibraryService() {
         nativePlayer = player
         player.addListener(listener)
         val forwardingPlayer = object : ForwardingPlayer(player) {
-            override fun play() = com.ismartcoding.plain.platform.media.audioPlay()
-            override fun pause() = com.ismartcoding.plain.platform.media.audioPause()
-            override fun seekTo(positionMs: Long) = com.ismartcoding.plain.platform.media.audioSeekTo(positionMs)
-            override fun setPlaybackSpeed(speed: Float) = com.ismartcoding.plain.platform.media.audioSetPlaybackSpeed(speed)
-            override fun stop() = com.ismartcoding.plain.platform.media.audioPause()
+            override fun play() = audioPlay()
+            override fun pause() = audioPause()
+            override fun seekTo(positionMs: Long) = audioSeekTo(positionMs)
+            override fun setPlaybackSpeed(speed: Float) = audioSetPlaybackSpeed(speed)
+            override fun stop() = audioPause()
             override fun seekToPrevious() {
                 AudioCommands.submit("PREVIOUS")
             }
@@ -139,7 +143,7 @@ class AudioPlayerService : MediaLibraryService() {
         }
         when (intent?.action) {
             AudioServiceAction.QUIT.name -> {
-                com.ismartcoding.plain.platform.media.audioPause()
+                audioPause()
             }
 
         }

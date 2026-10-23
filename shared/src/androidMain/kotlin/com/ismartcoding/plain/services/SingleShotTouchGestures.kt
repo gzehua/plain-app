@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import com.ismartcoding.plain.features.screenmirror.TouchPointInput
 import com.ismartcoding.plain.lib.logcat.LogCat
+import kotlin.math.sqrt
 
 /**
  * One-shot gesture dispatch for the legacy JSON control actions
@@ -78,7 +79,7 @@ internal object SingleShotTouchGestures {
         val ly = normToPx(last.y, screenHeight)
         val dx = lx - fx
         val dy = ly - fy
-        val totalDistance = kotlin.math.sqrt(dx * dx + dy * dy)
+        val totalDistance = sqrt(dx * dx + dy * dy)
 
         if (totalDistance < 4f) {
             if (totalDuration >= 500L) {

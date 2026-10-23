@@ -13,6 +13,7 @@ import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
+import com.ismartcoding.plain.rust.host.network.MdnsMulticastHost
 
 @RunWith(AndroidJUnit4::class)
 class MdnsRuntimeRustHttpTest {
@@ -24,7 +25,7 @@ class MdnsRuntimeRustHttpTest {
     fun closedPhysicalLeaseCannotAcquireAfterReleaseOrReplaceTheCurrentOwner() = runBlocking {
         awaitReceiver()
         val closed = Uuid.random().toString()
-        fun physical(acquire: Boolean, lease: String) = com.ismartcoding.plain.rust.host.network.MdnsMulticastHost.handle(buildJsonObject {
+        fun physical(acquire: Boolean, lease: String) = MdnsMulticastHost.handle(buildJsonObject {
             put("acquire", acquire); put("lease", lease)
         }).boolean
         assertTrue(physical(false, closed))

@@ -2,12 +2,14 @@ package com.ismartcoding.plain.app
 
 import com.ismartcoding.plain.preferences.*
 import kotlinx.coroutines.flow.MutableStateFlow
+import com.ismartcoding.plain.features.settings.HttpServerState
+import kotlin.io.encoding.Base64
 
 object TempData {
 
     val clientId: String get() = Prefs.state.value.clientId
     val deviceName = MutableStateFlow("")
-    val urlToken: ByteArray get() = kotlin.io.encoding.Base64.decode(Prefs.state.value.urlToken)
+    val urlToken: ByteArray get() = Base64.decode(Prefs.state.value.urlToken)
     val mdnsHostname: String get() = Prefs.state.value.mdnsHostname
 
     val audioPlayerVisible = MutableStateFlow(false)
@@ -39,7 +41,7 @@ object TempData {
     }
 
     fun canChatAccess(): Boolean {
-        return com.ismartcoding.plain.app.HttpServerManager.serverState.value == com.ismartcoding.plain.features.settings.HttpServerState.ON
+        return HttpServerManager.serverState.value == HttpServerState.ON
     }
 
 }

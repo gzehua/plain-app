@@ -1,8 +1,10 @@
 package com.ismartcoding.plain.models
 
+import kotlinx.serialization.Serializable
 
 
-@kotlinx.serialization.Serializable
+
+@Serializable
 data class PeerAddress(
     val bestIp: String,
     val name: String,

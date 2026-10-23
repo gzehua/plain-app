@@ -40,6 +40,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlinx.coroutines.CancellationException
 
 /**
  * Translucent share target: hosts the share sheet over the calling app and
@@ -175,7 +176,7 @@ class ShareActivity : ComponentActivity() {
                 infos.count { info ->
                     try {
                         saveFileToDownloads(info.uri, info.name).isNotEmpty()
-                    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                    } catch (cancelled: CancellationException) {
                         throw cancelled
                     } catch (error: Exception) {
                         LogCat.e("Save shared content failed", error)
@@ -214,7 +215,7 @@ class ShareActivity : ComponentActivity() {
                     Mutation.saveSharedText(checkNotNull(f.parent), f.path, text),
                 )
                 withContext(Dispatchers.Main) { openInMain(Uri.fromFile(f), "text/plain") }
-            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
                 LogCat.e("Prepare shared text failed", error)

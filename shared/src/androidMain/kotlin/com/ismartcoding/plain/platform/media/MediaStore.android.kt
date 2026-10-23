@@ -20,13 +20,23 @@ import com.ismartcoding.plain.features.telephony.sms.SmsProviderContract
 import com.ismartcoding.plain.features.files.FileSortBy
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.CancellationException
+import android.content.ContentUris
+import android.os.Environment
+import com.ismartcoding.plain.features.contacts.ContactInput
+import com.ismartcoding.plain.features.telephony.sms.MmsCandidateFacts
+import com.ismartcoding.plain.features.telephony.sms.MmsHelper
+import com.ismartcoding.plain.features.telephony.sms.SmsDeletionReceipt
+import com.ismartcoding.plain.features.telephony.sms.SmsDispatchRequest
+import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.lib.withIO
+import kotlinx.coroutines.currentCoroutineContext
 
-actual suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.features.telephony.sms.SmsDeletionReceipt = com.ismartcoding.plain.lib.withIO {
+actual suspend fun deleteSmsRows(ids: List<String>): SmsDeletionReceipt = withIO {
     check(ShizukuHelper.isGranted()) { "Shizuku is not available or not granted" }
     val deleted = mutableListOf<String>()
     val failed = mutableListOf<String>()
     for (id in ids) {
-        kotlinx.coroutines.currentCoroutineContext().ensureActive()
+        currentCoroutineContext().ensureActive()
         val raw = id.removePrefix("mms_")
         val number = raw.toLongOrNull()
         if (number == null || number < 0) {
@@ -34,19 +44,19 @@ actual suspend fun deleteSmsRows(ids: List<String>): com.ismartcoding.plain.feat
             continue
         }
         val provider = if (id.startsWith("mms_")) Telephony.Mms.CONTENT_URI else Telephony.Sms.CONTENT_URI
-        val uri = android.content.ContentUris.withAppendedId(provider, number)
+        val uri = ContentUris.withAppendedId(provider, number)
         val removed = try {
             ShizukuHelper.exec("content delete --uri $uri")
             appContext.contentResolver.query(uri, arrayOf("_id"), null, null, null)?.use { !it.moveToFirst() } == true
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
-            com.ismartcoding.plain.lib.logcat.LogCat.e("SMS provider deletion failed", error)
+            LogCat.e("SMS provider deletion failed", error)
             false
         }
         if (removed) deleted.add(id) else failed.add(id)
     }
-    com.ismartcoding.plain.features.telephony.sms.SmsDeletionReceipt(deleted, failed)
+    SmsDeletionReceipt(deleted, failed)
 }
 
 actual fun getMediaItemUriString(dataType: DataType, id: String, path: String): String = getSystemMediaItemUriString(dataType, id)
@@ -61,10 +71,10 @@ internal fun getSystemMediaItemUriString(dataType: DataType, id: String): String
 
 
 actual fun divideSmsText(body: String, subscriptionId: Int?): List<String> = SmsHelper.divideText(body, subscriptionId)
-actual fun sendSmsParts(request: com.ismartcoding.plain.features.telephony.sms.SmsDispatchRequest) = SmsHelper.sendParts(request)
+actual fun sendSmsParts(request: SmsDispatchRequest) = SmsHelper.sendParts(request)
 
 actual fun call(number: String, showDialer: Boolean) =
-    com.ismartcoding.plain.platform.media.provider.CallMediaStoreHelper.call(appContext, number, showDialer)
+    CallMediaStoreHelper.call(appContext, number, showDialer)
 
 
 actual fun launchDefaultSmsApp(
@@ -72,7 +82,7 @@ actual fun launchDefaultSmsApp(
     body: String,
     attachments: List<Pair<String, String>>,
 ): Long {
-    com.ismartcoding.plain.features.telephony.sms.MmsHelper.launchDefaultSmsApp(number, body, attachments)
+    MmsHelper.launchDefaultSmsApp(number, body, attachments)
     return System.currentTimeMillis() / 1000 - 1
 }
 
@@ -96,19 +106,19 @@ actual fun getScreenSize(): Pair<Int, Int> {
 }
 
 internal actual fun platformDownloadsDirPath(): String =
-    android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).absolutePath
+    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
 
-actual fun updateContact(id: String, input: com.ismartcoding.plain.features.contacts.ContactInput) =
-    com.ismartcoding.plain.platform.media.provider.ContactMediaStoreHelper.updateAsync(id, input)
+actual fun updateContact(id: String, input: ContactInput) =
+    ContactMediaStoreHelper.updateAsync(id, input)
 
-actual fun createContact(input: com.ismartcoding.plain.features.contacts.ContactInput, accountType: String): String =
-    com.ismartcoding.plain.platform.media.provider.ContactMediaStoreHelper.createAsync(input, accountType)
+actual fun createContact(input: ContactInput, accountType: String): String =
+    ContactMediaStoreHelper.createAsync(input, accountType)
 
 actual suspend fun deleteContacts(ids: Set<String>) {
-    com.ismartcoding.plain.platform.media.provider.ContactMediaStoreHelper.deleteByIdsAsync(appContext, ids)
+    ContactMediaStoreHelper.deleteByIdsAsync(appContext, ids)
 }
 
-actual fun readSentMmsCandidates(minimumId: Long, launchTimeSec: Long): List<com.ismartcoding.plain.features.telephony.sms.MmsCandidateFacts> {
+actual fun readSentMmsCandidates(minimumId: Long, launchTimeSec: Long): List<MmsCandidateFacts> {
     val context = appContext
     return context.contentResolver.query(
         Telephony.Mms.CONTENT_URI,
@@ -122,7 +132,7 @@ actual fun readSentMmsCandidates(minimumId: Long, launchTimeSec: Long): List<com
         buildList {
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idIndex)
-                add(com.ismartcoding.plain.features.telephony.sms.MmsCandidateFacts(id,
+                add(MmsCandidateFacts(id,
                     SmsHelper.readMmsAddresses(context, id.toString()), SmsHelper.readMmsParts(context, id.toString()),
                     cursor.getString(threadIndex).orEmpty()))
             }

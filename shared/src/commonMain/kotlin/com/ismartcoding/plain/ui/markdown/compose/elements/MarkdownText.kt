@@ -58,6 +58,7 @@ import org.intellij.markdown.IElementType
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.findChildOfType
+import androidx.compose.ui.unit.TextUnit
 
 @Composable
 fun MarkdownText(
@@ -394,7 +395,7 @@ internal fun buildImageInlineContent(
  */
 internal fun buildMathInlineContent(
     content: AnnotatedString,
-    fontSize: androidx.compose.ui.unit.TextUnit = 18.sp,
+    fontSize: TextUnit = 18.sp,
 ): Map<String, InlineTextContent> {
     val annotations = content.getStringAnnotations(0, content.length)
         .filter { it.item.startsWith("${MARKDOWN_TAG_MATH}_") }

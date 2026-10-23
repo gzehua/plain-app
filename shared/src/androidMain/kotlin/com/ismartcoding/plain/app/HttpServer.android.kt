@@ -29,6 +29,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
+import com.ismartcoding.plain.i18n.Res
+import com.ismartcoding.plain.preferences.Prefs
 
 // The SMS/MMS hooks below serve the web desktop bridge, whose only clients are
 // connected web sessions — so they live exactly as long as the server:
@@ -49,7 +51,7 @@ actual suspend fun onHttpServerStopped() {
 
 /** Starts optional background retention independently of the HTTP server. */
 actual fun startHttpServerService() {
-    if (!com.ismartcoding.plain.preferences.Prefs.backgroundServiceEnabled.value) return
+    if (!Prefs.backgroundServiceEnabled.value) return
     HttpServerManager.backgroundState.value = HttpServerState.STARTING
     HttpServerManager.backgroundError.value = ""
     coIO {
@@ -68,7 +70,7 @@ actual fun startHttpServerService() {
                 retry--
             }
         }
-        HttpServerManager.backgroundError.value = LocaleHelper.getString(com.ismartcoding.plain.i18n.Res.string.background_online_failed)
+        HttpServerManager.backgroundError.value = LocaleHelper.getString(Res.string.background_online_failed)
         HttpServerManager.backgroundState.value = HttpServerState.ERROR
     }
 }

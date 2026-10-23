@@ -3,6 +3,7 @@ package com.ismartcoding.plain.platform.system
 import com.ismartcoding.plain.models.Package as AppPackage
 
 import kotlin.time.Instant
+import kotlinx.serialization.Serializable
 
 data class PackageInstallResult(
     val packageName: String,
@@ -27,7 +28,7 @@ expect fun installPackage(paths: List<String>, packageName: String, session: Boo
 
 expect fun packageInstallProfile(): PackageInstallProfile
 
-@kotlinx.serialization.Serializable
+@Serializable
 data class PackageInstallProfile(val densityDpi: Int, val localeTags: List<String>)
 
 /**

@@ -47,6 +47,7 @@ import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.history as ui_drawable_history
 import com.ismartcoding.plain.ui.resources.image as ui_drawable_image
 import com.ismartcoding.plain.ui.resources.close as ui_drawable_close
+import kotlinx.coroutines.CancellationException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,7 +134,7 @@ fun ScanPage(navController: NavHostController) {
             },
             handleSpecialCode = specialCode@ { text, onFinished ->
                 val payload = try { RustPairingCode.parse(text) }
-                catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+                catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) {
                     DialogHelper.showErrorDialog(error.message ?: LocaleHelper.getStringAsync(Res.string.error), onFinished)
                     return@specialCode true

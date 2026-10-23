@@ -19,6 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.theme.waveInactiveColor
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.unit.LayoutDirection
+import kotlin.math.PI
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +51,7 @@ fun WaveSlider(
             label = "waveOffset",
         )
     } else null
-    val path = remember { androidx.compose.ui.graphics.Path() }
+    val path = remember { Path() }
     Slider(
         value = if (value.isFinite()) value.coerceIn(valueRange) else valueRange.start,
         onValueChange = onValueChange,
@@ -59,12 +62,12 @@ fun WaveSlider(
         thumb = { Box(Modifier.size(waveOptions.thumbRadius.dp * 2)) },
         track = { slider ->
             Canvas(Modifier.fillMaxWidth().height((waveOptions.amplitude * 2 + waveOptions.lineWidth).dp)) {
-                val phase = (animationOffset?.value ?: 0f) * 2 * kotlin.math.PI.toFloat()
+                val phase = (animationOffset?.value ?: 0f) * 2 * PI.toFloat()
                 val effectiveColors = if (enabled) colors else colors.copy(
                     activeColor = colors.activeColor.copy(alpha = 0.38f),
                     thumbColor = colors.thumbColor.copy(alpha = 0.38f),
                 )
-                if (layoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl) {
+                if (layoutDirection == LayoutDirection.Rtl) {
                     scale(-1f, 1f) { drawWaveContent(slider.value, valueRange, effectiveColors, waveOptions, animated, phase, path) }
                 } else {
                     drawWaveContent(slider.value, valueRange, effectiveColors, waveOptions, animated, phase, path)

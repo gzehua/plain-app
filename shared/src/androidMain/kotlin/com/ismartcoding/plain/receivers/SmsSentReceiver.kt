@@ -10,6 +10,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.features.telephony.sms.SmsPartSentReport
+import com.ismartcoding.plain.lib.JsonHelper
 
 class SmsSentReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -20,10 +24,10 @@ class SmsSentReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         receiverScope.launch {
             try {
-                val report = com.ismartcoding.plain.features.telephony.sms.SmsPartSentReport(requestId, partIndex, partCount,
+                val report = SmsPartSentReport(requestId, partIndex, partCount,
                     broadcastResultCode == Activity.RESULT_OK, broadcastResultCode)
-                sendEventToRust(com.ismartcoding.plain.app.events.HostEvent(
-                    com.ismartcoding.plain.app.events.EventType.SMS_PART_SENT_REPORTED, com.ismartcoding.plain.lib.JsonHelper.jsonEncode(report)))
+                sendEventToRust(HostEvent(
+                    EventType.SMS_PART_SENT_REPORTED, JsonHelper.jsonEncode(report)))
             } finally {
                 pendingResult.finish()
             }

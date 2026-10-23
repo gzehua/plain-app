@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.ismartcoding.plain.ui.downloads.components
 
@@ -31,6 +31,8 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.i18n.download
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 /**
  * In-page floating summary of the batch tasks: the most relevant batch's
@@ -58,7 +60,7 @@ fun DownloadMiniBar(
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         shadowElevation = 4.dp,
         onClick = onClick,
     ) {

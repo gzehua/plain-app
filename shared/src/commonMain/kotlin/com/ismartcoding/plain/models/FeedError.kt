@@ -1,9 +1,10 @@
 package com.ismartcoding.plain.models
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Required
 
 @Serializable
 data class FeedError(
-    @kotlinx.serialization.Required var code: String = "",
-    @kotlinx.serialization.Required var detail: String = "",
+    @Required var code: String = "",
+    @Required var detail: String = "",
 )

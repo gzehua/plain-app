@@ -3,6 +3,8 @@ package com.ismartcoding.plain.lib.pdfviewer.util
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.math.ceil as kotlinCeil
+import kotlin.math.floor as kotlinFloor
 
 /**
  * Unit tests for [MathUtils] — the libGDX-derived integer/float helpers used
@@ -130,8 +132,8 @@ class MathUtilsTest {
     fun floorVsCeilAgreeWithKotlinMathOnSmallValues() {
         // Cross-check against kotlin.math on values well inside the valid range.
         for (v in listOf(-100f, -1.5f, -0.1f, 0f, 0.5f, 3.14f, 99.9f, 1000f)) {
-            assertEquals(kotlin.math.floor(v).toInt(), MathUtils.floor(v), "floor mismatch for $v")
-            assertEquals(kotlin.math.ceil(v).toInt(), MathUtils.ceil(v), "ceil mismatch for $v")
+            assertEquals(kotlinFloor(v).toInt(), MathUtils.floor(v), "floor mismatch for $v")
+            assertEquals(kotlinCeil(v).toInt(), MathUtils.ceil(v), "ceil mismatch for $v")
         }
     }
 

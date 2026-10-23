@@ -71,6 +71,7 @@ import com.ismartcoding.plain.ui.media.viewer.video.VideoPlayerEvent
 import com.ismartcoding.plain.ui.media.viewer.video.VideoState
 import java.io.File
 import java.util.UUID
+import android.media.AudioAttributes as AndroidAudioAttributes
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -398,9 +399,9 @@ class VideoAudioFocusManager(private val audioManager: AudioManager) {
         focusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
         val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
             .setAudioAttributes(
-                android.media.AudioAttributes.Builder()
-                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MOVIE)
-                    .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                AndroidAudioAttributes.Builder()
+                    .setContentType(AndroidAudioAttributes.CONTENT_TYPE_MOVIE)
+                    .setUsage(AndroidAudioAttributes.USAGE_MEDIA)
                     .build()
             )
             .setOnAudioFocusChangeListener { change ->

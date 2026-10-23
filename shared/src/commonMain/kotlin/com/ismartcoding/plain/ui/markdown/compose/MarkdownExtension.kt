@@ -264,7 +264,7 @@ private fun flushRun(
     pending: MutableList<ASTNode>,
     parent: ASTNode,
     content: String,
-    typography: com.ismartcoding.plain.ui.markdown.model.MarkdownTypography,
+    typography: MarkdownTypography,
 ) {
     if (pending.isEmpty()) return
     // `MarkdownParagraph` walks `node.children`; we need to feed it
@@ -274,12 +274,12 @@ private fun flushRun(
     // them as its children.
     val first = pending.first()
     val last = pending.last()
-    val wrapper = object : org.intellij.markdown.ast.ASTNode {
+    val wrapper = object : ASTNode {
         override val type = PARAGRAPH
         override val startOffset = first.startOffset
         override val endOffset = last.endOffset
         override val parent = parent
-        override val children: List<org.intellij.markdown.ast.ASTNode> = pending.toList()
+        override val children: List<ASTNode> = pending.toList()
     }
     MarkdownParagraph(content = content, node = wrapper, style = typography.paragraph)
     pending.clear()

@@ -3,9 +3,10 @@ package com.ismartcoding.plain.platform.system
 import com.ismartcoding.plain.lib.crypto.sha512 as sha512Bytes
 import com.ismartcoding.plain.lib.extensions.toHexString
 import kotlin.random.Random
+import com.ismartcoding.plain.lib.crypto.ECDHKeyPair
 
 expect fun verifyEd25519Signature(publicKey: ByteArray, data: ByteArray, signature: ByteArray): Boolean
-expect fun generateECDHKeyPair(): com.ismartcoding.plain.lib.crypto.ECDHKeyPair
+expect fun generateECDHKeyPair(): ECDHKeyPair
 expect fun computeECDHSharedKey(privateKeyEncoded: ByteArray, peerPublicKeyEncoded: ByteArray): String?
 expect fun generateEd25519KeyPair(): Pair<ByteArray, ByteArray>
 expect fun signEd25519(rawPrivateKey: ByteArray, data: ByteArray): ByteArray

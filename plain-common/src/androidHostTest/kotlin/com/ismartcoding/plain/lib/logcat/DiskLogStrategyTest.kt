@@ -7,6 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import java.io.RandomAccessFile
 
 class DiskLogStrategyTest {
     @get:Rule val directory = TemporaryFolder()
@@ -35,7 +36,7 @@ class DiskLogStrategyTest {
         val backup = File(target.path + ".bak").apply { writeText("old backup") }
         try {
             LogCat.logFilePath = target.absolutePath
-            java.io.RandomAccessFile(target, "rw").use { it.setLength(25L * 1024 * 1024) }
+            RandomAccessFile(target, "rw").use { it.setLength(25L * 1024 * 1024) }
             DiskLogStrategy().log(LogCat.WARN, "fixture", "rotate")
             assertFalse(target.exists())
             assertTrue(backup.isFile)

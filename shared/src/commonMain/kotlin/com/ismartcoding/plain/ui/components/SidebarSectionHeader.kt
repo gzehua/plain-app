@@ -22,6 +22,7 @@ import org.jetbrains.compose.resources.painterResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.chevron_right as ui_drawable_chevron_right
 import com.ismartcoding.plain.ui.resources.expand_more as ui_drawable_expand_more
+import org.jetbrains.compose.resources.DrawableResource
 
 /**
  * Collapsible section header used inside sidebar drawers (media / notes pages).
@@ -33,7 +34,7 @@ fun SidebarSectionHeader(
     isExpanded: Boolean,
     onToggle: () -> Unit,
     onAction: (() -> Unit)? = null,
-    actionIcon: org.jetbrains.compose.resources.DrawableResource? = null,
+    actionIcon: DrawableResource? = null,
 ) {
     Row(
         modifier = Modifier

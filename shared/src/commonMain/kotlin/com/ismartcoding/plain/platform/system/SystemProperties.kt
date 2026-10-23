@@ -4,6 +4,8 @@ import com.ismartcoding.plain.platform.media.getDownloadsDirPath
 import com.ismartcoding.plain.network.request
 
 import kotlinx.serialization.json.JsonElement
+import com.ismartcoding.plain.buildChannel
+import kotlinx.serialization.json.JsonPrimitive
 
 internal expect fun readSystemProperties(names: List<String>): Map<String, JsonElement>
 
@@ -14,9 +16,9 @@ private val startupProperties = StartupSystemProperties {
         "name", "deviceType", "osVersion", "appVersion", "appBuildNumber",
         "wifiAwareSupported", "files.recentCatalog", "files.recentRoot", "media.systemCatalog", "supportedAbis", "updateSource",
     ) + startupPlatformPropertyNames()) + mapOf(
-        "buildChannel" to kotlinx.serialization.json.JsonPrimitive(com.ismartcoding.plain.platform.system.AppChannelType.fromString(com.ismartcoding.plain.buildChannel).name),
-        "cacheDir" to kotlinx.serialization.json.JsonPrimitive(cacheDirPath()),
-        "downloadsDir" to kotlinx.serialization.json.JsonPrimitive(getDownloadsDirPath()),
+        "buildChannel" to JsonPrimitive(AppChannelType.fromString(buildChannel).name),
+        "cacheDir" to JsonPrimitive(cacheDirPath()),
+        "downloadsDir" to JsonPrimitive(getDownloadsDirPath()),
     )
 }
 
@@ -45,7 +47,7 @@ internal class StartupSystemProperties(read: () -> Map<String, JsonElement>) {
         return if (sdk != null) "Android $version (API $sdk)" else "${string("osName")} $version"
     }
 
-    private fun string(name: String): String = (properties[name] as? kotlinx.serialization.json.JsonPrimitive)?.content ?: ""
+    private fun string(name: String): String = (properties[name] as? JsonPrimitive)?.content ?: ""
 }
 
 fun getAppVersion(): String = startupProperties.appVersion()

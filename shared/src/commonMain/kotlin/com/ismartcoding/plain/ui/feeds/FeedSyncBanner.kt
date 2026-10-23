@@ -50,6 +50,7 @@ import com.ismartcoding.plain.ui.resources.chevron_up as ui_drawable_chevron_up
 import com.ismartcoding.plain.ui.resources.x as ui_drawable_x
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.foundation.layout.Arrangement
 
 /** Maps the persisted Feed.lastError.code to a localized user-facing reason. */
 @Composable
@@ -145,7 +146,7 @@ internal fun FeedSyncBanner(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 2.dp),
-                            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End,
+                            horizontalArrangement = Arrangement.End,
                         ) {
                             PTextButton(
                                 text = stringResource(Res.string.feeds_sync_retry_all),

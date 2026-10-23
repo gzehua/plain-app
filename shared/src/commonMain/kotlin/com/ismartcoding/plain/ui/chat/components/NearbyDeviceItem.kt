@@ -30,6 +30,8 @@ import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.bluetooth as ui_drawable_bluetooth
 import com.ismartcoding.plain.ui.resources.wifi as ui_drawable_wifi
 import com.ismartcoding.plain.i18n.bluetooth
+import com.ismartcoding.plain.platform.system.DeviceType
+import com.ismartcoding.plain.ui.nearby.PairPeerDialog
 
 @Composable
 fun NearbyDeviceItem(
@@ -38,7 +40,7 @@ fun NearbyDeviceItem(
     bestIp: String,
 ) {
     var showPair by remember { mutableStateOf(false) }
-    if (showPair) com.ismartcoding.plain.ui.nearby.PairPeerDialog(item) { showPair = false }
+    if (showPair) PairPeerDialog(item) { showPair = false }
     Surface(
         modifier = PlainTheme.getCardModifier(),
         color = Color.Unspecified,
@@ -69,7 +71,7 @@ fun NearbyDeviceItem(
                 }
             },
             subtitle = bestIp,
-            icon = runCatching { com.ismartcoding.plain.platform.system.DeviceType.valueOf(item.deviceType) }.getOrDefault(com.ismartcoding.plain.platform.system.DeviceType.OTHER).getIcon(),
+            icon = runCatching { DeviceType.valueOf(item.deviceType) }.getOrDefault(DeviceType.OTHER).getIcon(),
             action = {
                 when (status) {
                     NearbyItemStatus.PAIRING -> {

@@ -36,6 +36,8 @@ import java.io.InputStream
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import java.io.IOException
+import okhttp3.Callback
 
 /**
  * OkHttp-backed [PlainHttpClient]. Every spec maps to a dedicated OkHttpClient;
@@ -85,12 +87,12 @@ internal class OkHttpPlainClient(
 private suspend fun Call.await(): Response =
     suspendCancellableCoroutine { cont ->
         enqueue(
-            object : okhttp3.Callback {
+            object : Callback {
                 override fun onResponse(call: Call, response: Response) {
                     if (cont.isActive) cont.resume(response)
                 }
 
-                override fun onFailure(call: Call, e: java.io.IOException) {
+                override fun onFailure(call: Call, e: IOException) {
                     if (cont.isActive) cont.resumeWithException(e)
                 }
             },

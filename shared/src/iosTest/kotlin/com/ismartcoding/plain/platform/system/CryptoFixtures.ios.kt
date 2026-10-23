@@ -1,4 +1,4 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package com.ismartcoding.plain.platform.system
 
@@ -40,6 +40,9 @@ import platform.Security.*
 import platform.posix.memcpy
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import com.ismartcoding.plain.crypto.ed25519GenerateKeyPair
+import com.ismartcoding.plain.crypto.ed25519Sign
+import com.ismartcoding.plain.crypto.ed25519Verify
 
 actual fun verifyEd25519Signature(publicKey: ByteArray, data: ByteArray, signature: ByteArray): Boolean =
     verifyEd25519(publicKey, data, signature)
@@ -127,16 +130,16 @@ actual fun computeECDHSharedKey(
 }
 
 actual fun generateEd25519KeyPair(): Pair<ByteArray, ByteArray> =
-    com.ismartcoding.plain.crypto.ed25519GenerateKeyPair()
+    ed25519GenerateKeyPair()
 
 actual fun signEd25519(rawPrivateKey: ByteArray, data: ByteArray): ByteArray =
-    com.ismartcoding.plain.crypto.ed25519Sign(rawPrivateKey, data)
+    ed25519Sign(rawPrivateKey, data)
 
 actual fun verifyEd25519(
     rawPublicKey: ByteArray,
     data: ByteArray,
     signature: ByteArray,
-): Boolean = com.ismartcoding.plain.crypto.ed25519Verify(rawPublicKey, data, signature)
+): Boolean = ed25519Verify(rawPublicKey, data, signature)
 
 private fun createKeyAttributes(keyClass: String?): CFDictionaryRef? = memScoped {
     val dict = CFDictionaryCreateMutable(null, 0, null, null)

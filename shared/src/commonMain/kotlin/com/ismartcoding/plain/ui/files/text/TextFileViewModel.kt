@@ -17,13 +17,16 @@ import com.ismartcoding.plain.ui.components.codeeditor.EditorFileIO
 import com.ismartcoding.plain.ui.components.codeeditor.EditorController
 import com.ismartcoding.plain.ui.components.codeeditor.EditorLoadState
 import com.ismartcoding.plain.ui.components.DialogHelper
+import com.ismartcoding.plain.lib.TimeHelper
+import com.ismartcoding.plain.platform.files.openByteSource as filesOpenByteSource
+import com.ismartcoding.plain.platform.files.writeByteChunksStreaming as filesWriteByteChunksStreaming
 
 class TextFileViewModel : ViewModel() {
     val controller = EditorController(viewModelScope, object : EditorFileIO {
-        override fun nowMillis() = com.ismartcoding.plain.lib.TimeHelper.nowMillis()
-        override fun openByteSource(path: String) = com.ismartcoding.plain.platform.files.openByteSource(path)
+        override fun nowMillis() = TimeHelper.nowMillis()
+        override fun openByteSource(path: String) = filesOpenByteSource(path)
         override suspend fun writeByteChunksStreaming(path: String, chunks: Iterator<ByteArray>) =
-            com.ismartcoding.plain.platform.files.writeByteChunksStreaming(path, chunks)
+            filesWriteByteChunksStreaming(path, chunks)
     })
     val showMoreActions = mutableStateOf(false)
     val file = mutableStateOf<FileEntry?>(null)

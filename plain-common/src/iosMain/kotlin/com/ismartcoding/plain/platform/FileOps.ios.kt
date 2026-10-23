@@ -1,4 +1,4 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package com.ismartcoding.plain.platform
 
@@ -11,6 +11,7 @@ import platform.posix.fclose
 import platform.posix.fflush
 import platform.posix.fopen
 import platform.posix.fwrite
+import kotlinx.cinterop.ExperimentalForeignApi
 
 actual fun ensureDir(path: String) {
     val fm = NSFileManager.defaultManager

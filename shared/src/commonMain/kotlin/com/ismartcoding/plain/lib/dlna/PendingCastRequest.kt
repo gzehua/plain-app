@@ -1,6 +1,8 @@
 package com.ismartcoding.plain.lib.dlna
 
-@kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class PendingCastRequest(
     val senderIp: String,
     val senderName: String,

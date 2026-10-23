@@ -18,6 +18,7 @@ import com.ismartcoding.plain.ui.resources.chevron_up as ui_drawable_chevron_up
 import com.ismartcoding.plain.ui.resources.delete_forever as ui_drawable_delete_forever
 import com.ismartcoding.plain.ui.resources.redo_2 as ui_drawable_redo_2
 import com.ismartcoding.plain.ui.resources.undo_2 as ui_drawable_undo_2
+import androidx.compose.foundation.shape.CircleShape
 
 @Composable
 fun EditAssistToolbar(controller: EditorController, modifier: Modifier = Modifier) {
@@ -27,7 +28,7 @@ fun EditAssistToolbar(controller: EditorController, modifier: Modifier = Modifie
     Row(
         modifier = modifier
             .padding(8.dp)
-            .clip(androidx.compose.foundation.shape.CircleShape)
+            .clip(CircleShape)
             .background(bg.copy(alpha = 0.94f))
             .padding(horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,

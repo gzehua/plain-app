@@ -4,6 +4,7 @@ import com.ismartcoding.plain.preferences.*
 
 import com.ismartcoding.plain.app.events.RequestPermissionsEvent
 import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.preferences.Prefs
 
 /**
  * Check whether a runtime permission is granted without prompting the user.
@@ -91,7 +92,7 @@ fun Permission.grant(): Boolean {
  * bridge, so this is a local read — the core has nothing to add.
  */
 suspend fun Permission.isEnabledAsync(): Boolean =
-    name in com.ismartcoding.plain.preferences.Prefs.state.value.apiPermissions
+    name in Prefs.state.value.apiPermissions
 
 /** Enabled for the web client *and* granted by the OS. Both answers are local. */
 suspend fun Permission.enabledAndIsGrantedAsync(): Boolean = isEnabledAsync() && isGranted()

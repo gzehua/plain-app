@@ -11,10 +11,12 @@ import com.ismartcoding.plain.lib.extensions.getStringValue
 import com.ismartcoding.plain.lib.extensions.queryCursor
 import com.ismartcoding.plain.contentResolver
 import java.util.ArrayList
+import android.content.Context
+import com.ismartcoding.plain.rust.host.provider.ContactGroupFacts
 
 internal object GroupHelper {
-    internal fun getAll(context: android.content.Context = appContext): List<com.ismartcoding.plain.rust.host.provider.ContactGroupFacts> {
-        val groups = ArrayList<com.ismartcoding.plain.rust.host.provider.ContactGroupFacts>()
+    internal fun getAll(context: Context = appContext): List<ContactGroupFacts> {
+        val groups = ArrayList<ContactGroupFacts>()
         val uri = ContactsContract.Groups.CONTENT_URI
         val projection =
             arrayOf(
@@ -30,7 +32,7 @@ internal object GroupHelper {
             val title = cursor.getStringValue(ContactsContract.Groups.TITLE, cache)
 
             val systemId = cursor.getStringValue(ContactsContract.Groups.SYSTEM_ID, cache)
-            groups.add(com.ismartcoding.plain.rust.host.provider.ContactGroupFacts(
+            groups.add(ContactGroupFacts(
                 id.toString(), title, systemId,
                 cursor.getStringValue(ContactsContract.Groups.AUTO_ADD, cache) != "0",
                 cursor.getStringValue(ContactsContract.Groups.FAVORITES, cache) != "0",

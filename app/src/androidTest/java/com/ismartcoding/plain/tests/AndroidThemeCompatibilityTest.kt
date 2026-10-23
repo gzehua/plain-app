@@ -8,6 +8,7 @@ import com.ismartcoding.plain.R
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
+import android.R as AndroidR
 
 @RunWith(AndroidJUnit4::class)
 class AndroidThemeCompatibilityTest {
@@ -17,7 +18,7 @@ class AndroidThemeCompatibilityTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val themedContext = ContextThemeWrapper(context, R.style.Theme_PlainActivity)
         val attributes = themedContext.obtainStyledAttributes(
-            intArrayOf(android.R.attr.windowLayoutInDisplayCutoutMode)
+            intArrayOf(AndroidR.attr.windowLayoutInDisplayCutoutMode)
         )
         val actual = try {
             attributes.getInt(0, -1)

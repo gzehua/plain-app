@@ -23,6 +23,7 @@ import com.ismartcoding.plain.ui.markdown.compose.LocalMarkdownA11yLabels
 import com.ismartcoding.plain.ui.markdown.compose.LocalMarkdownColors
 import com.ismartcoding.plain.ui.markdown.compose.elements.material.MarkdownBasicText
 import com.ismartcoding.plain.platform.setClipboardText
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 internal fun MarkdownCodeTopBar(
@@ -47,7 +48,7 @@ internal fun MarkdownCodeTopBar(
         MarkdownBasicText(
             text = languageLabel,
             modifier = Modifier.semantics { contentDescription = a11yLabels.codeLanguage(languageAnnouncement) },
-            style = androidx.compose.ui.text.TextStyle(
+            style = TextStyle(
                 fontSize = 10.sp,
                 fontFamily = FontFamily.Monospace,
                 color = textColor.copy(alpha = 0.6f)
@@ -69,7 +70,7 @@ internal fun MarkdownCodeTopBar(
         ) {
             MarkdownBasicText(
                 text = "⧉",
-                style = androidx.compose.ui.text.TextStyle(
+                style = TextStyle(
                     fontSize = 14.sp,
                     color = textColor.copy(alpha = 0.6f)
                 )

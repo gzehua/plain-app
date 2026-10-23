@@ -14,14 +14,18 @@ import platform.Foundation.NSFileManager
 import platform.UIKit.UIImage
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
+import platform.CoreImage.CIContext
+import platform.CoreImage.CIDetector
+import platform.CoreImage.CIDetectorTypeQRCode
+import platform.CoreImage.CIImage as CoreImageCIImage
 
 actual fun tryDecodeQrCode(path: String): String? = try {
     val image = UIImage.imageWithContentsOfFile(path) ?: return null
     // file-backed UIImages have no CIImage; bridge through CGImage instead
-    val ciImage = image.CIImage() ?: image.CGImage?.let { platform.CoreImage.CIImage.imageWithCGImage(it) } ?: return null
-    val context = platform.CoreImage.CIContext.context()
-    val detector = platform.CoreImage.CIDetector.detectorOfType(
-        platform.CoreImage.CIDetectorTypeQRCode, context, null,
+    val ciImage = image.CIImage() ?: image.CGImage?.let { CoreImageCIImage.imageWithCGImage(it) } ?: return null
+    val context = CIContext.context()
+    val detector = CIDetector.detectorOfType(
+        CIDetectorTypeQRCode, context, null,
     ) ?: return null
     val features = detector.featuresInImage(ciImage) ?: return null
     for (raw in features) {

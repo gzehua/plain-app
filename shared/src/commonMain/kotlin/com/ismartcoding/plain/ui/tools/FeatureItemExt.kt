@@ -17,6 +17,7 @@ import com.ismartcoding.plain.ui.resources.rss as ui_drawable_rss
 import com.ismartcoding.plain.ui.resources.square_pen as ui_drawable_square_pen
 import com.ismartcoding.plain.ui.resources.timer as ui_drawable_timer
 import com.ismartcoding.plain.ui.resources.video as ui_drawable_video
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 
 fun FeatureItem.Companion.getList(navController: NavHostController): List<FeatureItem> {
     val list = mutableListOf(
@@ -68,6 +69,6 @@ fun FeatureItem.Companion.getList(navController: NavHostController): List<Featur
         )
     }
 
-    val capabilities = com.ismartcoding.plain.platform.system.getDeviceCapabilities()
+    val capabilities = getDeviceCapabilities()
     return list.filter { it.type.has(capabilities) }
 }

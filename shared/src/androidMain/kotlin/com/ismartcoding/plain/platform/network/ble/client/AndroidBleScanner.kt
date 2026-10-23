@@ -24,6 +24,7 @@ import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.channels.awaitClose
+import android.bluetooth.BluetoothDevice
 
 object AndroidBleScanner : BleScanner {
 
@@ -166,7 +167,7 @@ object AndroidBleScanner : BleScanner {
 
     @SuppressLint("MissingPermission")
     private fun addDevice(
-        device: android.bluetooth.BluetoothDevice,
+        device: BluetoothDevice,
         rssi: Int,
         parts: BleAdvertisement?,
     ): AndroidBleGattClient {

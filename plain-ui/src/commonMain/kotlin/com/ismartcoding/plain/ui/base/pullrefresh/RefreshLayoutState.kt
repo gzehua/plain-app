@@ -8,6 +8,7 @@ import kotlin.time.Clock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
 
 @Stable
 class RefreshLayoutState(
@@ -28,12 +29,12 @@ class RefreshLayoutState(
 
     fun getRefreshContentState(): State<RefreshContentState> = refreshContentState
 
-    fun createRefreshContentOffsetFlow(): kotlinx.coroutines.flow.Flow<Float> =
+    fun createRefreshContentOffsetFlow(): Flow<Float> =
         snapshotFlow { refreshContentOffsetState.value }
 
     fun getLastRefreshTime(): State<Long?> = lastRefreshTimeState
 
-    fun createLastRefreshTimeFlow(): kotlinx.coroutines.flow.Flow<Long?> =
+    fun createLastRefreshTimeFlow(): Flow<Long?> =
         snapshotFlow { lastRefreshTimeState.value }
 
     fun injectClock(clock: () -> Long) {

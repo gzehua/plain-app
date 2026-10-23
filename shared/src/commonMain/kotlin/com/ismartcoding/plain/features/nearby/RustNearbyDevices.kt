@@ -7,11 +7,13 @@ import com.ismartcoding.plain.models.NearbyDevice
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.ui.nearby.NearbyViewModel
 import kotlinx.serialization.json.jsonArray
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 object RustNearbyDevices {
-    @OptIn(kotlin.uuid.ExperimentalUuidApi::class)
+    @OptIn(ExperimentalUuidApi::class)
     suspend fun observeDiscovery() {
-        val token = kotlin.uuid.Uuid.random().toString()
+        val token = Uuid.random().toString()
         discoverySession(token,
             acquire = {
                 RustGraphqlApi.graphql(Mutation.acquireDiscovery(it))

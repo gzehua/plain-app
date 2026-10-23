@@ -5,6 +5,7 @@ import com.ismartcoding.plain.platform.system.PhoneHelper
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.appContextValue
 import com.ismartcoding.plain.lib.helpers.NetworkHelper
+import com.ismartcoding.plain.isDebugBuild as plainIsDebugBuild
 
 
 actual fun getPlatformName(): String = "android"
@@ -20,4 +21,4 @@ actual fun getOwnPackageName(): String = appContext.packageName
 actual fun dataDirPath(): String =
     appContext.filesDir.absolutePath
 
-actual fun isDebugBuild(): Boolean = com.ismartcoding.plain.isDebugBuild()
+actual fun isDebugBuild(): Boolean = plainIsDebugBuild()

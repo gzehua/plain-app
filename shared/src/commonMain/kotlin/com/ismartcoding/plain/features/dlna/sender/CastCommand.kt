@@ -2,9 +2,11 @@ package com.ismartcoding.plain.features.dlna.sender
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.JsonClassDiscriminator
 
-@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
-@kotlinx.serialization.json.JsonClassDiscriminator("action")
+@OptIn(ExperimentalSerializationApi::class)
+@JsonClassDiscriminator("action")
 @Serializable
 internal sealed class CastCommand {
     @Serializable @SerialName("startScan") data object StartScan : CastCommand()

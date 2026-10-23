@@ -34,6 +34,7 @@ import com.ismartcoding.plain.ui.resources.rss as ui_drawable_rss
 import com.ismartcoding.plain.ui.resources.video as ui_drawable_video
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
+import com.ismartcoding.plain.models.Note as ModelNote
 
 /** Content domains of the global search, in the fixed section order of the results page. */
 enum class GlobalSearchDomain(
@@ -63,7 +64,7 @@ sealed interface GlobalSearchAction {
 
 /** Source model for domains whose rows render with the source page's own list item component. */
 sealed interface GlobalSearchSource {
-    data class Note(val note: com.ismartcoding.plain.models.Note) : GlobalSearchSource
+    data class Note(val note: ModelNote) : GlobalSearchSource
     data class Audio(val audio: AudioTrack) : GlobalSearchSource
     data class Image(val image: MediaImage) : GlobalSearchSource
     data class Video(val video: MediaVideo) : GlobalSearchSource

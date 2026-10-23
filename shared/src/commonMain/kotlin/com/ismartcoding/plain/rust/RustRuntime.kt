@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Dispatchers
 import kotlin.concurrent.Volatile
+import kotlinx.coroutines.runBlocking
 
 object RustRuntime {
     private val lock = PlatformLock()
@@ -44,7 +45,7 @@ object RustRuntime {
         logPath = result.logFile
         sharedPreviewPath = result.sharedPreviewDir
         if (!collectorsStarted) {
-            kotlinx.coroutines.runBlocking(Dispatchers.IO) {
+            runBlocking(Dispatchers.IO) {
                 Prefs.load()
             }
             isCoreInitialized = true

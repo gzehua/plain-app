@@ -28,6 +28,7 @@ import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.lib.sendEvent
 import kotlinx.coroutines.Job
+import android.os.Process
 
 class PNotificationListenerService : NotificationListenerService() {
     private val events = mutableListOf<Job>()
@@ -183,7 +184,7 @@ class PNotificationListenerService : NotificationListenerService() {
                 }
                 for (service in runningServices) {
                     if (service.service == collectorComponent) {
-                        if (service.pid == android.os.Process.myPid()) {
+                        if (service.pid == Process.myPid()) {
                             collectorRunning = true
                         }
                     }

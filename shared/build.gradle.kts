@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
 plugins {
     kotlin("multiplatform")
     id("com.android.kotlin.multiplatform.library")
@@ -57,7 +59,7 @@ kotlin {
     }
 
     // Dev-only single-target mode: see enableDeviceTarget above.
-    val iosTargets = mutableListOf<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>()
+    val iosTargets = mutableListOf<KotlinNativeTarget>()
     if (enableDeviceTarget) iosTargets.add(iosArm64())
     iosTargets.add(iosSimulatorArm64())
     // Skip DWARF debug-info generation: measured ~50% faster incremental iOS

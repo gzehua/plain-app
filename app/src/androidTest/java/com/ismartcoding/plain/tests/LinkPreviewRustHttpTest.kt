@@ -18,6 +18,10 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
+import com.ismartcoding.plain.features.chat.ChatClient
+import com.ismartcoding.plain.lib.JsonHelper
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+import kotlinx.serialization.json.JsonPrimitive
 
 @RunWith(AndroidJUnit4::class)
 class LinkPreviewRustHttpTest {
@@ -31,11 +35,11 @@ class LinkPreviewRustHttpTest {
             hash = image.id
             val content = MessageContent(MessageType.TEXT, MessageText(url,
                 listOf(LinkPreview(url = url, title = id, imageLocalPath = AppFileStore.toFidUri(image))))).toJSONString()
-            val value = com.ismartcoding.plain.rust.graphql.RustGraphqlApi.graphql(
+            val value = RustGraphqlApi.graphql(
                 "mutation(\$content:String!){sendChatItem(target: \"peer:local\", content: \$content) { id fromId toId channelId content status statusData createdAt updatedAt }}",
-                mapOf("content" to kotlinx.serialization.json.JsonPrimitive(content)),
+                mapOf("content" to JsonPrimitive(content)),
             ).getValue("sendChatItem").jsonArray.single()
-            val chat = com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<ChatItem>(value)
+            val chat = JsonHelper.jsonDecodeFromElement<ChatItem>(value)
             id = chat.id
             val stale = ChatItem(id = id, toId = "stale", content = MessageContent(MessageType.TEXT, MessageText("stale")).toJSONString())
             assertTrue(ChatMessageEditor.updateTextAsync(stale, "edited $id"))
@@ -47,7 +51,7 @@ class LinkPreviewRustHttpTest {
             assertFalse(ChatMessageEditor.updateTextAsync(stale, "edited $id"))
             assertEquals(stale.content, RustChatStore.getById(id)!!.content)
         } finally {
-            com.ismartcoding.plain.features.chat.ChatClient.deleteOne(id)
+            ChatClient.deleteOne(id)
             hash?.let { if (AppFileFixtures.exists(it)) AppFileStore.release(it) }
             ChatCacher.load()
         }

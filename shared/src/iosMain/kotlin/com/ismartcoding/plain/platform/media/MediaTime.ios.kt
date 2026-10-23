@@ -1,10 +1,11 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package com.ismartcoding.plain.platform.media
 
 import kotlinx.cinterop.CValue
 import platform.CoreMedia.CMTime
 import platform.CoreMedia.CMTimeGetSeconds
+import kotlinx.cinterop.ExperimentalForeignApi
 
 internal fun mediaTimeMs(time: CValue<CMTime>): Long {
     val seconds = CMTimeGetSeconds(time)

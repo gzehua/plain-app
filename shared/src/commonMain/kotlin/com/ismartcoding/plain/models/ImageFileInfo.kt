@@ -1,8 +1,10 @@
 package com.ismartcoding.plain.models
 
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
+import kotlinx.serialization.SerialName
 
-@kotlinx.serialization.SerialName("ImageFileInfo")
+@SerialName("ImageFileInfo")
 @Serializable
 data class ImageFileInfo(
     var width: Int,
@@ -16,7 +18,7 @@ data class ImageFileInfo(
     val exposureTime: String = "",
     val focalLength: String = "",
     val isoSpeed: Int = 0,
-    val takenAt: kotlin.time.Instant? = null,
+    val takenAt: Instant? = null,
     val flash: Int = 0,
     val fNumber: Double = 0.0,
     val exposureProgram: Int = 0,

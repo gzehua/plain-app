@@ -8,6 +8,7 @@ import platform.Foundation.NSNotificationCenter
 import platform.UIKit.UIApplicationDidEnterBackgroundNotification
 import platform.UIKit.UIApplicationDidBecomeActiveNotification
 import platform.UIKit.UIApplicationWillResignActiveNotification
+import kotlinx.cinterop.ExperimentalForeignApi
 
 /**
  * Registers observers for iOS app focus changes so that commonMain code
@@ -22,7 +23,7 @@ import platform.UIKit.UIApplicationWillResignActiveNotification
 object IosWindowFocusEvents {
     private var registered = false
 
-    @OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+    @OptIn(ExperimentalForeignApi::class)
     fun register() {
         if (registered) return
         registered = true

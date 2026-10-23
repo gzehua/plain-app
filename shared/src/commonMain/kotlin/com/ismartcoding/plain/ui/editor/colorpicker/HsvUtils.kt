@@ -1,11 +1,12 @@
 package com.ismartcoding.plain.ui.editor.colorpicker
 
 import androidx.compose.ui.graphics.Color
+import kotlin.math.abs
 
 /** Convert HSV [0..360], [0..1], [0..1] to ARGB Color. */
 internal fun hsvToColor(h: Float, s: Float, v: Float, alpha: Float = 1f): Color {
     val c = v * s
-    val x = c * (1 - kotlin.math.abs((h / 60f) % 2 - 1))
+    val x = c * (1 - abs((h / 60f) % 2 - 1))
     val m = v - c
     val (r, g, b) = when {
         h < 60f -> Triple(c, x, 0f)

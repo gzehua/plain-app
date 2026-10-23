@@ -48,6 +48,7 @@ import com.ismartcoding.plain.ui.resources.sticky_note as ui_drawable_sticky_not
 import com.ismartcoding.plain.ui.resources.trash_2 as ui_drawable_trash_2
 import com.ismartcoding.plain.ui.resources.type as ui_drawable_type
 import com.ismartcoding.plain.i18n.type
+import androidx.compose.material3.IconButton
 
 private data class ToolItem(
     val tool: ImageEditorTool,
@@ -135,7 +136,7 @@ fun ImageEditorBottomAppBar(
                     .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center,
             ) {
-                androidx.compose.material3.IconButton(onClick = onToggleLevel) {
+                IconButton(onClick = onToggleLevel) {
                     Icon(
                         painter = painterResource(
                             if (level == 0) UiRes.drawable.ui_drawable_looks_one else UiRes.drawable.ui_drawable_looks_two

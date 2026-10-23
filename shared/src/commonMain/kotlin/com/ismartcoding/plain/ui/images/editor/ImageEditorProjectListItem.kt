@@ -29,11 +29,12 @@ import com.ismartcoding.plain.platform.system.formatTime
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.chevron_right as ui_drawable_chevron_right
 import com.ismartcoding.plain.ui.resources.image as ui_drawable_image
+import com.ismartcoding.plain.features.images.editor.ImageEditorProjectSummary
 
 
 @Composable
 fun ImageEditorProjectListItem(
-    project: com.ismartcoding.plain.features.images.editor.ImageEditorProjectSummary,
+    project: ImageEditorProjectSummary,
     onClick: () -> Unit,
 ) {
     Row(

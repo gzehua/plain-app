@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.LocaleList as AndroidLocaleList
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.appContextValue
+import java.util.Locale as JavaLocale
 
 actual fun currentLocale(): Locale {
     val ctx = appContextValue ?: return Locale("en", "US")
@@ -18,7 +19,7 @@ actual fun currentLocale(): Locale {
 }
 
 actual fun getLocaleDisplayName(locale: Locale): String {
-    val android = java.util.Locale(locale.language, locale.country)
+    val android = JavaLocale(locale.language, locale.country)
     return android.getDisplayName(android)
 }
 
@@ -28,9 +29,9 @@ actual fun getLocaleDisplayName(locale: Locale): String {
  */
 actual fun setSystemLocale(locale: Locale?) {
     val ctx = appContext ?: return
-    val androidLocale = locale?.let { java.util.Locale(it.language, it.country) }
+    val androidLocale = locale?.let { JavaLocale(it.language, it.country) }
         ?: AndroidLocaleList.getDefault().get(0)
-    java.util.Locale.setDefault(androidLocale)
+    JavaLocale.setDefault(androidLocale)
     val localeList = AndroidLocaleList(androidLocale)
     AndroidLocaleList.setDefault(localeList)
 

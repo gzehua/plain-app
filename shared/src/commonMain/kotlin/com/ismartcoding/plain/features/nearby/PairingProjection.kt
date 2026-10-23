@@ -7,6 +7,11 @@ import com.ismartcoding.plain.models.PairingRequestInput
 import com.ismartcoding.plain.ui.nearby.NearbyItemStatus
 import com.ismartcoding.plain.ui.nearby.NearbyViewModel
 import kotlinx.serialization.json.*
+import com.ismartcoding.plain.app.events.HPairingCanceledEvent
+import com.ismartcoding.plain.app.events.HPairingRequestReceivedEvent
+import com.ismartcoding.plain.app.events.HPairingSuccessEvent
+import com.ismartcoding.plain.features.chat.peer.RustPeerStore
+import com.ismartcoding.plain.lib.sendEvent
 
 // Rust broadcasts pairing events to both mobile and web clients; projections must not republish them.
 object PairingProjection {
@@ -61,9 +66,9 @@ object PairingProjection {
     }
 
     suspend fun request(payload: String) {
-        val request = com.ismartcoding.plain.lib.JsonHelper.jsonDecode<com.ismartcoding.plain.models.PairingRequestInput>(payload)
+        val request = JsonHelper.jsonDecode<PairingRequestInput>(payload)
         if (!RustPairingRuntime.currentRequest(request.fromId, request.signature)) return
-        com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.app.events.HPairingRequestReceivedEvent(request))
+        sendEvent(HPairingRequestReceivedEvent(request))
     }
 
     private val terminalPhases = setOf("SUCCEEDED", "FAILED", "CANCELLED")
@@ -79,15 +84,15 @@ object PairingProjection {
         reconcileUnknown(id)
         if (hasActive(id)) return
         NearbyViewModel.itemStatus.remove(id)
-        com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.app.events.HPairingCanceledEvent(id))
+        sendEvent(HPairingCanceledEvent(id))
     }
 
     suspend fun success(payload: String) {
         val value = JsonHelper.jsonDecode<PairingSucceeded>(payload)
-        val peer = com.ismartcoding.plain.features.chat.peer.RustPeerStore.getById(value.deviceId) ?: return
+        val peer = RustPeerStore.getById(value.deviceId) ?: return
         if (!peer.isPaired() || peer.key != value.key) return
         NearbyViewModel.handlePairingSuccess(peer.id)
-        com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.app.events.HPairingSuccessEvent(
+        sendEvent(HPairingSuccessEvent(
             peer.id, peer.name, value.ip, peer.key,
         ))
     }

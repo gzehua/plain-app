@@ -5,9 +5,10 @@ import com.ismartcoding.plain.lib.sendEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.JsonObject
+import com.ismartcoding.plain.platform.system.PlatformLock
 
 internal object RustImageModels {
-    private val projectionLock = com.ismartcoding.plain.platform.system.PlatformLock()
+    private val projectionLock = PlatformLock()
     private var version = -1L
     private val state = MutableStateFlow(ImageModelsSnapshot())
     val snapshot = state.asStateFlow()

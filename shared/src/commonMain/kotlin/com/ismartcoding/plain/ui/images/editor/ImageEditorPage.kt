@@ -85,6 +85,7 @@ import com.ismartcoding.plain.ui.resources.trash_2 as ui_drawable_trash_2
 import com.ismartcoding.plain.ui.resources.undo as ui_drawable_undo
 import com.ismartcoding.plain.i18n.undo
 import com.ismartcoding.plain.i18n.redo
+import kotlin.math.abs
 
 private enum class DragMode { NONE, MOVE, PAN, RESIZE }
 
@@ -595,8 +596,8 @@ private fun createShape(
 ): EditorLayer {
     val x1 = min(start.x, end.x)
     val y1 = min(start.y, end.y)
-    val w = kotlin.math.abs(end.x - start.x)
-    val h = kotlin.math.abs(end.y - start.y)
+    val w = abs(end.x - start.x)
+    val h = abs(end.y - start.y)
     return when (tool) {
         ImageEditorTool.ARROW -> ArrowLayer(
             id = id, x1 = start.x, y1 = start.y, x2 = end.x, y2 = end.y,
@@ -625,7 +626,7 @@ private fun createShape(
 private fun hasMinSize(layer: EditorLayer): Boolean {
     val threshold = 3.0
     return when (layer) {
-        is ArrowLayer -> kotlin.math.abs(layer.x2 - layer.x1) > threshold || kotlin.math.abs(layer.y2 - layer.y1) > threshold
+        is ArrowLayer -> abs(layer.x2 - layer.x1) > threshold || abs(layer.y2 - layer.y1) > threshold
         is RectLayer -> layer.w > threshold && layer.h > threshold
         is EllipseLayer -> layer.rx > threshold && layer.ry > threshold
         is HighlightLayer -> layer.w > threshold && layer.h > threshold

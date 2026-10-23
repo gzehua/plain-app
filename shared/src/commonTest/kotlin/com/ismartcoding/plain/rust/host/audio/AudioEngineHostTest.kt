@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.*
 import kotlinx.serialization.json.*
 import kotlin.test.*
+import com.ismartcoding.plain.app.TempData
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class AudioEngineHostTest {
     private class Player : AudioPlayer {
         val calls = mutableListOf<String>()
@@ -89,19 +91,19 @@ class AudioEngineHostTest {
         val player = Player()
         player.gate.complete(Unit)
         val previous = AudioEngineHost.install(player)
-        val position = com.ismartcoding.plain.app.TempData.audioPlayPosition
+        val position = TempData.audioPlayPosition
         try {
             AudioEngineHost.command(command(true))
-            com.ismartcoding.plain.app.TempData.audioPlayPosition = 777
+            TempData.audioPlayPosition = 777
             AudioEngineHost.restore(buildJsonObject { put("path", "song"); put("revision", 4); put("positionMs", 0) })
-            assertEquals(777L, com.ismartcoding.plain.app.TempData.audioPlayPosition)
+            assertEquals(777L, TempData.audioPlayPosition)
             AudioEngineHost.restore(buildJsonObject { put("path", "song"); put("revision", 6); put("positionMs", 1234) })
-            assertEquals(1234L, com.ismartcoding.plain.app.TempData.audioPlayPosition)
+            assertEquals(1234L, TempData.audioPlayPosition)
             AudioEngineHost.restore(buildJsonObject { put("path", "song"); put("revision", 6); put("positionMs", 0) })
-            assertEquals(1234L, com.ismartcoding.plain.app.TempData.audioPlayPosition)
+            assertEquals(1234L, TempData.audioPlayPosition)
             assertEquals(listOf("bind:5", "load", "bind:6"), player.calls)
         } finally {
-            com.ismartcoding.plain.app.TempData.audioPlayPosition = position
+            TempData.audioPlayPosition = position
             AudioEngineHost.install(previous)
             Dispatchers.resetMain()
         }

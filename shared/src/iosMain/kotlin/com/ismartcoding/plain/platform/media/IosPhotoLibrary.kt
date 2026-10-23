@@ -1,4 +1,4 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package com.ismartcoding.plain.platform.media
 
@@ -10,6 +10,7 @@ import kotlinx.serialization.json.*
 import platform.Foundation.*
 import platform.Photos.*
 import platform.darwin.NSObject
+import kotlinx.cinterop.ExperimentalForeignApi
 
 internal object IosPhotoLibrary {
     private val lock = NSRecursiveLock()

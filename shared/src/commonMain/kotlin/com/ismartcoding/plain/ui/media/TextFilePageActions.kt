@@ -30,6 +30,7 @@ import com.ismartcoding.plain.ui.resources.square_pen as ui_drawable_square_pen
 import com.ismartcoding.plain.ui.resources.wrap_text as ui_drawable_wrap_text
 import com.ismartcoding.plain.i18n.search
 import com.ismartcoding.plain.i18n.save
+import com.ismartcoding.plain.ui.components.codeeditor.EditorLoadState
 
 @Composable
 internal fun RowScope.TextFilePageActions(
@@ -41,7 +42,7 @@ internal fun RowScope.TextFilePageActions(
     onSavingChanged: (Boolean) -> Unit,
 ) {
     val controller = textFileVM.controller
-    if (controller.loadState.value !is com.ismartcoding.plain.ui.components.codeeditor.EditorLoadState.Ready) return
+    if (controller.loadState.value !is EditorLoadState.Ready) return
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current

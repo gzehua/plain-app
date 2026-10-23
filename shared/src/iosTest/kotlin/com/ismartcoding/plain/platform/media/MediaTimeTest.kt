@@ -1,4 +1,4 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package com.ismartcoding.plain.platform.media
 
@@ -10,6 +10,7 @@ import platform.CoreMedia.kCMTimeIndefinite
 import platform.CoreMedia.kCMTimeInvalid
 import platform.CoreMedia.kCMTimeNegativeInfinity
 import platform.CoreMedia.kCMTimePositiveInfinity
+import kotlinx.cinterop.ExperimentalForeignApi
 
 class MediaTimeTest {
     @Test

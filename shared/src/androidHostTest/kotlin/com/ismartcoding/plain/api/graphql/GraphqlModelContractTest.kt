@@ -5,103 +5,191 @@ import com.ismartcoding.plain.models.SmsAttachment
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import com.ismartcoding.plain.models.ActionResult
+import com.ismartcoding.plain.models.AndroidExtras
+import com.ismartcoding.plain.models.App
+import com.ismartcoding.plain.models.AppFile
+import com.ismartcoding.plain.models.Audio
+import com.ismartcoding.plain.models.AudioFileInfo
+import com.ismartcoding.plain.models.AudioItem
+import com.ismartcoding.plain.models.AudioPlayHistory
+import com.ismartcoding.plain.models.AudioPlayback
+import com.ismartcoding.plain.models.AudioPlaylist
+import com.ismartcoding.plain.models.Bookmark
+import com.ismartcoding.plain.models.BookmarkGroup
+import com.ismartcoding.plain.models.BookmarkInput
+import com.ismartcoding.plain.models.Call
+import com.ismartcoding.plain.models.Certificate
+import com.ismartcoding.plain.models.ChatChannel
+import com.ismartcoding.plain.models.ChatChannelMember
+import com.ismartcoding.plain.models.ChatItem
+import com.ismartcoding.plain.models.ClipboardItem
+import com.ismartcoding.plain.models.Contact
+import com.ismartcoding.plain.models.ContactAddress
+import com.ismartcoding.plain.models.ContactAddressInput
+import com.ismartcoding.plain.models.ContactEmail
+import com.ismartcoding.plain.models.ContactEmailInput
+import com.ismartcoding.plain.models.ContactEvent
+import com.ismartcoding.plain.models.ContactEventInput
+import com.ismartcoding.plain.models.ContactGroup
+import com.ismartcoding.plain.models.ContactIm
+import com.ismartcoding.plain.models.ContactImInput
+import com.ismartcoding.plain.models.ContactInput
+import com.ismartcoding.plain.models.ContactPhoneInput
+import com.ismartcoding.plain.models.ContactPhoneNumber
+import com.ismartcoding.plain.models.ContactSource
+import com.ismartcoding.plain.models.ContactWebsite
+import com.ismartcoding.plain.models.ContactWebsiteInput
+import com.ismartcoding.plain.models.DbTableColumn
+import com.ismartcoding.plain.models.DbTableInfo
+import com.ismartcoding.plain.models.DeviceInfo
+import com.ismartcoding.plain.models.DeviceStatus
+import com.ismartcoding.plain.models.DisplayInfo
+import com.ismartcoding.plain.models.Doc
+import com.ismartcoding.plain.models.DocExtGroup
+import com.ismartcoding.plain.models.FavoriteFolder
+import com.ismartcoding.plain.models.Feed
+import com.ismartcoding.plain.models.FeedEntry
+import com.ismartcoding.plain.models.FeedEntryCount
+import com.ismartcoding.plain.models.FeedError
+import com.ismartcoding.plain.models.FeedPreview
+import com.ismartcoding.plain.models.FeedSyncState
+import com.ismartcoding.plain.models.File
+import com.ismartcoding.plain.models.FileInfo
+import com.ismartcoding.plain.models.Image
+import com.ismartcoding.plain.models.ImageEditorProject
+import com.ismartcoding.plain.models.ImageEditorProjectInput
+import com.ismartcoding.plain.models.ImageEditorProjectSummary
+import com.ismartcoding.plain.models.ImageFileInfo
+import com.ismartcoding.plain.models.ImageSearchStatus
+import com.ismartcoding.plain.models.KeyValuePair
+import com.ismartcoding.plain.models.Location
+import com.ismartcoding.plain.models.MediaBucket
+import com.ismartcoding.plain.models.MergeTask
+import com.ismartcoding.plain.models.Mount
+import com.ismartcoding.plain.models.Note
+import com.ismartcoding.plain.models.NoteInput
+import com.ismartcoding.plain.models.Notification
+import com.ismartcoding.plain.models.Organization
+import com.ismartcoding.plain.models.OrganizationInput
+import com.ismartcoding.plain.models.Package
+import com.ismartcoding.plain.models.PackageInstallPending
+import com.ismartcoding.plain.models.PackageStatus
+import com.ismartcoding.plain.models.PairingDeviceInput
+import com.ismartcoding.plain.models.PairingRequestInput
+import com.ismartcoding.plain.models.Peer
+import com.ismartcoding.plain.models.PhoneGeo
+import com.ismartcoding.plain.models.PomodoroSettings
+import com.ismartcoding.plain.models.PomodoroToday
+import com.ismartcoding.plain.models.ScreenMirrorQuality
+import com.ismartcoding.plain.models.ScreenMirrorVideoCodec
+import com.ismartcoding.plain.models.Sim
+import com.ismartcoding.plain.models.Sms
+import com.ismartcoding.plain.models.SmsConversation
+import com.ismartcoding.plain.models.SmsCounts
+import com.ismartcoding.plain.models.Tag
+import com.ismartcoding.plain.models.TagRelation
+import com.ismartcoding.plain.models.Temperature
+import com.ismartcoding.plain.models.Video
+import com.ismartcoding.plain.models.VideoFileInfo
+import kotlinx.serialization.ExperimentalSerializationApi
 
 class GraphqlModelContractTest {
-    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @OptIn(ExperimentalSerializationApi::class)
     @Test
     fun baseModelsMatchSchemaWithoutLazyTagFields() {
         val sdl = readMainSchema()
             .replace(Regex("\"\"\"[\\s\\S]*?\"\"\""), "")
         val models: Map<String, SerialDescriptor> = mapOf(
-            "ActionResult" to com.ismartcoding.plain.models.ActionResult.serializer().descriptor,
-            "AndroidExtras" to com.ismartcoding.plain.models.AndroidExtras.serializer().descriptor,
-            "App" to com.ismartcoding.plain.models.App.serializer().descriptor,
-            "AppFile" to com.ismartcoding.plain.models.AppFile.serializer().descriptor,
-            "Audio" to com.ismartcoding.plain.models.Audio.serializer().descriptor,
-            "AudioFileInfo" to com.ismartcoding.plain.models.AudioFileInfo.serializer().descriptor,
-            "AudioItem" to com.ismartcoding.plain.models.AudioItem.serializer().descriptor,
-            "AudioPlayHistory" to com.ismartcoding.plain.models.AudioPlayHistory.serializer().descriptor,
-            "AudioPlayback" to com.ismartcoding.plain.models.AudioPlayback.serializer().descriptor,
-            "AudioPlaylist" to com.ismartcoding.plain.models.AudioPlaylist.serializer().descriptor,
-            "Bookmark" to com.ismartcoding.plain.models.Bookmark.serializer().descriptor,
-            "BookmarkGroup" to com.ismartcoding.plain.models.BookmarkGroup.serializer().descriptor,
-            "BookmarkInput" to com.ismartcoding.plain.models.BookmarkInput.serializer().descriptor,
-            "Call" to com.ismartcoding.plain.models.Call.serializer().descriptor,
-            "Certificate" to com.ismartcoding.plain.models.Certificate.serializer().descriptor,
-            "ChatChannel" to com.ismartcoding.plain.models.ChatChannel.serializer().descriptor,
-            "ChatChannelMember" to com.ismartcoding.plain.models.ChatChannelMember.serializer().descriptor,
-            "ChatItem" to com.ismartcoding.plain.models.ChatItem.serializer().descriptor,
-            "ClipboardItem" to com.ismartcoding.plain.models.ClipboardItem.serializer().descriptor,
-            "Contact" to com.ismartcoding.plain.models.Contact.serializer().descriptor,
-            "ContactAddress" to com.ismartcoding.plain.models.ContactAddress.serializer().descriptor,
-            "ContactAddressInput" to com.ismartcoding.plain.models.ContactAddressInput.serializer().descriptor,
-            "ContactEmail" to com.ismartcoding.plain.models.ContactEmail.serializer().descriptor,
-            "ContactEmailInput" to com.ismartcoding.plain.models.ContactEmailInput.serializer().descriptor,
-            "ContactEvent" to com.ismartcoding.plain.models.ContactEvent.serializer().descriptor,
-            "ContactEventInput" to com.ismartcoding.plain.models.ContactEventInput.serializer().descriptor,
-            "ContactGroup" to com.ismartcoding.plain.models.ContactGroup.serializer().descriptor,
-            "ContactIm" to com.ismartcoding.plain.models.ContactIm.serializer().descriptor,
-            "ContactImInput" to com.ismartcoding.plain.models.ContactImInput.serializer().descriptor,
-            "ContactInput" to com.ismartcoding.plain.models.ContactInput.serializer().descriptor,
-            "ContactPhoneInput" to com.ismartcoding.plain.models.ContactPhoneInput.serializer().descriptor,
-            "ContactPhoneNumber" to com.ismartcoding.plain.models.ContactPhoneNumber.serializer().descriptor,
-            "ContactSource" to com.ismartcoding.plain.models.ContactSource.serializer().descriptor,
-            "ContactWebsite" to com.ismartcoding.plain.models.ContactWebsite.serializer().descriptor,
-            "ContactWebsiteInput" to com.ismartcoding.plain.models.ContactWebsiteInput.serializer().descriptor,
-            "DbTableColumn" to com.ismartcoding.plain.models.DbTableColumn.serializer().descriptor,
-            "DbTableInfo" to com.ismartcoding.plain.models.DbTableInfo.serializer().descriptor,
-            "DeviceInfo" to com.ismartcoding.plain.models.DeviceInfo.serializer().descriptor,
-            "DeviceStatus" to com.ismartcoding.plain.models.DeviceStatus.serializer().descriptor,
-            "DisplayInfo" to com.ismartcoding.plain.models.DisplayInfo.serializer().descriptor,
-            "Doc" to com.ismartcoding.plain.models.Doc.serializer().descriptor,
-            "DocExtGroup" to com.ismartcoding.plain.models.DocExtGroup.serializer().descriptor,
-            "FavoriteFolder" to com.ismartcoding.plain.models.FavoriteFolder.serializer().descriptor,
-            "Feed" to com.ismartcoding.plain.models.Feed.serializer().descriptor,
-            "FeedPreview" to com.ismartcoding.plain.models.FeedPreview.serializer().descriptor,
-            "FeedEntry" to com.ismartcoding.plain.models.FeedEntry.serializer().descriptor,
-            "FeedEntryCount" to com.ismartcoding.plain.models.FeedEntryCount.serializer().descriptor,
-            "FeedError" to com.ismartcoding.plain.models.FeedError.serializer().descriptor,
-            "FeedSyncState" to com.ismartcoding.plain.models.FeedSyncState.serializer().descriptor,
-            "File" to com.ismartcoding.plain.models.File.serializer().descriptor,
-            "FileInfo" to com.ismartcoding.plain.models.FileInfo.serializer().descriptor,
-            "Image" to com.ismartcoding.plain.models.Image.serializer().descriptor,
-            "ImageEditorProject" to com.ismartcoding.plain.models.ImageEditorProject.serializer().descriptor,
-            "ImageEditorProjectInput" to com.ismartcoding.plain.models.ImageEditorProjectInput.serializer().descriptor,
-            "ImageEditorProjectSummary" to com.ismartcoding.plain.models.ImageEditorProjectSummary.serializer().descriptor,
-            "ImageFileInfo" to com.ismartcoding.plain.models.ImageFileInfo.serializer().descriptor,
-            "ImageSearchStatus" to com.ismartcoding.plain.models.ImageSearchStatus.serializer().descriptor,
-            "KeyValuePair" to com.ismartcoding.plain.models.KeyValuePair.serializer().descriptor,
-            "Location" to com.ismartcoding.plain.models.Location.serializer().descriptor,
-            "MediaBucket" to com.ismartcoding.plain.models.MediaBucket.serializer().descriptor,
-            "MergeTask" to com.ismartcoding.plain.models.MergeTask.serializer().descriptor,
-            "Mount" to com.ismartcoding.plain.models.Mount.serializer().descriptor,
-            "Note" to com.ismartcoding.plain.models.Note.serializer().descriptor,
-            "NoteInput" to com.ismartcoding.plain.models.NoteInput.serializer().descriptor,
-            "Notification" to com.ismartcoding.plain.models.Notification.serializer().descriptor,
-            "Organization" to com.ismartcoding.plain.models.Organization.serializer().descriptor,
-            "OrganizationInput" to com.ismartcoding.plain.models.OrganizationInput.serializer().descriptor,
-            "Package" to com.ismartcoding.plain.models.Package.serializer().descriptor,
-            "PackageInstallPending" to com.ismartcoding.plain.models.PackageInstallPending.serializer().descriptor,
-            "PackageStatus" to com.ismartcoding.plain.models.PackageStatus.serializer().descriptor,
-            "PairingDeviceInput" to com.ismartcoding.plain.models.PairingDeviceInput.serializer().descriptor,
-            "PairingRequestInput" to com.ismartcoding.plain.models.PairingRequestInput.serializer().descriptor,
-            "Peer" to com.ismartcoding.plain.models.Peer.serializer().descriptor,
-            "PhoneGeo" to com.ismartcoding.plain.models.PhoneGeo.serializer().descriptor,
-            "PomodoroSettings" to com.ismartcoding.plain.models.PomodoroSettings.serializer().descriptor,
-            "PomodoroToday" to com.ismartcoding.plain.models.PomodoroToday.serializer().descriptor,
-            "ScreenMirrorQuality" to com.ismartcoding.plain.models.ScreenMirrorQuality.serializer().descriptor,
-            "ScreenMirrorVideoCodec" to com.ismartcoding.plain.models.ScreenMirrorVideoCodec.serializer().descriptor,
-            "Sim" to com.ismartcoding.plain.models.Sim.serializer().descriptor,
-            "Sms" to com.ismartcoding.plain.models.Sms.serializer().descriptor,
-            "SmsAttachment" to com.ismartcoding.plain.models.SmsAttachment.serializer().descriptor,
-            "SmsConversation" to com.ismartcoding.plain.models.SmsConversation.serializer().descriptor,
-            "SmsCounts" to com.ismartcoding.plain.models.SmsCounts.serializer().descriptor,
-            "Tag" to com.ismartcoding.plain.models.Tag.serializer().descriptor,
-            "TagRelation" to com.ismartcoding.plain.models.TagRelation.serializer().descriptor,
+            "ActionResult" to ActionResult.serializer().descriptor,
+            "AndroidExtras" to AndroidExtras.serializer().descriptor,
+            "App" to App.serializer().descriptor,
+            "AppFile" to AppFile.serializer().descriptor,
+            "Audio" to Audio.serializer().descriptor,
+            "AudioFileInfo" to AudioFileInfo.serializer().descriptor,
+            "AudioItem" to AudioItem.serializer().descriptor,
+            "AudioPlayHistory" to AudioPlayHistory.serializer().descriptor,
+            "AudioPlayback" to AudioPlayback.serializer().descriptor,
+            "AudioPlaylist" to AudioPlaylist.serializer().descriptor,
+            "Bookmark" to Bookmark.serializer().descriptor,
+            "BookmarkGroup" to BookmarkGroup.serializer().descriptor,
+            "BookmarkInput" to BookmarkInput.serializer().descriptor,
+            "Call" to Call.serializer().descriptor,
+            "Certificate" to Certificate.serializer().descriptor,
+            "ChatChannel" to ChatChannel.serializer().descriptor,
+            "ChatChannelMember" to ChatChannelMember.serializer().descriptor,
+            "ChatItem" to ChatItem.serializer().descriptor,
+            "ClipboardItem" to ClipboardItem.serializer().descriptor,
+            "Contact" to Contact.serializer().descriptor,
+            "ContactAddress" to ContactAddress.serializer().descriptor,
+            "ContactAddressInput" to ContactAddressInput.serializer().descriptor,
+            "ContactEmail" to ContactEmail.serializer().descriptor,
+            "ContactEmailInput" to ContactEmailInput.serializer().descriptor,
+            "ContactEvent" to ContactEvent.serializer().descriptor,
+            "ContactEventInput" to ContactEventInput.serializer().descriptor,
+            "ContactGroup" to ContactGroup.serializer().descriptor,
+            "ContactIm" to ContactIm.serializer().descriptor,
+            "ContactImInput" to ContactImInput.serializer().descriptor,
+            "ContactInput" to ContactInput.serializer().descriptor,
+            "ContactPhoneInput" to ContactPhoneInput.serializer().descriptor,
+            "ContactPhoneNumber" to ContactPhoneNumber.serializer().descriptor,
+            "ContactSource" to ContactSource.serializer().descriptor,
+            "ContactWebsite" to ContactWebsite.serializer().descriptor,
+            "ContactWebsiteInput" to ContactWebsiteInput.serializer().descriptor,
+            "DbTableColumn" to DbTableColumn.serializer().descriptor,
+            "DbTableInfo" to DbTableInfo.serializer().descriptor,
+            "DeviceInfo" to DeviceInfo.serializer().descriptor,
+            "DeviceStatus" to DeviceStatus.serializer().descriptor,
+            "DisplayInfo" to DisplayInfo.serializer().descriptor,
+            "Doc" to Doc.serializer().descriptor,
+            "DocExtGroup" to DocExtGroup.serializer().descriptor,
+            "FavoriteFolder" to FavoriteFolder.serializer().descriptor,
+            "Feed" to Feed.serializer().descriptor,
+            "FeedPreview" to FeedPreview.serializer().descriptor,
+            "FeedEntry" to FeedEntry.serializer().descriptor,
+            "FeedEntryCount" to FeedEntryCount.serializer().descriptor,
+            "FeedError" to FeedError.serializer().descriptor,
+            "FeedSyncState" to FeedSyncState.serializer().descriptor,
+            "File" to File.serializer().descriptor,
+            "FileInfo" to FileInfo.serializer().descriptor,
+            "Image" to Image.serializer().descriptor,
+            "ImageEditorProject" to ImageEditorProject.serializer().descriptor,
+            "ImageEditorProjectInput" to ImageEditorProjectInput.serializer().descriptor,
+            "ImageEditorProjectSummary" to ImageEditorProjectSummary.serializer().descriptor,
+            "ImageFileInfo" to ImageFileInfo.serializer().descriptor,
+            "ImageSearchStatus" to ImageSearchStatus.serializer().descriptor,
+            "KeyValuePair" to KeyValuePair.serializer().descriptor,
+            "Location" to Location.serializer().descriptor,
+            "MediaBucket" to MediaBucket.serializer().descriptor,
+            "MergeTask" to MergeTask.serializer().descriptor,
+            "Mount" to Mount.serializer().descriptor,
+            "Note" to Note.serializer().descriptor,
+            "NoteInput" to NoteInput.serializer().descriptor,
+            "Notification" to Notification.serializer().descriptor,
+            "Organization" to Organization.serializer().descriptor,
+            "OrganizationInput" to OrganizationInput.serializer().descriptor,
+            "Package" to Package.serializer().descriptor,
+            "PackageInstallPending" to PackageInstallPending.serializer().descriptor,
+            "PackageStatus" to PackageStatus.serializer().descriptor,
+            "PairingDeviceInput" to PairingDeviceInput.serializer().descriptor,
+            "PairingRequestInput" to PairingRequestInput.serializer().descriptor,
+            "Peer" to Peer.serializer().descriptor,
+            "PhoneGeo" to PhoneGeo.serializer().descriptor,
+            "PomodoroSettings" to PomodoroSettings.serializer().descriptor,
+            "PomodoroToday" to PomodoroToday.serializer().descriptor,
+            "ScreenMirrorQuality" to ScreenMirrorQuality.serializer().descriptor,
+            "ScreenMirrorVideoCodec" to ScreenMirrorVideoCodec.serializer().descriptor,
+            "Sim" to Sim.serializer().descriptor,
+            "Sms" to Sms.serializer().descriptor,
+            "SmsAttachment" to SmsAttachment.serializer().descriptor,
+            "SmsConversation" to SmsConversation.serializer().descriptor,
+            "SmsCounts" to SmsCounts.serializer().descriptor,
+            "Tag" to Tag.serializer().descriptor,
+            "TagRelation" to TagRelation.serializer().descriptor,
 
-            "Temperature" to com.ismartcoding.plain.models.Temperature.serializer().descriptor,
-            "Video" to com.ismartcoding.plain.models.Video.serializer().descriptor,
-            "VideoFileInfo" to com.ismartcoding.plain.models.VideoFileInfo.serializer().descriptor,
+            "Temperature" to Temperature.serializer().descriptor,
+            "Video" to Video.serializer().descriptor,
+            "VideoFileInfo" to VideoFileInfo.serializer().descriptor,
         )
         val schemaWithoutDescriptions = Regex("\"\"\"[\\s\\S]*?\"\"\"").replace(sdl, "")
         val blocks = Regex("""(?:type|input) (\w+)(?:\s+implements\s+\w+)?\s*\{([^}]+)}""").findAll(schemaWithoutDescriptions)

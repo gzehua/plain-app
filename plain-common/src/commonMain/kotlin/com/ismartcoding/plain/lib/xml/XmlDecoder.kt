@@ -11,6 +11,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.serializer
+import kotlinx.serialization.ExperimentalSerializationApi
 
 class XmlDecodeException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
@@ -178,7 +179,7 @@ internal object XmlTreeParser {
 
 // --- XML to JSON conversion (descriptor-driven) ---
 
-@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+@OptIn(ExperimentalSerializationApi::class)
 @PublishedApi
 internal fun xmlElementToJson(element: XmlElement, descriptor: SerialDescriptor): JsonElement {
     return when (descriptor.kind) {

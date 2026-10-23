@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.State
 
 @Composable
 fun PWaveCircleIconButton(
@@ -96,7 +97,7 @@ fun PWaveCircleIconButton(
 }
 
 @Composable
-private fun WaveLayer(size: Dp, color: Color, scale: androidx.compose.runtime.State<Float>, maxScale: Float) {
+private fun WaveLayer(size: Dp, color: Color, scale: State<Float>, maxScale: Float) {
     Box(
         modifier = Modifier
             .size(size)

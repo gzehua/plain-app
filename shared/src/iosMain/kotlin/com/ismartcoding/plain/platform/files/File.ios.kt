@@ -40,6 +40,19 @@ import platform.UIKit.UIGraphicsGetImageFromCurrentImageContext
 import platform.posix.fclose
 import platform.posix.fopen
 import platform.posix.fread
+import com.ismartcoding.plain.platform.media.IosPhotoResource
+import com.ismartcoding.plain.rust.native.RustNativeApi
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import platform.posix.O_RDONLY
+import platform.posix.SEEK_SET
+import platform.posix.close
+import platform.posix.fflush
+import platform.posix.fileno
+import platform.posix.fseek
+import platform.posix.open
+import platform.posix.read as posixRead
+import platform.posix.tmpfile
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun deleteFileAt(path: String) {
@@ -69,7 +82,7 @@ actual suspend fun copyFileToUri(path: String, uriStr: String): Boolean = withIO
     try {
         val destinationPath = destination.path ?: return@withIO false
         FilesClient.copyToPath(path, destinationPath, overwrite = true)
-    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+    } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (_: Exception) {
         false
@@ -101,8 +114,8 @@ actual suspend fun ensureParentDir(path: String) {
 actual suspend fun streamContentUri(uri: String, sink: StreamSink): String? = withResourceFile(uri) { descriptor, _ ->
     val bytes = ByteArray(64 * 1024)
     while (true) {
-        kotlinx.coroutines.currentCoroutineContext().ensureActive()
-        val count = bytes.usePinned { platform.posix.read(descriptor, it.addressOf(0), bytes.size.toULong()) }
+        currentCoroutineContext().ensureActive()
+        val count = bytes.usePinned { posixRead(descriptor, it.addressOf(0), bytes.size.toULong()) }
         check(count >= 0) { "Unable to read file resource" }
         if (count == 0L) break
         sink.write(bytes, 0, count.toInt())
@@ -215,7 +228,7 @@ actual suspend fun readTextFile(path: String): String = withIO {
         }
         val data = NSFileManager.defaultManager.contentsAtPath(localPath) ?: return@withIO ""
         NSString.create(data, NSUTF8StringEncoding)?.toString() ?: ""
-    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+    } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (e: Exception) {
         ""
@@ -248,25 +261,25 @@ actual suspend fun getFileByMediaId(mediaId: String): FileEntry? = null
 
 @OptIn(ExperimentalForeignApi::class)
 internal actual suspend fun provideResourceFile(id: String, uri: String): Unit = withResourceFile(uri) { descriptor, length ->
-    val error = com.ismartcoding.plain.rust.native.RustNativeApi.resourceFile(id, descriptor, 0, length)
+    val error = RustNativeApi.resourceFile(id, descriptor, 0, length)
     check(error.isEmpty()) { error }
 }
 
 @OptIn(ExperimentalForeignApi::class)
 private suspend fun <T> withResourceFile(uri: String, block: suspend (Int, Long) -> T): T = withIO {
     if (uri.startsWith("ph://")) {
-        val file = checkNotNull(platform.posix.tmpfile()) { "Unable to prepare photo resource" }
+        val file = checkNotNull(tmpfile()) { "Unable to prepare photo resource" }
         try {
-            val size = com.ismartcoding.plain.platform.media.IosPhotoResource.write(uri, file)
-            check(platform.posix.fflush(file) == 0) { "Unable to flush photo resource" }
-            check(platform.posix.fseek(file, 0, platform.posix.SEEK_SET) == 0) { "Unable to seek photo resource" }
-            block(platform.posix.fileno(file), size)
-        } finally { platform.posix.fclose(file) }
+            val size = IosPhotoResource.write(uri, file)
+            check(fflush(file) == 0) { "Unable to flush photo resource" }
+            check(fseek(file, 0, SEEK_SET) == 0) { "Unable to seek photo resource" }
+            block(fileno(file), size)
+        } finally { fclose(file) }
     } else {
         val path = NSURL.URLWithString(uri)?.path ?: uri
-        val descriptor = platform.posix.open(path, platform.posix.O_RDONLY)
+        val descriptor = open(path, O_RDONLY)
         check(descriptor >= 0) { "Unable to open file resource" }
-        try { block(descriptor, -1) } finally { platform.posix.close(descriptor) }
+        try { block(descriptor, -1) } finally { close(descriptor) }
     }
 }
 

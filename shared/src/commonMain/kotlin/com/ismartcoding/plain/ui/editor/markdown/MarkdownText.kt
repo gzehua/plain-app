@@ -65,6 +65,7 @@ import com.ismartcoding.plain.ui.markdown.utils.getUnescapedTextInNode
 import kotlinx.coroutines.launch
 import org.intellij.markdown.ast.getTextInNode
 import org.intellij.markdown.flavours.gfm.GFMElementTypes
+import com.ismartcoding.plain.features.files.FilePaths
 
 /**
  * Image transformer that resolves project-internal `app://` and `fid:` URIs to absolute file
@@ -234,7 +235,7 @@ internal fun rememberMarkdownImageTransformer(
     return remember(imageLinks, previewerState) {
         AppImageTransformer(onImageClick = previewerState?.let { state -> { link ->
             scope.launch {
-                val paths = com.ismartcoding.plain.features.files.FilePaths.resolveAll(imageLinks)
+                val paths = FilePaths.resolveAll(imageLinks)
                 val items = imageLinks.mapIndexed { index, src -> PreviewItem(src, paths[index]) }
                 MediaPreviewData.items = items
                 val index = items.indexOfFirst { it.id == link || it.path == link }

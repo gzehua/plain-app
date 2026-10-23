@@ -18,6 +18,7 @@ import com.ismartcoding.plain.ui.theme.green
 import org.jetbrains.compose.resources.painterResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.arrow_right as ui_drawable_arrow_right
+import androidx.compose.ui.unit.Density
 
 private val TagSize = 44.dp
 private val TagIconSize = 24.dp
@@ -48,4 +49,4 @@ fun ScanCodeTag(
 }
 
 /** Half the tag size in px for centering markers on a point; pair with [ScanCodeTag]. */
-fun scanCodeTagRadiusPx(density: androidx.compose.ui.unit.Density): Float = with(density) { TagSize.toPx() } / 2f
+fun scanCodeTagRadiusPx(density: Density): Float = with(density) { TagSize.toPx() } / 2f

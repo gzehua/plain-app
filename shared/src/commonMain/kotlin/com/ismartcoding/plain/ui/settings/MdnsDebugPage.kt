@@ -50,6 +50,10 @@ import kotlinx.coroutines.delay
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
+import com.ismartcoding.plain.lib.logcat.LogCat
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
+import kotlinx.coroutines.CancellationException
 
 /**
  * mDNS protocol debug page. Shows the raw wire data parsed from the
@@ -62,7 +66,7 @@ import org.jetbrains.compose.resources.stringResource
  * capture, and refreshes every two seconds. Leaving the page disables capture
  * so production overhead stays zero.
  */
-@OptIn(ExperimentalMaterial3Api::class, kotlin.uuid.ExperimentalUuidApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalUuidApi::class)
 @Composable
 fun MdnsDebugPage(navController: NavHostController) {
     var snapshots by remember { mutableStateOf(emptyList<MdnsServiceSnapshot>()) }
@@ -72,7 +76,7 @@ fun MdnsDebugPage(navController: NavHostController) {
     var paused by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(0) }
 
-    val debugToken = remember { kotlin.uuid.Uuid.random().toString() }
+    val debugToken = remember { Uuid.random().toString() }
 
     LaunchedEffect(Unit) {
         try {
@@ -86,10 +90,10 @@ fun MdnsDebugPage(navController: NavHostController) {
                 }
                 delay(2000)
             }
-        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
-            com.ismartcoding.plain.lib.logcat.LogCat.e("mDNS debug snapshot", error)
+            LogCat.e("mDNS debug snapshot", error)
         }
     }
 

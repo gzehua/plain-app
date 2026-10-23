@@ -10,6 +10,8 @@ import com.ismartcoding.plain.platform.files.ShareHelper
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.components.DialogHelper
 import java.io.File
+import android.provider.Settings
+import com.ismartcoding.plain.app.AppHelper
 
 actual fun launchUrl(url: String) {
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
@@ -19,7 +21,7 @@ actual fun launchUrl(url: String) {
 }
 
 actual fun openAppSettings() {
-    val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
         data = Uri.fromParts("package", appContextValue?.packageName ?: return, null)
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
@@ -82,5 +84,5 @@ actual fun isFileShareable(path: String): Boolean {
 
 actual fun relaunchApp() {
     val ctx = appContextValue ?: return
-    com.ismartcoding.plain.app.AppHelper.relaunch(ctx)
+    AppHelper.relaunch(ctx)
 }

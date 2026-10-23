@@ -15,6 +15,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.ismartcoding.plain.features.telephony.sms.MmsCandidateFacts
+import com.ismartcoding.plain.features.telephony.sms.MmsPartFacts
+import kotlinx.serialization.json.JsonElement
 
 class SystemProviderSerializationTest {
     @Test
@@ -62,14 +65,14 @@ class SystemProviderSerializationTest {
 
     @Test
     fun mmsFactsExposeRawPartsAndDatedCandidatesWithoutBusinessProjection() {
-        val part = com.ismartcoding.plain.features.telephony.sms.MmsPartFacts(
+        val part = MmsPartFacts(
             "content://mms/part/1", "image/jpeg", "", "photo.jpg", true, "",
         )
         assertEquals(
             """{"path":"content://mms/part/1","contentType":"image/jpeg","name":"","fileName":"photo.jpg","hasData":true,"text":""}""",
             JsonHelper.jsonEncode(part),
         )
-        val candidate = com.ismartcoding.plain.features.telephony.sms.MmsCandidateFacts(
+        val candidate = MmsCandidateFacts(
             1L, emptyList(), listOf(part), "2",
         )
         val json = JsonHelper.jsonEncode(candidate)
@@ -80,7 +83,7 @@ class SystemProviderSerializationTest {
 
     @Test
     fun elementDecodingRequiresTrackFieldsAndPreservesDefaults() {
-        val input = JsonHelper.jsonDecode<kotlinx.serialization.json.JsonElement>(
+        val input = JsonHelper.jsonDecode<JsonElement>(
             """{"title":"Song","artist":"Singer","path":"/song","durationMs":42,"extra":true}""",
         )
         assertEquals(AudioItem(title = "Song", path = "/song", artist = "Singer", durationMs = 42), JsonHelper.jsonDecodeFromElement<AudioItem>(input))

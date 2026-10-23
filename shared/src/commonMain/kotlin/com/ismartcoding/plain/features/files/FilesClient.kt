@@ -8,13 +8,15 @@ import kotlinx.coroutines.CancellationException
 import io.ktor.http.Url
 import io.ktor.http.decodeURLPart
 import kotlinx.serialization.json.*
+import com.ismartcoding.plain.features.files.upload.RustUploadChunks
+import com.ismartcoding.plain.lib.JsonHelper
 
 object FilesClient {
     suspend fun size(path: String): Long = RustGraphqlApi.graphql(Query.fileInfo(path))
         .getValue("fileInfo").jsonObject.getValue("size").jsonPrimitive.long
 
     suspend fun writeChunks(path: String, chunks: Iterator<ByteArray>): Boolean =
-        com.ismartcoding.plain.features.files.upload.RustUploadChunks.replace(path, chunks)
+        RustUploadChunks.replace(path, chunks)
 
     suspend fun copyToPath(srcPath: String, targetPath: String, overwrite: Boolean): Boolean =
         RustGraphqlApi.graphql(Mutation.copyFile(srcPath, targetPath, overwrite))
@@ -58,7 +60,7 @@ object FilesClient {
     suspend fun indexed(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<FileEntry> =
         RustGraphqlApi.graphql(Query.indexedFiles(query, limit, offset, sortBy.name)).getValue("indexedFiles").jsonArray.map { decode(it.jsonObject) }
     suspend fun recent(): List<FileEntry> =
-        com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(
+        JsonHelper.jsonDecodeFromElement(
             RustGraphqlApi.graphql(Query.recentFiles()).getValue("recentFiles")
         )
 
@@ -101,5 +103,5 @@ object FilesClient {
         return decode(RustGraphqlApi.graphql(operation).getValue(operation.field).jsonObject)
     }
 
-    private fun decode(row: JsonObject): FileEntry = com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(row)
+    private fun decode(row: JsonObject): FileEntry = JsonHelper.jsonDecodeFromElement(row)
 }

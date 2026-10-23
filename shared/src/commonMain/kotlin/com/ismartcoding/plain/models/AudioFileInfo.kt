@@ -1,8 +1,9 @@
 package com.ismartcoding.plain.models
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 
-@kotlinx.serialization.SerialName("AudioFileInfo")
+@SerialName("AudioFileInfo")
 @Serializable
 data class AudioFileInfo(
     var durationMs: Long,

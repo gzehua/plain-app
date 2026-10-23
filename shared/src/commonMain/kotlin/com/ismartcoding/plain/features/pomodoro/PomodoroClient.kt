@@ -5,6 +5,7 @@ import com.ismartcoding.plain.api.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.models.PomodoroToday
 import kotlinx.serialization.json.*
+import com.ismartcoding.plain.lib.JsonHelper
 
 object PomodoroClient {
     suspend fun today(): PomodoroToday {
@@ -25,5 +26,5 @@ object PomodoroClient {
     suspend fun adjust(durationSec: Int): PomodoroToday = RustGraphqlApi.graphql(Mutation.adjustPomodoro(durationSec))
         .getValue("adjustPomodoro").today()
     internal fun JsonElement.today(): PomodoroToday =
-        com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(this)
+        JsonHelper.jsonDecodeFromElement(this)
 }

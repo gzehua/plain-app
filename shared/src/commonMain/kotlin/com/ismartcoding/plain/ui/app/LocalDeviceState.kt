@@ -14,6 +14,8 @@ import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.*
+import com.ismartcoding.plain.features.nearby.PeerStatus
+import kotlin.time.Instant
 
 object LocalDeviceState {
     val peer = mutableStateOf<Peer?>(null)
@@ -27,9 +29,9 @@ object LocalDeviceState {
                 key = "",
                 publicKey = "",
                 token = "",
-                status = com.ismartcoding.plain.features.nearby.PeerStatus.UNPAIRED,
-                createdAt = kotlin.time.Instant.fromEpochMilliseconds(0),
-                updatedAt = kotlin.time.Instant.fromEpochMilliseconds(0),
+                status = PeerStatus.UNPAIRED,
+                createdAt = Instant.fromEpochMilliseconds(0),
+                updatedAt = Instant.fromEpochMilliseconds(0),
                 id = app.clientId,
                 name = app.deviceName,
                 ip = network.ipv4Addresses.joinToString(","),

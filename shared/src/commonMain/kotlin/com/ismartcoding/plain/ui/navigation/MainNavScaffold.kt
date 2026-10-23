@@ -47,6 +47,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.i18n.search
+import com.ismartcoding.plain.ui.tools.hasTools
 
 internal data class MainNavItem(
     val index: Int,
@@ -58,7 +59,7 @@ internal val mainNavItems: List<MainNavItem>
     get() = buildList {
         add(MainNavItem(0, UiRes.drawable.ui_drawable_house, Res.string.home))
         add(MainNavItem(1, UiRes.drawable.ui_drawable_message_circle, Res.string.chat))
-        if (com.ismartcoding.plain.ui.tools.hasTools(getDeviceCapabilities())) {
+        if (hasTools(getDeviceCapabilities())) {
             add(MainNavItem(2, UiRes.drawable.ui_drawable_grid_3x3, Res.string.tools))
         }
         add(MainNavItem(3, UiRes.drawable.ui_drawable_search, Res.string.search))

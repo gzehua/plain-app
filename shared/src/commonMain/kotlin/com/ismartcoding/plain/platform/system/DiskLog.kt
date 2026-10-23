@@ -8,6 +8,7 @@ import com.ismartcoding.plain.lib.logcat.DiskLogStrategy
 import com.ismartcoding.plain.lib.logcat.FormatStrategy
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.logcat.LogStrategy
+import com.ismartcoding.plain.rust.RustRuntime
 
 class DiskLogFormatStrategy(private val logStrategy: LogStrategy) : FormatStrategy {
     override fun log(
@@ -41,7 +42,7 @@ expect fun currentDateTimeString(): String
 /**
  * Absolute path to the latest log file (e.g. `<logFolder>/latest.log`).
  */
-fun getLatestLogFilePath(): String = com.ismartcoding.plain.rust.RustRuntime.logFile
+fun getLatestLogFilePath(): String = RustRuntime.logFile
 
 /**
  * Initialize disk logging and HTTP request logging.

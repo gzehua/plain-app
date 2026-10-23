@@ -14,6 +14,7 @@ import com.ismartcoding.plain.platform.system.Capability
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.permissions.isGranted
 import kotlinx.coroutines.flow.MutableStateFlow
+import com.ismartcoding.plain.app.events.RequestPermissionsEvent
 
 /** Platform service intent, UI lifecycle state . */
 object HttpServerManager {
@@ -54,7 +55,7 @@ object HttpServerManager {
             return
         }
         if (fromUi) {
-            sendEvent(com.ismartcoding.plain.app.events.RequestPermissionsEvent(Permission.POST_NOTIFICATIONS))
+            sendEvent(RequestPermissionsEvent(Permission.POST_NOTIFICATIONS))
         }
     }
 
@@ -68,7 +69,7 @@ object HttpServerManager {
             return@coIO
         }
         if (enable && fromUi && !Permission.POST_NOTIFICATIONS.isGranted()) {
-            sendEvent(com.ismartcoding.plain.app.events.RequestPermissionsEvent(Permission.POST_NOTIFICATIONS))
+            sendEvent(RequestPermissionsEvent(Permission.POST_NOTIFICATIONS))
         }
     }
 

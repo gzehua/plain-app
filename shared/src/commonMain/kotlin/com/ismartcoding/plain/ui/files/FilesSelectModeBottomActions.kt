@@ -27,6 +27,7 @@ import com.ismartcoding.plain.ui.components.DialogHelper
 import com.ismartcoding.plain.ui.components.confirmActionAsync
 import com.ismartcoding.plain.ui.state.exitSelectMode
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -88,7 +89,7 @@ fun FilesSelectModeBottomActions(
                                     withIO {
                                         FilesClient.deleteMany(paths.toList())
                                     }
-                                } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+                                } catch (cancelled: CancellationException) { throw cancelled }
                                 catch (error: Exception) { DialogHelper.showMessage(error) }
                                 finally {
                                     DialogHelper.hideLoading()

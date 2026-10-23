@@ -23,6 +23,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.ismartcoding.plain.app.events.HPomodoroChangedEvent
+import com.ismartcoding.plain.app.events.HWebLoginClosedEvent
 
 @Composable
 fun MainEventCollector(
@@ -57,7 +59,7 @@ fun MainEventCollector(
                     }
                 }
 
-                is com.ismartcoding.plain.app.events.HPomodoroChangedEvent -> pomodoroVM.applySnapshot(event.today)
+                is HPomodoroChangedEvent -> pomodoroVM.applySnapshot(event.today)
 
                 is HConfirmToAcceptLoginEvent -> {
                     mainVM.pendingLoginEvent.value = event
@@ -66,7 +68,7 @@ fun MainEventCollector(
                     }
                 }
 
-                is com.ismartcoding.plain.app.events.HWebLoginClosedEvent -> {
+                is HWebLoginClosedEvent -> {
                     if (mainVM.pendingLoginEvent.value?.requestId == event.requestId) mainVM.pendingLoginEvent.value = null
                 }
 

@@ -13,6 +13,7 @@ import com.ismartcoding.plain.lib.extensions.getTimeValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.models.Call as PhoneCall
+import com.ismartcoding.plain.features.telephony.CallType
 
 object CallMediaStoreHelper : BaseContentHelper() {
     override val uriExternal: Uri = CallLog.Calls.CONTENT_URI
@@ -55,7 +56,7 @@ object CallMediaStoreHelper : BaseContentHelper() {
             val durationSec = cursor.getIntValue(CallLog.Calls.DURATION, cache)
             val type = cursor.getIntValue(CallLog.Calls.TYPE, cache)
             val accountId = cursor.getStringValue(CallLog.Calls.PHONE_ACCOUNT_ID, cache)
-            PhoneCall(id = id, number = number, name = name, photoUri = photoUri, startedAt = startTS, durationSec = durationSec, type = com.ismartcoding.plain.features.telephony.CallType.fromInt(type), typeCode = type, accountId = accountId)
+            PhoneCall(id = id, number = number, name = name, photoUri = photoUri, startedAt = startTS, durationSec = durationSec, type = CallType.fromInt(type), typeCode = type, accountId = accountId)
         } ?: emptyList()
     }
 

@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.*
 import org.jetbrains.compose.resources.stringResource
+import com.ismartcoding.plain.ui.components.TextFieldDialog
 
 @Composable
 fun PairPeerDialog(device: NearbyDevice, onDismiss: () -> Unit) {
@@ -40,7 +41,7 @@ fun PairPeerDialog(device: NearbyDevice, onDismiss: () -> Unit) {
         if (phase == "SUCCEEDED") onDismiss()
     }
     if (phase == "PASSWORD_REQUIRED") {
-        com.ismartcoding.plain.ui.components.TextFieldDialog(
+        TextFieldDialog(
             title = stringResource(Res.string.password),
             isPassword = true,
             errorText = error ?: "",

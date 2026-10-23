@@ -30,6 +30,8 @@ import com.ismartcoding.plain.ui.files.stored.AppFilesViewModel
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.files.stored.components.AppFileListContent
 import com.ismartcoding.plain.ui.state.launchSafe
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.rust.RustEventHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,8 +56,8 @@ fun AppFilesPage(
 
     LaunchedEffect(appFilesVM) {
         launchSafe { appFilesVM.loadAsync() }
-        com.ismartcoding.plain.rust.RustEventHandler.events.collect { event ->
-            if (event.type == com.ismartcoding.plain.app.events.EventType.CONTENT_CHANGED) launchSafe { appFilesVM.loadAsync() }.join()
+        RustEventHandler.events.collect { event ->
+            if (event.type == EventType.CONTENT_CHANGED) launchSafe { appFilesVM.loadAsync() }.join()
         }
     }
 

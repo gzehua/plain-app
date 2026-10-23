@@ -5,6 +5,7 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*
+import com.ismartcoding.plain.models.ChatConversation
 
 object RustChatStore {
     internal fun decodeGraphql(value: JsonElement): ChatItem = JsonHelper.jsonDecodeFromElement(value)
@@ -13,7 +14,7 @@ object RustChatStore {
     suspend fun getByPeerId(id: String): List<ChatItem> = page(peer = id)
     suspend fun getByChannelId(id: String): List<ChatItem> = page(channel = id)
     suspend fun getLatestConversations(): Map<String, ChatItem> =
-        JsonHelper.jsonDecodeFromElement<List<com.ismartcoding.plain.models.ChatConversation>>(
+        JsonHelper.jsonDecodeFromElement<List<ChatConversation>>(
             RustGraphqlApi.graphql(Query.chatConversations()).getValue("chatConversations"),
         ).associate { it.id to it.chat }
     suspend fun search(text: String, limit: Int, offset: Int): List<ChatItem> = page(text = text, limit = limit, offset = offset, descending = true)

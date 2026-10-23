@@ -1,10 +1,11 @@
 package com.ismartcoding.plain.ui.chat
 
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.lazy.LazyListState
 
 internal suspend fun scrollToLatest(
     chatVM: ChatViewModel,
-    scrollState: androidx.compose.foundation.lazy.LazyListState,
+    scrollState: LazyListState,
     previousTopMessageId: String?,
 ) {
     repeat(20) {

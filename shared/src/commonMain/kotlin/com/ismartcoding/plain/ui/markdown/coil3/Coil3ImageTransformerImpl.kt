@@ -9,6 +9,7 @@ import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import com.ismartcoding.plain.ui.markdown.model.ImageData
 import com.ismartcoding.plain.ui.markdown.model.ImageTransformer
+import coil3.size.Size as CoilSize
 
 object Coil3ImageTransformerImpl : ImageTransformer {
 
@@ -17,7 +18,7 @@ object Coil3ImageTransformerImpl : ImageTransformer {
         return rememberAsyncImagePainter(
             model = ImageRequest.Builder(LocalPlatformContext.current)
                 .data(link)
-                .size(coil3.size.Size.ORIGINAL)
+                .size(CoilSize.ORIGINAL)
                 .build()
         ).let { ImageData(it) }
     }

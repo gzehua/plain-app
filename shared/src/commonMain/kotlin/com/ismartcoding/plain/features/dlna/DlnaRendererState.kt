@@ -7,6 +7,7 @@ import com.ismartcoding.plain.lib.dlna.DlnaMediaType
 import com.ismartcoding.plain.lib.dlna.PendingCastRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.json.*
+import com.ismartcoding.plain.platform.system.PlatformLock
 
 object DlnaRendererState {
     /** Broadcast by the engine whenever the renderer state changes. */
@@ -25,7 +26,7 @@ object DlnaRendererState {
     /** Non-empty when the receiver failed to start on all attempted ports. */
     val startError = MutableStateFlow("")
 
-    private val projectionLock = com.ismartcoding.plain.platform.system.PlatformLock()
+    private val projectionLock = PlatformLock()
     private var version = -1L
 
     private suspend fun command(command: ReceiverCommand) {

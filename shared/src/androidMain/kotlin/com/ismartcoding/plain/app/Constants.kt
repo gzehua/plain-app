@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.app
 
 import com.ismartcoding.plain.appContext
+import com.ismartcoding.plain.platform.system.AppFeatureType
 
 object AppIntents {
     val AUTHORITY: String get() = "${appContext.packageName}.provider"
@@ -14,7 +15,7 @@ object AppIntents {
 
     // Action of the launcher dynamic shortcuts; derived from AppFeatureType.name so the
     // publisher (LauncherShortcuts.android.kt) and the intent dispatcher share one naming source.
-    fun actionOpenShortcut(type: com.ismartcoding.plain.platform.system.AppFeatureType): String =
+    fun actionOpenShortcut(type: AppFeatureType): String =
         "${appContext.packageName}.action.OPEN_${type.name}"
 }
 

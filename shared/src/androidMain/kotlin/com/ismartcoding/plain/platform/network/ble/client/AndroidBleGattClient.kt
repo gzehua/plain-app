@@ -16,6 +16,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.UUID
 import kotlin.time.Duration.Companion.milliseconds
+import java.util.concurrent.ConcurrentHashMap
 
 @SuppressLint("MissingPermission")
 class AndroidBleGattClient(
@@ -66,7 +67,7 @@ class AndroidBleGattClient(
 
     @Volatile private var negotiatedMtu = 23
     override val maximumWriteValueLength: Int get() = minOf(negotiatedMtu - 3, 512)
-    private val notifications = java.util.concurrent.ConcurrentHashMap<UUID, Channel<ByteArray>>()
+    private val notifications = ConcurrentHashMap<UUID, Channel<ByteArray>>()
     private val channels = mutableMapOf<ActionType, Channel<ActionResult>>()
 
     // Per-connection operation queue. This MUST be an instance member (not

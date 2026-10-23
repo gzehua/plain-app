@@ -10,6 +10,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import com.ismartcoding.plain.platform.system.chaCha20Decrypt
+import java.io.File
+import java.util.Base64
 
 /**
  * Generates cross-platform crypto test vectors that verify plain-app (Kotlin)
@@ -55,7 +58,7 @@ class CryptoVectorGenerator {
 
         val outputPath = System.getProperty("crypto.vectors.output")
             ?: "build/crypto-vectors.json"
-        val outFile = java.io.File(outputPath)
+        val outFile = File(outputPath)
         outFile.parentFile?.mkdirs()
         outFile.writeText(json)
         println("Crypto vectors written to: ${outFile.absolutePath}")
@@ -172,7 +175,7 @@ class CryptoVectorGenerator {
         System.arraycopy(nonce, 0, blob, 0, nonce.size)
         System.arraycopy(ciphertext, 0, blob, nonce.size, ciphertext.size)
 
-        val decrypted = com.ismartcoding.plain.platform.system.chaCha20Decrypt(key, blob)
+        val decrypted = chaCha20Decrypt(key, blob)
         assertNotNull(decrypted, "XChaCha20 decrypt of reconstructed blob must succeed")
         assertEquals(v.plaintext, decrypted.decodeToString(), "Decrypted plaintext must match")
     }
@@ -248,8 +251,8 @@ class CryptoVectorGenerator {
     private fun jsonStr(s: String): String = "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
     private fun base64(bytes: ByteArray): String =
-        java.util.Base64.getEncoder().encodeToString(bytes)
+        Base64.getEncoder().encodeToString(bytes)
 
     private fun base64Decode(s: String): ByteArray =
-        java.util.Base64.getDecoder().decode(s)
+        Base64.getDecoder().decode(s)
 }

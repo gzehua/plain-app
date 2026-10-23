@@ -7,6 +7,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonNames
+import kotlinx.serialization.EncodeDefault
 
 @Serializable
 private data class MessageFileSurrogate(
@@ -14,7 +15,7 @@ private data class MessageFileSurrogate(
     val uri: String,
     val size: Long,
     @JsonNames( "duration")
-    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
     val legacyDurationSec: Long? = null,
     val durationMs: Long? = null,
     val width: Int = 0,

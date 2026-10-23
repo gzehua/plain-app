@@ -42,6 +42,8 @@ import com.ismartcoding.plain.ui.state.launchSafe
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.chrome as ui_drawable_chrome
 import com.ismartcoding.plain.ui.resources.laptop as ui_drawable_laptop
+import com.ismartcoding.plain.features.sessions.RustWebLogin
+import com.ismartcoding.plain.ui.navigation.Routing
 
 @Composable
 fun LoginRequestPage(
@@ -146,8 +148,8 @@ fun LoginRequestPage(
                     onClick = {
                         allowing = true
                         scope.launchSafe(onDone = { allowing = false }) {
-                            com.ismartcoding.plain.features.sessions.RustWebLogin.complete(event)
-                            navController.popBackStack<com.ismartcoding.plain.ui.navigation.Routing.LoginRequest>(inclusive = true)
+                            RustWebLogin.complete(event)
+                            navController.popBackStack<Routing.LoginRequest>(inclusive = true)
                         }
                     },
                 )
@@ -162,8 +164,8 @@ fun LoginRequestPage(
                     onClick = {
                         denying = true
                         scope.launchSafe(onDone = { denying = false }) {
-                            com.ismartcoding.plain.features.sessions.RustWebLogin.cancel(event.requestId)
-                            navController.popBackStack<com.ismartcoding.plain.ui.navigation.Routing.LoginRequest>(inclusive = true)
+                            RustWebLogin.cancel(event.requestId)
+                            navController.popBackStack<Routing.LoginRequest>(inclusive = true)
                         }
                     },
                 )

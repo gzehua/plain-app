@@ -25,6 +25,7 @@ import java.util.UUID
 import java.util.zip.ZipInputStream
 import kotlin.io.encoding.Base64
 import kotlin.time.Instant
+import android.system.Os
 
 @RunWith(AndroidJUnit4::class)
 class ShareRustHttpTest {
@@ -37,7 +38,7 @@ class ShareRustHttpTest {
         File(folder, "a.txt").writeText("synthetic")
         File(folder, "empty").mkdir()
         val outside = File(other, "secret.txt").apply { writeText("outside") }
-        android.system.Os.symlink(outside.absolutePath, File(folder, "escape.txt").absolutePath)
+        Os.symlink(outside.absolutePath, File(folder, "escape.txt").absolutePath)
         val service = Prefs.backgroundServiceEnabled.value
         var id: String? = null
         try {

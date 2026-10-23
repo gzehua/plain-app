@@ -12,6 +12,7 @@ import com.ismartcoding.plain.app.Constants
 import com.ismartcoding.plain.app.AppIntents
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import java.io.File
+import android.os.Build
 
 object AppLogHelper {
     fun share(
@@ -37,10 +38,10 @@ object AppLogHelper {
         return buildString {
             appendLine("--- Device Info ---")
             appendLine("App: PlainApp $appVersion")
-            appendLine("Device: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
-            appendLine("Android: ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})")
-            appendLine("Brand: ${android.os.Build.BRAND}")
-            appendLine("Product: ${android.os.Build.PRODUCT}")
+            appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}")
+            appendLine("Android: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
+            appendLine("Brand: ${Build.BRAND}")
+            appendLine("Product: ${Build.PRODUCT}")
         }
     }
 }

@@ -23,6 +23,8 @@ import com.ismartcoding.plain.packageManager
 import kotlin.time.Instant
 import java.io.File
 import javax.security.cert.X509Certificate
+import android.provider.Settings
+import androidx.core.content.FileProvider
 
 object PackageHelper {
     private val appLabelCache: MutableMap<String, String> = HashMap()
@@ -196,7 +198,7 @@ object PackageHelper {
 
     fun viewInSettings(context: Context, packageName: String) {
         context.startActivity(Intent().apply {
-            action = android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
             data = Uri.parse("package:$packageName")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         })
@@ -204,7 +206,7 @@ object PackageHelper {
 
     fun install(context: Context, file: File) {
         try {
-            val uri = androidx.core.content.FileProvider.getUriForFile(
+            val uri = FileProvider.getUriForFile(
                 context,
                 AppIntents.AUTHORITY,
                 file

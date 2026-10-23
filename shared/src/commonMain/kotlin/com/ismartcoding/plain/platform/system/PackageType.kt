@@ -1,6 +1,8 @@
 package com.ismartcoding.plain.platform.system
 
-@kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class PackageType {
     SYSTEM,
     USER;

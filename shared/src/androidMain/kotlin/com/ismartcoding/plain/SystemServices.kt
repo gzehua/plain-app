@@ -21,6 +21,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.core.app.NotificationManagerCompat
 import com.ismartcoding.plain.lib.extensions.getSystemServiceCompat
 import com.ismartcoding.plain.platform.isSPlus
+import android.media.AudioManager
 
 val contentResolver: ContentResolver by lazy { appContext.contentResolver }
 
@@ -67,7 +68,7 @@ val activityManager: ActivityManager by lazy {
 }
 
 val batteryManager: BatteryManager by lazy {
-    appContext.getSystemServiceCompat(android.os.BatteryManager::class.java)
+    appContext.getSystemServiceCompat(BatteryManager::class.java)
 }
 
 val subscriptionManager: SubscriptionManager by lazy {
@@ -82,8 +83,8 @@ val alarmManager: AlarmManager by lazy {
     appContext.getSystemServiceCompat(AlarmManager::class.java)
 }
 
-val audioManager: android.media.AudioManager by lazy {
-    appContext.getSystemServiceCompat(android.media.AudioManager::class.java)
+val audioManager: AudioManager by lazy {
+    appContext.getSystemServiceCompat(AudioManager::class.java)
 }
 
 val uiModeManager: UiModeManager by lazy {

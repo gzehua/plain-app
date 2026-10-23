@@ -5,22 +5,23 @@ import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.generateId
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Required
 
 @Serializable
 data class FeedEntry(
-    @kotlinx.serialization.Required var feedId: String = "",
-    @kotlinx.serialization.Required override var id: String = generateId(),
-    @kotlinx.serialization.Required var title: String = "",
-    @kotlinx.serialization.Required var url: String = "",
-    @kotlinx.serialization.Required var image: String = "",
-    @kotlinx.serialization.Required var description: String = "",
-    @kotlinx.serialization.Required var author: String = "",
-    @kotlinx.serialization.Required var content: String = "",
-    @kotlinx.serialization.Required var rawId: String = "",
-    @kotlinx.serialization.Required var read: Boolean = false,
-    @kotlinx.serialization.Required var publishedAt: Instant = TimeHelper.now(),
-    @kotlinx.serialization.Required var createdAt: Instant = TimeHelper.now(),
-    @kotlinx.serialization.Required var updatedAt: Instant = TimeHelper.now(),
+    @Required var feedId: String = "",
+    @Required override var id: String = generateId(),
+    @Required var title: String = "",
+    @Required var url: String = "",
+    @Required var image: String = "",
+    @Required var description: String = "",
+    @Required var author: String = "",
+    @Required var content: String = "",
+    @Required var rawId: String = "",
+    @Required var read: Boolean = false,
+    @Required var publishedAt: Instant = TimeHelper.now(),
+    @Required var createdAt: Instant = TimeHelper.now(),
+    @Required var updatedAt: Instant = TimeHelper.now(),
     var feed: Feed? = null,
 ) : IData {
     fun getSummary(): String {

@@ -60,6 +60,9 @@ import com.ismartcoding.plain.ui.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
+import android.Manifest
+import com.ismartcoding.plain.platform.system.BackgroundExecution
+import com.ismartcoding.plain.ui.app.ActivityUiState
 
 class MainActivity : AppCompatActivity() {
     internal var pickFileType = PickFileType.IMAGE
@@ -70,7 +73,7 @@ class MainActivity : AppCompatActivity() {
     val pomodoroVM: PomodoroViewModel by viewModels()
     internal val peerVM: PeerViewModel by viewModels()
     internal val channelVM: ChannelViewModel by viewModels()
-    internal val uiState = com.ismartcoding.plain.ui.app.ActivityUiState()
+    internal val uiState = ActivityUiState()
 
     internal val screenCapture = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null && ScreenMirrorService.instance == null) {
@@ -82,7 +85,7 @@ class MainActivity : AppCompatActivity() {
     }
     internal val recordAudioForMirror = registerForActivityResult(ActivityResultContracts.RequestPermission()) { _ ->
         try {
-            screenCapture.launch(com.ismartcoding.plain.mediaProjectionManager.createScreenCaptureIntent())
+            screenCapture.launch(mediaProjectionManager.createScreenCaptureIntent())
         } catch (e: IllegalStateException) {
             LogCat.e("Error launching screen capture: ${e.message}")
         }
@@ -90,7 +93,7 @@ class MainActivity : AppCompatActivity() {
     internal val recordAudioForMirrorLate = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) {
             sendScreenMirrorAudioStatus(true)
-        } else if (!shouldShowRequestPermissionRationale(android.Manifest.permission.RECORD_AUDIO)
+        } else if (!shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO)
             && !Permission.RECORD_AUDIO.isGranted()
         ) {
             showRecordAudioPermissionSettingsGuide()
@@ -142,17 +145,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        com.ismartcoding.plain.platform.system.BackgroundExecution.executionStateChanged()
+        BackgroundExecution.executionStateChanged()
     }
 
     override fun onStop() {
         super.onStop()
-        com.ismartcoding.plain.platform.system.BackgroundExecution.executionStateChanged()
+        BackgroundExecution.executionStateChanged()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         sendEvent(WindowFocusChangedEvent(hasFocus))
-        com.ismartcoding.plain.platform.system.BackgroundExecution.executionStateChanged()
+        BackgroundExecution.executionStateChanged()
     }
 
     @SuppressLint("ClickableViewAccessibility", "DiscouragedPrivateApi")
@@ -162,7 +165,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.Default) { Language.initLocaleAsync() }
         WindowCompat.getInsetsController(window, window.decorView).systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         instance = WeakReference(this)
-        com.ismartcoding.plain.mainActivity = this
+        mainActivity = this
         pendingCrashReport = CrashHandler.getPendingReport()
         try {
             val f = CursorWindow::class.java.getDeclaredField("sCursorWindowSize"); f.isAccessible = true; f.set(null, 100 * 1024 * 1024)

@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.ismartcoding.plain.ui.downloads.components
 
@@ -41,6 +41,8 @@ import kotlin.math.min
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.download as ui_drawable_download
 import com.ismartcoding.plain.i18n.download
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 /**
  * Edge-docked overlay shown on non-share pages while batches run in the
@@ -64,7 +66,7 @@ fun BoxScope.DownloadFloatingWidget(
         onClick = onClick,
         shape = RoundedCornerShape(topStart = 14.dp, bottomStart = 14.dp),
         color = MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         shadowElevation = 8.dp,
         modifier = Modifier
             .align(Alignment.CenterEnd)

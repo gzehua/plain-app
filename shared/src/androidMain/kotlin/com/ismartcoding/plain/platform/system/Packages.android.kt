@@ -8,6 +8,7 @@ import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.packageManager
 import kotlin.time.Instant
+import java.io.File
 
 actual suspend fun installedPackageFacts(): List<AppPackage> = withIO { PackageHelper.installedFacts() }
 
@@ -28,7 +29,7 @@ actual fun packageInstallProfile(): PackageInstallProfile {
 
 actual fun installPackage(paths: List<String>, packageName: String, session: Boolean): PackageInstallResult {
     require(paths.isNotEmpty())
-    val files = paths.map { java.io.File(it) }
+    val files = paths.map { File(it) }
     require(files.all { it.isFile }) { "APK file not found" }
     val installed = runCatching { packageManager.getPackageInfo(packageName, 0) }.getOrNull()
     if (session) PackageInstallSession.write(files) else {

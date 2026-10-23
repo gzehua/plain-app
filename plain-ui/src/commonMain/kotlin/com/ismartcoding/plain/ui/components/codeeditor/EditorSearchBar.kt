@@ -25,6 +25,9 @@ import com.ismartcoding.plain.ui.resources.chevron_down as ui_drawable_chevron_d
 import com.ismartcoding.plain.ui.resources.chevron_up as ui_drawable_chevron_up
 import com.ismartcoding.plain.ui.resources.match_case as ui_drawable_match_case
 import com.ismartcoding.plain.ui.resources.x as ui_drawable_x
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 
 /** Compact find bar: query, case toggle, prev/next and match counter. */
 @Composable
@@ -52,10 +55,10 @@ fun EditorSearchBar(controller: EditorController, modifier: Modifier = Modifier)
             value = controller.searchQuery.value,
             onValueChange = { controller.requestSearch(it, controller.searchCaseSensitive.value, controller.searchRegex.value) },
             singleLine = true,
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                imeAction = androidx.compose.ui.text.input.ImeAction.Search,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Search,
             ),
-            keyboardActions = androidx.compose.foundation.text.KeyboardActions(onSearch = { controller.nextMatch() }),
+            keyboardActions = KeyboardActions(onSearch = { controller.nextMatch() }),
             textStyle = TextStyle(
                 fontSize = 14.sp,
                 fontFamily = FontFamily.Monospace,

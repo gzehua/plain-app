@@ -1,4 +1,4 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package com.ismartcoding.plain.crypto
 
@@ -7,6 +7,7 @@ import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import platform.Security.SecRandomCopyBytes
 import platform.Security.kSecRandomDefault
+import kotlinx.cinterop.ExperimentalForeignApi
 
 // Ed25519 (RFC 8032) implemented as a faithful port of TweetNacl.
 // Field arithmetic uses 16 limbs of 16 bits each (i64 storage) so that

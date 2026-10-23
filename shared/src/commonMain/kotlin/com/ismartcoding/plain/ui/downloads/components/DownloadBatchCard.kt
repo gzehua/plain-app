@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.ismartcoding.plain.ui.downloads.components
 
@@ -45,6 +45,10 @@ import com.ismartcoding.plain.ui.resources.folder as ui_drawable_folder
 import com.ismartcoding.plain.ui.resources.x as ui_drawable_x
 import com.ismartcoding.plain.i18n.download
 import com.ismartcoding.plain.i18n.folder
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.graphics.Color
+import com.ismartcoding.plain.features.shares.ShareBatchType
+import com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine
 
 /**
  * One aggregated batch card: title, destination, status chip, byte progress
@@ -97,7 +101,7 @@ fun DownloadBatchCard(
                             contentDescription = stringResource(Res.string.try_again),
                         ) {
                             failuresExpanded = false
-                            com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine.retryFailed(task.id)
+                            SharedFolderDownloadEngine.retryFailed(task.id)
                         }
                     }
                     PIconButton(
@@ -172,7 +176,7 @@ fun DownloadBatchCard(
                     onToggle = { failuresExpanded = !failuresExpanded },
                     onRetryItem = {
                         failuresExpanded = false
-                        com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine.retryFailed(task.id)
+                        SharedFolderDownloadEngine.retryFailed(task.id)
                     },
                     modifier = Modifier.padding(top = 8.dp),
                 )
@@ -182,7 +186,7 @@ fun DownloadBatchCard(
 }
 
 @Composable
-private fun StatusLine(text: String, color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant) {
+private fun StatusLine(text: String, color: Color = MaterialTheme.colorScheme.onSurfaceVariant) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelMedium,
@@ -294,7 +298,7 @@ private fun FailureSummary(
 
 @Composable
 private fun batchIcon(task: SharedFolderBatchTask) = when {
-    task.zipName.isNotEmpty() || task.type == com.ismartcoding.plain.features.shares.ShareBatchType.ZIP -> UiRes.drawable.ui_drawable_folder
+    task.zipName.isNotEmpty() || task.type == ShareBatchType.ZIP -> UiRes.drawable.ui_drawable_folder
     else -> UiRes.drawable.ui_drawable_download
 }
 

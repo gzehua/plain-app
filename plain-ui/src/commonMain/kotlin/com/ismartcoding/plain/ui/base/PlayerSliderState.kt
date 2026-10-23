@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableIntStateOf
 
 class PlayerSliderState(
     initialProgress: Float = 0f,
@@ -18,7 +19,7 @@ class PlayerSliderState(
     var dragPosition by mutableFloatStateOf(initialProgress.finiteRatio())
         private set
 
-    var seekRevision by androidx.compose.runtime.mutableIntStateOf(0)
+    var seekRevision by mutableIntStateOf(0)
         private set
 
     fun startDrag(position: Float) {

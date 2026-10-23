@@ -5,9 +5,11 @@ import org.jetbrains.compose.resources.PluralStringResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString as getComposeString
 import org.jetbrains.compose.resources.getPluralString as getComposePluralString
+import com.ismartcoding.plain.platform.system.currentLocale as systemCurrentLocale
+import kotlinx.coroutines.runBlocking
 
 object LocaleHelper {
-    fun currentLocale(): Locale = com.ismartcoding.plain.platform.system.currentLocale()
+    fun currentLocale(): Locale = systemCurrentLocale()
 
     suspend fun getStringAsync(resource: StringResource): String = getComposeString(resource)
 
@@ -17,8 +19,8 @@ object LocaleHelper {
     suspend fun getPluralStringAsync(resource: PluralStringResource, count: Int): String =
         getComposePluralString(resource, count, count)
 
-    fun getString(resource: StringResource): String = kotlinx.coroutines.runBlocking { getComposeString(resource) }
+    fun getString(resource: StringResource): String = runBlocking { getComposeString(resource) }
 
     fun getStringF(resource: StringResource, vararg formatArguments: Any): String =
-        kotlinx.coroutines.runBlocking { getComposeString(resource, *formatArguments) }
+        runBlocking { getComposeString(resource, *formatArguments) }
 }

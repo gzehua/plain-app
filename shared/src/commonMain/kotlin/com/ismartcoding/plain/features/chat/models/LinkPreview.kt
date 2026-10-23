@@ -3,6 +3,7 @@ package com.ismartcoding.plain.features.chat.models
 import com.ismartcoding.plain.lib.TimeHelper
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class LinkPreview(
@@ -15,6 +16,6 @@ data class LinkPreview(
     val imageHeight: Int = 0,
     val siteName: String? = null,
     val domain: String? = null,
-    @kotlinx.serialization.Transient val hasError: Boolean = false,
+    @Transient val hasError: Boolean = false,
     val createdAt: Instant = TimeHelper.now()
 )

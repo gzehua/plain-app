@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.ismartcoding.plain.ui.downloads.components
 
@@ -37,13 +37,16 @@ import com.ismartcoding.plain.ui.components.confirmActionAsync
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Surface
 
 /**
  * Global download list: running and finished share batches behind two filter
  * pills. Shared by the folder page and the app-level floating widget; reads
  * straight from [DownloadCenter], so entries survive page navigation.
  */
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadListSheet(
     onDismiss: () -> Unit,
@@ -104,7 +107,7 @@ fun DownloadListSheet(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth().heightIn(max = 480.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    contentPadding = PaddingValues(
                         start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp,
                     ),
                 ) {
@@ -119,7 +122,7 @@ fun DownloadListSheet(
 
 @Composable
 private fun FilterPill(label: String, selected: Boolean, onClick: () -> Unit) {
-    androidx.compose.material3.Surface(
+    Surface(
         onClick = onClick,
         shape = RoundedCornerShape(8.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.cardBackgroundNormal,

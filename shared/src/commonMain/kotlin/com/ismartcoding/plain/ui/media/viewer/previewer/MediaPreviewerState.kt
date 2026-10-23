@@ -37,6 +37,7 @@ import kotlin.Any
 import kotlin.String
 import kotlin.coroutines.resume
 import kotlin.math.absoluteValue
+import androidx.compose.animation.core.tween
 
 const val DEFAULT_SCALE_TO_CLOSE_MIN_VALUE = 0.9F
 
@@ -135,7 +136,7 @@ class MediaPreviewerState(
                 scope.launch {
                     viewerContainerState?.transformContentAlpha?.snapTo(1F)
                     transformState?.awaitContainerSizeSpecifier()
-                    transformState?.enterTransform(itemState, androidx.compose.animation.core.tween(0))
+                    transformState?.enterTransform(itemState, tween(0))
                 }
             }
             viewerContainerState?.awaitOpenTransform()

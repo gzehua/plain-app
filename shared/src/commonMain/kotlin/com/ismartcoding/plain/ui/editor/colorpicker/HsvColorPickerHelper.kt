@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.IntSize
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+import androidx.compose.ui.graphics.Color
 
 internal fun createHsvBitmap(
     size: IntSize,
@@ -39,7 +40,7 @@ internal fun createHsvBitmap(
 }
 
 internal fun drawInitialColor(
-    initialColor: androidx.compose.ui.graphics.Color,
+    initialColor: Color,
     controller: ColorPickerController,
     centerX: Float,
     centerY: Float,

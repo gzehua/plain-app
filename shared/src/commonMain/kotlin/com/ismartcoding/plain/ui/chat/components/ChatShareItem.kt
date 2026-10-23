@@ -36,13 +36,14 @@ import com.ismartcoding.plain.ui.resources.folders as ui_drawable_folders
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.foundation.ExperimentalFoundationApi
 
 /**
  * Chat card for a shared folder/link message (MessageType.SHARE). Tapping the
  * card opens the native shared folder browser — identical for sender and
  * receiver since both hold the same `/s/<id>#<token>` link.
  */
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatShareItem(
     navController: NavHostController,

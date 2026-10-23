@@ -24,6 +24,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.input.TextFieldValue
 
 @Composable
 fun EditorInputSurface(controller: EditorController, modifier: Modifier = Modifier) {
@@ -58,7 +59,7 @@ fun EditorInputSurface(controller: EditorController, modifier: Modifier = Modifi
                 with(density) { maxOf(controller.contentWidthPx.value, info.viewportSize.width * 0.5f).toDp() }
             }
             BasicTextField(
-                value = androidx.compose.ui.text.input.TextFieldValue(
+                value = TextFieldValue(
                     controller.fieldText.value,
                     controller.fieldSelection.value,
                 ),

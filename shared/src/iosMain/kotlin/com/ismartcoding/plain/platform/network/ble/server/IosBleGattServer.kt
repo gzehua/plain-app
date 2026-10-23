@@ -37,6 +37,11 @@ import platform.CoreBluetooth.CBService
 import platform.Foundation.NSError
 import platform.darwin.NSObject
 import kotlin.time.Duration.Companion.milliseconds
+import com.ismartcoding.plain.platform.system.PlatformLock
+import kotlinx.coroutines.sync.Mutex
+import platform.CoreBluetooth.CBAdvertisementDataServiceDataKey
+import platform.CoreBluetooth.CBAdvertisementDataServiceUUIDsKey
+import platform.CoreBluetooth.CBCharacteristic
 
 class IosBleGattServer : BleGattServer {
 
@@ -53,9 +58,9 @@ class IosBleGattServer : BleGattServer {
     private data class Advertising(val revision: Long = 0, val payload: ByteArray? = null, val closed: Boolean = false)
     private val desired = MutableStateFlow(Advertising())
 
-    private val centralLock = com.ismartcoding.plain.platform.system.PlatformLock()
+    private val centralLock = PlatformLock()
     private val centrals = mutableMapOf<String, CBCentral>()
-    private val sending = kotlinx.coroutines.sync.Mutex()
+    private val sending = Mutex()
 
     private val notifyAckTimeoutMs = 10_000L
 
@@ -193,8 +198,8 @@ class IosBleGattServer : BleGattServer {
         val uuid = CBUUID.UUIDWithString(BleUuids.SERVICE_UUID)
         val serviceDataMap: Map<Any?, Any?> = mapOf(uuid to payload.toNSData())
         manager.startAdvertising(mapOf<Any?, Any?>(
-            platform.CoreBluetooth.CBAdvertisementDataServiceUUIDsKey to listOf(uuid),
-            platform.CoreBluetooth.CBAdvertisementDataServiceDataKey to serviceDataMap,
+            CBAdvertisementDataServiceUUIDsKey to listOf(uuid),
+            CBAdvertisementDataServiceDataKey to serviceDataMap,
         ))
         advertising = true
     }
@@ -292,7 +297,7 @@ private class PeripheralManagerDelegate(
         server.onAdvertisingStarted(peripheral, error)
     }
 
-    override fun peripheralManager(peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFromCharacteristic: platform.CoreBluetooth.CBCharacteristic) {
+    override fun peripheralManager(peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFromCharacteristic: CBCharacteristic) {
         server.onUnsubscribe(central)
     }
 

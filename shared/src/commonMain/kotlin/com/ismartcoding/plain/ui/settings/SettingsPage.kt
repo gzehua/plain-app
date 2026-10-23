@@ -51,6 +51,7 @@ import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.DialogHelper
 import com.ismartcoding.plain.features.web.WebHelper
 import com.ismartcoding.plain.ui.home.UpdateBanner
+import kotlinx.coroutines.CancellationException
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -65,7 +66,7 @@ fun SettingsPage(navController: NavHostController, updateViewModel: UpdateViewMo
             try {
                 cacheSize = getCacheSize()
                 fileSize = getLogFileSize()
-            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
                 DialogHelper.showErrorMessage(error.toString())

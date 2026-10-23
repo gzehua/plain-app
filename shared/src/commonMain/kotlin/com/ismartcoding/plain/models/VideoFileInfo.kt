@@ -1,8 +1,10 @@
 package com.ismartcoding.plain.models
 
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
+import kotlinx.serialization.SerialName
 
-@kotlinx.serialization.SerialName("VideoFileInfo")
+@SerialName("VideoFileInfo")
 @Serializable
 data class VideoFileInfo(
     var width: Int,
@@ -18,7 +20,7 @@ data class VideoFileInfo(
     var artist: String = "",
     var album: String = "",
     var genre: String = "",
-    var takenAt: kotlin.time.Instant? = null,
+    var takenAt: Instant? = null,
     var writer: String = "",
     var composer: String = "",
 ) : MediaFileInfo

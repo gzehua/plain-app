@@ -136,12 +136,12 @@ fun WebAddressBar(
                 mdnsEditDialogVisible = false
                 scope.launch {
                     if (hostnameChanged) {
-                        com.ismartcoding.plain.preferences.Prefs.setMdnsHostname(newHostname)
+                        Prefs.setMdnsHostname(newHostname)
                         hostname = newHostname
                     }
                     if (portChanged) {
-                        if (isHttps) com.ismartcoding.plain.preferences.Prefs.httpsPort.value = newPort
-                        else com.ismartcoding.plain.preferences.Prefs.httpPort.value = newPort
+                        if (isHttps) Prefs.httpsPort.value = newPort
+                        else Prefs.httpPort.value = newPort
                     }
                     if (hostnameChanged || portChanged) restartServer()
                 }

@@ -29,6 +29,9 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import android.bluetooth.BluetoothDevice
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.sync.Mutex
 
 class AndroidBleGattServer : BleGattServer {
 
@@ -44,7 +47,7 @@ class AndroidBleGattServer : BleGattServer {
     private var advertiseCallback: AdvertiseCallback? = null
     private var advertiser: BluetoothLeAdvertiser? = null
     private var gattServer: BluetoothGattServer? = null
-    private val connectedDevices = ConcurrentHashMap<String, android.bluetooth.BluetoothDevice>()
+    private val connectedDevices = ConcurrentHashMap<String, BluetoothDevice>()
 
     /**
      * Per-MAC deferred for `onNotificationSent` flow control. Only one
@@ -54,7 +57,7 @@ class AndroidBleGattServer : BleGattServer {
     private val pendingNotificationAcks = ConcurrentHashMap<String, CompletableDeferred<Boolean>>()
 
     private val mtus = ConcurrentHashMap<String, Int>()
-    private val sending = ConcurrentHashMap<String, kotlinx.coroutines.sync.Mutex>()
+    private val sending = ConcurrentHashMap<String, Mutex>()
 
     override fun start(payload: ByteArray, revision: Long) {
         synchronized(advertisingLock) {
@@ -176,7 +179,7 @@ class AndroidBleGattServer : BleGattServer {
 
     private val gattCallback = object : BluetoothGattServerCallback() {
         override fun onConnectionStateChange(
-            device: android.bluetooth.BluetoothDevice,
+            device: BluetoothDevice,
             status: Int,
             newState: Int,
         ) {
@@ -195,10 +198,10 @@ class AndroidBleGattServer : BleGattServer {
             }
         }
 
-        override fun onMtuChanged(device: android.bluetooth.BluetoothDevice, mtu: Int) { if (!closed) mtus[device.address] = mtu }
+        override fun onMtuChanged(device: BluetoothDevice, mtu: Int) { if (!closed) mtus[device.address] = mtu }
 
         override fun onCharacteristicReadRequest(
-            device: android.bluetooth.BluetoothDevice,
+            device: BluetoothDevice,
             requestId: Int,
             offset: Int,
             characteristic: BluetoothGattCharacteristic,
@@ -209,7 +212,7 @@ class AndroidBleGattServer : BleGattServer {
         }
 
         override fun onCharacteristicWriteRequest(
-            device: android.bluetooth.BluetoothDevice,
+            device: BluetoothDevice,
             requestId: Int,
             characteristic: BluetoothGattCharacteristic,
             preparedWrite: Boolean,
@@ -225,7 +228,7 @@ class AndroidBleGattServer : BleGattServer {
                 gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
             }
 
-            scope.launch(start = kotlinx.coroutines.CoroutineStart.UNDISPATCHED) {
+            scope.launch(start = CoroutineStart.UNDISPATCHED) {
                 try {
                     val response = protocol.handleWrite(mac, charUuid, value)
                     if (response != null) sendChunkedResponse(device, characteristic.uuid, response)
@@ -235,7 +238,7 @@ class AndroidBleGattServer : BleGattServer {
         }
 
         override fun onDescriptorWriteRequest(
-            device: android.bluetooth.BluetoothDevice,
+            device: BluetoothDevice,
             requestId: Int,
             descriptor: BluetoothGattDescriptor,
             preparedWrite: Boolean,
@@ -260,7 +263,7 @@ class AndroidBleGattServer : BleGattServer {
         }
 
         override fun onNotificationSent(
-            device: android.bluetooth.BluetoothDevice,
+            device: BluetoothDevice,
             status: Int,
         ) {
             LogCat.d("GATT notification sent to ${device.address} status=$status")
@@ -268,9 +271,9 @@ class AndroidBleGattServer : BleGattServer {
         }
     }
 
-    private suspend fun sendChunkedResponse(device: android.bluetooth.BluetoothDevice, charUuid: UUID, response: BleMessage) {
+    private suspend fun sendChunkedResponse(device: BluetoothDevice, charUuid: UUID, response: BleMessage) {
         val mac = device.address
-        sending.getOrPut(mac) { kotlinx.coroutines.sync.Mutex() }.withLock {
+        sending.getOrPut(mac) { Mutex() }.withLock {
             val limit = minOf((mtus[mac] ?: 23) - 3, 512)
             val encoder = RustBleWire.encoder(response.bytes, response.requestId, true, limit)
             try {

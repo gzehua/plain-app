@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileSystemOperations
 import javax.inject.Inject
+import org.gradle.api.provider.Property
 
 plugins {
     id("com.android.application")
@@ -212,7 +213,7 @@ abstract class PackageNativeFiles @Inject constructor(
     abstract val nativeFiles: ConfigurableFileCollection
 
     @get:Input
-    abstract val relativeDirectory: org.gradle.api.provider.Property<String>
+    abstract val relativeDirectory: Property<String>
 
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty

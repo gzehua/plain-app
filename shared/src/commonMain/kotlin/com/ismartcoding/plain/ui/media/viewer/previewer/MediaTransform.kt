@@ -168,12 +168,12 @@ class TransformContentState(
     ) = suspendCancellableCoroutine { c ->
         val currentAnimationSpec = animationSpec ?: defaultAnimationSpec
         this.itemState = itemState
-        displayWidth = androidx.compose.animation.core.Animatable(srcSize.width.toFloat())
-        displayHeight = androidx.compose.animation.core.Animatable(srcSize.height.toFloat())
-        graphicScaleX = androidx.compose.animation.core.Animatable(1F)
-        graphicScaleY = androidx.compose.animation.core.Animatable(1F)
-        offsetX = androidx.compose.animation.core.Animatable(srcPosition.x)
-        offsetY = androidx.compose.animation.core.Animatable(srcPosition.y)
+        displayWidth = Animatable(srcSize.width.toFloat())
+        displayHeight = Animatable(srcSize.height.toFloat())
+        graphicScaleX = Animatable(1F)
+        graphicScaleY = Animatable(1F)
+        offsetX = Animatable(srcPosition.x)
+        offsetY = Animatable(srcPosition.y)
         onActionTarget = true
         onAction = true
         scope.launch {

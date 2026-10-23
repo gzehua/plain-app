@@ -8,6 +8,8 @@ import android.content.pm.PackageManager
 import android.os.ParcelFileDescriptor
 import moe.shizuku.server.IShizukuService
 import rikka.shizuku.Shizuku
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 
 object ShizukuHelper {
     private const val REQUEST_CODE = 10001
@@ -61,8 +63,8 @@ object ShizukuHelper {
         return stdout
     }
 
-    private fun ioFuture(block: () -> String): java.util.concurrent.Future<String> =
-        java.util.concurrent.CompletableFuture.supplyAsync(block)
+    private fun ioFuture(block: () -> String): Future<String> =
+        CompletableFuture.supplyAsync(block)
 
     private fun ParcelFileDescriptor.readTextAndClose(): String =
         ParcelFileDescriptor.AutoCloseInputStream(this).use { it.bufferedReader().readText() }

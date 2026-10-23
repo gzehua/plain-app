@@ -46,6 +46,9 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
+import android.content.ContentUris
+import android.os.Bundle
+import android.util.Base64
 
 @RunWith(AndroidJUnit4::class)
 class MediaActionsRustHttpTest {
@@ -79,7 +82,7 @@ class MediaActionsRustHttpTest {
                     val header = ByteBuffer.allocate(44).order(ByteOrder.LITTLE_ENDIAN).put("RIFF".toByteArray()).putInt(length+36).put("WAVEfmt ".toByteArray()).putInt(16).putShort(1).putShort(1).putInt(8_000).putInt(16_000).putShort(2).putShort(16).put("data".toByteArray()).putInt(length).array()
                     output.write(header);output.write(ByteArray(length))
                 } else if (video) {
-                    output.write(android.util.Base64.decode(syntheticVideo,android.util.Base64.DEFAULT))
+                    output.write(Base64.decode(syntheticVideo,Base64.DEFAULT))
                 } else {
                     val bitmap = Bitmap.createBitmap(256,256,Bitmap.Config.ARGB_8888)
                     try { bitmap.eraseColor(0xff225588.toInt());check(bitmap.compress(Bitmap.CompressFormat.PNG,100,output)) }
@@ -152,15 +155,15 @@ class MediaActionsRustHttpTest {
                 if (playlistId.isNotEmpty()) AudioPlaylistsClient.deletePlaylist(playlistId)
                 tagIds.forEach { TagsClient.delete(it) }
                 videoIds.forEach { videoId ->
-                    val uri = android.content.ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, videoId.toLong())
+                    val uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, videoId.toLong())
                     val trashed = checkNotNull(appContext.contentResolver.query(
                         uri, arrayOf(MediaStore.MediaColumns.IS_TRASHED),
-                        android.os.Bundle().apply { putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE) }, null,
+                        Bundle().apply { putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE) }, null,
                     )).use { if (it.moveToFirst()) it.getInt(0) != 0 else null }
                     if (trashed != null) deleteMedia(DataType.VIDEO, setOf(videoId), trashed)
                 }
             } finally {
-                try { uris.forEach { appContext.contentResolver.delete(it,android.os.Bundle().apply { putInt(MediaStore.QUERY_ARG_MATCH_TRASHED,MediaStore.MATCH_INCLUDE) }) } }
+                try { uris.forEach { appContext.contentResolver.delete(it,Bundle().apply { putInt(MediaStore.QUERY_ARG_MATCH_TRASHED,MediaStore.MATCH_INCLUDE) }) } }
                 finally { moveDir?.delete() }
             }
         }

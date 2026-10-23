@@ -2,6 +2,7 @@ package com.ismartcoding.plain.ui.scanner
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.Modifier
 
 /**
  * Camera preview with real-time multi-code scanning. While [cameraDetecting] is true,
@@ -11,7 +12,7 @@ import androidx.compose.runtime.MutableState
 expect fun ScanCameraView(
     cameraDetecting: MutableState<Boolean>,
     freezeFrame: MutableState<ScannedFrame?>,
-    modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier,
+    modifier: Modifier = Modifier,
     onScanResult: (List<ScannedCode>) -> Unit,
 )
 

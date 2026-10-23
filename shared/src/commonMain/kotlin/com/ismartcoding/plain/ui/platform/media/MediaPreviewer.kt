@@ -68,6 +68,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 // Grace period before showing a loading icon: media that becomes ready within
 // this window switches without any visible loading state (Douyin-like).
@@ -300,7 +301,7 @@ private fun SpeedBoostIndicator(state: MediaPreviewerState) {
                 modifier = Modifier
                     .background(
                         color = Color.Black.copy(alpha = 0.6f),
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
+                        shape = RoundedCornerShape(20.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically

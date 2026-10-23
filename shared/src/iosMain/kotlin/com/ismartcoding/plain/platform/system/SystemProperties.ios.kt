@@ -13,6 +13,10 @@ import platform.Foundation.currentLocale
 import platform.Foundation.languageCode
 import platform.UIKit.UIScreen
 import platform.UIKit.UIDevice
+import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.platform.files.getInternalStoragePath
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
 
 @OptIn(ExperimentalForeignApi::class)
 internal actual fun readSystemProperties(names: List<String>): Map<String, JsonElement> {
@@ -25,13 +29,13 @@ internal actual fun readSystemProperties(names: List<String>): Map<String, JsonE
     return names.associateWith { name ->
         when (name) {
             "files.recentCatalog" -> JsonPrimitive(false)
-            "files.recentRoot" -> JsonPrimitive(com.ismartcoding.plain.platform.files.getInternalStoragePath())
+            "files.recentRoot" -> JsonPrimitive(getInternalStoragePath())
             "media.systemCatalog" -> JsonPrimitive(false)
-            "supportedAbis" -> kotlinx.serialization.json.JsonArray(emptyList())
-            "updateSource" -> kotlinx.serialization.json.JsonNull
+            "supportedAbis" -> JsonArray(emptyList())
+            "updateSource" -> JsonNull
             "deviceType" -> JsonPrimitive(getDeviceType().name)
             "wifiAwareSupported" -> JsonPrimitive(isWifiAwareSupported)
-            "wifiAwareRunning" -> JsonPrimitive(com.ismartcoding.plain.app.TempData.awareRunning.value)
+            "wifiAwareRunning" -> JsonPrimitive(TempData.awareRunning.value)
             "name" -> JsonPrimitive(UIDevice.currentDevice.name)
             "osName" -> JsonPrimitive(UIDevice.currentDevice.systemName)
             "osVersion" -> JsonPrimitive(UIDevice.currentDevice.systemVersion)

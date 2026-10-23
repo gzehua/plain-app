@@ -56,6 +56,7 @@ import platform.UIKit.UIViewAutoresizingFlexibleHeight
 import platform.UIKit.UIViewAutoresizingFlexibleWidth
 import platform.darwin.NSObject
 import platform.darwin.dispatch_get_main_queue
+import platform.Foundation.NSData
 
 private val SCAN_METADATA_TYPES = listOf(
     AVMetadataObjectTypeQRCode,
@@ -175,7 +176,7 @@ private class ScanMetadataDelegate(
     override fun captureOutput(
         output: AVCaptureOutput,
         didOutputMetadataObjects: List<*>,
-        fromConnection: platform.AVFoundation.AVCaptureConnection,
+        fromConnection: AVCaptureConnection,
     ) {
         if (!cameraDetecting.value) return
         val layer = layerHolder.layer ?: return
@@ -209,7 +210,7 @@ private suspend fun decodeQrFromUri(uri: String): ScannedImage? {
         withContext(Dispatchers.Default) {
             val nsUrl: NSURL = NSURL.URLWithString(uri) ?: return@withContext null
             val path: String = nsUrl.path ?: return@withContext null
-            val data: platform.Foundation.NSData =
+            val data: NSData =
                 NSFileManager.defaultManager.contentsAtPath(path) ?: return@withContext null
             val image: UIImage = UIImage.imageWithData(data) ?: return@withContext null
             // file-backed UIImages have no CIImage; bridge through CGImage instead

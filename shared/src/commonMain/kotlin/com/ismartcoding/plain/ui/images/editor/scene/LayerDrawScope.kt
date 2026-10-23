@@ -28,6 +28,8 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.sin
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.unit.Constraints
 
 internal fun DrawScope.drawSceneBackground(bgColor: String, cw: Float, ch: Float) {
     val isTransparent = bgColor.isBlank() || bgColor.equals("transparent", ignoreCase = true)
@@ -62,7 +64,7 @@ internal fun DrawScope.drawSceneCheckerboard(cw: Float, ch: Float, tile: Float =
 
 internal fun DrawScope.drawSceneLayer(
     layer: EditorLayer,
-    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+    textMeasurer: TextMeasurer,
 ) {
     when (layer) {
         is ArrowLayer -> drawSceneArrow(layer)
@@ -104,7 +106,7 @@ internal fun DrawScope.drawSceneLayer(
 
 private fun DrawScope.drawSceneTextLayer(
     layer: TextLayer,
-    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+    textMeasurer: TextMeasurer,
 ) {
     val style = TextStyle(
         color = parseScopeBgColor(layer.color),
@@ -115,9 +117,9 @@ private fun DrawScope.drawSceneTextLayer(
         letterSpacing = layer.letterSpacing.toFloat().sp,
     )
     val constraints = if (layer.maxWidth > 0) {
-        androidx.compose.ui.unit.Constraints(maxWidth = layer.maxWidth.toInt().coerceAtLeast(1))
+        Constraints(maxWidth = layer.maxWidth.toInt().coerceAtLeast(1))
     } else {
-        androidx.compose.ui.unit.Constraints()
+        Constraints()
     }
     val measured = textMeasurer.measure(layer.text, style, constraints = constraints)
     val textW = if (layer.maxWidth > 0) layer.maxWidth.toFloat() else measured.size.width.toFloat()
@@ -142,7 +144,7 @@ private fun DrawScope.drawSceneTextLayer(
 
 private fun DrawScope.drawSceneStickerLayer(
     layer: StickerLayer,
-    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+    textMeasurer: TextMeasurer,
 ) {
     val left = (layer.x - layer.w / 2).toFloat()
     val top = (layer.y - layer.h / 2).toFloat()

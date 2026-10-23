@@ -26,6 +26,8 @@ import platform.Foundation.NSLock
 import platform.Foundation.NSNumber
 import platform.darwin.NSObject
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.concurrent.Volatile
+import platform.CoreBluetooth.CBAdvertisementDataServiceDataKey
 
 object IosBleScanner : BleScanner {
 
@@ -55,7 +57,7 @@ object IosBleScanner : BleScanner {
         }
     }
 
-    @kotlin.concurrent.Volatile
+    @Volatile
     var isScanning = false
         private set
 
@@ -161,7 +163,7 @@ object IosBleScanner : BleScanner {
         advertisementData: Map<Any?, *>,
         serviceUuid: String,
     ): ByteArray? {
-        val serviceDataKey = platform.CoreBluetooth.CBAdvertisementDataServiceDataKey
+        val serviceDataKey = CBAdvertisementDataServiceDataKey
             ?: return null
         @Suppress("UNCHECKED_CAST")
         val serviceDataMap = advertisementData[serviceDataKey] as? Map<Any?, *>

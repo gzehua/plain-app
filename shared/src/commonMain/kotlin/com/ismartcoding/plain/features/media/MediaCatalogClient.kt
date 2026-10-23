@@ -15,23 +15,27 @@ import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.IData
 import kotlinx.serialization.json.*
+import com.ismartcoding.plain.features.contacts.ContactsClient
+import com.ismartcoding.plain.features.telephony.CallsClient
+import com.ismartcoding.plain.features.telephony.sms.RustSmsQuery
+import com.ismartcoding.plain.models.MediaBucket
 
 object MediaCatalogClient {
     suspend fun rows(type: DataType, query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> {
         when (type) {
-            DataType.CALL -> return com.ismartcoding.plain.features.telephony.CallsClient.search(query, limit, offset)
-            DataType.CONTACT -> return com.ismartcoding.plain.features.contacts.ContactsClient.search(query, limit, offset)
-            DataType.SMS -> return com.ismartcoding.plain.features.telephony.sms.RustSmsQuery.search(query, limit, offset)
+            DataType.CALL -> return CallsClient.search(query, limit, offset)
+            DataType.CONTACT -> return ContactsClient.search(query, limit, offset)
+            DataType.SMS -> return RustSmsQuery.search(query, limit, offset)
             else -> Unit
         }
         val root = Query.mediaRoot(type)
         return RustGraphqlApi.graphql(Query.mediaRows(type, query, limit, offset, sortBy.name)).getValue(root).jsonArray.map {
             val row = it.jsonObject
             when (type) {
-                DataType.AUDIO -> com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<AudioTrack>(row)
-                DataType.IMAGE -> com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<MediaImage>(row)
-                DataType.VIDEO -> com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<MediaVideo>(row)
-                DataType.DOC -> com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement<Document>(row)
+                DataType.AUDIO -> JsonHelper.jsonDecodeFromElement<AudioTrack>(row)
+                DataType.IMAGE -> JsonHelper.jsonDecodeFromElement<MediaImage>(row)
+                DataType.VIDEO -> JsonHelper.jsonDecodeFromElement<MediaVideo>(row)
+                DataType.DOC -> JsonHelper.jsonDecodeFromElement<Document>(row)
                 else -> error("Unsupported media type: $type")
             }
         }
@@ -42,9 +46,9 @@ object MediaCatalogClient {
 
     suspend fun count(type: DataType, query: String): Int {
         when (type) {
-            DataType.CALL -> return com.ismartcoding.plain.features.telephony.CallsClient.count(query)
-            DataType.CONTACT -> return com.ismartcoding.plain.features.contacts.ContactsClient.count(query)
-            DataType.SMS -> return com.ismartcoding.plain.features.telephony.sms.RustSmsQuery.count(query)
+            DataType.CALL -> return CallsClient.count(query)
+            DataType.CONTACT -> return ContactsClient.count(query)
+            DataType.SMS -> return RustSmsQuery.count(query)
             else -> Unit
         }
         val field = Query.mediaCountField(type)
@@ -52,8 +56,8 @@ object MediaCatalogClient {
     }
     suspend fun docExtGroups(query: String): List<Pair<String, Int>> =
         JsonHelper.jsonDecodeFromElement<List<DocExtensionGroup>>(RustGraphqlApi.graphql(Query.docExtGroups(query)).getValue("docExtGroups")).map { it.ext to it.count }
-    suspend fun buckets(dataType: DataType): List<com.ismartcoding.plain.models.MediaBucket> =
-        com.ismartcoding.plain.lib.JsonHelper.jsonDecodeFromElement(RustGraphqlApi.graphql(Query.mediaBuckets(dataType.name)).getValue("mediaBuckets"))
+    suspend fun buckets(dataType: DataType): List<MediaBucket> =
+        JsonHelper.jsonDecodeFromElement(RustGraphqlApi.graphql(Query.mediaBuckets(dataType.name)).getValue("mediaBuckets"))
 }
 
 @Serializable

@@ -10,6 +10,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.encodeToJsonElement
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlinx.serialization.json.Json
 
 class DChatTest {
 
@@ -73,7 +76,7 @@ class DChatTest {
 
 class DMessageFileDurationTest {
 
-    private val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+    private val json = Json { ignoreUnknownKeys = true }
 
     @Test
     fun `decodes durationMs natively`() {
@@ -97,7 +100,7 @@ class DMessageFileDurationTest {
     fun `encodes durationMs and drops legacy keys`() {
         val item = MessageFile(id = "1", uri = "fid:a", size = 9, durationMs = 30000)
         val obj = json.encodeToString(MessageFiles(listOf(item)))
-        kotlin.test.assertTrue(obj.contains(""""durationMs":30000"""), obj)
-        kotlin.test.assertFalse(obj.contains(""""duration""""), obj)
+        assertTrue(obj.contains(""""durationMs":30000"""), obj)
+        assertFalse(obj.contains(""""duration""""), obj)
     }
 }

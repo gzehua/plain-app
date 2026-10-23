@@ -8,6 +8,8 @@ import com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode
 import com.ismartcoding.plain.services.PlainAccessibilityService
 import com.ismartcoding.plain.services.ScreenMirrorService
 import com.ismartcoding.plain.models.ScreenMirrorVideoCodec
+import com.ismartcoding.plain.services.StreamTouchInjector
+import com.ismartcoding.plain.services.TouchInjectThread
 
 actual fun isScreenMirrorRunning(): Boolean =
     ScreenMirrorService.instance?.isRunning() == true
@@ -42,7 +44,7 @@ actual fun requestScreenMirrorKeyFrame() {
 
 
 actual fun resetScreenMirrorTouchStream() {
-    com.ismartcoding.plain.services.TouchInjectThread.handler.post {
-        com.ismartcoding.plain.services.StreamTouchInjector.reset()
+    TouchInjectThread.handler.post {
+        StreamTouchInjector.reset()
     }
 }

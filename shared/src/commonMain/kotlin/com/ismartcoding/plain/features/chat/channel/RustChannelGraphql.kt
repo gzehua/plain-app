@@ -73,6 +73,6 @@ internal suspend fun snapshotChannelsGraphql(): List<ChatChannel> = withIO {
     RustGraphqlApi.graphql(Query.chatChannels()).getValue("chatChannels")
         .let { JsonHelper.jsonDecodeFromElement<List<ChatChannel>>(it) }
 }
-internal suspend fun channelGraphql(id: String): com.ismartcoding.plain.models.ChatChannel? {
+internal suspend fun channelGraphql(id: String): ChatChannel? {
     return snapshotChannelsGraphql().firstOrNull { it.id == id }
 }

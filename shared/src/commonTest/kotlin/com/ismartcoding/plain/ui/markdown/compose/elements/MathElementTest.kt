@@ -20,6 +20,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import org.intellij.markdown.IElementType
 
 /**
  * Unit tests for the `BLOCK_MATH` / `INLINE_MATH` extractor used by
@@ -211,8 +216,8 @@ class MathElementTest {
 
         // Reproduce exactly what MarkdownParagraph / buildMarkdownAnnotatedString does
         val settings = DefaultAnnotatorSettings(
-            linkTextSpanStyle = androidx.compose.ui.text.TextLinkStyles(),
-            codeSpanStyle = androidx.compose.ui.text.SpanStyle(),
+            linkTextSpanStyle = TextLinkStyles(),
+            codeSpanStyle = SpanStyle(),
             annotator = markdownAnnotator(),
             referenceLinkHandler = null,
             linkInteractionListener = null,
@@ -300,7 +305,7 @@ class MathElementTest {
         )
     }
 
-    private fun findFirstByType(nodes: List<ASTNode>, target: org.intellij.markdown.IElementType): ASTNode? {
+    private fun findFirstByType(nodes: List<ASTNode>, target: IElementType): ASTNode? {
         for (n in nodes) {
             if (n.type == target) return n
             val child = findFirstByType(n.children, target)
@@ -394,13 +399,13 @@ class MathElementTest {
         // pins that behaviour so a future refactor doesn't accidentally
         // drop styling by switching to a raw-`append(text)` loop instead.
         val dollar = "$"
-        val boldColor = androidx.compose.ui.graphics.Color(0xFFFF0000.toInt())
+        val boldColor = Color(0xFFFF0000.toInt())
         val input: AnnotatedString = buildAnnotatedString {
-            withStyle(SpanStyle(color = boldColor, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)) {
+            withStyle(SpanStyle(color = boldColor, fontWeight = FontWeight.Bold)) {
                 append("Bold prefix ")
             }
             append(dollar + "x_n" + dollar)
-            withStyle(SpanStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)) {
+            withStyle(SpanStyle(textDecoration = TextDecoration.Underline)) {
                 append(" underline suffix")
             }
         }
@@ -414,8 +419,8 @@ class MathElementTest {
 
         // 2. Bold and underline spans are still present at the expected char ranges.
         val spanStyles = result.spanStyles
-        val bold = spanStyles.firstOrNull { s -> s.item.color == boldColor && s.item.fontWeight == androidx.compose.ui.text.font.FontWeight.Bold }
-        val under = spanStyles.firstOrNull { s -> s.item.textDecoration == androidx.compose.ui.text.style.TextDecoration.Underline }
+        val bold = spanStyles.firstOrNull { s -> s.item.color == boldColor && s.item.fontWeight == FontWeight.Bold }
+        val under = spanStyles.firstOrNull { s -> s.item.textDecoration == TextDecoration.Underline }
         assertNotNull(bold, "Bold SpanStyle was lost across fallback splice")
         assertNotNull(under, "Underline SpanStyle was lost across fallback splice")
         // Bold covers "Bold prefix " (12 chars) at the start

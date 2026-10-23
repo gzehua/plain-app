@@ -9,10 +9,11 @@ import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.CompositionLocalProvider
 
 @Composable
 fun AppTheme(useDarkTheme: Boolean, amoledDarkTheme: Boolean = false, content: @Composable () -> Unit) {
-    androidx.compose.runtime.CompositionLocalProvider(
+    CompositionLocalProvider(
         LocalDarkTheme provides useDarkTheme,
         LocalAmoledDarkTheme provides amoledDarkTheme,
     ) {

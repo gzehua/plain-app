@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class)
 
 package com.ismartcoding.plain.ui.shares.browser
 
@@ -41,6 +41,7 @@ import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.download as ui_drawable_download
 import com.ismartcoding.plain.i18n.download
+import androidx.compose.foundation.ExperimentalFoundationApi
 
 /** Load-failure strip with a retry action. */
 @Composable

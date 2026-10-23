@@ -54,6 +54,7 @@ import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.util.concurrent.LinkedBlockingDeque
 import kotlin.math.ceil
+import java.math.RoundingMode
 
 // ---- RenderBlock (moved from ui/components/mediaviewer/hugeimage/) ----
 
@@ -431,10 +432,10 @@ fun HugeImageState.updateRenderList() {
 }
 
 fun HugeImageState.updateBlockDivider(rectW: Float, rectH: Float) {
-    val rectArea = java.math.BigDecimal(rectW.toDouble()).multiply(java.math.BigDecimal(rectH.toDouble()))
-    val realArea = java.math.BigDecimal(rSize.width).multiply(java.math.BigDecimal(rSize.height))
+    val rectArea = BigDecimal(rectW.toDouble()).multiply(BigDecimal(rectH.toDouble()))
+    val realArea = BigDecimal(rSize.width).multiply(BigDecimal(rSize.height))
     if (realArea.toFloat() == 0F) return
-    val renderAreaPercentage = rectArea.divide(realArea, 2, java.math.RoundingMode.HALF_EVEN).toFloat()
+    val renderAreaPercentage = rectArea.divide(realArea, 2, RoundingMode.HALF_EVEN).toFloat()
     val goBlockDividerCount = when {
         renderAreaPercentage > 0.6F -> 1
         renderAreaPercentage > 0.025F -> 4

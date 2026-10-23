@@ -19,6 +19,7 @@ import com.ismartcoding.plain.models.ScreenMirrorVideoCodec
 import com.ismartcoding.plain.lib.screenmirror.ScreenMirrorCaptureSize
 import com.ismartcoding.plain.lib.screenmirror.VideoPacket
 import com.ismartcoding.plain.platform.isRPlus
+import kotlinx.coroutines.delay
 
 /**
  * Owns MediaProjection + VirtualDisplay + the two encoders. Pushes H.264 NAL
@@ -121,7 +122,7 @@ class ScreenMirrorPipeline(
                 LogCat.w("$TAG: timed out waiting for codec config (${timeoutMs}ms)")
                 return null
             }
-            kotlinx.coroutines.delay(50)
+            delay(50)
         }
         return getScreenMirrorVideoCodec()
     }

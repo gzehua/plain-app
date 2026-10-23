@@ -23,10 +23,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 import java.util.UUID
+import com.ismartcoding.plain.models.FileTask
+import com.ismartcoding.plain.platform.files.scanFileTaskPaths
 
 @RunWith(AndroidJUnit4::class)
 class FileTaskRustHttpTest {
-    private suspend fun awaitTask(id: String): com.ismartcoding.plain.models.FileTask {
+    private suspend fun awaitTask(id: String): FileTask {
         while (true) {
             val task = checkNotNull(TestFileTaskClient.list(0, Int.MAX_VALUE, "").find { it.id == id })
             if (task.status == FileTaskStatus.DONE || task.status == FileTaskStatus.ERROR) return task
@@ -92,7 +94,7 @@ class FileTaskRustHttpTest {
             Prefs.setApiPermissions(originalPermissions)
             root.deleteRecursively()
             external.deleteRecursively()
-            com.ismartcoding.plain.platform.files.scanFileTaskPaths(listOf(File(external,"source.txt").path,File(external,"moved.txt").path))
+            scanFileTaskPaths(listOf(File(external,"source.txt").path,File(external,"moved.txt").path))
         }
     }
 }

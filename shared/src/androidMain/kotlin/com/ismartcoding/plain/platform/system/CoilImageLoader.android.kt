@@ -42,6 +42,9 @@ import coil3.video.VideoFrameDecoder
 import com.ismartcoding.plain.activityManager
 import com.ismartcoding.plain.network.OkHttpClientFactory
 import kotlin.math.roundToInt
+import android.util.Size as AndroidSize
+import java.io.File
+import kotlinx.io.IOException
 
 /**
  * A Coil3 [Decoder] that extracts a thumbnail frame from a video file using
@@ -67,7 +70,7 @@ class ForceVideoDecoder(
         try {
             retriever.setDataSource(filePath)
             val bitmap = retriever.getFrameAtTime(-1L, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
-                ?: throw kotlinx.io.IOException("ForceVideoDecoder: failed to extract video frame from $filePath")
+                ?: throw IOException("ForceVideoDecoder: failed to extract video frame from $filePath")
 
             // getFrameAtTime returns a full-resolution frame (a 4K frame is ~33MB);
             // scale it to the requested size before it reaches the memory cache.
@@ -137,7 +140,7 @@ fun newImageLoader(context: PlatformContext): ImageLoader {
         }
         .diskCache {
             DiskCache.Builder()
-                .directory(java.io.File(appContext.cacheDir, "image_cache"))
+                .directory(File(appContext.cacheDir, "image_cache"))
                 .maxSizePercent(1.0)
                 .build()
         }
@@ -221,7 +224,7 @@ class ThumbnailDecoder(
 
 
     private fun Size.toAndroidSize(fallbackWidth: Int = 200, fallbackHeight: Int = 200) =
-        android.util.Size(
+        AndroidSize(
             width.pxOrElse { fallbackWidth },
             height.pxOrElse { fallbackHeight }
         )

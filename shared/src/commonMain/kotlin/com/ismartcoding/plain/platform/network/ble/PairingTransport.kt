@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.serialization.json.*
 import kotlin.io.encoding.Base64
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 object PairingTransport {
     private val lock = PlatformLock()
@@ -36,8 +38,8 @@ object PairingTransport {
     }
 
     class Connection internal constructor(private val createServer: () -> BleGattServer) {
-        @OptIn(kotlin.uuid.ExperimentalUuidApi::class)
-        internal val lease = kotlin.uuid.Uuid.random().toString()
+        @OptIn(ExperimentalUuidApi::class)
+        internal val lease = Uuid.random().toString()
         internal var server: BleGattServer? = null
         private var closed = false
         private var revision = 0L

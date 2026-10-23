@@ -14,18 +14,19 @@ import com.ismartcoding.plain.lib.generateId
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
+import kotlinx.serialization.Required
 
 @Serializable
 data class ChatItem(
-    @kotlinx.serialization.Required var fromId: String = "",
-    @kotlinx.serialization.Required var toId: String = "",
+    @Required var fromId: String = "",
+    @Required var toId: String = "",
     var channelId: String? = null,
-    @kotlinx.serialization.Required var id: String = generateId(),
+    @Required var id: String = generateId(),
     var content: String,
-    @kotlinx.serialization.Required var createdAt: Instant = TimeHelper.now(),
-    @kotlinx.serialization.Required var updatedAt: Instant = TimeHelper.now(),
-    @kotlinx.serialization.Required var status: ChatStatus = ChatStatus.PENDING,
-    @kotlinx.serialization.Required var statusData: String = "",
+    @Required var createdAt: Instant = TimeHelper.now(),
+    @Required var updatedAt: Instant = TimeHelper.now(),
+    @Required var status: ChatStatus = ChatStatus.PENDING,
+    @Required var statusData: String = "",
 ) {
     val messageContent: MessageContent get() = parseContent(content)
     fun parseStatusData(): MessageStatusData? = MessageStatusData.fromJson(statusData)

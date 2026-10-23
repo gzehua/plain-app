@@ -24,6 +24,7 @@ import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import com.ismartcoding.plain.features.feeds.FeedsClient
 
 class FeedEntriesViewModel :
     ISelectableViewModel<FeedEntry>,
@@ -95,7 +96,7 @@ class FeedEntriesViewModel :
     }
 
     fun sync() {
-        viewModelScope.launchSafe { com.ismartcoding.plain.features.feeds.FeedsClient.sync(feedId.value) }
+        viewModelScope.launchSafe { FeedsClient.sync(feedId.value) }
     }
 
     fun delete(tagsVM: TagsViewModel, ids: Set<String>) {

@@ -30,6 +30,7 @@ import com.ismartcoding.plain.ui.components.confirmActionAsync
 import com.ismartcoding.plain.ui.navigation.navigateTextFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 @Composable
 fun AboutLogsAndCacheCard(
@@ -73,7 +74,7 @@ fun AboutLogsAndCacheCard(
                                                 try {
                                                     clearLogsAsync()
                                                     onFileSizeCleared()
-                                                } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+                                                } catch (cancelled: CancellationException) { throw cancelled }
                                                 catch (error: Exception) { DialogHelper.showErrorMessage(error.toString()) }
                                             }
                                         },
@@ -100,7 +101,7 @@ fun AboutLogsAndCacheCard(
                                 val newSize = getCacheSize()
                                 onCacheCleared(newSize)
                                 DialogHelper.showMessage(Res.string.local_cache_cleared)
-                            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                            } catch (cancelled: CancellationException) {
                                 throw cancelled
                             } catch (error: Exception) {
                                 DialogHelper.showErrorMessage(error.toString())

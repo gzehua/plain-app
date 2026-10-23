@@ -52,6 +52,14 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 import java.util.UUID
+import com.ismartcoding.plain.app.checkHttpServerAsync
+import com.ismartcoding.plain.features.sessions.RustSessionStore
+import com.ismartcoding.plain.helpers.Base64Lenient
+import java.net.URLEncoder
+import java.security.cert.X509Certificate
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocket
+import javax.net.ssl.X509TrustManager
 
 @RunWith(AndroidJUnit4::class)
 class PublicRustHttpTest {
@@ -70,18 +78,18 @@ class PublicRustHttpTest {
             Prefs.backgroundServiceEnabled.value = true
             Prefs.desktopAccess.value = true
             withIO { RustRuntime.start() }
-            assertTrue(com.ismartcoding.plain.app.checkHttpServerAsync())
+            assertTrue(checkHttpServerAsync())
             val port = Prefs.httpPort.value
             val tlsPort = Prefs.httpsPort.value
-            val trust = object : javax.net.ssl.X509TrustManager {
-                override fun checkClientTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) = Unit
-                override fun checkServerTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) = Unit
-                override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> = emptyArray()
+            val trust = object : X509TrustManager {
+                override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+                override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+                override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
             }
-            val tls = javax.net.ssl.SSLContext.getInstance("TLS").apply { init(null, arrayOf(trust), null) }
-            (tls.socketFactory.createSocket("127.0.0.1", tlsPort) as javax.net.ssl.SSLSocket).use {
+            val tls = SSLContext.getInstance("TLS").apply { init(null, arrayOf(trust), null) }
+            (tls.socketFactory.createSocket("127.0.0.1", tlsPort) as SSLSocket).use {
                 it.startHandshake()
-                val certificate = it.session.peerCertificates.first() as java.security.cert.X509Certificate
+                val certificate = it.session.peerCertificates.first() as X509Certificate
                 assertArrayEquals(getSSLSignature(), certificate.signature)
             }
             createPlainHttpClient(PlainHttpClientSpec.Local()).use { client ->
@@ -90,10 +98,10 @@ class PublicRustHttpTest {
                 client.request("HEAD", "http://127.0.0.1:$port/health").use { assertEquals(200, it.status.value); assertEquals(0, it.bodyAsBytes().size) }
                 client.post("http://127.0.0.1:$port/init", ByteArray(0)).use { assertEquals(400, it.status.value) }
                 client.get("http://127.0.0.1:$port/").use { assertEquals(200, it.status.value); assertTrue(it.bodyAsText().contains("window.__SERVER_TIME__=")) }
-                com.ismartcoding.plain.features.sessions.RustSessionStore.create(fixtureName)
-                val session = com.ismartcoding.plain.features.sessions.RustSessionStore.list().single { it.name == fixtureName }
+                RustSessionStore.create(fixtureName)
+                val session = RustSessionStore.list().single { it.name == fixtureName }
                 clientId = session.clientId
-                key = com.ismartcoding.plain.helpers.Base64Lenient.decode(session.token)
+                key = Base64Lenient.decode(session.token)
                 val initBody = chaCha20Encrypt(key, "authenticated-init".encodeToByteArray())
                 client.post("http://127.0.0.1:$port/init", initBody, "application/octet-stream", mapOf("c-id" to clientId)).use {
                     val responseText = it.bodyAsText()
@@ -123,7 +131,7 @@ class PublicRustHttpTest {
                 }
                 val file = File(root, "sample.bin")
                 assertArrayEquals(payload, file.readBytes())
-                val id = java.net.URLEncoder.encode(ResourceCrypto.encrypt(file.absolutePath), "UTF-8")
+                val id = URLEncoder.encode(ResourceCrypto.encrypt(file.absolutePath), "UTF-8")
                 client.get("http://127.0.0.1:$port/fs?id=$id", mapOf("Range" to "bytes=19-39")).use {
                     assertEquals(206, it.status.value)
                     assertArrayEquals(payload.copyOfRange(19, 40), it.bodyAsBytes())
@@ -133,7 +141,7 @@ class PublicRustHttpTest {
                 client.post("http://127.0.0.1:$port/graphql", "{}".encodeToByteArray(), "application/json").use { assertEquals(404, it.status.value) }
             }
         } finally {
-            if (clientId.isNotEmpty()) com.ismartcoding.plain.features.sessions.RustSessionStore.delete(clientId)
+            if (clientId.isNotEmpty()) RustSessionStore.delete(clientId)
             root.deleteRecursively()
             Prefs.backgroundServiceEnabled.value = oldService
             Prefs.desktopAccess.value = oldDesktop

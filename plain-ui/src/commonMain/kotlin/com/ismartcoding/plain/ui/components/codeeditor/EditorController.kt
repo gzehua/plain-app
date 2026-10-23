@@ -22,6 +22,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.runtime.mutableFloatStateOf
+import com.ismartcoding.plain.ui.components.codeeditor.engine.DocSnapshot
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.sync.Mutex
 
 sealed class EditorLoadState {
     data object Idle : EditorLoadState()
@@ -35,7 +40,7 @@ sealed class EditorLoadState {
  * scroll/caret/selection state the composables render. Heavy work (index build, search,
  * highlighting) runs on Dispatchers.Default; edits apply on the main thread.
  */
-class EditorController(private val scope: kotlinx.coroutines.CoroutineScope, private val fileIO: EditorFileIO) {
+class EditorController(private val scope: CoroutineScope, private val fileIO: EditorFileIO) {
     val loadState = mutableStateOf<EditorLoadState>(EditorLoadState.Idle)
     val docVersion = mutableStateOf(0)
     val mapperVersion = mutableStateOf(0)
@@ -80,7 +85,7 @@ class EditorController(private val scope: kotlinx.coroutines.CoroutineScope, pri
     // not the full viewport, so fully-panned lines stop short of the screen edge.
     var pannableWidthPx = 0f
     val hPan = HorizontalPan()
-    val hPanOffset = androidx.compose.runtime.mutableFloatStateOf(0f)
+    val hPanOffset = mutableFloatStateOf(0f)
     val mapper = VisualLineMapper()
 
     fun syncPan() {
@@ -93,7 +98,7 @@ class EditorController(private val scope: kotlinx.coroutines.CoroutineScope, pri
         private set
     private var highlighter: HighlightEngine? = null
     private var history = EditHistory().apply { injectClock(fileIO::nowMillis) }
-    private var snapshot: com.ismartcoding.plain.ui.components.codeeditor.engine.DocSnapshot? = null
+    private var snapshot: DocSnapshot? = null
     private var searchJob: Job? = null
     private var mapperJob: Job? = null
     private var suppressFieldSync = false
@@ -315,7 +320,7 @@ class EditorController(private val scope: kotlinx.coroutines.CoroutineScope, pri
         gotoTop()
     }
 
-    private val saveLock = kotlinx.coroutines.sync.Mutex()
+    private val saveLock = Mutex()
 
     suspend fun saveAsync(): Result<Unit> = saveLock.withLock {
         val d = doc ?: return@withLock Result.failure(IllegalStateException("no document"))
@@ -610,7 +615,7 @@ class EditorController(private val scope: kotlinx.coroutines.CoroutineScope, pri
             val byLine = found.groupBy { it.line }
             // The job may be cancelled by a newer requestSearch between scan end and commit
             // (IME composing fires extra callbacks); the finished scan must still land.
-            withContext(Dispatchers.Main + kotlinx.coroutines.NonCancellable) {
+            withContext(Dispatchers.Main + NonCancellable) {
                 matchesInternal = found
                 matchesByLineInternal = byLine
                 searchComplete.value = !truncated

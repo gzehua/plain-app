@@ -41,6 +41,8 @@ import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.plus as ui_drawable_plus
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.rust.RustEventHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,8 +59,8 @@ fun ImageEditorListPage(
 
     LaunchedEffect(vm) {
         launch { vm.loadAsync() }
-        com.ismartcoding.plain.rust.RustEventHandler.events.collect { event ->
-            if (event.type == com.ismartcoding.plain.app.events.EventType.CONTENT_CHANGED) vm.loadAsync()
+        RustEventHandler.events.collect { event ->
+            if (event.type == EventType.CONTENT_CHANGED) vm.loadAsync()
         }
     }
 

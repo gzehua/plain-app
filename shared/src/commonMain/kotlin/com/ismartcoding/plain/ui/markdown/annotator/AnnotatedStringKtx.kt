@@ -68,8 +68,8 @@ fun String.buildMarkdownAnnotatedString(
     linkTextSpanStyle: SpanStyle = style.toSpanStyle(),
     codeSpanStyle: SpanStyle = style.toSpanStyle(),
     flavour: MarkdownFlavourDescriptor = GFMFlavourDescriptor(),
-    annotator: com.ismartcoding.plain.ui.markdown.model.MarkdownAnnotator = markdownAnnotator(),
-    referenceLinkHandler: com.ismartcoding.plain.ui.markdown.model.ReferenceLinkHandler? = null,
+    annotator: MarkdownAnnotator = markdownAnnotator(),
+    referenceLinkHandler: ReferenceLinkHandler? = null,
     linkInteractionListener: LinkInteractionListener? = null,
 ) = buildMarkdownAnnotatedString(
     style = style,
@@ -96,7 +96,7 @@ fun String.buildMarkdownAnnotatedString(
  */
 fun String.buildMarkdownAnnotatedString(
     style: TextStyle,
-    annotatorSettings: com.ismartcoding.plain.ui.markdown.annotator.AnnotatorSettings,
+    annotatorSettings: AnnotatorSettings,
     flavour: MarkdownFlavourDescriptor = GFMFlavourDescriptor(),
 ): AnnotatedString {
     val content = this
@@ -126,7 +126,7 @@ fun String.buildMarkdownAnnotatedString(
 fun String.buildMarkdownAnnotatedString(
     textNode: ASTNode,
     style: TextStyle,
-    annotatorSettings: com.ismartcoding.plain.ui.markdown.annotator.AnnotatorSettings,
+    annotatorSettings: AnnotatorSettings,
 ): AnnotatedString = buildAnnotatedString {
     pushStyle(style.toSpanStyle())
     buildMarkdownAnnotatedString(this@buildMarkdownAnnotatedString, textNode, annotatorSettings)
@@ -143,7 +143,7 @@ fun String.buildMarkdownAnnotatedString(
 fun AnnotatedString.Builder.appendMarkdownLink(
     content: String,
     node: ASTNode,
-    annotatorSettings: com.ismartcoding.plain.ui.markdown.annotator.AnnotatorSettings,
+    annotatorSettings: AnnotatorSettings,
 ) {
     val linkText = node.findChildOfType(MarkdownElementTypes.LINK_TEXT)?.children?.innerList()
     if (linkText == null) {
@@ -175,7 +175,7 @@ fun AnnotatedString.Builder.appendMarkdownLink(
 fun AnnotatedString.Builder.appendMarkdownReference(
     content: String,
     node: ASTNode,
-    annotatorSettings: com.ismartcoding.plain.ui.markdown.annotator.AnnotatorSettings,
+    annotatorSettings: AnnotatorSettings,
 ) {
     val full = node.type == MarkdownElementTypes.FULL_REFERENCE_LINK
     val labelNode = node.findChildOfType(MarkdownElementTypes.LINK_LABEL)
@@ -217,7 +217,7 @@ fun AnnotatedString.Builder.appendMarkdownReference(
 fun AnnotatedString.Builder.appendAutoLink(
     content: String,
     node: ASTNode,
-    annotatorSettings: com.ismartcoding.plain.ui.markdown.annotator.AnnotatorSettings,
+    annotatorSettings: AnnotatorSettings,
 ) {
     val targetNode = node.children.firstOrNull {
         it.type.name == MarkdownElementTypes.AUTOLINK.name
@@ -284,7 +284,7 @@ private fun AnnotatedString.Builder.subSpan(body: String) {
 fun AnnotatedString.Builder.buildMarkdownAnnotatedString(
     content: String,
     node: ASTNode,
-    annotatorSettings: com.ismartcoding.plain.ui.markdown.annotator.AnnotatorSettings,
+    annotatorSettings: AnnotatorSettings,
 ) = buildMarkdownAnnotatedString(
     content = content,
     children = node.children,
@@ -303,7 +303,7 @@ fun AnnotatedString.Builder.buildMarkdownAnnotatedString(
 fun AnnotatedString.Builder.buildMarkdownAnnotatedString(
     content: String,
     children: List<ASTNode>,
-    annotatorSettings: com.ismartcoding.plain.ui.markdown.annotator.AnnotatorSettings,
+    annotatorSettings: AnnotatorSettings,
 ) {
     val annotate = annotatorSettings.annotator.annotate
     val eolAsNewLine = annotatorSettings.annotator.config.eolAsNewLine
@@ -573,7 +573,7 @@ fun AnnotatedString.injectInlineMathFallbacks(): AnnotatedString {
     //    The outer `$` delimiters are preserved so `MarkdownMath`'s
     //    `startsWith("$$")` / single-`$` detector keeps working — it
     //    treats the payload exactly like a natively-parsed formula.
-    val out = androidx.compose.ui.text.buildAnnotatedString {
+    val out = buildAnnotatedString {
         var cursor = 0
         for (m in matches) {
             val start = m.range.first

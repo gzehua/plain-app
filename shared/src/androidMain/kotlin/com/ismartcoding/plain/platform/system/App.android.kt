@@ -9,6 +9,11 @@ import com.ismartcoding.plain.app.AppHelper
 import com.ismartcoding.plain.platform.system.AppLogHelper
 import java.io.File
 import kotlin.system.exitProcess
+import android.content.Intent
+import android.provider.Settings
+import coil3.SingletonImageLoader
+import com.ismartcoding.plain.lib.withIO
+import com.ismartcoding.plain.powerManager
 
 actual fun isAppForegrounded(): Boolean = AppHelper.foregrounded()
 actual fun installApk(path: String) = PackageHelper.install(appContext, File(path))
@@ -18,9 +23,9 @@ actual fun exitApp() {
 
 internal actual fun shareLogArchive(path: String) = AppLogHelper.share(appContext, File(path))
 
-internal actual suspend fun clearMediaCache(): Unit = com.ismartcoding.plain.lib.withIO {
-    coil3.SingletonImageLoader.get(appContext).diskCache?.clear()
-    coil3.SingletonImageLoader.get(appContext).memoryCache?.clear()
+internal actual suspend fun clearMediaCache(): Unit = withIO {
+    SingletonImageLoader.get(appContext).diskCache?.clear()
+    SingletonImageLoader.get(appContext).memoryCache?.clear()
     VideoPlayerCacheManager.getCache()?.let { cache -> cache.keys.toList().forEach(cache::removeResource) }
 }
 
@@ -29,12 +34,12 @@ actual fun getAppIcon(packageName: String): Any? = runCatching {
 }.getOrNull()
 
 actual fun isIgnoringBatteryOptimizations(): Boolean =
-    com.ismartcoding.plain.powerManager.isIgnoringBatteryOptimizations(appContext.packageName)
+    powerManager.isIgnoringBatteryOptimizations(appContext.packageName)
 
 actual fun openBatteryOptimizationSettings() {
-    val intent = android.content.Intent().apply {
-        action = android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
-        addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+    val intent = Intent().apply {
+        action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
     appContext.startActivity(intent)
 }

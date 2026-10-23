@@ -1,6 +1,8 @@
 package com.ismartcoding.plain.features.files
 
-@kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class DriveType {
     INTERNAL_STORAGE,
     SDCARD,

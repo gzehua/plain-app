@@ -12,8 +12,9 @@ import platform.UIKit.UIApplicationState
 import platform.UIKit.UIPasteboard
 import platform.UIKit.UIPasteboardChangedNotification
 import platform.UIKit.UIPasteboardRemovedNotification
+import kotlinx.cinterop.ExperimentalForeignApi
 
-@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class)
 internal actual suspend fun observeClipboardChanges(report: suspend (ClipboardReportData) -> Unit): Unit =
     withContext(Dispatchers.Main.immediate) {
         val changes = Channel<Unit>(Channel.CONFLATED)

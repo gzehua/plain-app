@@ -1,4 +1,4 @@
-@file:OptIn(org.jetbrains.compose.resources.InternalResourceApi::class)
+@file:OptIn(InternalResourceApi::class)
 
 package com.ismartcoding.plain.ui.format
 
@@ -9,6 +9,7 @@ import org.jetbrains.compose.resources.StringResource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.jetbrains.compose.resources.InternalResourceApi
 
 class RelativeTimeFormatterTest {
 

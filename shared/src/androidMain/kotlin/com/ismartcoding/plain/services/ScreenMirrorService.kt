@@ -19,6 +19,7 @@ import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.mediaProjectionManager
 import com.ismartcoding.plain.services.screenmirror.ScreenMirrorOrientationState
 import com.ismartcoding.plain.services.screenmirror.ScreenMirrorPipeline
+import com.ismartcoding.plain.preferences.Prefs
 
 class ScreenMirrorService : LifecycleService() {
 
@@ -173,6 +174,6 @@ class ScreenMirrorService : LifecycleService() {
     companion object {
         @Volatile
         var instance: ScreenMirrorService? = null
-        val qualityData get() = com.ismartcoding.plain.preferences.Prefs.screenMirrorQuality.value
+        val qualityData get() = Prefs.screenMirrorQuality.value
     }
 }

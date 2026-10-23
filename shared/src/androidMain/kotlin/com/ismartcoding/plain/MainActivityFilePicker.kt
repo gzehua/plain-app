@@ -17,6 +17,7 @@ import com.ismartcoding.plain.app.events.PickFileEvent
 import com.ismartcoding.plain.ui.components.DialogHelper
 import com.ismartcoding.plain.platform.system.FilePickHelper
 import com.ismartcoding.plain.platform.isRPlus
+import com.ismartcoding.plain.platform.files.backupToFile
 
 internal fun MainActivity.handlePickFileEvent(event: PickFileEvent) {
     try {
@@ -59,7 +60,7 @@ internal fun MainActivity.handlePickFileEvent(event: PickFileEvent) {
 
 internal fun MainActivity.handleExportFileEvent(event: ExportFileEvent) {
     if (event.type == ExportFileType.BACKUP && Build.VERSION.SDK_INT == Build.VERSION_CODES.P) {
-        com.ismartcoding.plain.platform.files.backupToFile(event.fileName)
+        backupToFile(event.fileName)
         return
     }
     try {

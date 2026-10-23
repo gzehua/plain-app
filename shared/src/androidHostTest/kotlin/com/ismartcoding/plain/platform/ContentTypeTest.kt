@@ -4,6 +4,7 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import java.nio.file.Files
 
 class ContentTypeTest {
 
@@ -17,7 +18,7 @@ class ContentTypeTest {
     }
 
     private fun createTempDir(): File =
-        java.nio.file.Files.createTempDirectory("contentTypeTest").toFile().apply { deleteOnExit() }
+        Files.createTempDirectory("contentTypeTest").toFile().apply { deleteOnExit() }
 
     // ── Existing files ───
 

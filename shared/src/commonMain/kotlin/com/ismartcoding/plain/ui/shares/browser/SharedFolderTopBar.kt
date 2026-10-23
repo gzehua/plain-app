@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.ismartcoding.plain.ui.shares.browser
 
@@ -20,6 +20,7 @@ import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.chrome as ui_drawable_chrome
 import com.ismartcoding.plain.ui.resources.copy as ui_drawable_copy
 import com.ismartcoding.plain.i18n.copy
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 /**
  * Top bar, styled after FilesPage: browse mode shows the current directory

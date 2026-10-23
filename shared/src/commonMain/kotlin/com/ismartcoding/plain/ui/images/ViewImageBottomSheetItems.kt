@@ -58,12 +58,13 @@ import com.ismartcoding.plain.ui.resources.share_2 as ui_drawable_share_2
 import com.ismartcoding.plain.ui.resources.smartphone as ui_drawable_smartphone
 import com.ismartcoding.plain.ui.resources.square_arrow_out_up_right as ui_drawable_square_arrow_out_up_right
 import com.ismartcoding.plain.i18n.image
+import com.ismartcoding.plain.models.Image
 
 @Composable
 internal fun ViewImageActionButtons(
     imagesVM: ImagesViewModel,
     tagsVM: TagsViewModel,
-    m: com.ismartcoding.plain.models.Image,
+    m: Image,
     dragSelectState: DragSelectState,
     qrScanResult: String,
     onShowQrScanResult: () -> Unit,
@@ -166,7 +167,7 @@ internal fun ViewImageActionButtons(
 
 @Composable
 internal fun ViewImagePathCard(
-    m: com.ismartcoding.plain.models.Image,
+    m: Image,
 ) {
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PListItem(title = m.path, action = {

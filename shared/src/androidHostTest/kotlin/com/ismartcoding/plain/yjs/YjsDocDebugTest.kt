@@ -5,10 +5,11 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.test.Test
 import org.junit.Assume.assumeTrue
+import java.io.File
 
 class YjsDocDebugTest {
 
-    private val payloadFile = java.io.File("/tmp/web-payload.b64")
+    private val payloadFile = File("/tmp/web-payload.b64")
 
     @OptIn(ExperimentalEncodingApi::class)
     @Test

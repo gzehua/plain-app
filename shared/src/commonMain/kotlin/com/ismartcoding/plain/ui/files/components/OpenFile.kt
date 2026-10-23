@@ -30,6 +30,7 @@ import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.media.MediaPreviewData
 import com.ismartcoding.plain.ui.navigation.navigatePdf
 import com.ismartcoding.plain.ui.navigation.navigateTextFile
+import kotlinx.coroutines.CancellationException
 
 fun openFile(
     files: List<FileEntry>,
@@ -127,7 +128,7 @@ fun openLocalFileByType(
                         audioQueueVM.playSingleAsync(audio)
                     }
                     playAudioWithNotificationCheck(path)
-                } catch (ex: kotlinx.coroutines.CancellationException) {
+                } catch (ex: CancellationException) {
                     throw ex
                 } catch (ex: Exception) {
                     DialogHelper.showMessage(Res.string.audio_play_error)

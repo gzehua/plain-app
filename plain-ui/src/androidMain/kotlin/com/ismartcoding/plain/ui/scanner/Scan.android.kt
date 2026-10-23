@@ -38,6 +38,13 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.graphics.Rect
+import android.graphics.YuvImage
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import java.io.ByteArrayOutputStream
 
 @Composable
 actual fun ScanCameraView(
@@ -47,7 +54,7 @@ actual fun ScanCameraView(
     onScanResult: (List<ScannedCode>) -> Unit,
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val executor = remember { Executors.newSingleThreadExecutor() }
     val mainExecutor = remember { ContextCompat.getMainExecutor(context) }
     val reader = remember { QrScanPipeline.createReader() }
@@ -202,16 +209,16 @@ private class ScanFrameAnalyzer(
             image.planes[2].buffer, image.planes[2].rowStride, image.planes[2].pixelStride,
             image.width, image.height,
         )
-        val yuv = android.graphics.YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
-        val jpeg = java.io.ByteArrayOutputStream()
-        yuv.compressToJpeg(android.graphics.Rect(0, 0, image.width, image.height), 85, jpeg)
-        var bitmap = android.graphics.BitmapFactory.decodeByteArray(jpeg.toByteArray(), 0, jpeg.size())
+        val yuv = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
+        val jpeg = ByteArrayOutputStream()
+        yuv.compressToJpeg(Rect(0, 0, image.width, image.height), 85, jpeg)
+        var bitmap = BitmapFactory.decodeByteArray(jpeg.toByteArray(), 0, jpeg.size())
             ?: throw IllegalStateException("snapshot JPEG decode failed")
         val degrees = image.imageInfo.rotationDegrees
         if (degrees != 0) {
-            val matrix = android.graphics.Matrix()
+            val matrix = Matrix()
             matrix.postRotate(degrees.toFloat())
-            bitmap = android.graphics.Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, false)
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, false)
         }
         return bitmap.asImageBitmap()
     }

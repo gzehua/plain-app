@@ -79,6 +79,7 @@ import com.ismartcoding.plain.ui.resources.close as ui_drawable_close
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 import org.jetbrains.compose.resources.stringResource
+import com.ismartcoding.plain.ui.app.LocalDeviceState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,7 +101,7 @@ fun ChannelInfoPage(
         else if (liveChannel.actions.isOwner) TempData.clientId
         else liveChannel.ownerId
     }
-    val memberPeers: List<PeerMember> = remember(liveChannel?.members, ownerPeerId, peers, com.ismartcoding.plain.ui.app.LocalDeviceState.peer.value) {
+    val memberPeers: List<PeerMember> = remember(liveChannel?.members, ownerPeerId, peers, LocalDeviceState.peer.value) {
         liveChannel?.members?.mapNotNull { m ->
             val peer = (if (m.isMe()) mePeer() else peers[m.peerId]) ?: return@mapNotNull null
             PeerMember(peer, m, isSelf = m.isMe(), isOwner = m.peerId == ownerPeerId)

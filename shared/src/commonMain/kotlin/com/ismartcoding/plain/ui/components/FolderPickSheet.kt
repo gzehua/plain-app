@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.ismartcoding.plain.ui.components
 
@@ -33,6 +33,7 @@ import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.PModalBottomSheet
 import com.ismartcoding.plain.ui.components.DirBrowserRow
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 /**
  * Bottom sheet to pick a destination folder on the device filesystem.

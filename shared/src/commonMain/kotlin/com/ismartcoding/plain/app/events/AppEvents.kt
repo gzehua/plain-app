@@ -30,6 +30,9 @@ import com.ismartcoding.plain.features.sessions.AuthRequest
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
+import com.ismartcoding.plain.models.PomodoroToday
+import com.ismartcoding.plain.ui.components.DialogHelper
+import kotlinx.coroutines.CancellationException
 
 /** Native confirmation UI for a Rust-owned pending login. */
 class HConfirmToAcceptLoginEvent(
@@ -57,7 +60,7 @@ class ShowPermissionWizardEvent : ChannelEvent()
 class RestartAppEvent : ChannelEvent()
 
 
-class HPomodoroChangedEvent(val today: com.ismartcoding.plain.models.PomodoroToday) : HEvent()
+class HPomodoroChangedEvent(val today: PomodoroToday) : HEvent()
 
 class FetchBookmarkMetadataEvent(val bookmarkId: String, val url: String) : ChannelEvent()
 
@@ -209,10 +212,10 @@ private fun runUpdateDownloadCommand(action: suspend () -> Unit) {
     coIO {
         try {
             action()
-        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
-            com.ismartcoding.plain.ui.components.DialogHelper.showErrorMessage(error.toString())
+            DialogHelper.showErrorMessage(error.toString())
         }
     }
 }

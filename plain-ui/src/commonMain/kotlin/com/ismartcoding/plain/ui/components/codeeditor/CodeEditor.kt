@@ -53,13 +53,15 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.CompositionLocalProvider
+import com.ismartcoding.plain.ui.theme.LocalDarkTheme
 
 /** Public entry: renders [controller]'s document with gutter, highlighting and search marks. */
 @Composable
 fun CodeEditor(controller: EditorController, modifier: Modifier = Modifier) {
-    val dark = com.ismartcoding.plain.ui.theme.LocalDarkTheme.current
+    val dark = LocalDarkTheme.current
     val colors = if (dark) DarkSyntaxColors else LightSyntaxColors
-    androidx.compose.runtime.CompositionLocalProvider(LocalEditorSyntaxColors provides colors) {
+    CompositionLocalProvider(LocalEditorSyntaxColors provides colors) {
         Column(modifier = modifier) {
             if (controller.searchVisible.value) {
                 EditorSearchBar(controller)

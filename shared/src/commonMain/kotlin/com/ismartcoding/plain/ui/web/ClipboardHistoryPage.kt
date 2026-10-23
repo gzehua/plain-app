@@ -42,6 +42,7 @@ import com.ismartcoding.plain.ui.theme.PlainTheme
 import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.delete_forever as ui_drawable_delete_forever
+import com.ismartcoding.plain.rust.RustEventHandler
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -54,7 +55,7 @@ fun ClipboardHistoryPage(
 
     LaunchedEffect(vm) {
         launch { vm.loadAsync() }
-        com.ismartcoding.plain.rust.RustEventHandler.events.collect { event ->
+        RustEventHandler.events.collect { event ->
             if (event.type == EventType.H_CLIPBOARD_HISTORY_UPDATED || event.type == EventType.CONTENT_CHANGED) vm.loadAsync()
         }
     }

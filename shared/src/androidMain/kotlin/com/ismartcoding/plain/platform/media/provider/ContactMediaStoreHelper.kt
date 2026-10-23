@@ -22,6 +22,8 @@ import com.ismartcoding.plain.helpers.StringHelper
 import com.ismartcoding.plain.rust.host.provider.*
 import com.ismartcoding.plain.platform.contacts.ContactDataHelper
 import com.ismartcoding.plain.features.contacts.ContactInput
+import com.ismartcoding.plain.platform.contacts.GroupHelper
+import com.ismartcoding.plain.platform.contacts.readContactPage
 
 object ContactMediaStoreHelper {
     private val uriExternal: Uri = ContactsContract.Data.CONTENT_URI
@@ -222,7 +224,7 @@ object ContactMediaStoreHelper {
         limit: Int,
         offset: Int,
     ): ContactPageFacts = withIO {
-        com.ismartcoding.plain.platform.contacts.readContactPage(readRows = {
+        readContactPage(readRows = {
             context.contentResolver.getPagingCursor(
                 uriExternal, getProjection(), where, limit, offset,
                 SortBy(ContactsContract.Data.DISPLAY_NAME_PRIMARY, SortDirection.ASC)
@@ -249,6 +251,6 @@ object ContactMediaStoreHelper {
                 )
             } ?: emptyList()
         }, readDetails = { ids -> ContactDataHelper.rows(context, ids) },
-            readGroups = { com.ismartcoding.plain.platform.contacts.GroupHelper.getAll(context) })
+            readGroups = { GroupHelper.getAll(context) })
     }
 }

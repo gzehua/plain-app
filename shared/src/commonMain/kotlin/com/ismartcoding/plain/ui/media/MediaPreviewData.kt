@@ -14,6 +14,7 @@ import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.ui.media.viewer.PreviewItem
 import com.ismartcoding.plain.ui.media.viewer.previewer.TransformItemState
+import com.ismartcoding.plain.features.files.FilePaths
 
 object MediaPreviewData {
     var items = listOf<PreviewItem>()
@@ -31,7 +32,7 @@ object MediaPreviewData {
                 newItems.addAll((item.value as MessageFiles).items.filter { it.fileName.isVideoFast() || it.fileName.isImageFast() })
             }
         }
-        val paths = com.ismartcoding.plain.features.files.FilePaths.resolveAll(newItems.map { it.uri })
+        val paths = FilePaths.resolveAll(newItems.map { it.uri })
         items = newItems.mapIndexed { index, f ->
             PreviewItem(f.id, paths[index], f.size, data = f)
         }

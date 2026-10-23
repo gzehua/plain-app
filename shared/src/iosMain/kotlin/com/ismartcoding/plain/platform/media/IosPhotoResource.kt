@@ -1,4 +1,4 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package com.ismartcoding.plain.platform.media
 
@@ -7,6 +7,8 @@ import kotlinx.cinterop.CPointer
 import platform.Photos.*
 import platform.posix.FILE
 import platform.posix.fwrite
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.Foundation.NSData
 
 internal object IosPhotoResource {
     fun resource(uri: String): PHAssetResource {
@@ -32,7 +34,7 @@ internal object IosPhotoResource {
         val resource = resource(uri)
         val manager = PHAssetResourceManager.defaultManager()
         val options = PHAssetResourceRequestOptions().apply { networkAccessAllowed = false }
-        return readResourceChunks<platform.Foundation.NSData?>(
+        return readResourceChunks<NSData?>(
             start = { data, complete ->
                 manager.requestDataForAssetResource(resource, options, data) { error ->
                     complete(error?.let { IllegalStateException(it.localizedDescription) })

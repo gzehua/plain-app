@@ -21,6 +21,7 @@ import com.ismartcoding.plain.platform.system.getAppIcon
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.CheckCircle
+import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 internal fun AppSelectorItem(
@@ -55,7 +56,7 @@ internal fun AppSelectorItem(
             Text(
                 text = app.name,
                 style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold
                 ),
                 color = MaterialTheme.colorScheme.onSurface
             )

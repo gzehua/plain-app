@@ -18,6 +18,7 @@ import com.ismartcoding.plain.ui.resources.copy as ui_drawable_copy
 import com.ismartcoding.plain.ui.resources.scissors as ui_drawable_scissors
 import com.ismartcoding.plain.ui.resources.select_all as ui_drawable_select_all
 import com.ismartcoding.plain.ui.resources.x as ui_drawable_x
+import androidx.compose.foundation.shape.CircleShape
 
 @Composable
 fun SelectionToolbarOverlay(controller: EditorController, modifier: Modifier = Modifier) {
@@ -33,7 +34,7 @@ fun SelectionToolbarOverlay(controller: EditorController, modifier: Modifier = M
     ) {
         Row(
             modifier = Modifier
-                .clip(androidx.compose.foundation.shape.CircleShape)
+                .clip(CircleShape)
                 .background(bg.copy(alpha = 0.96f))
                 .padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,

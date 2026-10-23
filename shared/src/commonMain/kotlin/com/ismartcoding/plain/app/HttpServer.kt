@@ -21,6 +21,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import com.ismartcoding.plain.features.nearby.RustMdnsRuntime
+import com.ismartcoding.plain.features.sessions.RustWebLogin
+import com.ismartcoding.plain.platform.files.readPickedFileBytes
 
 suspend fun getSSLSignature(): ByteArray = RustNativeApi.tlsCertificateSignature()
 
@@ -59,11 +62,11 @@ suspend fun replaceSSLKeyStoreAsync(
 ): ByteArray = withIO {
     when (mode) {
         SslCertImportMode.PKCS12 -> RustNativeApi.importTlsCertificatePkcs12(
-            com.ismartcoding.plain.platform.files.readPickedFileBytes(firstUri), password,
+            readPickedFileBytes(firstUri), password,
         )
         SslCertImportMode.PEM -> RustNativeApi.importTlsCertificatePem(
-            com.ismartcoding.plain.platform.files.readPickedFileBytes(firstUri).decodeToString(throwOnInvalidSequence = true),
-            com.ismartcoding.plain.platform.files.readPickedFileBytes(secondUri).decodeToString(throwOnInvalidSequence = true),
+            readPickedFileBytes(firstUri).decodeToString(throwOnInvalidSequence = true),
+            readPickedFileBytes(secondUri).decodeToString(throwOnInvalidSequence = true),
         )
     }
 }
@@ -72,7 +75,7 @@ suspend fun replaceSSLKeyStoreAsync(
  * Reset the web console password to a new random value and persist it.
  * @return the new password
  */
-suspend fun resetPasswordAsync() = com.ismartcoding.plain.features.sessions.RustWebLogin.resetPassword()
+suspend fun resetPasswordAsync() = RustWebLogin.resetPassword()
 
 expect suspend fun onHttpServerStarted()
 expect suspend fun onHttpServerStopped()
@@ -182,6 +185,6 @@ fun restartServer() {
 }
 
 fun isHttpServerRunning(): Boolean = HttpServerManager.serverState.value == HttpServerState.ON
-fun isMdnsRunning(): Boolean = com.ismartcoding.plain.features.nearby.RustMdnsRuntime.running
+fun isMdnsRunning(): Boolean = RustMdnsRuntime.running
 expect fun getAwareAttachStatus(): String
 expect fun getAwareDiscoveredPeerCount(): Int

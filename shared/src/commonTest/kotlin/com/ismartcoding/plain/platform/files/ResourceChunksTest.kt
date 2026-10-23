@@ -11,8 +11,9 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class ResourceChunksTest {
     @Test
     fun synchronousCompletionPreservesExactBytesAndDoesNotCancelTheCompletedRequest() = runTest {

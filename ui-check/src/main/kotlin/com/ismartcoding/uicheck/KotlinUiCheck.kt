@@ -8,11 +8,13 @@ import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.CoreEnvironmentDeprecation
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 
 internal data class Finding(val key: String, val line: Int, val replacement: String)
 internal data class Component(val name: String, val line: Int)
 
-@OptIn(CompilerConfiguration.Internals::class, org.jetbrains.kotlin.CoreEnvironmentDeprecation::class, org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi::class)
+@OptIn(CompilerConfiguration.Internals::class, CoreEnvironmentDeprecation::class, ExperimentalCompilerApi::class)
 internal class KotlinUiCheck : AutoCloseable {
     private val disposable = Disposer.newDisposable()
     private val environment = KotlinCoreEnvironment.createForProduction(

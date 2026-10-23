@@ -14,6 +14,9 @@ import com.ismartcoding.plain.mainActivity
 import com.ismartcoding.plain.appContextValue
 import com.ismartcoding.plain.ui.permissions.Permissions
 import com.ismartcoding.plain.lib.extensions.hasPermission
+import android.Manifest
+import android.os.Environment
+import com.ismartcoding.plain.platform.isRPlus
 
 private val pNotificationListenerServiceClass: Class<*> by lazy {
     Class.forName("com.ismartcoding.plain.services.PNotificationListenerService")
@@ -30,10 +33,10 @@ actual fun Permission.isGranted(): Boolean = when {
     // Clipboard access needs no OS runtime permission; the web-side switch
     // (Prefs.apiPermissions) is the sole gate.
     this == Permission.CLIPBOARD -> true
-    this == Permission.WRITE_EXTERNAL_STORAGE -> if (com.ismartcoding.plain.platform.isRPlus()) {
-        android.os.Environment.isExternalStorageManager()
+    this == Permission.WRITE_EXTERNAL_STORAGE -> if (isRPlus()) {
+        Environment.isExternalStorageManager()
     } else {
-        appContext.hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        appContext.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     }
     this == Permission.POST_NOTIFICATIONS -> {
         if (isTPlus()) appContext.hasPermission(this.toSysPermission())

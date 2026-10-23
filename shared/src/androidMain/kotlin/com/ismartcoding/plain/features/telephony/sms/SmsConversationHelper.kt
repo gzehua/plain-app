@@ -19,9 +19,11 @@ import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.extensions.queryCursor
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.telephony.getSims
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 
 object SmsConversationHelper {
-    suspend fun facts(context: Context, params: kotlinx.serialization.json.JsonObject): kotlinx.serialization.json.JsonElement = withIO {
+    suspend fun facts(context: Context, params: JsonObject): JsonElement = withIO {
         val request = JsonHelper.jsonDecodeFromElement<SmsConversationsRequest>(params)
         val ids = request.ids
         val beforeDates = request.beforeDates
@@ -48,7 +50,7 @@ object SmsConversationHelper {
             val resolved=recipientIds[item.id].orEmpty().mapNotNull(addressMap::get)
             item.copy(address=resolved.firstOrNull().orEmpty(),addresses=resolved)
         }
-        com.ismartcoding.plain.lib.JsonHelper.jsonEncodeToElement(SmsConversationFacts(
+        JsonHelper.jsonEncodeToElement(SmsConversationFacts(
             items = rows,
             ownNumbers = own,
             snippetCandidates = beforeDates.mapValues { (id, value) ->

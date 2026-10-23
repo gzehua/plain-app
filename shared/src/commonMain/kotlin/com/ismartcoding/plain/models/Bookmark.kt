@@ -5,18 +5,19 @@ import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.generateId
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Required
 
 @Serializable
 data class Bookmark(
-    @kotlinx.serialization.Required override var id: String = generateId(),
-    @kotlinx.serialization.Required var url: String = "",
-    @kotlinx.serialization.Required var title: String = "",
-    @kotlinx.serialization.Required var faviconPath: String = "",
-    @kotlinx.serialization.Required var groupId: String = "",
-    @kotlinx.serialization.Required var pinned: Boolean = false,
-    @kotlinx.serialization.Required var clickCount: Int = 0,
-    @kotlinx.serialization.Required var lastClickedAt: Instant? = null,
-    @kotlinx.serialization.Required var sortOrder: Int = 0,
-    @kotlinx.serialization.Required var createdAt: Instant = TimeHelper.now(),
-    @kotlinx.serialization.Required var updatedAt: Instant = TimeHelper.now(),
+    @Required override var id: String = generateId(),
+    @Required var url: String = "",
+    @Required var title: String = "",
+    @Required var faviconPath: String = "",
+    @Required var groupId: String = "",
+    @Required var pinned: Boolean = false,
+    @Required var clickCount: Int = 0,
+    @Required var lastClickedAt: Instant? = null,
+    @Required var sortOrder: Int = 0,
+    @Required var createdAt: Instant = TimeHelper.now(),
+    @Required var updatedAt: Instant = TimeHelper.now(),
 ) : IData

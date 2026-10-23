@@ -7,6 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import java.nio.ByteBuffer
+import kotlin.math.abs
 
 /**
  * Deterministic recognition tests: frames are synthesized by rendering real
@@ -44,11 +45,11 @@ class QrScanPipelineTest {
 
     private fun assertCenterNear(code: DecodedCode, expectedX: Float, expectedY: Float, tolerance: Float = 16f) {
         assertTrue(
-            kotlin.math.abs(code.centerX - expectedX) <= tolerance,
+            abs(code.centerX - expectedX) <= tolerance,
             "centerX ${code.centerX} not near $expectedX",
         )
         assertTrue(
-            kotlin.math.abs(code.centerY - expectedY) <= tolerance,
+            abs(code.centerY - expectedY) <= tolerance,
             "centerY ${code.centerY} not near $expectedY",
         )
     }
@@ -246,10 +247,10 @@ class QrScanPipelineTest {
         for (i in 0 until chromaTotal) backing[width * height + i] = (100 + i % 97).toByte()
         // U slice starts at the chroma base, V slice one byte in; both stop at the
         // last element they own (one byte short of a 2*chromaW read on the last row)
-        val uBuffer = java.nio.ByteBuffer.wrap(backing, width * height, chromaTotal - 1).slice()
-        val vBuffer = java.nio.ByteBuffer.wrap(backing, width * height + 1, chromaTotal - 1).slice()
+        val uBuffer = ByteBuffer.wrap(backing, width * height, chromaTotal - 1).slice()
+        val vBuffer = ByteBuffer.wrap(backing, width * height + 1, chromaTotal - 1).slice()
         val nv21 = QrScanPipeline.buildNv21(
-            java.nio.ByteBuffer.wrap(backing), width,
+            ByteBuffer.wrap(backing), width,
             uBuffer, chromaW * 2, 2,
             vBuffer, chromaW * 2, 2,
             width, height,
@@ -274,9 +275,9 @@ class QrScanPipelineTest {
         val u = ByteArray(chromaW * chromaH) { (it % 61).toByte() }
         val v = ByteArray(chromaW * chromaH) { ((it + 17) % 61).toByte() }
         val nv21 = QrScanPipeline.buildNv21(
-            java.nio.ByteBuffer.wrap(y), width,
-            java.nio.ByteBuffer.wrap(u), chromaW, 1,
-            java.nio.ByteBuffer.wrap(v), chromaW, 1,
+            ByteBuffer.wrap(y), width,
+            ByteBuffer.wrap(u), chromaW, 1,
+            ByteBuffer.wrap(v), chromaW, 1,
             width, height,
         )
         var pos = width * height
@@ -298,9 +299,9 @@ class QrScanPipelineTest {
             }
         }
         val nv21 = QrScanPipeline.buildNv21(
-            java.nio.ByteBuffer.wrap(padded), rowStride,
-            java.nio.ByteBuffer.wrap(ByteArray(6) { (10 + it).toByte() }), 3, 1,
-            java.nio.ByteBuffer.wrap(ByteArray(6) { (20 + it).toByte() }), 3, 1,
+            ByteBuffer.wrap(padded), rowStride,
+            ByteBuffer.wrap(ByteArray(6) { (10 + it).toByte() }), 3, 1,
+            ByteBuffer.wrap(ByteArray(6) { (20 + it).toByte() }), 3, 1,
             width, height,
         )
         for (row in 0 until height) {

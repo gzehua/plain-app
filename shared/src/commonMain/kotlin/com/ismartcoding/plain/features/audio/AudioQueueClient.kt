@@ -10,6 +10,8 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.rust.graphql.*
 import kotlinx.serialization.json.*
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.app.events.HostEvent
 
 object AudioQueueClient {
     suspend fun playback(): AudioPlayback = JsonHelper.jsonDecodeFromElement(
@@ -40,15 +42,15 @@ object AudioQueueClient {
     ).getValue("audioQueueItems").let { JsonHelper.jsonDecodeFromElement<List<QueuedMediaId>>(it) }.mapNotNull { it.mediaId }.toSet()
 
     suspend fun onStarted(audio: AudioItem, revision: Long) {
-        sendEventToRust(com.ismartcoding.plain.app.events.HostEvent(
-            com.ismartcoding.plain.app.events.EventType.AUDIO_STARTED_REPORTED,
+        sendEventToRust(HostEvent(
+            EventType.AUDIO_STARTED_REPORTED,
             JsonHelper.jsonEncode(AudioPlaybackReport(audio.path, revision)),
         ))
     }
 
     suspend fun onCompleted(path: String, revision: Long) {
-        sendEventToRust(com.ismartcoding.plain.app.events.HostEvent(
-            com.ismartcoding.plain.app.events.EventType.AUDIO_COMPLETED_REPORTED,
+        sendEventToRust(HostEvent(
+            EventType.AUDIO_COMPLETED_REPORTED,
             JsonHelper.jsonEncode(AudioPlaybackReport(path, revision)),
         ))
     }

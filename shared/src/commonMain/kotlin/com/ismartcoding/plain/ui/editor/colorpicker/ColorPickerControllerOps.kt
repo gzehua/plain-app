@@ -7,6 +7,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.atan2
 import kotlin.math.sqrt
+import kotlin.math.PI
 
 internal fun ColorPickerController.doSelectByCoordinate(x: Float, y: Float, fromUser: Boolean) {
     val snapPoint = PointMapper.getColorPoint(this, Offset(x, y))
@@ -67,7 +68,7 @@ internal fun ColorPickerController.extractPixelHsvColor(x: Float, y: Float): Col
         val r = sqrt((x2 * x2 + y2 * y2).toDouble())
         val radius: Float = size.width.coerceAtMost(size.height) * 0.5f
         val hsv = floatArrayOf(0f, 0f, 1f)
-        (((atan2(y2.toDouble(), -x2.toDouble()) / kotlin.math.PI * 180f).toFloat() + 180)).also { hsv[0] = it }
+        (((atan2(y2.toDouble(), -x2.toDouble()) / PI * 180f).toFloat() + 180)).also { hsv[0] = it }
         hsv[1] = 0f.coerceAtLeast(1f.coerceAtMost((r / radius).toFloat()))
         return hsvToColor(hsv[0], hsv[1], hsv[2])
     }

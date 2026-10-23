@@ -15,17 +15,18 @@ import com.ismartcoding.plain.features.contacts.ContactPhoneInput
 import com.ismartcoding.plain.features.contacts.ContactWebsiteInput
 import com.ismartcoding.plain.features.contacts.OrganizationInput
 import java.util.ArrayList
+import com.ismartcoding.plain.rust.host.provider.ContactDataFacts
 
 internal object ContactDataHelper {
-    fun rows(context: Context, ids: List<String>): List<com.ismartcoding.plain.rust.host.provider.ContactDataFacts> =
+    fun rows(context: Context, ids: List<String>): List<ContactDataFacts> =
         ids.distinct().chunked(128).flatMap { selected ->
             val projection = arrayOf(ContactsContract.Data.RAW_CONTACT_ID, ContactsContract.Data.MIMETYPE,
                 ContactsContract.Data.DATA1, ContactsContract.Data.DATA2, ContactsContract.Data.DATA3, ContactsContract.Data.DATA4, ContactsContract.Data.DATA5, ContactsContract.Data.DATA6)
             val placeholders = selected.joinToString(",") { "?" }
-            val rows = ArrayList<com.ismartcoding.plain.rust.host.provider.ContactDataFacts>()
+            val rows = ArrayList<ContactDataFacts>()
             context.contentResolver.queryCursor(ContactsContract.Data.CONTENT_URI, projection,
                 "${ContactsContract.Data.RAW_CONTACT_ID} IN ($placeholders)", selected.toTypedArray())?.forEach { cursor, cache ->
-                rows.add(com.ismartcoding.plain.rust.host.provider.ContactDataFacts(
+                rows.add(ContactDataFacts(
                     cursor.getStringValue(ContactsContract.Data.RAW_CONTACT_ID, cache),
                     cursor.getStringValue(ContactsContract.Data.MIMETYPE, cache),
                     cursor.getStringValue(ContactsContract.Data.DATA1, cache),

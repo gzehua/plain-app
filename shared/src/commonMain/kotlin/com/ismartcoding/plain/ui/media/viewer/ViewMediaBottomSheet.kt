@@ -49,6 +49,7 @@ import com.ismartcoding.plain.ui.theme.PlainTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import com.ismartcoding.plain.ui.casting.CastViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -61,7 +62,7 @@ fun ViewMediaBottomSheet(
     onRenamedAsync: suspend () -> Unit = {},
     deleteAction: () -> Unit = {},
     onTagsChangedAsync: suspend () -> Unit = {},
-    castViewModel: com.ismartcoding.plain.ui.casting.CastViewModel? = null,
+    castViewModel: CastViewModel? = null,
 ) {
     var showRenameDialog by remember { mutableStateOf(false) }
     var showQrScanResult by remember { mutableStateOf(false) }

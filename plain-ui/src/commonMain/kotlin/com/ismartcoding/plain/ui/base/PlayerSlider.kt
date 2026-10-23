@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,7 +71,7 @@ fun PlayerSlider(
                 val rtl = layoutDirection == LayoutDirection.Rtl
                 val start = if (rtl) size.width else 0f
                 val direction = if (rtl) -1f else 1f
-                fun line(fraction: Float, color: androidx.compose.ui.graphics.Color) {
+                fun line(fraction: Float, color: Color) {
                     drawLine(color, Offset(start, center.y), Offset(start + direction * size.width * fraction.coerceIn(0f, 1f), center.y), size.height, StrokeCap.Round)
                 }
                 line(1f, colors.trackColor)

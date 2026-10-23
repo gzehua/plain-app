@@ -3,11 +3,13 @@ package com.ismartcoding.plain.platform.system
 import android.os.Build
 import com.ismartcoding.plain.buildChannel
 import com.ismartcoding.plain.platform.system.AppChannelType
+import com.ismartcoding.plain.platform.network.isBluetoothSupported
+import com.ismartcoding.plain.platform.network.isWifiAwareSupported
 
 actual fun getDeviceCapabilities(): List<Capability> = Capability.entries.filter { capability ->
     when (capability) {
-        Capability.BLE_DISCOVERY -> com.ismartcoding.plain.platform.network.isBluetoothSupported()
-        Capability.WIFI_AWARE -> com.ismartcoding.plain.platform.network.isWifiAwareSupported
+        Capability.BLE_DISCOVERY -> isBluetoothSupported()
+        Capability.WIFI_AWARE -> isWifiAwareSupported
         Capability.PEER_DISCOVERY,
         Capability.BACKGROUND_SERVICE,
         Capability.LAUNCHER_SHORTCUTS,

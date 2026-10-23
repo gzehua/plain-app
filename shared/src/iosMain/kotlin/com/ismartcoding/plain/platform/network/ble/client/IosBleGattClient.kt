@@ -20,6 +20,8 @@ import platform.CoreBluetooth.CBUUID
 import platform.Foundation.NSError
 import platform.darwin.NSObject
 import kotlin.time.Duration.Companion.milliseconds
+import com.ismartcoding.plain.platform.system.PlatformLock
+import kotlinx.coroutines.channels.Channel
 
 class IosBleGattClient(
     val peripheral: CBPeripheral,
@@ -47,8 +49,8 @@ class IosBleGattClient(
     private var writeDeferred: CompletableDeferred<Boolean>? = null
     private var readDeferred: CompletableDeferred<ByteArray?>? = null
     private var notifyStateDeferred: CompletableDeferred<Boolean>? = null
-    private val notificationLock = com.ismartcoding.plain.platform.system.PlatformLock()
-    private val notifications = mutableMapOf<String, kotlinx.coroutines.channels.Channel<ByteArray>>()
+    private val notificationLock = PlatformLock()
+    private val notifications = mutableMapOf<String, Channel<ByteArray>>()
     override val maximumWriteValueLength: Int get() = minOf(512, peripheral.maximumWriteValueLengthForType(0L).toInt())
 
     private val characteristics = mutableMapOf<String, CBCharacteristic>()
@@ -137,7 +139,7 @@ class IosBleGattClient(
         notifyStateDeferred = deferred
         val key = service.charUuid.lowercase()
         notificationLock.withLock {
-            if (enable) notifications.put(key, kotlinx.coroutines.channels.Channel(64))?.close()
+            if (enable) notifications.put(key, Channel(64))?.close()
             else notifications.remove(key)?.close()
         }
         peripheral.setNotifyValue(enable, char)

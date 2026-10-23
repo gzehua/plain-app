@@ -1,10 +1,11 @@
 package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.testing.CryptoFixtures
+import com.ismartcoding.plain.lib.crypto.ECDHKeyPair
 
 actual fun verifyEd25519Signature(publicKey: ByteArray, data: ByteArray, signature: ByteArray): Boolean =
     CryptoFixtures.verifyEd25519Signature(publicKey, data, signature)
-actual fun generateECDHKeyPair(): com.ismartcoding.plain.lib.crypto.ECDHKeyPair =
+actual fun generateECDHKeyPair(): ECDHKeyPair =
     CryptoFixtures.generateECDHKeyPair()
 actual fun computeECDHSharedKey(privateKeyEncoded: ByteArray, peerPublicKeyEncoded: ByteArray): String? =
     CryptoFixtures.computeECDHSharedKey(privateKeyEncoded, peerPublicKeyEncoded)

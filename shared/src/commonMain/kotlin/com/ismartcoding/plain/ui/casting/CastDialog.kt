@@ -36,6 +36,8 @@ import com.ismartcoding.plain.ui.base.Tips
 import com.ismartcoding.plain.ui.casting.CastViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.ismartcoding.plain.app.isHttpServerRunning
+import com.ismartcoding.plain.app.startHttpServerAsync
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -89,8 +91,8 @@ fun CastDialog(castVM: CastViewModel, onDeviceSelected: (() -> Unit)? = null) {
                                 castVM.selectDevice(device.hostAddress)
                                 audioPause()
                                 scope.launch(Dispatchers.Default) {
-                                    if (!com.ismartcoding.plain.app.isHttpServerRunning()) {
-                                        com.ismartcoding.plain.app.startHttpServerAsync()
+                                    if (!isHttpServerRunning()) {
+                                        startHttpServerAsync()
                                     }
                                 }
                                 if (onDeviceSelected != null) {

@@ -13,6 +13,7 @@ import com.ismartcoding.plain.lib.extensions.paging
 import com.ismartcoding.plain.lib.extensions.where
 import kotlinx.serialization.json.*
 import java.util.concurrent.atomic.AtomicLong
+import android.content.ContentResolver
 
 object MediaStoreImageCatalog {
     private val epoch = AtomicLong()
@@ -58,8 +59,8 @@ object MediaStoreImageCatalog {
             appContext.contentResolver.query(uri,columns,Bundle().apply {
                 paging(0,limit)
                 where(selection,args.toList())
-                putStringArray(android.content.ContentResolver.QUERY_ARG_SORT_COLUMNS,arrayOf(MediaStore.Images.Media._ID))
-                putInt(android.content.ContentResolver.QUERY_ARG_SORT_DIRECTION,android.content.ContentResolver.QUERY_SORT_DIRECTION_ASCENDING)
+                putStringArray(ContentResolver.QUERY_ARG_SORT_COLUMNS,arrayOf(MediaStore.Images.Media._ID))
+                putInt(ContentResolver.QUERY_ARG_SORT_DIRECTION,ContentResolver.QUERY_SORT_DIRECTION_ASCENDING)
             },null)
         } else appContext.contentResolver.query(uri,columns,selection,args,"${MediaStore.Images.Media._ID} ASC LIMIT $limit")
         var last = cursor

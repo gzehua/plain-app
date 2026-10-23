@@ -6,6 +6,7 @@ import platform.UIKit.UISimpleTextPrintFormatter
 import platform.UIKit.UIPrintInfo
 import platform.UIKit.UIPrintInteractionController
 import platform.UIKit.UIViewController
+import platform.UIKit.UIApplication
 
 actual fun printText(textMeasurer: TextMeasurer, jobName: String, content: String) {
     val controller = UIPrintInteractionController.sharedPrintController() ?: run {
@@ -35,6 +36,6 @@ actual fun printText(textMeasurer: TextMeasurer, jobName: String, content: Strin
 }
 
 private fun rootViewController(): UIViewController? {
-    val window = platform.UIKit.UIApplication.sharedApplication.keyWindow ?: return null
+    val window = UIApplication.sharedApplication.keyWindow ?: return null
     return window.rootViewController
 }

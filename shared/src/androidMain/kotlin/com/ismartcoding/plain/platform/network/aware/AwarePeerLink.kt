@@ -25,6 +25,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
+import kotlin.io.encoding.Base64
 
 @RequiresApi(Build.VERSION_CODES.S)
 @SuppressLint("MissingPermission")
@@ -287,7 +288,7 @@ class AwarePeerLink(
             session = session,
             connectivityManager = connectivityManager,
             isClient = config.isClient,
-            pmk = config.pmk?.let { kotlin.io.encoding.Base64.decode(it) },
+            pmk = config.pmk?.let { Base64.decode(it) },
             localPort = config.localPort,
             onClose = onClose,
         )

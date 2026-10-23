@@ -20,6 +20,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.TextMeasurer
 import androidx.core.util.TypedValueCompat.spToPx
 import java.io.FileOutputStream
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.os.Bundle
+import android.text.StaticLayout
+import android.text.TextPaint
 
 class ComposeTextPrintAdapter(
     private val context: Context,
@@ -58,7 +63,7 @@ class ComposeTextPrintAdapter(
         newAttributes: PrintAttributes?,
         cancellationSignal: CancellationSignal?,
         callback: LayoutResultCallback?,
-        extras: android.os.Bundle?
+        extras: Bundle?
     ) {
 
         layoutResult = textMeasurer.measure(
@@ -112,7 +117,7 @@ class ComposeTextPrintAdapter(
 
             // ===== Header =====
 
-            val headerPaint = android.graphics.Paint().apply {
+            val headerPaint = Paint().apply {
                 textSize = 11f
                 color = Color.Gray.toArgb()
                 isAntiAlias = true
@@ -125,7 +130,7 @@ class ComposeTextPrintAdapter(
                 headerPaint
             )
 
-            val textPaint = android.text.TextPaint().apply {
+            val textPaint = TextPaint().apply {
                 textSize = 11f.spToPx()
                 color = Color(0xFF222222).toArgb()
                 isAntiAlias = true
@@ -209,10 +214,10 @@ class ComposeTextPrintAdapter(
     }
 
     private fun drawLines(
-        canvas: android.graphics.Canvas,
+        canvas: Canvas,
         layout: TextLayoutResult,
         text: String,
-        paint: android.text.TextPaint,
+        paint: TextPaint,
         startLine: Int,
         endLine: Int
     ) {
@@ -227,7 +232,7 @@ class ComposeTextPrintAdapter(
             text.substring(startOffset, endOffset)
 
         val staticLayout =
-            android.text.StaticLayout.Builder
+            StaticLayout.Builder
                 .obtain(
                     pageText,
                     0,

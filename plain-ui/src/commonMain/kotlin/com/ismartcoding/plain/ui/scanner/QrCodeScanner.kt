@@ -35,6 +35,7 @@ import com.ismartcoding.plain.ui.scanner.components.ScanImageCodePicker
 import com.ismartcoding.plain.ui.theme.darkMask
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import kotlinx.coroutines.CancellationException
 
 @Composable
 fun QrCodeScanner(
@@ -108,7 +109,7 @@ fun QrCodeScanner(
                     pairingInFlight = false
                     openResult(text)
                 }
-            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            } catch (cancelled: CancellationException) {
                 pairingInFlight = false
                 throw cancelled
             } catch (_: Exception) {

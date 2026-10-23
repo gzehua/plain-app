@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import android.content.Context
 
 @Composable
 actual fun NativeEditorCanvas(
@@ -57,7 +58,7 @@ actual fun NativeEditorCanvas(
 }
 
 internal class SceneRenderer(
-    private val context: android.content.Context,
+    private val context: Context,
     private val onReady: () -> Unit,
 ) {
     private val rasterizer = LayerRasterizer()

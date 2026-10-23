@@ -8,6 +8,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import java.util.Base64
 
 /**
  * Verifies that plain-app (Kotlin / Google Tink / BouncyCastle) can decrypt
@@ -249,6 +250,6 @@ class WebCryptoVectorTest {
             .mapNotNull { it.trim().toIntOrNull() }
     }
 
-    private fun b64Decode(s: String): ByteArray = java.util.Base64.getDecoder().decode(s)
-    private fun b64Encode(b: ByteArray): String = java.util.Base64.getEncoder().encodeToString(b)
+    private fun b64Decode(s: String): ByteArray = Base64.getDecoder().decode(s)
+    private fun b64Encode(b: ByteArray): String = Base64.getEncoder().encodeToString(b)
 }

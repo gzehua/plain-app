@@ -18,13 +18,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.serialization.json.JsonObject
 
 object NearbyViewModel {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     val nearbyDevices = MutableStateFlow<List<NearbyDevice>>(emptyList())
     var isDiscovering = mutableStateOf(false)
-    val pairingStates = mutableStateMapOf<String, kotlinx.serialization.json.JsonObject>()
+    val pairingStates = mutableStateMapOf<String, JsonObject>()
     val itemStatus = mutableStateMapOf<String, NearbyItemStatus>()
 
 

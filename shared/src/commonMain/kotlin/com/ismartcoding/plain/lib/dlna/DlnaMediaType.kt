@@ -1,4 +1,6 @@
 package com.ismartcoding.plain.lib.dlna
 
-@kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class DlnaMediaType { VIDEO, AUDIO, IMAGE, UNKNOWN }

@@ -18,9 +18,10 @@ import com.ismartcoding.plain.ui.resources.message_square_text as ui_drawable_me
 import com.ismartcoding.plain.ui.resources.package2 as ui_drawable_package2
 import com.ismartcoding.plain.ui.resources.phone_call as ui_drawable_phone_call
 import com.ismartcoding.plain.i18n.folder
+import com.ismartcoding.plain.preferences.Prefs
 
 suspend fun checkEnabledAsync(permissions: Set<Permission>) {
-    val enabled = com.ismartcoding.plain.preferences.Prefs.state.value.apiPermissions
+    val enabled = Prefs.state.value.apiPermissions
     val missing = permissions.map { it.name }.filterNot { it in enabled }
     if (missing.isNotEmpty()) {
         throw Exception("no_permission")

@@ -20,6 +20,13 @@ import com.ismartcoding.plain.ui.media.thumbnail.DecodeLimiter
 import com.ismartcoding.plain.lib.DecodePolicy
 import java.io.ByteArrayOutputStream
 import java.io.File
+import android.graphics.ImageDecoder
+import android.os.Environment
+import com.ismartcoding.plain.helpers.PathHelper
+import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.ui.media.thumbnail.ThumbnailGenerator
+import kotlinx.coroutines.CancellationException
 
 actual fun deleteFileAt(path: String) {
     File(path).delete()
@@ -40,13 +47,13 @@ actual suspend fun saveFileToDownloads(path: String, fileName: String): String =
     try {
         FilesClient.copyToDirectory(
             path,
-            com.ismartcoding.plain.helpers.PathHelper.getPlainPublicDir(android.os.Environment.DIRECTORY_DOWNLOADS).absolutePath,
+            PathHelper.getPlainPublicDir(Environment.DIRECTORY_DOWNLOADS).absolutePath,
             fileName.ifEmpty { path.getFilenameFromPath() },
         )
-    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+    } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (error: Exception) {
-        com.ismartcoding.plain.lib.logcat.LogCat.e("Save to downloads failed", error)
+        LogCat.e("Save to downloads failed", error)
         ""
     }
 }
@@ -100,10 +107,10 @@ actual suspend fun decodeImageFileToPng(path: String): ByteArray? = withIO {
         // Cap the decoded edge: a 48 MP HEIC would otherwise allocate ~192 MB
         // per open view, which is fatal on small-heap compatibility containers.
         // 4096 px keeps 12 MP photos pixel-exact.
-        val bitmap = android.graphics.ImageDecoder.decodeBitmap(
-            android.graphics.ImageDecoder.createSource(File(path))
+        val bitmap = ImageDecoder.decodeBitmap(
+            ImageDecoder.createSource(File(path))
         ) { decoder, info, _ ->
-            decoder.allocator = android.graphics.ImageDecoder.ALLOCATOR_SOFTWARE
+            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
             decoder.setTargetSampleSize(DecodePolicy.capSampleSize(
                 info.size.width, info.size.height, DecodePolicy.MAX_FULL_VIEW_EDGE
             ))
@@ -129,7 +136,7 @@ actual suspend fun decodeThumbnailBytes(
 ): ByteArray? = withIO {
     val file = File(path)
     if (!file.exists()) return@withIO null
-    com.ismartcoding.plain.ui.media.thumbnail.ThumbnailGenerator.decodeBytesAsync(appContext, file, width, height, centerCrop, mediaId, fileName)
+    ThumbnailGenerator.decodeBytesAsync(appContext, file, width, height, centerCrop, mediaId, fileName)
 }
 
 actual fun isContentUri(path: String): Boolean = path.startsWith("content://")
@@ -145,7 +152,7 @@ actual suspend fun readTextFile(path: String): String = withIO {
             val filePath = if (path.startsWith("file://")) Uri.parse(path).path else path
             File(filePath ?: path).readText()
         }
-    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+    } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (e: Exception) {
         ""
@@ -182,7 +189,7 @@ actual suspend fun getFileByMediaId(mediaId: String): FileEntry? = withIO {
 
 internal actual suspend fun provideResourceFile(id: String, uri: String): Unit = withIO {
     appContext.contentResolver.openAssetFileDescriptor(Uri.parse(uri), "r")?.use { asset ->
-        val error = com.ismartcoding.plain.rust.native.RustNativeApi.resourceFile(
+        val error = RustNativeApi.resourceFile(
             id, asset.parcelFileDescriptor.fd, asset.startOffset, asset.declaredLength,
         )
         check(error.isEmpty()) { error }
@@ -204,6 +211,6 @@ actual suspend fun copyFileToUri(path: String, uriStr: String): Boolean = withIO
 }
 
 internal actual suspend fun readPickedFileBytes(uri: String): ByteArray = withIO {
-    com.ismartcoding.plain.appContext.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use { it.readBytes() }
+    appContext.contentResolver.openInputStream(Uri.parse(uri))?.use { it.readBytes() }
         ?: error("Failed to read the selected file")
 }

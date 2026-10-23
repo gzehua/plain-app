@@ -12,6 +12,7 @@ import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.ui.platform.notifications.NotificationHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.services.PNotificationListenerService
+import kotlinx.coroutines.delay
 
 actual fun toggleNotificationListener(enabled: Boolean) {
     PNotificationListenerService.toggle(appContext, enabled)
@@ -43,7 +44,7 @@ actual suspend fun cancelNotificationFacts(ids: Set<String>): Set<String> = with
     if (submitted.isEmpty()) return@withIO emptySet()
     var remaining = submitted
     repeat(20) {
-        kotlinx.coroutines.delay(25)
+        delay(25)
         val keys = service.activeNotifications.map { it.key }.toSet()
         remaining = submitted.intersect(keys)
         if (remaining.isEmpty()) return@withIO submitted

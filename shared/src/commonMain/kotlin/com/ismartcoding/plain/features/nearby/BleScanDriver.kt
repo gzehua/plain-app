@@ -18,8 +18,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlin.io.encoding.Base64
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-@OptIn(kotlin.uuid.ExperimentalUuidApi::class)
+@OptIn(ExperimentalUuidApi::class)
 object BleScanDriver {
     suspend fun scan() {
         try { feedScan() }
@@ -28,7 +30,7 @@ object BleScanDriver {
     }
 
     private suspend fun feedScan() {
-        val scan = kotlin.uuid.Uuid.random().toString()
+        val scan = Uuid.random().toString()
         try {
             BleScanReports.scanState(scan, true)
             forEachAdvertisement { shortId ->

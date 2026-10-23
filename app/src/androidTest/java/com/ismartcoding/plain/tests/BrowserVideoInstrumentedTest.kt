@@ -56,6 +56,7 @@ import org.junit.runner.RunWith
 import java.io.File
 import java.net.URLEncoder
 import java.util.UUID
+import kotlin.math.abs
 
 @RunWith(AndroidJUnit4::class)
 class BrowserVideoInstrumentedTest {
@@ -93,7 +94,7 @@ class BrowserVideoInstrumentedTest {
                 val sourceDuration = MediaClient.durationMs(source.absolutePath)
                 val outputDuration = MediaClient.durationMs(output.absolutePath)
                 assertTrue(sourceDuration > 0)
-                assertTrue(kotlin.math.abs(sourceDuration-outputDuration) <= 2000)
+                assertTrue(abs(sourceDuration-outputDuration) <= 2000)
             }
         } finally {
             output.delete()

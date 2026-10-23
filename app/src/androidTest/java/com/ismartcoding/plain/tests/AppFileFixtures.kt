@@ -6,7 +6,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 
 object AppFileFixtures {
-    suspend fun importBytes(bytes: ByteArray, mimeType: String): com.ismartcoding.plain.models.AppFile {
+    suspend fun importBytes(bytes: ByteArray, mimeType: String): AppFile {
         val source = File.createTempFile("attachment-fixture-", ".tmp", InstrumentationRegistry.getInstrumentation().targetContext.cacheDir)
         try {
             source.writeBytes(bytes)

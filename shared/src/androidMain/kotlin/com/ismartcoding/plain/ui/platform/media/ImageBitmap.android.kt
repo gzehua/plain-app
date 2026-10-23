@@ -2,6 +2,7 @@ package com.ismartcoding.plain.ui.platform.media
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import android.graphics.BitmapFactory
 
 internal actual fun decodeImageFileBitmap(path: String): ImageBitmap? =
-    android.graphics.BitmapFactory.decodeFile(path)?.asImageBitmap()
+    BitmapFactory.decodeFile(path)?.asImageBitmap()

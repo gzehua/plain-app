@@ -11,6 +11,8 @@ import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException
+import com.ismartcoding.plain.app.events.RestartAppEvent
+import com.ismartcoding.plain.lib.sendEvent
 
 fun backup(uriStr: String) = exportBackup { path ->
     check(copyFileToUri(path, uriStr)) { "Unable to write selected backup file" }
@@ -49,7 +51,7 @@ fun restore(uriStr: String) {
             val message = LocaleHelper.getStringAsync(Res.string.app_restore_ready)
             if (Capability.APP_RELAUNCH in getDeviceCapabilities()) {
                 DialogHelper.showConfirmDialog("", message) {
-                    com.ismartcoding.plain.lib.sendEvent(com.ismartcoding.plain.app.events.RestartAppEvent())
+                    sendEvent(RestartAppEvent())
                 }
             } else {
                 DialogHelper.showConfirmDialog("", message)

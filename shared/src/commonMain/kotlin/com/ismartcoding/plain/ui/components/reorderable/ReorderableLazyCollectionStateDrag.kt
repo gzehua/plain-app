@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.toOffset
 import androidx.compose.ui.unit.toSize
 import kotlinx.coroutines.launch
+import androidx.compose.ui.unit.LayoutDirection
 
 internal fun <T> ReorderableLazyCollectionState<T>.onDragStop() {
     val previousDraggingItemInitialOffset = draggingItemLayoutInfo?.offset
@@ -43,7 +44,7 @@ internal fun <T> ReorderableLazyCollectionState<T>.onDrag(offset: Offset) {
     val (contentStartOffset, contentEndOffset) = state.layoutInfo.getScrollAreaOffsets(scrollThresholdPadding)
 
     val handleOffset = when (state.layoutInfo.reverseLayout ||
-            (layoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl && orientation == Orientation.Horizontal)) {
+            (layoutDirection == LayoutDirection.Rtl && orientation == Orientation.Horizontal)) {
         true -> endOffset - draggingItemHandleOffset
         false -> startOffset + draggingItemHandleOffset
     } + IntOffset.fromAxis(orientation, state.layoutInfo.beforeContentPadding).toOffset()

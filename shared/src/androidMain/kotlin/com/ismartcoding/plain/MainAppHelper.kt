@@ -26,6 +26,8 @@ import com.ismartcoding.plain.preferences.setDarkMode
 import com.ismartcoding.plain.receivers.PlugInControlReceiver
 import com.ismartcoding.plain.platform.system.newImageLoader
 import dalvik.system.ZipPathValidator
+import com.ismartcoding.plain.app.HttpServerManager
+import com.ismartcoding.plain.ui.settings.checkAppUpdate
 
 object MainAppHelper {
 
@@ -38,7 +40,7 @@ object MainAppHelper {
         initDiskLogging()
 
         AppEvents.register()
-        com.ismartcoding.plain.app.HttpServerManager.ensureStarted()
+        HttpServerManager.ensureStarted()
         NetworkMonitor.init(app)
         if (isQPlus()) {
             try {
@@ -65,7 +67,7 @@ object MainAppHelper {
             }
 
             if (AppFeatureType.CHECK_UPDATES.has()) {
-                com.ismartcoding.plain.ui.settings.checkAppUpdate(showToast = false, automatic = true)
+                checkAppUpdate(showToast = false, automatic = true)
             }
         }
     }

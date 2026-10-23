@@ -10,6 +10,7 @@ import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.platform.network.aware.WifiAwareTransport
 import com.ismartcoding.plain.lib.extensions.hasPermission
 import com.ismartcoding.plain.wifiAwareManager
+import com.ismartcoding.plain.wifiManager
 
 actual fun getAwareDebugInfo(): AwareDebugInfo {
     if (!isTPlus()) {
@@ -21,7 +22,7 @@ actual fun getAwareDebugInfo(): AwareDebugInfo {
             locationPermissionGranted = appContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION),
             wifiEnabled = runCatching {
                 @Suppress("DEPRECATION")
-                com.ismartcoding.plain.wifiManager.isWifiEnabled
+                wifiManager.isWifiEnabled
             }.getOrDefault(false),
         )
     }
@@ -51,7 +52,7 @@ actual fun getAwareDebugInfo(): AwareDebugInfo {
         appContext.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
     val wifiEnabled = runCatching {
         @Suppress("DEPRECATION")
-        com.ismartcoding.plain.wifiManager.isWifiEnabled
+        wifiManager.isWifiEnabled
     }.getOrDefault(false)
 
     return AwareDebugInfo(

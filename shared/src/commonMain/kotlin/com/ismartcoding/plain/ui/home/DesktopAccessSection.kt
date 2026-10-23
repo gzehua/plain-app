@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.map
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.i18n.devices
+import com.ismartcoding.plain.platform.system.setDesktopAccessEnabled
 
 @Composable
 fun DesktopAccessSection(navController: NavHostController) {
@@ -53,7 +54,7 @@ fun DesktopAccessSection(navController: NavHostController) {
         PListItem(icon = UiRes.drawable.ui_drawable_devices, title = stringResource(Res.string.desktop_access)) {
             Switch(checked = desktopAccessEnabled, onCheckedChange = { enable ->
                 scope.launchSafe {
-                    com.ismartcoding.plain.platform.system.setDesktopAccessEnabled(enable)
+                    setDesktopAccessEnabled(enable)
                 }
             })
         }

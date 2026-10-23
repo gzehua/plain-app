@@ -5,19 +5,21 @@ import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.generateId
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Required
+import kotlinx.serialization.Transient
 
 @Serializable
 data class Feed(
-    @kotlinx.serialization.Required override var id: String = generateId(),
-    @kotlinx.serialization.Required var name: String = "",
-    @kotlinx.serialization.Required var url: String = "",
-    @kotlinx.serialization.Required var fetchContent: Boolean = false,
-    @kotlinx.serialization.Required var logo: String = "",
-    @kotlinx.serialization.Required var lastSyncAt: Instant? = null,
-    @kotlinx.serialization.Required var lastError: FeedError = FeedError(),
-    @kotlinx.serialization.Transient var entryCount: Int = 0,
-    @kotlinx.serialization.Required var createdAt: Instant = TimeHelper.now(),
-    @kotlinx.serialization.Required var updatedAt: Instant = TimeHelper.now(),
+    @Required override var id: String = generateId(),
+    @Required var name: String = "",
+    @Required var url: String = "",
+    @Required var fetchContent: Boolean = false,
+    @Required var logo: String = "",
+    @Required var lastSyncAt: Instant? = null,
+    @Required var lastError: FeedError = FeedError(),
+    @Transient var entryCount: Int = 0,
+    @Required var createdAt: Instant = TimeHelper.now(),
+    @Required var updatedAt: Instant = TimeHelper.now(),
 ) : IData {
     /** True when the last sync attempt failed. */
     val hasSyncError: Boolean

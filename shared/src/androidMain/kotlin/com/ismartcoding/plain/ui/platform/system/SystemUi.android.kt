@@ -21,14 +21,16 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.ismartcoding.plain.lib.extensions.isGestureInteractionMode
 import com.ismartcoding.plain.ui.media.viewer.video.VideoState
+import com.ismartcoding.plain.appContextValue
+import com.ismartcoding.plain.mainActivity
 
 actual fun isGestureInteractionMode(): Boolean {
-    val context = com.ismartcoding.plain.appContextValue ?: return false
+    val context = appContextValue ?: return false
     return context.isGestureInteractionMode()
 }
 
 actual fun keepScreenOn(enabled: Boolean) {
-    val activity = com.ismartcoding.plain.mainActivity ?: return
+    val activity = mainActivity ?: return
     if (enabled) {
         activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     } else {
@@ -37,7 +39,7 @@ actual fun keepScreenOn(enabled: Boolean) {
 }
 
 actual fun hideNavigationBar() {
-    val context = com.ismartcoding.plain.appContextValue ?: return
+    val context = appContextValue ?: return
     val activity = context as? Activity ?: return
     val view = activity.window.decorView
     WindowCompat.getInsetsController(activity.window, view)
@@ -45,7 +47,7 @@ actual fun hideNavigationBar() {
 }
 
 actual fun showNavigationBar() {
-    val context = com.ismartcoding.plain.appContextValue ?: return
+    val context = appContextValue ?: return
     val activity = context as? Activity ?: return
     val view = activity.window.decorView
     WindowCompat.getInsetsController(activity.window, view)
@@ -76,7 +78,7 @@ actual fun setImmersiveFullscreen() {
 }
 
 actual fun exitImmersiveFullscreen() {
-    val activity = com.ismartcoding.plain.mainActivity ?: return
+    val activity = mainActivity ?: return
     // Keep DecorFitsSystemWindows = false to match MainActivity's default
     // (setDecorFitsSystemWindows(window, false) in MainActivity.onCreate).
     // Flipping it to true would trigger a full Activity relayout, causing a
@@ -88,7 +90,7 @@ actual fun exitImmersiveFullscreen() {
 }
 
 actual fun setSystemBarsVisible(visible: Boolean) {
-    val activity = com.ismartcoding.plain.mainActivity ?: return
+    val activity = mainActivity ?: return
     // Keep edge-to-edge so the media surface never relayouts when bars toggle.
     // Only toggle the status bar — the navigation bar (gesture bar / 3-button
     // bar) stays hidden so the bottom of the player never shows a system bar
@@ -106,7 +108,7 @@ actual fun setSystemBarsVisible(visible: Boolean) {
 
 
 actual fun applySystemBarAppearanceForDarkTheme(useDarkTheme: Boolean) {
-    val activity = com.ismartcoding.plain.mainActivity ?: return
+    val activity = mainActivity ?: return
     val window = activity.window
     WindowCompat.getInsetsController(window, window.decorView).apply {
         isAppearanceLightStatusBars = !useDarkTheme
@@ -118,12 +120,12 @@ actual fun applySystemBarAppearanceForDarkTheme(useDarkTheme: Boolean) {
 }
 
 actual fun hasPipMode(): Boolean {
-    val context = com.ismartcoding.plain.appContextValue ?: return false
+    val context = appContextValue ?: return false
     return context.packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
 }
 
 actual fun enterPipMode(videoState: VideoState): Boolean {
-    val context = com.ismartcoding.plain.mainActivity ?: return false
+    val context = mainActivity ?: return false
     if (!hasPipMode()) return false
     videoState.enablePip = true
     val params = PictureInPictureParams.Builder()

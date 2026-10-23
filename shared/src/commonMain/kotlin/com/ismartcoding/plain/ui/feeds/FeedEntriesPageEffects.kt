@@ -23,6 +23,7 @@ import com.ismartcoding.plain.ui.state.exitSelectMode
 import com.ismartcoding.plain.ui.state.launchSafe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import com.ismartcoding.plain.rust.RustEventHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +45,7 @@ internal fun FeedEntriesPageEffects(
     }
 
     LaunchedEffect(feedEntriesVM, feedsVM, tagsVM) {
-        com.ismartcoding.plain.rust.RustEventHandler.events.collect { event ->
+        RustEventHandler.events.collect { event ->
             if (event.type == EventType.CONTENT_CHANGED) {
                 feedsVM.loadAsync(withCount = true)
                 feedsVM.refreshSelectedItemAsync()

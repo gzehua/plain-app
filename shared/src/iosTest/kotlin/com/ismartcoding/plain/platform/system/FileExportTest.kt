@@ -1,4 +1,4 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package com.ismartcoding.plain.platform.system
 
@@ -17,6 +17,8 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.posix.symlink
 
 class FileExportTest {
     @Test
@@ -54,7 +56,7 @@ class FileExportTest {
             assertTrue(writeBytesToPath(source, bytes))
             assertTrue(copyFileToUri(source, NSURL.fileURLWithPath(target).absoluteString!!))
             assertContentEquals(bytes, manager.contentsAtPath(target)!!.toByteArray())
-            assertEquals(0, platform.posix.symlink(source, alias))
+            assertEquals(0, symlink(source, alias))
             assertFalse(copyFileToUri(source, NSURL.fileURLWithPath(alias).absoluteString!!))
             assertContentEquals(bytes, manager.contentsAtPath(source)!!.toByteArray())
             assertFalse(copyFileToUri(source, "https://example.invalid/export.zip"))

@@ -23,6 +23,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlinx.coroutines.CancellationException
 
 private val mainActivityClass: Class<*> by lazy {
     Class.forName("com.ismartcoding.plain.MainActivity")
@@ -91,7 +92,7 @@ object MediaShortcutHelper {
         if (bitmap == null && path.isAudioFast()) {
             bitmap = try {
                 loadAudioArtwork(path)
-            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
                 null

@@ -9,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Instant
+import java.lang.Boolean as JavaBoolean
 
 class GraphqlVariableContractTest {
     @Test
@@ -50,7 +51,7 @@ class GraphqlVariableContractTest {
 
     private fun supported(type: Class<*>): Boolean = type in setOf(
         String::class.java, Int::class.javaPrimitiveType, Long::class.javaPrimitiveType,
-        Float::class.javaPrimitiveType, Boolean::class.javaPrimitiveType, java.lang.Boolean::class.java,
+        Float::class.javaPrimitiveType, Boolean::class.javaPrimitiveType, JavaBoolean::class.java,
         Instant::class.java, ImageEditorProject::class.java,
     ) || type.isEnum || Collection::class.java.isAssignableFrom(type)
 
@@ -64,7 +65,7 @@ class GraphqlVariableContractTest {
         type == Int::class.javaPrimitiveType -> 1
         type == Long::class.javaPrimitiveType -> 1L
         type == Float::class.javaPrimitiveType -> 1f
-        type == Boolean::class.javaPrimitiveType || type == java.lang.Boolean::class.java -> false
+        type == Boolean::class.javaPrimitiveType || type == JavaBoolean::class.java -> false
         type == Instant::class.java -> Instant.parse("2026-01-01T00:00:00Z")
         type == ImageEditorProject::class.java -> ImageEditorProject("fixture")
         type == DataType::class.java -> DataType.IMAGE

@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import org.jetbrains.compose.resources.DrawableResource
+import androidx.compose.ui.semantics.Role
 @Composable
 fun PSheetActionRow(
     icon: DrawableResource? = null,
@@ -18,7 +19,7 @@ fun PSheetActionRow(
     onClick: () -> Unit,
 ) {
     PListItem(
-        modifier = modifier.clip(MaterialTheme.shapes.small).clickable(enabled = enabled, role = androidx.compose.ui.semantics.Role.Button, onClick = onClick),
+        modifier = modifier.clip(MaterialTheme.shapes.small).clickable(enabled = enabled, role = Role.Button, onClick = onClick),
         icon = icon,
         start = start,
         title = title,

@@ -1,4 +1,4 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class, kotlinx.cinterop.BetaInteropApi::class)
+@file:OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 
 package com.ismartcoding.plain.network
 
@@ -56,6 +56,8 @@ import io.ktor.utils.io.writeFully
 import kotlinx.coroutines.Job
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.ExperimentalForeignApi
 
 /**
  * NSURLSession-backed [PlainHttpClient] for iOS. This is the native

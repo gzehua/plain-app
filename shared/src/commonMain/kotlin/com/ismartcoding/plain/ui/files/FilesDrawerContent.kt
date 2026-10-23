@@ -57,6 +57,8 @@ import com.ismartcoding.plain.ui.resources.square_pen as ui_drawable_square_pen
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import com.ismartcoding.plain.ui.components.DialogHelper
+import kotlinx.coroutines.CancellationException
 
 /**
  * Drawer content for the Files page: storage locations as SidebarItems, a
@@ -100,8 +102,8 @@ fun FilesDrawerContent(
             val items = buildFolderOptions(filesVM, recentsText, internalStorageText, sdcardText, usbStorageText, fileTransferAssistantText)
             options.clear()
             options.addAll(items)
-        } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
-        catch (error: Exception) { com.ismartcoding.plain.ui.components.DialogHelper.showMessage(error) }
+        } catch (cancelled: CancellationException) { throw cancelled }
+        catch (error: Exception) { DialogHelper.showMessage(error) }
     }
 
     // Reload shares whenever the drawer opens or the share list changes

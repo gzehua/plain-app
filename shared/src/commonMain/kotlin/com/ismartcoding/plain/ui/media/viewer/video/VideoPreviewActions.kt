@@ -42,6 +42,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
 import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.platform.system.enterPipMode
 
 /**
  * Shared bottom controls for the non-fullscreen video preview in
@@ -131,7 +132,7 @@ fun VideoPreviewActions(
                 onSpeedChange = { videoState.changeSpeed(it) },
                 onMuteToggle = { videoState.toggleMute() },
                 onPlayPause = { videoState.togglePlay() },
-                onPip = { com.ismartcoding.plain.ui.platform.system.enterPipMode(videoState) },
+                onPip = { enterPipMode(videoState) },
                 onFullscreenToggle = { videoState.isFullscreenMode = !videoState.isFullscreenMode },
             )
         }

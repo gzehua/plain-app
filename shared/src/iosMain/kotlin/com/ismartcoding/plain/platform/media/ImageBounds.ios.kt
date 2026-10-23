@@ -1,10 +1,11 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package com.ismartcoding.plain.platform.media
 
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.cinterop.useContents
 import platform.UIKit.UIImage
+import kotlinx.cinterop.ExperimentalForeignApi
 
 internal actual fun readImageBounds(path: String): ImageBounds = try {
     UIImage.imageWithContentsOfFile(path)?.size?.useContents {

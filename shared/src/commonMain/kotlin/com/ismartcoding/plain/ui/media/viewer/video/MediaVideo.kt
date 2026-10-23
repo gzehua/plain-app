@@ -43,6 +43,7 @@ import com.ismartcoding.plain.ui.media.viewer.RawGesture
 import com.ismartcoding.plain.ui.media.viewer.SizeChangeContent
 import com.ismartcoding.plain.ui.media.viewer.detectTransformGestures
 import kotlin.math.abs
+import com.ismartcoding.plain.platform.media.getVideoMediaId
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -152,7 +153,7 @@ fun MediaVideo(
             return@LaunchedEffect
         }
         if (isActive) {
-            if (mediaId.isEmpty()) mediaId = com.ismartcoding.plain.platform.media.getVideoMediaId(model.path).orEmpty()
+            if (mediaId.isEmpty()) mediaId = getVideoMediaId(model.path).orEmpty()
             videoState.initData(controller)
             val expectedTotalMs = (model.data as? MediaVideo)?.durationMs ?: 0L
             if (expectedTotalMs > 0L) {

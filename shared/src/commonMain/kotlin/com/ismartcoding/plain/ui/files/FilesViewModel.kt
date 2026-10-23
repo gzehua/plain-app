@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 class FilesViewModel : ISearchableViewModel<FileEntry>, ISelectableViewModel<FileEntry>, ViewModel() {
     var rootPath = getInternalStoragePath()
@@ -246,7 +247,7 @@ class FilesViewModel : ISearchableViewModel<FileEntry>, ISelectableViewModel<Fil
                 withIO {
                     FilesClient.deleteMany(paths.toList())
                 }
-            } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+            } catch (cancelled: CancellationException) { throw cancelled }
             catch (error: Exception) { DialogHelper.showMessage(error) }
             finally {
                 DialogHelper.hideLoading()

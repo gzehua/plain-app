@@ -54,6 +54,7 @@ import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.check as ui_drawable_check
 import com.ismartcoding.plain.ui.resources.download as ui_drawable_download
 import com.ismartcoding.plain.i18n.download
+import kotlinx.coroutines.CancellationException
 
 /**
  * Global overlay that renders the DLNA cast-request dialog and media player on
@@ -229,7 +230,7 @@ private suspend fun downloadDlnaMedia(url: String, mediaType: DlnaMediaType, tit
             DialogHelper.showMessage(getString(Res.string.dlna_download_success, saved))
             true
         }
-    } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+    } catch (cancelled: CancellationException) { throw cancelled }
     catch (_: Exception) {
         DialogHelper.showMessage(getString(Res.string.dlna_download_failed))
         false

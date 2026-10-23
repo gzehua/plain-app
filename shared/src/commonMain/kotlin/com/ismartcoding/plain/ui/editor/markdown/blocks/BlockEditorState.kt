@@ -396,7 +396,7 @@ class BlockEditorState {
         while (p < orig.length && buffer.charAt(p) == orig[p]) p++
         if (p == caret.min && buffer.charAt(p) == '\n') {
             buffer.revertAllChanges()
-            buffer.selection = androidx.compose.ui.text.TextRange(caret.min + suffix.length)
+            buffer.selection = TextRange(caret.min + suffix.length)
             pendingWrapSuffix = null
         }
     }

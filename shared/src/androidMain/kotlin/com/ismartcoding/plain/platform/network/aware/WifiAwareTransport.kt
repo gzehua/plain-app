@@ -11,6 +11,7 @@ import com.ismartcoding.plain.platform.network.AwareConfig
 import com.ismartcoding.plain.platform.network.AwarePeer
 import com.ismartcoding.plain.connectivityManager
 import com.ismartcoding.plain.platform.isTPlus
+import com.ismartcoding.plain.platform.network.PeerByteSocket
 
 @RequiresApi(Build.VERSION_CODES.S)
 object WifiAwareTransport {
@@ -54,7 +55,7 @@ object WifiAwareTransport {
         pool.unsubscribe(peerId)
     }
 
-    suspend fun openSocket(peerId: String): com.ismartcoding.plain.platform.network.PeerByteSocket {
+    suspend fun openSocket(peerId: String): PeerByteSocket {
         val connection = pool.buildLink(peerId)
         return AwareByteSocket.open(connection)
     }

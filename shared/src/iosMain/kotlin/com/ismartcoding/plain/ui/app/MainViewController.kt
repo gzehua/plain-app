@@ -30,6 +30,13 @@ import com.ismartcoding.plain.ui.theme.AppTheme
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import platform.UIKit.UIViewController
+import com.ismartcoding.plain.app.HttpServerManager
+import com.ismartcoding.plain.features.settings.Language
+import com.ismartcoding.plain.platform.system.IosFilePickerEvents
+import com.ismartcoding.plain.platform.system.IosPermissionEvents
+import com.ismartcoding.plain.platform.system.IosWindowFocusEvents
+import com.ismartcoding.plain.platform.system.setupIosImageLoader
+import kotlinx.cinterop.ExperimentalForeignApi
 
 private var initialized = false
 
@@ -37,28 +44,28 @@ private var initialized = false
  * One-time iOS app initialization: Rust runtime, log adapters,
  * and event collectors. Idempotent — safe to call multiple times.
  */
-@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class)
 fun initIosApp() {
     if (initialized) return
     initialized = true
 
-    com.ismartcoding.plain.platform.system.setupIosImageLoader()
+    setupIosImageLoader()
     RustRuntime.start()
 
     // Disk logging + HTTP request logging (debug=VERBOSE, release=WARN)
     initDiskLogging()
 
     AppEvents.register()
-    com.ismartcoding.plain.app.HttpServerManager.ensureStarted()
+    HttpServerManager.ensureStarted()
 
     // iOS permission request handler (bridges RequestPermissionsEvent → Swift)
-    com.ismartcoding.plain.platform.system.IosPermissionEvents.register()
+    IosPermissionEvents.register()
 
     // iOS file picker (bridges PickFileEvent/ExportFileEvent → Swift UIDocumentPicker/PHPicker)
-    com.ismartcoding.plain.platform.system.IosFilePickerEvents.register()
+    IosFilePickerEvents.register()
 
     // iOS window focus events (bridges UIApplication.didBecomeActive/willResignActive → WindowFocusChangedEvent)
-    com.ismartcoding.plain.platform.system.IosWindowFocusEvents.register()
+    IosWindowFocusEvents.register()
 
     // Network path monitor (recreates the mDNS responder socket on network changes)
 
@@ -105,7 +112,7 @@ fun MainViewController(): UIViewController {
                 navControllerState = navControllerState,
                 onLaunched = {
                     // iOS has no Intent to handle; locale init runs in background.
-                    MainScope().launch { com.ismartcoding.plain.features.settings.Language.initLocaleAsync() }
+                    MainScope().launch { Language.initLocaleAsync() }
                 },
                 mainVM = mainVM,
                 audioQueueVM = audioQueueVM,

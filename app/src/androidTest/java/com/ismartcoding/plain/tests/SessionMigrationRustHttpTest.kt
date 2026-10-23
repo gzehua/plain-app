@@ -54,6 +54,7 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.UUID
+import java.security.MessageDigest
 
 @RunWith(AndroidJUnit4::class)
 class SessionMigrationRustHttpTest {
@@ -71,7 +72,7 @@ class SessionMigrationRustHttpTest {
             Prefs.setLoginRequireApproval(true)
             withIO { RustRuntime.start() }
             val client = generateECDHKeyPair()
-            val digest = java.security.MessageDigest.getInstance("SHA-512").digest(Prefs.state.value.password.encodeToByteArray()).joinToString("") { "%02x".format(it) }
+            val digest = MessageDigest.getInstance("SHA-512").digest(Prefs.state.value.password.encodeToByteArray()).joinToString("") { "%02x".format(it) }
             val passwordKey = digest.take(32).encodeToByteArray()
             val request = AuthRequest(digest, "Fixture", "1", "Android", "1", true,
                 Base64Lenient.encode(client.publicKeyEncoded))

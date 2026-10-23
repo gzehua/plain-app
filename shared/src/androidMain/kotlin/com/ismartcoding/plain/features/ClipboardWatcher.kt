@@ -25,6 +25,9 @@ import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 
 object ClipboardWatcher {
     private const val MAX_TEXT_LENGTH = 256 * 1024
@@ -38,10 +41,10 @@ object ClipboardWatcher {
 
     fun canSyncAutomatically(context: Context): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return true
-        return androidx.core.content.ContextCompat.checkSelfPermission(
+        return ContextCompat.checkSelfPermission(
             context,
-            android.Manifest.permission.READ_LOGS,
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            Manifest.permission.READ_LOGS,
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     @Synchronized
