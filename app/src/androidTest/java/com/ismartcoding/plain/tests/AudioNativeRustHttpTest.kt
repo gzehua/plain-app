@@ -3,7 +3,7 @@ package com.ismartcoding.plain.tests
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.audio.*
-import com.ismartcoding.plain.rust.host.AudioEngineHost
+import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
 import com.ismartcoding.plain.ui.audio.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*

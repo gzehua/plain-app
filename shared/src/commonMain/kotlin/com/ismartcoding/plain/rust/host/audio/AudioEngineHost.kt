@@ -10,6 +10,7 @@ import com.ismartcoding.plain.platform.media.AudioPlayer
 import com.ismartcoding.plain.platform.media.audioPlayer
 import com.ismartcoding.plain.rust.host.*
 import com.ismartcoding.plain.rust.sendEventToRust
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -51,7 +52,7 @@ object AudioEngineHost {
         check(reporter == null) { "Audio progress reporter already started" }
         reporter = scope.launch {
             while (isActive) {
-                delay(1_000)
+                delay(1_000.milliseconds)
                 try {
                     val report = withContext(Dispatchers.Main) { mutex.withLock { report(engine()) } }
                     if (report.path.isNotEmpty() && report.revision >= 0) {

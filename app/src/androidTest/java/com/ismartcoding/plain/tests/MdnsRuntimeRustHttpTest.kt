@@ -27,7 +27,7 @@ class MdnsRuntimeRustHttpTest {
         val closed = Uuid.random().toString()
         fun physical(acquire: Boolean, lease: String) = MdnsMulticastHost.handle(buildJsonObject {
             put("acquire", acquire); put("lease", lease)
-        }).boolean
+        }).encodeReply(0).let { Json.parseToJsonElement(it).jsonObject.getValue("result").jsonPrimitive.boolean }
         assertTrue(physical(false, closed))
         assertFalse(physical(true, closed))
         assertFalse(physical(true, Uuid.random().toString()))

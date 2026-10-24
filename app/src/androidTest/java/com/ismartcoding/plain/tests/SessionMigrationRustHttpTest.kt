@@ -79,7 +79,7 @@ class SessionMigrationRustHttpTest {
             val notification = async(start = CoroutineStart.UNDISPATCHED) {
                 withTimeout(10_000) {
                     RustEventHandler.events.first {
-                        it.type == EventType.WEB_LOGIN_REQUESTED.name &&
+                        it.type == EventType.WEB_LOGIN_REQUESTED &&
                             JsonHelper.jsonDecode<JsonObject>(it.payload)["clientId"]?.jsonPrimitive?.content == id
                     }
                 }

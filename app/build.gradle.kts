@@ -282,6 +282,13 @@ androidComponents.onVariants { variant ->
 }
 
 tasks.withType<KotlinCompile>().configureEach {
+    if (name.endsWith("AndroidTestKotlin")) {
+        dependsOn(":shared:bundleAndroidMainClassesToCompileJar")
+        compilerOptions.freeCompilerArgs.add(provider {
+            val classes = project(":shared").tasks.getByName("bundleAndroidMainClassesToCompileJar").outputs.files
+            "-Xfriend-paths=" + classes.files.filter { it.extension == "jar" }.joinToString(File.pathSeparator) { it.absolutePath }
+        })
+    }
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
         freeCompilerArgs.add("-nowarn")
