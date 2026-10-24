@@ -1,10 +1,10 @@
 name: UI component policy
 on:
   pull_request:
-    paths: ['plain-common/**', 'shared/src/**', 'app/src/**', 'app/build.gradle.kts', 'shared/build.gradle.kts', 'build.gradle.kts', 'settings.gradle.kts', 'ui-check/**', 'scripts/check-ui.sh', 'scripts/ui-component-baseline.tsv', '.github/workflows/ui-policy.yml', 'gradle/libs.versions.toml']
+    paths: ['tests/**', 'plain-common/**', 'shared/src/**', 'app/src/**', 'app/build.gradle.kts', 'shared/build.gradle.kts', 'build.gradle.kts', 'settings.gradle.kts', 'ui-check/**', 'scripts/check-ui.sh', 'scripts/ui-component-baseline.tsv', '.github/workflows/ui-policy.yml', 'gradle/libs.versions.toml']
   push:
     branches: [main]
-    paths: ['plain-common/**', 'shared/src/**', 'app/src/**', 'app/build.gradle.kts', 'shared/build.gradle.kts', 'build.gradle.kts', 'settings.gradle.kts', 'ui-check/**', 'scripts/check-ui.sh', 'scripts/ui-component-baseline.tsv', '.github/workflows/ui-policy.yml', 'gradle/libs.versions.toml']
+    paths: ['tests/**', 'plain-common/**', 'shared/src/**', 'app/src/**', 'app/build.gradle.kts', 'shared/build.gradle.kts', 'build.gradle.kts', 'settings.gradle.kts', 'ui-check/**', 'scripts/check-ui.sh', 'scripts/ui-component-baseline.tsv', '.github/workflows/ui-policy.yml', 'gradle/libs.versions.toml']
 permissions:
   contents: read
 jobs:

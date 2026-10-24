@@ -3,6 +3,10 @@ package com.ismartcoding.uicheck
 import java.io.File
 
 fun main(args: Array<String>) {
+    if (args.firstOrNull() == "--java21") {
+        checkJava21Collections(File(args[1]))
+        return
+    }
     require(args.isNotEmpty()) { "Pass the application repository root" }
     val root = File(args[0]).canonicalFile
     val baselineFile = File(args.getOrNull(1) ?: File(root, "scripts/ui-component-baseline.tsv").path)

@@ -31,6 +31,12 @@ kotlin {
     iosSimulatorArm64()
 
     sourceSets {
+        configureEach {
+            if (name.endsWith("Test")) {
+                kotlin.setSrcDirs(listOf(rootProject.file("tests/plain-common/$name/kotlin")))
+                resources.setSrcDirs(listOf(rootProject.file("tests/plain-common/$name/resources")))
+            }
+        }
         commonMain.dependencies {
             api(libs.kotlinx.coroutines.core)
             api(libs.atomicfu)
@@ -58,7 +64,7 @@ kotlin {
             implementation(libs.compose.lifecycle.runtime)
         }
 
-        getByName("commonTest").kotlin.srcDir("src/testFixtures/kotlin")
+        getByName("commonTest").kotlin.srcDir("../tests/plain-common/testFixtures/kotlin")
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)

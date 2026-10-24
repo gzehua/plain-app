@@ -25,11 +25,6 @@ rootProject.file("keystore.properties").let {
 
 android {
     compileSdk = 37
-    if (providers.gradleProperty("plainAcceptance").orNull == "true") {
-        sourceSets.getByName("androidTest").kotlin.srcDir("../../plainapp-test/android/src/androidTest/kotlin")
-        sourceSets.getByName("androidTest").manifest.srcFile("../../plainapp-test/android/src/androidTest/AndroidManifest.xml")
-        sourceSets.getByName("androidTest").java.srcDir("../../plainapp-test/android/src/androidTest/java")
-    }
     defaultConfig {
         applicationId = "com.ismartcoding.plain"
         minSdk = 28
@@ -151,11 +146,21 @@ android {
             excludes += listOf("META-INF/*", "web/**")
         }
     }
+    sourceSets.getByName("androidTest") {
+        java.setSrcDirs(listOf("../tests/app/androidTest/java"))
+        kotlin.setSrcDirs(listOf("../tests/app/androidTest/kotlin"))
+        resources.setSrcDirs(listOf("../tests/app/androidTest/resources"))
+    }
     sourceSets.getByName("androidTest").kotlin.srcDirs(
-        "../shared/src/testFixtures/kotlin",
-        "../plain-common/src/testFixtures/kotlin",
-        "../shared/src/androidTestFixtures/kotlin",
+        "../tests/shared/testFixtures/kotlin",
+        "../tests/plain-common/testFixtures/kotlin",
+        "../tests/shared/androidTestFixtures/kotlin",
     )
+    if (providers.gradleProperty("plainAcceptance").orNull == "true") {
+        sourceSets.getByName("androidTest").kotlin.srcDir("../../plainapp-test/android/src/androidTest/kotlin")
+        sourceSets.getByName("androidTest").manifest.srcFile("../../plainapp-test/android/src/androidTest/AndroidManifest.xml")
+        sourceSets.getByName("androidTest").java.srcDir("../../plainapp-test/android/src/androidTest/java")
+    }
     namespace = "com.ismartcoding.plain"
 }
 

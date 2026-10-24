@@ -108,6 +108,12 @@ kotlin {
     }
 
     sourceSets {
+        configureEach {
+            if (name.endsWith("Test")) {
+                kotlin.setSrcDirs(listOf(rootProject.file("tests/shared/$name/kotlin")))
+                resources.setSrcDirs(listOf(rootProject.file("tests/shared/$name/resources")))
+            }
+        }
         commonMain { kotlin.srcDir(generatePrefKeys) }
         commonMain.dependencies {
             api(project(":plain-common"))
@@ -190,8 +196,8 @@ kotlin {
             implementation(libs.coil)
             implementation(libs.coil.network.core)
         }
-        getByName("commonTest").kotlin.srcDirs("src/testFixtures/kotlin", "../plain-common/src/testFixtures/kotlin")
-        getByName("androidHostTest").kotlin.srcDir("src/androidTestFixtures/kotlin")
+        getByName("commonTest").kotlin.srcDirs("../tests/shared/testFixtures/kotlin", "../tests/plain-common/testFixtures/kotlin")
+        getByName("androidHostTest").kotlin.srcDir("../tests/shared/androidTestFixtures/kotlin")
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
@@ -290,39 +296,7 @@ tasks.named("check").configure { dependsOn(checkStringResourceDuplicates) }
 val checkJava21Collisions by tasks.registering {
     group = "verification"
     description = "Rejects Java 21 collection member calls in androidMain (unavailable below API 35)"
-    val srcRoot = layout.projectDirectory.dir("src/androidMain")
-    inputs.dir(srcRoot)
-    doLast {
-        val forbidden = Regex(
-            """\.(removeLast|removeFirst|getFirst|getLast|addFirst|addLast|reversed|putFirst|putLast|firstEntry|lastEntry|pollFirstEntry|pollLastEntry|sequencedKeySet|sequencedValues|sequencedEntry)\("""
-        )
-        val offenders = mutableListOf<String>()
-        srcRoot.asFile.walkTopDown()
-            .filter { it.isFile && it.extension == "kt" }
-            .forEach { f ->
-                val source = f.readText()
-                val blockingDeques = Regex("""\b(?:val|var)\s+(\w+)\s*=\s*(?:java\.util\.concurrent\.)?LinkedBlockingDeque\b""")
-                    .findAll(source).map { it.groupValues[1] }.toSet()
-                    .takeIf { source.contains("import java.util.concurrent.LinkedBlockingDeque") || source.contains("java.util.concurrent.LinkedBlockingDeque") }
-                    .orEmpty()
-                val dequeMethods = setOf("removeLast", "removeFirst", "getFirst", "getLast", "addFirst", "addLast", "putFirst", "putLast")
-                source.lineSequence().forEachIndexed { i, line ->
-                    if (line.contains("LockFreeLinkedListHead")) return@forEachIndexed
-                    val invalid = forbidden.findAll(line).any { match ->
-                        val receiver = line.substring(0, match.range.first).takeLastWhile { it.isLetterOrDigit() || it == '_' }
-                        receiver !in blockingDeques || match.groupValues[1] !in dequeMethods
-                    }
-                    if (invalid) offenders += "${f.relativeTo(srcRoot.asFile)}:${i + 1}: ${line.trim()}"
-                }
-            }
-        if (offenders.isNotEmpty()) {
-            throw GradleException(
-                "Java 21-only collection calls found (API 35+, minSdk is 28):\n" +
-                    offenders.joinToString("\n") +
-                    "\nUse removeAt(index) / first() / last() / add(0, e) / asReversed() instead."
-            )
-        }
-    }
+    dependsOn(":ui-check:checkAndroidCollections")
 }
 
 tasks.matching {

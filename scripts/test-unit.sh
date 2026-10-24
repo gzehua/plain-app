@@ -24,14 +24,16 @@ run_kotlin() {
   head1 "Kotlin JVM host tests"
   # --rerun-tasks is required: without it Gradle reports UP-TO-DATE and the
   # stale XMLs from the previous run get counted as if they were fresh.
-  if ! ./gradlew :shared:testAndroidHostTest :plain-common:testAndroidHostTest --rerun-tasks -q > /tmp/plain-unit-kotlin.log 2>&1; then
+  if ! ./gradlew :shared:testAndroidHostTest :plain-common:testAndroidHostTest :ui-check:test --rerun-tasks -q > /tmp/plain-unit-kotlin.log 2>&1; then
     tail -40 /tmp/plain-unit-kotlin.log
     case_fail "kotlin_host_tests" "gradle failed, see /tmp/plain-unit-kotlin.log"
     return
   fi
   local total=0 failed=0 module
-  for module in shared plain-common; do
-    read -r t s f e <<< "$(count_junit_dir "$module/build/test-results/testAndroidHostTest")"
+  for module in shared plain-common ui-check; do
+    local task="testAndroidHostTest"
+    if [ "$module" = "ui-check" ]; then task="test"; fi
+    read -r t s f e <<< "$(count_junit_dir "$module/build/test-results/$task")"
     if [ "$t" -eq 0 ]; then
       case_fail "kotlin_$module" "no JUnit XML produced"
       continue
