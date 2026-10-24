@@ -22,9 +22,6 @@ val cargoBinDir = File(System.getenv("CARGO_HOME") ?: "${System.getProperty("use
 val rustupExe = cargoBinDir.resolve("rustup")
 val cargoExe = cargoBinDir.resolve("cargo")
 val localCoreOverride = rootProject.file(".cargo/core-dependency-state").exists()
-listOf(rustupExe, cargoExe).forEach {
-    require(it.canExecute()) { "Rust tool not found or not executable: ${it.absolutePath}" }
-}
 
 val generatePrefKeys = tasks.register<Exec>("generatePrefKeys") {
     val output = layout.buildDirectory.file("generated/prefKeys/PrefKeys.kt")

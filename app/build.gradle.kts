@@ -197,9 +197,6 @@ val libcxxTarget = if (rustAbi == "armeabi-v7a") "arm-linux-androideabi" else ru
 val cargoBinDir = File(System.getenv("CARGO_HOME") ?: "${System.getProperty("user.home")}/.cargo", "bin")
 val rustupExe = cargoBinDir.resolve("rustup")
 val cargoExe = cargoBinDir.resolve("cargo")
-listOf(rustupExe, cargoExe).forEach {
-    require(it.canExecute()) { "Rust tool not found or not executable: ${it.absolutePath}" }
-}
 
 val installRustAndroidTarget by tasks.registering(Exec::class) {
     commandLine(rustupExe.absolutePath, "target", "add", rustAndroidTarget)
