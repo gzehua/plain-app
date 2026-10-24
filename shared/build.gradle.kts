@@ -119,7 +119,6 @@ kotlin {
             api(libs.ktor.http)
             api(libs.coil)
 
-            api(project(":plain-ui"))
             implementation(libs.runtime)
             implementation(libs.foundation)
             implementation(libs.material3)

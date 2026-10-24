@@ -1,10 +1,10 @@
 name: UI component policy
 on:
   pull_request:
-    paths: ['plain-ui/**', 'shared/src/**', 'app/src/**', 'ui-check/**', 'scripts/check-ui.sh', 'scripts/ui-component-baseline.tsv', '.github/workflows/ui-policy.yml', 'gradle/libs.versions.toml']
+    paths: ['plain-common/**', 'shared/src/**', 'app/src/**', 'ui-check/**', 'scripts/check-ui.sh', 'scripts/ui-component-baseline.tsv', '.github/workflows/ui-policy.yml', 'gradle/libs.versions.toml']
   push:
     branches: [main]
-    paths: ['plain-ui/**', 'shared/src/**', 'app/src/**', 'ui-check/**', 'scripts/check-ui.sh', 'scripts/ui-component-baseline.tsv', '.github/workflows/ui-policy.yml', 'gradle/libs.versions.toml']
+    paths: ['plain-common/**', 'shared/src/**', 'app/src/**', 'ui-check/**', 'scripts/check-ui.sh', 'scripts/ui-component-baseline.tsv', '.github/workflows/ui-policy.yml', 'gradle/libs.versions.toml']
 permissions:
   contents: read
 jobs:
@@ -22,4 +22,4 @@ jobs:
           java-version: '21'
       - uses: android-actions/setup-android@v4
       - run: bash scripts/check-ui.sh
-      - run: ./gradlew :plain-ui:testAndroidHostTest
+      - run: ./gradlew :plain-common:testAndroidHostTest

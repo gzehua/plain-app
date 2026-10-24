@@ -8,7 +8,7 @@ fun main(args: Array<String>) {
     val baselineFile = File(args.getOrNull(1) ?: File(root, "scripts/ui-component-baseline.tsv").path)
     require(root.isDirectory) { "Repository not found: $root" }
     require(baselineFile.isFile) { "UI baseline not found: $baselineFile" }
-    val readme = File(root, "plain-ui/README.md")
+    val readme = File(root, "plain-common/README.md")
     if (readme.isFile) {
         Regex("\\]\\(([^)]+\\.kt)\\)").findAll(readme.readText()).forEach { match ->
             check(File(readme.parentFile, match.groupValues[1]).isFile) { "Broken compiled-example link: ${match.groupValues[1]}" }
@@ -17,10 +17,10 @@ fun main(args: Array<String>) {
     val findings = mutableListOf<Finding>()
     val inventory = mutableListOf<String>()
     KotlinUiCheck().use { checker ->
-        listOf("shared/src", "app/src", "plain-ui/src/commonMain").forEach { sourceRoot ->
+        listOf("shared/src", "app/src", "plain-common/src/commonMain").forEach { sourceRoot ->
             File(root, sourceRoot).walkTopDown().filter { it.isFile && it.extension == "kt" && it.path.split(File.separatorChar).none { segment -> segment in setOf("commonTest", "androidHostTest", "androidTest", "test") } }.sortedBy { it.path }.forEach { file ->
                 val path = file.relativeTo(root).invariantSeparatorsPath
-                val library = path.startsWith("plain-ui/")
+                val library = path.startsWith("plain-common/")
                 val (violations, components) = checker.inspect(path, file.readText(), library)
                 findings += violations
                 inventory += components.map { "${it.name}\t$path:${it.line}" }

@@ -1,6 +1,8 @@
 plugins {
     kotlin("multiplatform")
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.compose.multiplatform)
     id("com.android.kotlin.multiplatform.library")
     id("maven-publish")
 }
@@ -18,6 +20,10 @@ kotlin {
         compileSdk = 37
         minSdk = 28
 
+        androidResources {
+            enable = true
+        }
+
         withHostTest {}
     }
 
@@ -31,33 +37,52 @@ kotlin {
             api(libs.kotlinx.serialization.json)
             api(libs.ktor.http)
             api(libs.runtime)
+            api(libs.ui)
+            api(libs.foundation)
+            api(libs.material3)
+            api(libs.compose.components.resources)
+            api(libs.navigation.compose)
+            api(libs.coil.compose)
             implementation(libs.kotlinx.datetime)
         }
 
         androidMain.dependencies {
             api(libs.androidx.core.ktx)
-            api(libs.ui)
             implementation(libs.androidx.exifinterface)
-            implementation(libs.zxing.core)
+            api(libs.zxing.core)
+            implementation(libs.camera.core)
+            implementation(libs.camera.camera2)
+            implementation(libs.camera.lifecycle)
+            implementation(libs.camera.view)
+            implementation(libs.camera.compose)
+            implementation(libs.compose.lifecycle.runtime)
         }
 
         getByName("commonTest").kotlin.srcDir("src/testFixtures/kotlin")
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
+}
+
+compose.resources {
+    packageOfResClass = "com.ismartcoding.plain.ui.resources"
+    generateResClass = always
+    publicResClass = true
 }
 
 dependencies {
     add("androidHostTestImplementation", kotlin("test"))
     add("androidHostTestImplementation", libs.junit)
+    add("androidHostTestImplementation", libs.kotlinx.coroutines.test)
 }
 
 publishing {
     publications.withType<MavenPublication>().configureEach {
         pom {
             name = "plain-common"
-            description = "Reusable Kotlin Multiplatform utilities and server components from PlainApp"
+            description = "Reusable Kotlin Multiplatform utilities and Compose UI components from PlainApp"
             url = "https://github.com/plainhub/plain-app"
             licenses {
                 license {

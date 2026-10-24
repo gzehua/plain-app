@@ -25,7 +25,7 @@ class SegmentedButtonsGuardTest {
 
     private fun source(): String {
         val relative = "src/commonMain/kotlin/com/ismartcoding/plain/ui/base/PSegmentedButtons.kt"
-        return listOf(File(relative), File("plain-ui/$relative"))
+        return listOf(File(relative), File("plain-common/$relative"))
             .firstOrNull { it.isFile }?.readText()
             ?: error("PSegmentedButtons source not found")
     }

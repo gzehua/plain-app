@@ -24,7 +24,7 @@ import kotlin.test.fail
  * LIKE with a constant wildcard pattern (Doc MIME probe `LIKE ?` bound to
  * "text/%") is exempt — the arg is code, not user input.
  *
- * Scan scope: plain-common/src, plain-ui/src, shared/src,
+ * Scan scope: plain-common/src, shared/src,
  * app/src — production source sets only (test sources are
  * excluded; the guard itself contains the patterns it forbids).
  */
@@ -54,7 +54,6 @@ class LikeEscapeGuardTest {
         val root = repoRoot()
         val srcRoots = listOf(
             File(root, "plain-common/src"),
-            File(root, "plain-ui/src"),
             File(root, "shared/src"),
             File(root, "app/src"),
         ).filter { it.isDirectory }

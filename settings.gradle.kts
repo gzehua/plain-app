@@ -13,5 +13,4 @@ rootProject.name = "PlainApp"
 include(":app")
 include(":shared")
 include(":plain-common")
-include(":plain-ui")
 include(":ui-check")
