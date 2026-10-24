@@ -74,7 +74,7 @@ fun AppsPage(navController: NavHostController, appsVM: AppsViewModel = viewModel
     if (appsVM.showSortDialog.value) {
         RadioDialog(title = stringResource(Res.string.sort), options = FileSortBy.entries.map {
             RadioDialogOption(text = stringResource(it.getTextId()), selected = it == appsVM.sortBy.value) {
-                scope.launch(Dispatchers.Default) { Prefs.packageSortBy.value = it; appsVM.sortBy.value = it; appsVM.loadAsync() }
+                scope.launch(Dispatchers.Default) { Prefs.set(PrefKeys.PACKAGE_SORT_BY, it.ordinal); appsVM.sortBy.value = it; appsVM.loadAsync() }
             }
         }) { appsVM.showSortDialog.value = false }
     }

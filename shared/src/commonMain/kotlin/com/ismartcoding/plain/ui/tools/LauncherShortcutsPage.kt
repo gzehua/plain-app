@@ -56,7 +56,7 @@ fun LauncherShortcutsPage(navController: NavHostController) {
     fun persist(newTools: List<AppFeatureType>) {
         selected = newTools
         scope.launch(Dispatchers.Default) {
-            Prefs.launcherShortcuts.value = Prefs.formatLauncherShortcuts(newTools)
+            Prefs.set(PrefKeys.LAUNCHER_SHORTCUTS, Prefs.formatLauncherShortcuts(newTools))
             publishLauncherShortcuts(newTools)
         }
     }

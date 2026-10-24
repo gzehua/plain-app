@@ -62,7 +62,7 @@ class SessionMigrationRustHttpTest {
     fun encryptedLoginConfirmationSessionUiAndRevocationUseRust() = runBlocking {
         val oldService = Prefs.backgroundServiceEnabled.value
         val oldDesktop = Prefs.desktopAccess.value
-        val oldTwoFactor = Prefs.state.value.loginRequireApproval
+        val oldTwoFactor = Prefs.loginRequireApproval.value
         val id = "session-fixture-${UUID.randomUUID()}"
         var pendingId = ""
         val http = createPlainHttpClient(PlainHttpClientSpec.HttpHost)
@@ -72,7 +72,7 @@ class SessionMigrationRustHttpTest {
             Prefs.setLoginRequireApproval(true)
             withIO { RustRuntime.start() }
             val client = generateECDHKeyPair()
-            val digest = MessageDigest.getInstance("SHA-512").digest(Prefs.state.value.password.encodeToByteArray()).joinToString("") { "%02x".format(it) }
+            val digest = MessageDigest.getInstance("SHA-512").digest(Prefs.password.value.encodeToByteArray()).joinToString("") { "%02x".format(it) }
             val passwordKey = digest.take(32).encodeToByteArray()
             val request = AuthRequest(digest, "Fixture", "1", "Android", "1", true,
                 Base64Lenient.encode(client.publicKeyEncoded))

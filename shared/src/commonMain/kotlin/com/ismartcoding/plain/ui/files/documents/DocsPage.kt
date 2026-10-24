@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.files.documents
 
+import com.ismartcoding.plain.preferences.PrefKeys
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -96,7 +98,7 @@ fun DocsPage(
                 scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
                 onSortSelected = { sortBy ->
                     scope.launch(Dispatchers.Default) {
-                        Prefs.docSortBy.value = sortBy
+                        Prefs.set(PrefKeys.DOC_SORT_BY, sortBy.ordinal)
                         docsVM.sortBy.value = sortBy
                         docsVM.loadAsync(tagsVM)
                     }

@@ -55,7 +55,7 @@ fun LanguagePage(navController: NavHostController) {
                     PListItem(
                         modifier = PlainTheme
                             .getCardModifier(index = if (index > 0) index - 1 else 0, size = if (index > 0) list.size - 1 else 1)
-                            .selectable(selected = selected, role = Role.RadioButton, onClick = { Prefs.locale.value = Prefs.formatLocale(item) }),
+                            .selectable(selected = selected, role = Role.RadioButton, onClick = { scope.launch { Prefs.set(PrefKeys.LOCALE, Prefs.formatLocale(item)) } }),
                         title = item?.getElegantDisplayName() ?: stringResource(Res.string.use_device_language),
                     ) {
                         RadioButton(selected = selected, onClick = null)

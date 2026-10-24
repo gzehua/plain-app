@@ -1,5 +1,9 @@
 package com.ismartcoding.plain.services
 
+import com.ismartcoding.plain.models.ScreenMirrorQuality
+
+import com.ismartcoding.plain.preferences.PrefKeys
+
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.i18n.*
 import android.annotation.SuppressLint
@@ -174,6 +178,6 @@ class ScreenMirrorService : LifecycleService() {
     companion object {
         @Volatile
         var instance: ScreenMirrorService? = null
-        val qualityData get() = Prefs.screenMirrorQuality.value
+        val qualityData get() = Prefs.get<ScreenMirrorQuality>(PrefKeys.SCREEN_MIRROR_QUALITY)
     }
 }

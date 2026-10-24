@@ -39,9 +39,9 @@ fn bridge() -> Result<(Handle, Arc<HostEvents>), String> {
         .clone()
         .ok_or("Rust event bridge not initialized".into())
 }
-pub(super) fn prefs_snapshot() -> Result<serde_json::Value, String> {
+pub(super) fn preferences() -> Result<serde_json::Map<String, serde_json::Value>, String> {
     let (runtime, bridge) = bridge()?;
-    runtime.block_on(bridge.prefs_snapshot())
+    runtime.block_on(bridge.preferences())
 }
 
 fn next(stream: &str) -> Result<String, String> {

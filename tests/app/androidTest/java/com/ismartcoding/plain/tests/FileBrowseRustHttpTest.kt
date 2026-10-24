@@ -23,7 +23,7 @@ class FileBrowseRustHttpTest {
     @Test
     fun sharedBrowserAndPublicQueriesUseRustFiltersPagesCountsAndZipAdapter() = runBlocking {
         val root = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir, "file-browse-${UUID.randomUUID()}").apply { mkdirs() }
-        val permissions = Prefs.state.value.apiPermissions
+        val permissions = Prefs.apiPermissions.value
         try {
             val dir = File(root, "NeedleDir").apply { mkdirs() }
             File(dir, "NEEDLE 中文.txt").writeText("four")

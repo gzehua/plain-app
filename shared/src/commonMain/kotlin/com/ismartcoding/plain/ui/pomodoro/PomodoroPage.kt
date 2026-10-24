@@ -54,7 +54,7 @@ fun PomodoroPage(
         settingsDialog(pomodoroVM.settings.value, { newSettings ->
             scope.launch {
                 pomodoroVM.settings.value = newSettings
-                Prefs.pomodoroSettings.value = newSettings
+                Prefs.set(PrefKeys.POMODORO_SETTINGS, newSettings)
                 if (!pomodoroVM.isRunning.value) pomodoroVM.updateTimeForCurrentState()
             }
         }) { pomodoroVM.showSettings.value = false }

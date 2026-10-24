@@ -24,11 +24,10 @@ class GeneratePrefKeysTest {
 
     private data class Result(val exitCode: Int, val output: String, val generated: String)
 
-    private fun generate(keys: String, settings: String): Result {
+    private fun generate(keys: String): Result {
         val root = temporary.newFolder()
         val prefs = File(root, "src/prefs").apply { mkdirs() }
         File(prefs, "pref_keys.rs").writeText(keys)
-        File(prefs, "settings/mod.rs").apply { checkNotNull(parentFile).mkdirs() }.writeText(settings)
         File(root, "metadata.json").writeText(JsonHelper.jsonEncode(CargoMetadata(
             listOf(CargoPackage("plain-rs", File(root, "Cargo.toml").path))
         )))
@@ -51,35 +50,35 @@ class GeneratePrefKeysTest {
     }
 
     @Test
-    fun storageNamesAndSnapshotAliasesComeFromRust() {
+    fun storageNamesComeDirectlyFromRust() {
         val result = generate(
             "    INTERVAL = \"interval_seconds\",\n    SORT = \"sort_key\",\n",
-            "pub fn set_entry(\nkeys::INTERVAL => \"intervalSec\",\nkeys::SORT => \"packageSort\",",
         )
         assertEquals(0, result.exitCode, result.output)
         for (line in listOf(
             "const val INTERVAL = \"interval_seconds\"",
             "const val SORT = \"sort_key\"",
-            "PrefKeys.INTERVAL -> \"intervalSec\"",
-            "PrefKeys.SORT -> \"packageSort\"",
         )) assertTrue(line in result.generated, result.generated)
     }
 
     @Test
+    fun nativeReadKeysComeFromRustConstants() {
+        val result = generate(
+            "    PASSWORD = \"password\",\n" +
+                "pub const UPDATE_INFO: &str = \"update_info\";\n",
+        )
+        assertEquals(0, result.exitCode, result.output)
+        assertTrue("const val UPDATE_INFO = \"update_info\"" in result.generated, result.generated)
+    }
+
+    @Test
     fun missingOrDuplicateKeysFailGeneration() {
-        for (keys in listOf("", "    A = \"same\",\n    B = \"same\",\n", "    A = \"one\",\n    A = \"two\",\n")) {
-            val result = generate(keys, "pub fn set_entry(\nkeys::A => \"a\",")
+        for (keys in listOf("", "    A = \"same\",\n    B = \"same\",\n", "    A = \"one\",\n    A = \"two\",\n", "    A = \"same\",\npub const B: &str = \"same\";\n")) {
+            val result = generate(keys)
             assertNotEquals(0, result.exitCode)
             assertTrue("Rust preference keys must be nonempty and unique" in result.output, result.output)
             assertEquals("", result.generated)
         }
     }
 
-    @Test
-    fun unknownStorageKeysInSnapshotMappingFailGeneration() {
-        val result = generate("    A = \"one\",\n", "pub fn set_entry(\nkeys::B => \"b\",")
-        assertNotEquals(0, result.exitCode)
-        assertTrue("Rust settings fields must reference registered preference keys" in result.output, result.output)
-        assertEquals("", result.generated)
-    }
 }

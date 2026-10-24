@@ -40,7 +40,7 @@ class FileTaskRustHttpTest {
     fun fileTasksCopyMoveTrackActualTargetsAndReportRealFailures() = runBlocking {
         val root = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir,"file-task-${UUID.randomUUID()}").apply { mkdirs() }
         val external = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"file-task-${UUID.randomUUID()}")
-        val originalPermissions = Prefs.state.value.apiPermissions
+        val originalPermissions = Prefs.apiPermissions.value
         try {
             val source = File(root,"source.txt").apply { writeText("synthetic") }
             val target = File(root,"target.txt").apply { writeText("existing") }

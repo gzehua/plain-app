@@ -54,7 +54,7 @@ class MainGraphqlRustHttpTest {
             assertEquals(RustGraphqlApi.query(schema), httpQuery(schema))
             assertEquals(app.getValue("urlToken"), httpQuery("app { urlToken }").getValue("app").jsonObject.getValue("urlToken"))
             Prefs.load()
-            assertEquals(app.getValue("urlToken").jsonPrimitive.content, Prefs.state.value.urlToken)
+            assertEquals(app.getValue("urlToken").jsonPrimitive.content, Prefs.urlToken.value)
             for (selection in listOf("systemPrefs", "systemSettings { password }", "userSettings { service }")) {
                 for (useHttp in listOf(false, true)) {
                     val failure = runCatching { if (useHttp) httpQuery(selection) else RustGraphqlApi.query(selection) }.exceptionOrNull()

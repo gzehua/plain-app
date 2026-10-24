@@ -169,12 +169,12 @@ private fun EditorDisplayActionsCard(textFileVM: TextFileViewModel, scope: Corou
         ) {
             val next = when (controller.fontSizeSp.value) { 12 -> 14; 14 -> 16; else -> 12 }
             controller.fontSizeSp.value = next
-            scope.launchSafe { Prefs.editorFontSize.value = next }
+            scope.launchSafe { Prefs.set(PrefKeys.EDITOR_FONT_SIZE, next)}
         }
         PListItem(title = stringResource(Res.string.status_bar), action = {
             Switch(checked = controller.statusBarVisible.value, onCheckedChange = {
                 controller.statusBarVisible.value = !controller.statusBarVisible.value
-                scope.launchSafe { Prefs.editorStatusBar.value = controller.statusBarVisible.value }
+                scope.launchSafe { Prefs.set(PrefKeys.EDITOR_STATUS_BAR, controller.statusBarVisible.value)}
             })
         })
     }

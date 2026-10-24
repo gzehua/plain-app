@@ -31,7 +31,7 @@ class FeedEntryViewModel : ViewModel() {
     fun setFontScaleIndex(index: Int) {
         fontScaleIndex.intValue = index
         viewModelScope.launch {
-            Prefs.feedFontScale.value = index
+            Prefs.set(PrefKeys.FEED_FONT_SCALE, index)
         }
     }
 }

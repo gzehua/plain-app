@@ -1,7 +1,9 @@
 package com.ismartcoding.plain.platform.system
 
+import com.ismartcoding.plain.preferences.PrefKeys
+
 import com.ismartcoding.plain.preferences.Prefs
 
-fun setDesktopAccessEnabled(enabled: Boolean) {
-    Prefs.desktopAccess.value = enabled
+suspend fun setDesktopAccessEnabled(enabled: Boolean) {
+    Prefs.set(PrefKeys.DESKTOP_ACCESS, enabled)
 }

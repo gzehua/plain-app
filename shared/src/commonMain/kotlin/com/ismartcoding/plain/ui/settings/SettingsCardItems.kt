@@ -47,7 +47,7 @@ internal fun SettingsCardItems(navController: NavHostController) {
                 checked = DarkTheme.isDarkTheme(darkTheme),
                 onCheckedChange = {
                     scope.launch {
-                        Prefs.darkTheme.value = if (it) DarkTheme.ON else DarkTheme.OFF
+                        Prefs.set(PrefKeys.DARK_THEME, (if (it) DarkTheme.ON else DarkTheme.OFF).value)
                     }
                 },
             )

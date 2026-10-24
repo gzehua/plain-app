@@ -18,12 +18,14 @@ internal object RustNativeReply {
 @Serializable
 private data class BridgeReply(val value: String? = null, val error: String? = null)
 
+internal inline fun <reified T : Any> nativeValue(response: String): T {
+    val reply = JsonHelper.jsonDecode<NativeManagementReply<T>>(response)
+    reply.error?.let { error(it) }
+    return requireNotNull(reply.value) { "Native management response missing value" }
+}
+
 internal suspend inline fun <reified T : Any> nativeCall(crossinline request: () -> String): T =
-    withContext(Dispatchers.IO) {
-        val reply = JsonHelper.jsonDecode<NativeManagementReply<T>>(request())
-        reply.error?.let { error(it) }
-        requireNotNull(reply.value) { "Native management response missing value" }
-    }
+    withContext(Dispatchers.IO) { nativeValue<T>(request()) }
 
 internal suspend inline fun nativeCertificate(crossinline request: () -> String): ByteArray =
     nativeCall<List<Int>>(request).map { it.toByte() }.toByteArray()

@@ -29,9 +29,9 @@ fun persistPort(
 ) {
     scope.launch(Dispatchers.IO) {
         if (isHttps) {
-            Prefs.httpsPort.value = port
+            Prefs.set(PrefKeys.HTTPS_PORT, port)
         } else {
-            Prefs.httpPort.value = port
+            Prefs.set(PrefKeys.HTTP_PORT, port)
         }
     }
 }

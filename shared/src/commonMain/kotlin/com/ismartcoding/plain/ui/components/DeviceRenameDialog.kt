@@ -34,7 +34,7 @@ fun DeviceRenameDialog(name: String, onDismiss: () -> Unit, onDone: (String) -> 
         confirmText = stringResource(Res.string.save),
         onConfirm = {
             scope.launch {
-                Prefs.deviceName.value = newName.value
+                Prefs.set(PrefKeys.DEVICE_NAME, newName.value)
                 onDone(newName.value)
                 onDismiss()
             }

@@ -78,7 +78,7 @@ import com.ismartcoding.plain.i18n.devices
 fun DesktopAccessSettingsPage(navController: NavHostController, webVM: DesktopAccessSettingsViewModel = viewModel { DesktopAccessSettingsViewModel() }) {
     val keepAwake = Prefs.keepAwake.collectAsStateValue()
     val scope = rememberCoroutineScope()
-    val enabledPermissions = Prefs.state.collectAsStateValue().apiPermissions
+    val enabledPermissions = Prefs.apiPermissions.collectAsStateValue()
     val permissionList = remember { mutableStateOf(getWebList()) }
     val shouldIgnoreOptimize = remember { mutableStateOf(!isIgnoringBatteryOptimizations()) }
     val systemAlertWindow = remember { mutableStateOf(Permission.SYSTEM_ALERT_WINDOW.isGranted()) }

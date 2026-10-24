@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.web.components
 
+import com.ismartcoding.plain.preferences.PrefKeys
+
 import com.ismartcoding.plain.ui.app.AppUiState
 
 import kotlinx.coroutines.launch
@@ -119,7 +121,7 @@ fun WebAddressBar(
                     UiRes.drawable.ui_drawable_chevron_down
             ),
             onClick = {
-                scope.launch { Prefs.webAddressBarExpanded.value = !expanded.value }
+                scope.launch { Prefs.set(PrefKeys.WEB_ADDRESS_BAR_EXPANDED, !expanded.value)}
             },
         )
     }
@@ -140,8 +142,8 @@ fun WebAddressBar(
                         hostname = newHostname
                     }
                     if (portChanged) {
-                        if (isHttps) Prefs.httpsPort.value = newPort
-                        else Prefs.httpPort.value = newPort
+                        if (isHttps) Prefs.set(PrefKeys.HTTPS_PORT, newPort)
+                        else Prefs.set(PrefKeys.HTTP_PORT, newPort)
                     }
                     if (hostnameChanged || portChanged) restartServer()
                 }

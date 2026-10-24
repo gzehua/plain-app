@@ -7,10 +7,10 @@ import kotlin.io.encoding.Base64
 
 object TempData {
 
-    val clientId: String get() = Prefs.state.value.clientId
+    val clientId: String get() = Prefs.get<String>(PrefKeys.CLIENT_ID)
     val deviceName = MutableStateFlow("")
-    val urlToken: ByteArray get() = Base64.decode(Prefs.state.value.urlToken)
-    val mdnsHostname: String get() = Prefs.state.value.mdnsHostname
+    val urlToken: ByteArray get() = Base64.decode(Prefs.get<String>(PrefKeys.URL_TOKEN))
+    val mdnsHostname: String get() = Prefs.get<String>(PrefKeys.MDNS_HOSTNAME)
 
     val audioPlayerVisible = MutableStateFlow(false)
     /** Media path requested by a home-screen shortcut; null = no preview open. */
@@ -37,7 +37,7 @@ object TempData {
      */
 
     fun canDesktopAccess(): Boolean {
-        return Prefs.desktopAccess.value
+        return Prefs.get<Boolean>(PrefKeys.DESKTOP_ACCESS)
     }
 
     fun canChatAccess(): Boolean {

@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.images
 
+import com.ismartcoding.plain.preferences.PrefKeys
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,11 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.platform.system.AppFeatureType
-import com.ismartcoding.plain.platform.system.hasPermission
-import com.ismartcoding.plain.app.events.PermissionsResultEvent
 import com.ismartcoding.plain.features.files.FileSortBy
-import com.ismartcoding.plain.lib.Channel
-import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.platform.system.isGestureInteractionMode
 import com.ismartcoding.plain.preferences.Prefs
@@ -42,7 +40,6 @@ import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.components.NeedPermissionColumn
 import com.ismartcoding.plain.ui.base.NoDataColumn
-import com.ismartcoding.plain.ui.components.StoragePermissionResumeEffect
 import com.ismartcoding.plain.ui.base.dragselect.gridDragSelect
 import com.ismartcoding.plain.ui.base.dragselect.rememberDragSelectState
 import com.ismartcoding.plain.ui.base.fastscroll.LazyVerticalGridScrollbar
@@ -52,8 +49,8 @@ import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
-import com.ismartcoding.plain.ui.components.refreshStoragePermission
 import com.ismartcoding.plain.ui.components.rememberBoostFlingBehavior
+import com.ismartcoding.plain.ui.media.MediaPermissionEffects
 import com.ismartcoding.plain.ui.media.ImageGridItem
 import com.ismartcoding.plain.ui.media.MediaDateGroupHeader
 import com.ismartcoding.plain.ui.components.MediaFilesSelectModeBottomActions
@@ -140,21 +137,7 @@ fun ImagesPage(
         }
     }
 
-    LaunchedEffect(Unit) {
-        imagesVM.hasPermission.value = AppFeatureType.FILES.hasPermission()
-        if (imagesVM.hasPermission.value) {
-            initialLoadGate?.await()
-            reloadAfterGrant()
-        }
-    }
-    LaunchedEffect(Channel.sharedFlow) {
-        Channel.sharedFlow.collect { event ->
-            when (event) {
-                is PermissionsResultEvent -> refreshStoragePermission(imagesVM.hasPermission, reloadAfterGrant)
-            }
-        }
-    }
-    StoragePermissionResumeEffect(imagesVM.hasPermission, reloadAfterGrant)
+    MediaPermissionEffects(imagesVM.hasPermission, initialLoadGate, reloadAfterGrant)
     LaunchedEffect(dragSelectState.selectMode, (previewerState.visible && !isGestureInteractionMode())) {
         if (dragSelectState.selectMode || (previewerState.visible && !isGestureInteractionMode())) {
             scrollBehavior.reset()
@@ -198,7 +181,7 @@ fun ImagesPage(
                 },
                 onSortSelected = { sortBy ->
                     scope.launch {
-                        Prefs.imageSortBy.value = sortBy
+                        Prefs.set(PrefKeys.IMAGE_SORT_BY, sortBy.ordinal)
                         imagesVM.sortBy.value = sortBy
                         imagesVM.loadAsync(tagsVM)
                     }
@@ -242,7 +225,7 @@ fun ImagesPage(
                                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                                     .gridDragSelect(items = itemsState, state = dragSelectState)
                                     .pinchZoomGrid(cellsPerRow = cellsPerRow, hapticFeedback = hapticFeedback, scope = scope) {
-                                        Prefs.imageGridCellsPerRow.value = it
+                                        Prefs.set(PrefKeys.IMAGE_GRID_CELLS_PER_ROW, it)
                                     },
                                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                                 verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -308,22 +291,5 @@ fun ImagesPage(
         }
     }
 
-    MediaPreviewer(
-        state = previewerState,
-        tagsVM = tagsVM,
-        tagsMap = tagsMapState,
-        tagsState = tagsState,
-        onRenamed = {
-            scope.launch {
-                imagesVM.loadAsync(tagsVM)
-            }
-        },
-        deleteAction = { item ->
-            scope.launch {
-                imagesVM.delete(tagsVM, setOf(item.mediaId))
-                previewerState.closeTransform()
-            }
-        },
-        onTagsChanged = {},
-    )
+    ImagesPagePreviewer(imagesVM, tagsVM, previewerState, tagsMapState, tagsState)
 }

@@ -36,7 +36,7 @@ fun WebDevPage(
     packageId: String,
     onResetToken: () -> Unit,
 ) {
-    val adbToken = Prefs.state.collectAsStateValue().adbToken
+    val adbToken = Prefs.adbToken.collectAsStateValue()
 
     PScaffold(
         topBar = {

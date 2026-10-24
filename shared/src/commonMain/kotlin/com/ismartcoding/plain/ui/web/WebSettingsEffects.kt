@@ -33,7 +33,7 @@ internal fun WebSettingsEffects(
     notificationListenerGranted: MutableState<Boolean>,
 ) {
     LaunchedEffect(Unit) {
-        Prefs.state.collect { permissionList.value = getWebList() }
+        Prefs.apiPermissions.collect { permissionList.value = getWebList() }
     }
     val sharedFlow = Channel.sharedFlow
 

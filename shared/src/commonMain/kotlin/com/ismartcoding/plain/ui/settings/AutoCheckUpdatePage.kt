@@ -32,7 +32,7 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AutoCheckUpdatePage(navController: NavHostController, updateViewModel: UpdateViewModel) {
-    val autoCheckUpdate = Prefs.state.collectAsStateValue().autoCheckUpdate
+    val autoCheckUpdate = Prefs.autoCheckUpdate.collectAsStateValue()
     val scope = rememberCoroutineScope()
 
     UpdateDialog(updateViewModel)

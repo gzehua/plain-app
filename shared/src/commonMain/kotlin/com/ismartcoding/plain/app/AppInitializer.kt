@@ -20,7 +20,7 @@ import com.ismartcoding.plain.ui.app.LocalDeviceState
 suspend fun initCommonPreferences() {
     VideoProgressHost.restore()
     AudioEngineHost.start()
-    TempData.deviceName.value = Prefs.deviceName.value
+    TempData.deviceName.value = Prefs.get<String>(PrefKeys.DEVICE_NAME)
     LocalDeviceState.refresh()
     ChannelCacher.load()
     ChatCacher.load()

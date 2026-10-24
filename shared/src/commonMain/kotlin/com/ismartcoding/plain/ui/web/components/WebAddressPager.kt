@@ -31,7 +31,7 @@ fun WebAddressPager(modifier: Modifier = Modifier) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
             val https = page == 1
             if (isHttps.value != https) {
-                scope.launch { Prefs.https.value = https }
+                scope.launch { Prefs.set(PrefKeys.HTTPS, https)}
             }
         }
     }

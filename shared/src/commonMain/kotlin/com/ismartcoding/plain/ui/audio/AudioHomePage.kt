@@ -166,7 +166,7 @@ fun AudioHomePage(
         scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
         onSortSelected = { sortBy ->
             scope.launch(Dispatchers.Default) {
-                Prefs.audioSortBy.value = sortBy
+                Prefs.set(PrefKeys.AUDIO_SORT_BY, sortBy.ordinal)
                 audioVM.sortBy.value = sortBy
                 audioVM.loadAsync(tagsVM)
             }

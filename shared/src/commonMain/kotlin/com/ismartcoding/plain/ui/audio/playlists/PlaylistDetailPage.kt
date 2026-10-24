@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -24,9 +23,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.IDData
 import com.ismartcoding.plain.features.audio.AudioPlaylistsClient
@@ -124,14 +120,7 @@ fun PlaylistDetailPage(
     LaunchedEffect(items) {
         albumCovers = if (items.isEmpty()) emptyList() else AudioPlaylistsClient.covers(listOf(playlistId))[playlistId].orEmpty()
     }
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) version++
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
+    PlaylistResumeEffect { version++ }
 
     val sortBy = audioVM.sortBy.value
     val libraryByPath = remember(library) { library.associateBy { it.path } }
@@ -212,7 +201,7 @@ fun PlaylistDetailPage(
         scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
         onSortSelected = { sortBy ->
             scope.launch {
-                Prefs.audioSortBy.value = sortBy
+                Prefs.set(PrefKeys.AUDIO_SORT_BY, sortBy.ordinal)
                 audioVM.sortBy.value = sortBy
             }
         },

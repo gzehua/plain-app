@@ -49,7 +49,7 @@ object HttpServerManager {
      */
     fun requestStart(fromUi: Boolean) {
         if (Capability.BACKGROUND_SERVICE !in getDeviceCapabilities()) return
-        if (!Prefs.backgroundServiceEnabled.value || backgroundState.value == HttpServerState.ON || backgroundState.value.isProcessing()) return
+        if (!Prefs.get<Boolean>(PrefKeys.BACKGROUND_SERVICE_ENABLED) || backgroundState.value == HttpServerState.ON || backgroundState.value.isProcessing()) return
         if (Permission.POST_NOTIFICATIONS.isGranted()) {
             dispatchStart()
             return
@@ -62,8 +62,8 @@ object HttpServerManager {
     /** The service preference controls background retention, not HTTP availability. */
     fun setBackgroundEnabled(enable: Boolean, fromUi: Boolean = true) = coIO {
         check(!enable || Capability.BACKGROUND_SERVICE in getDeviceCapabilities()) { "Unsupported capability BACKGROUND_SERVICE" }
-        val unchanged = enable == Prefs.backgroundServiceEnabled.value
-        Prefs.backgroundServiceEnabled.value = enable
+        val unchanged = enable == Prefs.get<Boolean>(PrefKeys.BACKGROUND_SERVICE_ENABLED)
+        Prefs.set(PrefKeys.BACKGROUND_SERVICE_ENABLED, enable)
         if (unchanged) {
             if (enable) requestStart(fromUi) else stopHttpServiceAsync()
             return@coIO
@@ -77,7 +77,7 @@ object HttpServerManager {
         coIO {
             runCatching {
                 startHttpServerAsync()
-                if (Prefs.backgroundServiceEnabled.value && backgroundState.value == HttpServerState.OFF) {
+                if (Prefs.get<Boolean>(PrefKeys.BACKGROUND_SERVICE_ENABLED) && backgroundState.value == HttpServerState.OFF) {
                     requestStart(fromUi = false)
                 }
             }.onFailure { LogCat.e("ensureStarted failed: ${it.message}") }
@@ -90,8 +90,8 @@ object HttpServerManager {
      */
     fun getNotificationContent(): String {
         val ip = TempData.mdnsHostname
-        val http = UrlHelper.buildUrl("http", ip, Prefs.httpPort.value)
-        val https = UrlHelper.buildUrl("https", ip, Prefs.httpsPort.value)
+        val http = UrlHelper.buildUrl("http", ip, Prefs.get<Int>(PrefKeys.HTTP_PORT))
+        val https = UrlHelper.buildUrl("https", ip, Prefs.get<Int>(PrefKeys.HTTPS_PORT))
         return "$http\n$https"
     }
 

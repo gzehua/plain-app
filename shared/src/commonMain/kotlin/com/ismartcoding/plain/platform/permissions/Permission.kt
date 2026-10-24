@@ -86,13 +86,8 @@ fun Permission.grant(): Boolean {
     return false
 }
 
-/**
- * Whether the user handed this permission to the web client. The list already
- * arrives with [com.ismartcoding.plain.preferences.SecuritySettings] over the prefs
- * bridge, so this is a local read — the core has nothing to add.
- */
 suspend fun Permission.isEnabledAsync(): Boolean =
-    name in Prefs.state.value.apiPermissions
+    name in Prefs.get<Set<String>>(PrefKeys.API_PERMISSIONS)
 
 /** Enabled for the web client *and* granted by the OS. Both answers are local. */
 suspend fun Permission.enabledAndIsGrantedAsync(): Boolean = isEnabledAsync() && isGranted()

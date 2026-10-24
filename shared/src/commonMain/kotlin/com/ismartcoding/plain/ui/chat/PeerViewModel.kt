@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.chat
 
+import com.ismartcoding.plain.preferences.PrefKeys
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ismartcoding.plain.app.events.EventType
@@ -59,7 +61,7 @@ class PeerViewModel : ViewModel() {
 
     fun updateDiscoverable(discoverable: Boolean) {
         viewModelScope.launchSafe {
-            Prefs.nearbyDiscoverable.value = discoverable
+            Prefs.set(PrefKeys.NEARBY_DISCOVERABLE, discoverable)
         }
     }
 

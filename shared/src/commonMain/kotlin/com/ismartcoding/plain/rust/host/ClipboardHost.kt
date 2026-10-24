@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 internal suspend fun observeClipboardReports() = observeClipboardWhenEnabled(
-    Prefs.state.map { "CLIPBOARD" in it.apiPermissions },
+    Prefs.apiPermissions.map { "CLIPBOARD" in it },
 ) {
     observeClipboardChanges { report ->
         try {

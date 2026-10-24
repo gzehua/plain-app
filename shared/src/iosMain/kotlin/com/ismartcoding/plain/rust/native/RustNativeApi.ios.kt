@@ -25,7 +25,6 @@ import com.ismartcoding.plain.lib.JsonHelper
 
 import com.ismartcoding.plain.features.sessions.CreatedSession
 import com.ismartcoding.plain.features.settings.AppUpdateDownload
-import com.ismartcoding.plain.preferences.SecuritySettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -33,7 +32,8 @@ import kotlinx.serialization.json.JsonObject
 
 import com.ismartcoding.plain.rustprefs.plain_complete_onboarding
 import com.ismartcoding.plain.rustprefs.plain_set_pref
-import com.ismartcoding.plain.rustprefs.plain_prefs_snapshot
+import com.ismartcoding.plain.rustprefs.plain_get_pref
+import com.ismartcoding.plain.rustprefs.plain_preferences
 import com.ismartcoding.plain.rustprefs.plain_toggle_notification_app
 import com.ismartcoding.plain.rustprefs.plain_file_icon
 import com.ismartcoding.plain.rustprefs.plain_restart_http_server
@@ -222,9 +222,14 @@ internal actual object RustNativeApi {
             try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
         }
     }
-    actual suspend fun prefsSnapshot(): JsonObject = nativeCall {
+    actual fun getPrefResponse(key: String): String = memScoped {
+        val pointer = checkNotNull(plain_get_pref(key.cstr.ptr))
+        try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+    }
+
+    actual suspend fun preferences(): JsonObject = nativeCall {
         memScoped {
-            val pointer = checkNotNull(plain_prefs_snapshot())
+            val pointer = checkNotNull(plain_preferences())
             try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
         }
     }

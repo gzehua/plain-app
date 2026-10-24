@@ -120,7 +120,7 @@ private fun DlnaReceiverDisabledScreen() {
                 text = stringResource(Res.string.dlna_receiver_turn_on),
                 onClick = {
                     scope.launchSafe {
-                        Prefs.dlna.value = true
+                        Prefs.set(PrefKeys.DLNA, true)
                     }
                 },
             )

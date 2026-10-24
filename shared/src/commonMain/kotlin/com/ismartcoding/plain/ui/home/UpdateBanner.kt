@@ -44,8 +44,7 @@ private const val GITHUB_RELEASES_URL = "https://github.com/plainhub/plain-app/r
 @Composable
 fun UpdateBanner(updateVM: UpdateViewModel) {
     if (!AppFeatureType.CHECK_UPDATES.has()) return
-    val system = Prefs.state.collectAsStateValue()
-    val updateInfo = system.updateInfo
+    val updateInfo = Prefs.updateInfo.collectAsStateValue()
     val newVersion = updateInfo.newVersion
     val isDownloading = updateVM.isDownloading.value
     val downloadProgress = updateVM.downloadProgress.intValue
@@ -53,7 +52,7 @@ fun UpdateBanner(updateVM: UpdateViewModel) {
     val isDownloadComplete = updateVM.isDownloadComplete.value
     val downloadedFilePath = updateVM.downloadedFilePath.value
 
-    val needsUpdate = system.appUpdateAvailable
+    val needsUpdate = Prefs.appUpdateAvailable.collectAsStateValue()
 
     when {
         isDownloading -> {

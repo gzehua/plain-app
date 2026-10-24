@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.videos
 
+import com.ismartcoding.plain.preferences.PrefKeys
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,10 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.platform.system.AppFeatureType
-import com.ismartcoding.plain.platform.system.hasPermission
-import com.ismartcoding.plain.app.events.PermissionsResultEvent
 import com.ismartcoding.plain.features.files.FileSortBy
-import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
 import com.ismartcoding.plain.ui.navigation.PBackHandler
@@ -43,7 +42,6 @@ import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.components.NeedPermissionColumn
 import com.ismartcoding.plain.ui.base.NoDataColumn
-import com.ismartcoding.plain.ui.components.StoragePermissionResumeEffect
 import com.ismartcoding.plain.ui.base.dragselect.gridDragSelect
 import com.ismartcoding.plain.ui.base.dragselect.rememberDragSelectState
 import com.ismartcoding.plain.ui.base.fastscroll.LazyVerticalGridScrollbar
@@ -53,11 +51,11 @@ import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
-import com.ismartcoding.plain.ui.components.refreshStoragePermission
 import com.ismartcoding.plain.ui.components.rememberBoostFlingBehavior
 import com.ismartcoding.plain.ui.media.MediaDateGroupHeader
 import com.ismartcoding.plain.ui.components.MediaFilesSelectModeBottomActions
 import com.ismartcoding.plain.ui.media.MediaTopBar
+import com.ismartcoding.plain.ui.media.MediaPermissionEffects
 import com.ismartcoding.plain.ui.media.VideoGridItem
 import com.ismartcoding.plain.ui.media.viewer.previewer.rememberPreviewerState
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
@@ -141,21 +139,7 @@ fun VideosPage(
         }
     }
 
-    LaunchedEffect(Unit) {
-        videosVM.hasPermission.value = AppFeatureType.FILES.hasPermission()
-        if (videosVM.hasPermission.value) {
-            initialLoadGate?.await()
-            reloadAfterGrant()
-        }
-    }
-    StoragePermissionResumeEffect(videosVM.hasPermission, reloadAfterGrant)
-    LaunchedEffect(Channel.sharedFlow) {
-        Channel.sharedFlow.collect { event ->
-            when (event) {
-                is PermissionsResultEvent -> refreshStoragePermission(videosVM.hasPermission, reloadAfterGrant)
-            }
-        }
-    }
+    MediaPermissionEffects(videosVM.hasPermission, initialLoadGate, reloadAfterGrant)
     LaunchedEffect(dragSelectState.selectMode, (previewerState.visible && !isGestureInteractionMode())) {
         if (dragSelectState.selectMode || (previewerState.visible && !isGestureInteractionMode())) scrollBehavior.reset()
     }
@@ -188,7 +172,7 @@ fun VideosPage(
                 scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
                 onSortSelected = { sortBy ->
                     scope.launch(Dispatchers.Default) {
-                        Prefs.videoSortBy.value = sortBy
+                        Prefs.set(PrefKeys.VIDEO_SORT_BY, sortBy.ordinal)
                         videosVM.sortBy.value = sortBy
                         videosVM.loadAsync(tagsVM)
                     }
@@ -230,7 +214,7 @@ fun VideosPage(
                                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                                     .gridDragSelect(items = itemsState, state = dragSelectState)
                                     .pinchZoomGrid(cellsPerRow = cellsPerRow, hapticFeedback = hapticFeedback, scope = scope) {
-                                        Prefs.videoGridCellsPerRow.value = it
+                                        Prefs.set(PrefKeys.VIDEO_GRID_CELLS_PER_ROW, it)
                                     },
                                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                                 verticalArrangement = Arrangement.spacedBy(2.dp),

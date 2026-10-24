@@ -51,7 +51,7 @@ class ApiFixtureRustHttpTest {
         val oldAccess = Prefs.desktopAccess.value
         Prefs.desktopAccess.value = true
         withIO { RustRuntime.start() }
-        val oldPermissions = Prefs.state.value.apiPermissions
+        val oldPermissions = Prefs.apiPermissions.value
         try {
             Prefs.setApiPermissions(setOf(Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEOS, Permission.READ_MEDIA_AUDIO, Permission.READ_CONTACTS, Permission.WRITE_CONTACTS, Permission.READ_CALL_LOG, Permission.WRITE_CALL_LOG, Permission.READ_SMS, Permission.SEND_SMS, Permission.QUERY_ALL_PACKAGES, Permission.NOTIFICATION_LISTENER).map { it.name }.toSet())
             assertTrue(root.mkdirs())

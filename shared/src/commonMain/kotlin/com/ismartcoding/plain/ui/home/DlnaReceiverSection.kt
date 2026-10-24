@@ -45,7 +45,7 @@ fun DlnaReceiverSection(navController: NavHostController) {
         ) {
             Switch(checked = dlnaReceiverEnabled, onCheckedChange = { enable ->
                 scope.launchSafe {
-                    Prefs.dlna.value = enable
+                    Prefs.set(PrefKeys.DLNA, enable)
                 }
             })
         }

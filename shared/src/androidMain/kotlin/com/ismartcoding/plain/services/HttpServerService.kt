@@ -32,7 +32,7 @@ class HttpServerService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val t0 = System.currentTimeMillis()
         // In that case we flag it so the startup coroutine can delay before binding ports.
-        if (!Prefs.backgroundServiceEnabled.value) { stopSelf(); return START_NOT_STICKY }
+        if (!Prefs.get<Boolean>(PrefKeys.BACKGROUND_SERVICE_ENABLED)) { stopSelf(); return START_NOT_STICKY }
         super.onStartCommand(intent, flags, startId)
 
         try {

@@ -57,11 +57,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun WebSecurityPage(navController: NavHostController) {
     val scope = rememberCoroutineScope()
-    val passwordType = Prefs.state.collectAsStateValue().passwordType
-    val password = Prefs.state.collectAsStateValue().password
-    val loginRequireApproval = Prefs.state.collectAsStateValue().loginRequireApproval
-    val rotateUrlTokenOnRestart = Prefs.state.collectAsStateValue().rotateUrlTokenOnRestart
-    val urlToken = Prefs.state.collectAsStateValue().urlToken
+    val passwordType = Prefs.passwordType.collectAsStateValue()
+    val password = Prefs.password.collectAsStateValue()
+    val loginRequireApproval = Prefs.loginRequireApproval.collectAsStateValue()
+    val rotateUrlTokenOnRestart = Prefs.rotateUrlTokenOnRestart.collectAsStateValue()
+    val urlToken = Prefs.urlToken.collectAsStateValue()
     var sslSignature by remember { mutableStateOf("") }
     val editPassword = remember { mutableStateOf("") }
 

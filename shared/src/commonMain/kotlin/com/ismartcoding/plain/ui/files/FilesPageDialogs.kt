@@ -24,7 +24,7 @@ internal fun FilesPageDialogs(
 ) {
     if (filesVM.showSortDialog.value) {
         FileSortDialog(filesVM.sortBy, onSelected = {
-            scope.launch(Dispatchers.Default) { Prefs.fileSortBy.value = it; filesVM.sortBy.value = it; filesVM.loadAsync() }
+            scope.launch(Dispatchers.Default) { Prefs.set(PrefKeys.FILE_SORT_BY, it.ordinal); filesVM.sortBy.value = it; filesVM.loadAsync() }
         }, onDismiss = { filesVM.showSortDialog.value = false })
     }
 

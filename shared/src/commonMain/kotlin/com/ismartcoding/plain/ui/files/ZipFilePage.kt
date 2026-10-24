@@ -108,7 +108,7 @@ fun ZipFilePage(
 
     if (filesVM.showSortDialog.value) {
         FileSortDialog(filesVM.sortBy, onSelected = {
-            scope.launch(Dispatchers.Default) { Prefs.fileSortBy.value = it; filesVM.sortBy.value = it; filesVM.loadAsync() }
+            scope.launch(Dispatchers.Default) { Prefs.set(PrefKeys.FILE_SORT_BY, it.ordinal); filesVM.sortBy.value = it; filesVM.loadAsync() }
         }, onDismiss = { filesVM.showSortDialog.value = false })
     }
 
@@ -143,7 +143,7 @@ fun ZipFilePage(
                                 dismiss()
                                 scope.launch(Dispatchers.Default) {
                                     val nv = !showHiddenFiles
-                                    Prefs.showHiddenFiles.value = nv
+                                    Prefs.set(PrefKeys.SHOW_HIDDEN_FILES, nv)
                                     showHiddenFiles = nv; filesVM.loadAsync()
                                 }
                             })

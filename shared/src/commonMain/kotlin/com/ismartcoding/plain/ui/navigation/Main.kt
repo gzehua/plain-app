@@ -92,7 +92,7 @@ fun Main(
     }
 
     LaunchedEffect(Unit) {
-        if (!Prefs.state.value.onboardingCompleted) {
+        if (!Prefs.get<Boolean>(PrefKeys.ONBOARDING_COMPLETED)) {
             // singleTop: this effect re-runs on activity recreation while the
             // onboarding is still showing and the pref is not yet written
             navController.navigate(Routing.Onboarding) {

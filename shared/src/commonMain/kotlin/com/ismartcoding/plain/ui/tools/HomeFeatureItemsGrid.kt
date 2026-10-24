@@ -59,7 +59,7 @@ fun HomeFeatureItemsGrid(
     fun persist(newList: List<String>) {
         enabledIds = newList
         scope.launch(Dispatchers.Default) {
-            Prefs.appHomeFeatures.value = Prefs.formatFeatures(newList)
+            Prefs.set(PrefKeys.APP_HOME_FEATURES, Prefs.formatFeatures(newList))
         }
     }
 

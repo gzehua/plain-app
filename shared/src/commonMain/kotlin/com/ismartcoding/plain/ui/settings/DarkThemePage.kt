@@ -64,7 +64,7 @@ fun DarkThemePage(navController: NavHostController) {
                                 modifier = Modifier.selectable(
                                     selected = it == darkTheme,
                                     role = Role.RadioButton,
-                                    onClick = { Prefs.darkTheme.value = it },
+                                    onClick = { scope.launch { Prefs.set(PrefKeys.DARK_THEME, it.value) } },
                                 ),
                                 title = it.getText(),
                             ) {
@@ -79,14 +79,14 @@ fun DarkThemePage(navController: NavHostController) {
                         PListItem(
                             modifier = Modifier.clickable {
                                 scope.launch {
-                                    Prefs.amoledDarkTheme.value = !amoledDarkTheme
+                                    Prefs.set(PrefKeys.AMOLED_DARK_THEME, !amoledDarkTheme)
                                 }
                             },
                             title = stringResource(Res.string.amoled_dark_theme),
                         ) {
                             Switch(checked = amoledDarkTheme, onCheckedChange = {
                                 scope.launch {
-                                    Prefs.amoledDarkTheme.value = !amoledDarkTheme
+                                    Prefs.set(PrefKeys.AMOLED_DARK_THEME, !amoledDarkTheme)
                                 }
                             })
                         }
@@ -96,7 +96,7 @@ fun DarkThemePage(navController: NavHostController) {
                         PListItem(
                             modifier = Modifier.clickable {
                                 scope.launch {
-                                    Prefs.pdfFollowDarkTheme.value = !pdfFollowDarkTheme
+                                    Prefs.set(PrefKeys.PDF_FOLLOW_DARK_THEME, !pdfFollowDarkTheme)
                                 }
                             },
                             title = stringResource(Res.string.pdf_follow_dark_theme),
@@ -104,7 +104,7 @@ fun DarkThemePage(navController: NavHostController) {
                         ) {
                             Switch(checked = pdfFollowDarkTheme, onCheckedChange = {
                                 scope.launch {
-                                    Prefs.pdfFollowDarkTheme.value = !pdfFollowDarkTheme
+                                    Prefs.set(PrefKeys.PDF_FOLLOW_DARK_THEME, !pdfFollowDarkTheme)
                                 }
                             })
                         }

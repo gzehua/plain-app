@@ -23,7 +23,7 @@ class FileWritesRustHttpTest {
     fun sharedAndPublicFileWritesUseRustAndPreserveExistingContent() = runBlocking {
         val root = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir, "file-writes-${UUID.randomUUID()}")
         val external = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "file-writes-${UUID.randomUUID()}")
-        val originalPermissions = Prefs.state.value.apiPermissions
+        val originalPermissions = Prefs.apiPermissions.value
         try {
             val dir = FilesClient.createDirectory(File(root, "nested/child").path)
             assertTrue(dir.isDir)

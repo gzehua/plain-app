@@ -53,7 +53,7 @@ internal class HttpServerLockManager(private val context: Context) {
     fun start() {
         acquireLocksOnly()
         eventJob = coIO {
-            keepAwake = Prefs.keepAwake.value
+            keepAwake = Prefs.get<Boolean>(PrefKeys.KEEP_AWAKE)
             scheduleInactivityTimer()
             Channel.sharedFlow.collect { event ->
                 when (event) {

@@ -21,7 +21,7 @@ import com.ismartcoding.plain.i18n.folder
 import com.ismartcoding.plain.preferences.Prefs
 
 suspend fun checkEnabledAsync(permissions: Set<Permission>) {
-    val enabled = Prefs.state.value.apiPermissions
+    val enabled = Prefs.get<Set<String>>(PrefKeys.API_PERMISSIONS)
     val missing = permissions.map { it.name }.filterNot { it in enabled }
     if (missing.isNotEmpty()) {
         throw Exception("no_permission")
@@ -59,7 +59,7 @@ fun getWebList(): List<PermissionItem> {
  * snapshot.
  */
 suspend fun getGrantedWebPermissionsAsync(): List<Permission> {
-    val apiPermissions = Prefs.state.value.apiPermissions
+    val apiPermissions = Prefs.get<Set<String>>(PrefKeys.API_PERMISSIONS)
     val granted = Permission.entries.filter { apiPermissions.contains(it.name) && it.isGranted() }.toMutableList()
     if (Permission.RECORD_AUDIO.isGranted() && !granted.contains(Permission.RECORD_AUDIO)) {
         granted.add(Permission.RECORD_AUDIO)

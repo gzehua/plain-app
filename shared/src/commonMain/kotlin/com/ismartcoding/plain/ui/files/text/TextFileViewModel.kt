@@ -58,7 +58,7 @@ class TextFileViewModel : ViewModel() {
 
     fun toggleWrapContent() {
         viewModelScope.launchSafe {
-            Prefs.editorWrapContent.value = !controller.wrapContent.value
+            Prefs.set(PrefKeys.EDITOR_WRAP_CONTENT, !controller.wrapContent.value)
         }
         controller.toggleWrap()
     }

@@ -70,7 +70,7 @@ fun FilesMoreActionsSheet(filesVM: FilesViewModel, onDismiss: () -> Unit) {
                         .clickable {
                             onDismiss()
                             scope.launch(Dispatchers.Default) {
-                                Prefs.showHiddenFiles.value = !showHiddenFiles
+                                Prefs.set(PrefKeys.SHOW_HIDDEN_FILES, !showHiddenFiles)
                                 filesVM.loadAsync()
                             }
                         },
@@ -80,7 +80,7 @@ fun FilesMoreActionsSheet(filesVM: FilesViewModel, onDismiss: () -> Unit) {
                         Switch(checked = showHiddenFiles, onCheckedChange = {
                             onDismiss()
                             scope.launch(Dispatchers.Default) {
-                                Prefs.showHiddenFiles.value = !showHiddenFiles
+                                Prefs.set(PrefKeys.SHOW_HIDDEN_FILES, !showHiddenFiles)
                                 filesVM.loadAsync()
                             }
                         })
