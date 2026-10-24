@@ -1,14 +1,7 @@
 package com.ismartcoding.plain.network
 
-import com.ismartcoding.plain.platform.media.call
-
 import kotlin.jvm.JvmInline
 
-/**
- * HTTP status code with its standard reason phrase, so call sites can compare
- * against named codes (`response.status == HttpStatusCode.Forbidden`) and still
- * format human-readable errors (`${status.value} ${status.description}`).
- */
 @JvmInline
 value class HttpStatusCode(val value: Int) {
     val description: String get() = REASON_PHRASES[value] ?: ""

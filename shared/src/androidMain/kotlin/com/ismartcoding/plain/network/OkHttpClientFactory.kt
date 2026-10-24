@@ -1,52 +1,9 @@
 package com.ismartcoding.plain.network
 
-import com.ismartcoding.plain.lib.helpers.NetworkHelper
 import okhttp3.OkHttpClient
-import java.security.SecureRandom
-import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.KeyManager
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 object OkHttpClientFactory {
-    fun createUnsafeOkHttpClient(): OkHttpClient {
-        val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
-            override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
-            override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
-            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-        })
-        val sslContext = SSLContext.getInstance("TLS")
-        // Avoid default KeyManager to prevent KeyStoreException: BKS not found
-        sslContext.init(arrayOf<KeyManager>(), trustAllCerts, SecureRandom())
-        val sslSocketFactory = sslContext.socketFactory
-
-        return OkHttpClient.Builder()
-            .sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
-            .hostnameVerifier { hostname, _ ->
-                NetworkHelper.isLocalNetworkAddress(hostname)
-            }
-            .build()
-    }
-
-    /**
-     * OkHttpClient used by the [coil3.network.okhttp.OkHttpNetworkFetcherFactory] for
-     * image loading.
-     *
-     * `createUnsafeOkHttpClient()` was previously wired in here too, but that client is
-     * built for the in-app HTTP server (which uses self-signed certs on the local network)
-     * and intentionally only accepts hostnames that match
-     * [NetworkHelper.isLocalNetworkAddress]. Public hostnames like `img2.baidu.com` are
-     * therefore rejected with `SSLPeerUnverifiedException` even when the server's
-     * certificate is otherwise valid, which silently broke every markdown image whose
-     * source was a public https URL.
-     *
-     * This factory returns a stock OkHttp client: it trusts the system CA bundle
-     * (so public CAs work normally) and uses OkHttp's [okhttp3.internal.tls.OkHostnameVerifier]
-     * (so SAN-based hostname checks behave like every other Android app). The local-server
-     * self-signed-cert use case stays covered by [createUnsafeOkHttpClient].
-     */
     fun createImageLoaderClient(): OkHttpClient =
         OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)

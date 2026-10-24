@@ -50,7 +50,7 @@ class ShareRustHttpTest {
             val key = Base64.decode(link.token)
             val base = "http://127.0.0.1:${Prefs.httpPort.value}"
             assertTrue(SharesClient.buildLink(share, "127.0.0.1").contains("/s/${share.id}#"))
-            createPlainHttpClient(PlainHttpClientSpec.Local()).use { client ->
+            createTestHttpClient(TestHttpClientSpec.Local()).use { client ->
                 suspend fun guest(path: String = "photos"): Pair<Int, JsonObject?> {
                     val query = buildJsonObject {
                         put("query", "query(\$path: String) { sharedInfo(virtualPath: \$path) { entries { virtualPath isDir } } }")

@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.network.HttpStatusCode
-import com.ismartcoding.plain.network.PlainResponse
+import com.ismartcoding.plain.network.TestHttpResponse
 
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.runBlocking
@@ -11,14 +11,14 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class PlainResponseTest {
+class TestHttpResponseTest {
 
     private fun response(
         status: Int = 200,
         url: String = "https://example.com",
         headers: Map<String, List<String>> = emptyMap(),
         body: ByteArray = ByteArray(0),
-    ) = PlainResponse(
+    ) = TestHttpResponse(
         status = HttpStatusCode(status),
         url = url,
         headers = headers,
@@ -89,7 +89,7 @@ class PlainResponseTest {
     @Test
     fun `close invokes onClose`() {
         var closed = 0
-        val r = PlainResponse(HttpStatusCode(200), "https://example.com", emptyMap(), ByteReadChannel(ByteArray(0))) { closed++ }
+        val r = TestHttpResponse(HttpStatusCode(200), "https://example.com", emptyMap(), ByteReadChannel(ByteArray(0))) { closed++ }
         r.close()
         assertEquals(1, closed)
     }

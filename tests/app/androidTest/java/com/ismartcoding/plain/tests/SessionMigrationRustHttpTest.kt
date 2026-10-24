@@ -65,7 +65,7 @@ class SessionMigrationRustHttpTest {
         val oldTwoFactor = Prefs.loginRequireApproval.value
         val id = "session-fixture-${UUID.randomUUID()}"
         var pendingId = ""
-        val http = createPlainHttpClient(PlainHttpClientSpec.HttpHost)
+        val http = createTestHttpClient(TestHttpClientSpec.HttpHost)
         try {
             Prefs.backgroundServiceEnabled.value = true
             Prefs.desktopAccess.value = true

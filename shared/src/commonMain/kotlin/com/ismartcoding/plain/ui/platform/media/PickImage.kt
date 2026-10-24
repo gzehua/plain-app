@@ -3,7 +3,6 @@ package com.ismartcoding.plain.ui.platform.media
 import com.ismartcoding.plain.rust.native.RustNativeApi
 
 import com.ismartcoding.plain.platform.files.queryPickedFileInfo
-import com.ismartcoding.plain.network.request
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

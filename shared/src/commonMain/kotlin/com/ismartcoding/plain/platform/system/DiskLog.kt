@@ -1,8 +1,6 @@
 package com.ismartcoding.plain.platform.system
 
 
-import com.ismartcoding.plain.network.HttpLogSink
-import com.ismartcoding.plain.network.httpLogSink
 import com.ismartcoding.plain.lib.logcat.DiskLogAdapter
 import com.ismartcoding.plain.lib.logcat.DiskLogStrategy
 import com.ismartcoding.plain.lib.logcat.FormatStrategy
@@ -45,7 +43,7 @@ expect fun currentDateTimeString(): String
 fun getLatestLogFilePath(): String = RustRuntime.logFile
 
 /**
- * Initialize disk logging and HTTP request logging.
+ * Initialize disk logging.
  * - Debug builds: all log levels (VERBOSE+) are written to disk
  * - Release builds: only WARN+ are written to disk
  * Idempotent — safe to call multiple times (LogCat.addLogAdapter just appends).
@@ -58,7 +56,6 @@ fun initDiskLogging() {
             minPriority = if (isDebugBuild()) LogCat.VERBOSE else LogCat.WARN,
         ),
     )
-    httpLogSink = HttpLogSink { LogCat.v(it) }
     // Self-test: guarantee at least one line is written so the log file is
     // never empty. A WARN always passes the adapter's minPriority filter.
     LogCat.w("DiskLog: initialized (debug=${isDebugBuild()})")

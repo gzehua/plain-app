@@ -2,7 +2,6 @@
 
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.network.get
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import com.ismartcoding.plain.lib.withIO

@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.platform.media
 
-import com.ismartcoding.plain.network.request
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.ExperimentalFoundationApi

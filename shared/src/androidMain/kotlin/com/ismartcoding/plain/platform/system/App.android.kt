@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.ui.platform.media.VideoPlayerCacheManager
-import com.ismartcoding.plain.network.get
 
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.PackageHelper

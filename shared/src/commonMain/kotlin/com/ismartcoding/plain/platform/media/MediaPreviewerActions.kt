@@ -7,7 +7,6 @@ import com.ismartcoding.plain.platform.files.saveFileToDownloads
 import com.ismartcoding.plain.platform.system.Capability
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
-import com.ismartcoding.plain.network.get
 
 import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.i18n.Res

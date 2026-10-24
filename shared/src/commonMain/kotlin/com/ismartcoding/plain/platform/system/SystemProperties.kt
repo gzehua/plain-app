@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.platform.media.getDownloadsDirPath
-import com.ismartcoding.plain.network.request
 
 import kotlinx.serialization.json.JsonElement
 import com.ismartcoding.plain.buildChannel

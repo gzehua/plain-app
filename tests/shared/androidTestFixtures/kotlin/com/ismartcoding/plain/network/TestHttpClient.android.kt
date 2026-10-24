@@ -1,9 +1,5 @@
 package com.ismartcoding.plain.network
 
-import com.ismartcoding.plain.platform.media.call
-
-import com.ismartcoding.plain.network.OkHttpClientFactory
-import com.ismartcoding.plain.network.httpLogSink
 import io.ktor.utils.io.ByteChannel
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.close
@@ -17,10 +13,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call
-import okhttp3.Cookie
-import okhttp3.CookieJar
-import okhttp3.HttpUrl
-import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -39,21 +31,17 @@ import kotlin.coroutines.resumeWithException
 import java.io.IOException
 import okhttp3.Callback
 
-/**
- * OkHttp-backed [PlainHttpClient]. Every spec maps to a dedicated OkHttpClient;
- * no HTTP client from ktor is involved on Android.
- */
-internal class OkHttpPlainClient(
+internal class OkHttpTestClient(
     private val client: OkHttpClient,
     private val boundedWs: Boolean = false,
-) : PlainHttpClient {
-    override suspend fun request(req: PlainRequest): PlainResponse {
+) : TestHttpClient {
+    override suspend fun request(req: TestHttpRequest): TestHttpResponse {
         val call = client.newCall(req.toOkHttpRequest())
         val response = call.await()
         val headers = response.headers.toMultimap()
         val stream = response.body?.byteStream() ?: emptyStream()
         val channel = stream.toByteReadChannel { response.close() }
-        return PlainResponse(
+        return TestHttpResponse(
             status = HttpStatusCode(response.code),
             url = req.url,
             headers = headers,
@@ -65,7 +53,7 @@ internal class OkHttpPlainClient(
     override suspend fun <T> webSocket(
         url: String,
         headers: Map<String, String>,
-        block: suspend (PlainWebSocketSession) -> T,
+        block: suspend (TestWebSocketSession) -> T,
     ): T {
         val requestBuilder = Request.Builder().url(url)
         headers.forEach { (k, v) -> requestBuilder.header(k, v) }
@@ -78,7 +66,6 @@ internal class OkHttpPlainClient(
     }
 
     override fun close() {
-        // Connection pool and dispatcher are shared app-wide; nothing to dispose.
     }
 
     private fun emptyStream(): InputStream = ByteArrayInputStream(ByteArray(0))
@@ -100,7 +87,6 @@ private suspend fun Call.await(): Response =
         cont.invokeOnCancellation { cancel() }
     }
 
-/** Streams an [InputStream] into a ktor-io [ByteReadChannel] on the IO dispatcher. */
 private fun InputStream.toByteReadChannel(onClose: () -> Unit): ByteReadChannel {
     val input = this
     val channel = ByteChannel(autoFlush = true)
@@ -127,19 +113,19 @@ internal class OkHttpWsSession(
     client: OkHttpClient,
     request: Request,
     private val bounded: Boolean = false,
-) : WebSocketListener(), PlainWebSocketSession {
-    private val channel = Channel<PlainWsFrame>(if (bounded) 4 else Channel.UNLIMITED)
+) : WebSocketListener(), TestWebSocketSession {
+    private val channel = Channel<TestWsFrame>(if (bounded) 4 else Channel.UNLIMITED)
     @Volatile private var closed = false
     private val ws: WebSocket = client.newWebSocket(request, this)
 
     override val incoming = channel
 
     override fun onMessage(webSocket: WebSocket, text: String) {
-        if (bounded) channel.trySendBlocking(PlainWsFrame(text, null)) else channel.trySend(PlainWsFrame(text, null))
+        if (bounded) channel.trySendBlocking(TestWsFrame(text, null)) else channel.trySend(TestWsFrame(text, null))
     }
 
     override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-        if (bounded) channel.trySendBlocking(PlainWsFrame(null, bytes.toByteArray())) else channel.trySend(PlainWsFrame(null, bytes.toByteArray()))
+        if (bounded) channel.trySendBlocking(TestWsFrame(null, bytes.toByteArray())) else channel.trySend(TestWsFrame(null, bytes.toByteArray()))
     }
 
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
@@ -174,7 +160,7 @@ internal class OkHttpWsSession(
     }
 }
 
-internal fun PlainRequest.toOkHttpRequest(): Request {
+internal fun TestHttpRequest.toOkHttpRequest(): Request {
     val builder = Request.Builder().url(url)
     headers.forEach { (k, v) -> builder.header(k, v) }
     val mediaType = contentType?.toMediaTypeOrNull()
@@ -182,18 +168,20 @@ internal fun PlainRequest.toOkHttpRequest(): Request {
     return builder.method(method, body).build()
 }
 
-internal object SharedOkHttpClients {
-    val browser: OkHttpClient by lazy {
+private object TestOkHttpClients {
+    val unsafe: OkHttpClient by lazy {
+        val trustManager = object : javax.net.ssl.X509TrustManager {
+            override fun checkClientTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {}
+            override fun checkServerTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {}
+            override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> = emptyArray()
+        }
+        val context = javax.net.ssl.SSLContext.getInstance("TLS")
+        context.init(emptyArray<javax.net.ssl.KeyManager>(), arrayOf(trustManager), java.security.SecureRandom())
         OkHttpClient.Builder()
-            .callTimeout(PlainHttpTimeouts.BROWSER_MS, TimeUnit.MILLISECONDS)
-            .cookieJar(InMemoryCookieJar)
-            .addInterceptor(browserHeaders())
-            .addInterceptor(headerLoggingInterceptor())
+            .sslSocketFactory(context.socketFactory, trustManager)
+            .hostnameVerifier { hostname, _ -> com.ismartcoding.plain.lib.helpers.NetworkHelper.isLocalNetworkAddress(hostname) }
             .build()
     }
-
-    val unsafe: OkHttpClient by lazy { OkHttpClientFactory.createUnsafeOkHttpClient() }
-
     val host: OkHttpClient by lazy {
         unsafe.newBuilder()
             .connectTimeout(500, TimeUnit.MILLISECONDS)
@@ -202,52 +190,13 @@ internal object SharedOkHttpClients {
     }
 }
 
-internal fun createOkHttpPlainClient(spec: PlainHttpClientSpec): PlainHttpClient =
-    when (spec) {
-        is PlainHttpClientSpec.Local -> OkHttpPlainClient(
-            SharedOkHttpClients.unsafe.newBuilder()
-                .connectTimeout(spec.timeoutSeconds.toLong(), TimeUnit.SECONDS)
-                .readTimeout(spec.timeoutSeconds.toLong(), TimeUnit.SECONDS)
-                .writeTimeout(spec.timeoutSeconds.toLong(), TimeUnit.SECONDS)
-                .build(),
-        )
-        PlainHttpClientSpec.Browser -> OkHttpPlainClient(SharedOkHttpClients.browser)
-        PlainHttpClientSpec.HttpHost -> OkHttpPlainClient(SharedOkHttpClients.host, boundedWs = true)
-    }
-
-private fun browserHeaders() = Interceptor { chain ->
-    chain.proceed(
-        chain.request().newBuilder()
-            .header("accept", "*/*")
-            .header("User-Agent", BROWSER_USER_AGENT)
+fun createTestHttpClient(spec: TestHttpClientSpec): TestHttpClient = when (spec) {
+    is TestHttpClientSpec.Local -> OkHttpTestClient(
+        TestOkHttpClients.unsafe.newBuilder()
+            .connectTimeout(spec.timeoutSeconds.toLong(), TimeUnit.SECONDS)
+            .readTimeout(spec.timeoutSeconds.toLong(), TimeUnit.SECONDS)
+            .writeTimeout(spec.timeoutSeconds.toLong(), TimeUnit.SECONDS)
             .build(),
     )
+    TestHttpClientSpec.HttpHost -> OkHttpTestClient(TestOkHttpClients.host, boundedWs = true)
 }
-
-private fun headerLoggingInterceptor() = Interceptor { chain ->
-    val request = chain.request()
-    val sb = StringBuilder("HTTP request: ${request.method} ${request.url}")
-    request.headers.forEach { (name, value) -> sb.append("\n> $name: $value") }
-//    httpLogSink.log(sb.toString())
-    val response = chain.proceed(request)
-    val rsb = StringBuilder("HTTP response: ${response.code} ${request.url}")
-    response.headers.forEach { (name, value) -> rsb.append("\n< $name: $value") }
-//    httpLogSink.log(rsb.toString())
-    response
-}
-
-/** In-memory cookie jar replacing ktor's HttpCookies plugin for the Browser spec. */
-private object InMemoryCookieJar : CookieJar {
-    private val store = HashMap<HttpUrl, List<Cookie>>()
-
-    @Synchronized
-    override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-        store[url] = cookies
-    }
-
-    @Synchronized
-    override fun loadForRequest(url: HttpUrl): List<Cookie> =
-        store.values.flatten().filter { it.matches(url) }
-}
-
-actual fun createPlainHttpClient(spec: PlainHttpClientSpec): PlainHttpClient = createOkHttpPlainClient(spec)

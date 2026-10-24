@@ -6,7 +6,6 @@ import com.ismartcoding.plain.ui.platform.system.setImmersiveFullscreen
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.platform.permissions.isPermissionGranted
-import com.ismartcoding.plain.network.get
 
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlin.concurrent.Volatile

@@ -2,7 +2,6 @@ package com.ismartcoding.plain.platform.media
 
 import com.ismartcoding.plain.ui.platform.media.MediaViewer
 
-import com.ismartcoding.plain.network.request
 
 import coil3.request.ImageRequest
 

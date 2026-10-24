@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.features.sessions
 
-import com.ismartcoding.plain.network.request
 
 import kotlinx.serialization.Serializable
 

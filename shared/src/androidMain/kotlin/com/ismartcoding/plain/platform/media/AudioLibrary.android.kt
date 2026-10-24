@@ -3,7 +3,6 @@ package com.ismartcoding.plain.platform.media
 import com.ismartcoding.plain.platform.isQPlus
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
-import com.ismartcoding.plain.network.get
 
 import android.content.ContentUris
 import android.net.Uri

@@ -2,7 +2,6 @@
 
 package com.ismartcoding.plain.ui.platform.media
 
-import com.ismartcoding.plain.network.get
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember

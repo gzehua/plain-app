@@ -76,7 +76,7 @@ class BrowserVideoInstrumentedTest {
             withIO { RustRuntime.start() }
             val base = "http://127.0.0.1:${Prefs.httpPort.value}"
             fun resource(file: File) = "$base/fs?id=${URLEncoder.encode(ResourceCrypto.encrypt(file.absolutePath), "UTF-8")}"
-            createPlainHttpClient(PlainHttpClientSpec.Local()).use { client ->
+            createTestHttpClient(TestHttpClientSpec.Local()).use { client ->
                 client.get("${resource(source)}&probe=1").use { response ->
                     assertEquals(200, response.status.value)
                     val codec = Json.parseToJsonElement(response.bodyAsText()).jsonObject.getValue("codec").jsonPrimitive.content

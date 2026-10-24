@@ -10,6 +10,6 @@ suspend fun FeedEntry.fetchContentAsync(): ApiResult = try {
     content = refreshed.content
     image = refreshed.image
     updatedAt = refreshed.updatedAt
-    ApiResult(null, success = true)
+    ApiResult(success = true)
 } catch (cancelled: CancellationException) { throw cancelled }
-catch (error: Exception) { ApiResult(null, error) }
+catch (error: Exception) { ApiResult(exception = error) }

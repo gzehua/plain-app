@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.network.request
 
 import com.ismartcoding.plain.platform.system.DeviceType
 import com.ismartcoding.plain.rust.RustRuntime

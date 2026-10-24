@@ -7,8 +7,8 @@ import com.ismartcoding.plain.features.sessions.RustSessionStore
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.network.PlainHttpClientSpec
-import com.ismartcoding.plain.network.createPlainHttpClient
+import com.ismartcoding.plain.network.TestHttpClientSpec
+import com.ismartcoding.plain.network.createTestHttpClient
 import com.ismartcoding.plain.network.postText
 import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import java.util.UUID
@@ -26,7 +26,7 @@ class MainGraphqlRustHttpTest {
         val oldService = Prefs.backgroundServiceEnabled.value
         val oldAccess = Prefs.desktopAccess.value
         var id: String? = null
-        val httpClient = createPlainHttpClient(PlainHttpClientSpec.Local())
+        val httpClient = createTestHttpClient(TestHttpClientSpec.Local())
         try {
             Prefs.backgroundServiceEnabled.value = true
             Prefs.desktopAccess.value = true

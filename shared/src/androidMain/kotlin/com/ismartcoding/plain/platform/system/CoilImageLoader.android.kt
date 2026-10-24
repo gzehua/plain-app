@@ -3,8 +3,6 @@
 package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.platform.isQPlus
-import com.ismartcoding.plain.network.get
-import com.ismartcoding.plain.network.request
 
 import android.graphics.Bitmap
 import android.graphics.Paint
@@ -111,13 +109,6 @@ fun newImageLoader(context: PlatformContext): ImageLoader {
     // larger values inflate the bitmap-memory footprint measured by Play vitals.
     val memoryPercent = if (activityManager.isLowRamDevice) 0.15 else 0.25
 
-    // Dedicated OkHttp client for image loading. It uses the system trust store and
-    // OkHttp's default OkHostnameVerifier, which is what every other Android image
-    // fetcher does. We deliberately do NOT reuse `createUnsafeOkHttpClient()` here:
-    // that client is built for the in-app HTTP server and only accepts
-    // `isLocalNetworkAddress` hostnames, which silently broke every public https
-    // image (the request fails with `SSLPeerUnverifiedException` before the
-    // network is even reached).
     val imageLoaderClient = OkHttpClientFactory.createImageLoaderClient()
 
     return ImageLoader.Builder(appContext)

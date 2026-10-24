@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.platform.media
 
-import com.ismartcoding.plain.network.post
 
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.screenmirror.ScreenMirrorControlInput
