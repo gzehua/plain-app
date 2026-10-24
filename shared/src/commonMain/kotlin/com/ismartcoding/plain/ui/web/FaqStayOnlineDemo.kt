@@ -54,8 +54,9 @@ private val DemoPillShape = RoundedCornerShape(50)
 fun FaqStayOnlineDemo() {
     val isHttps = Prefs.https.collectAsState()
     val port = if (isHttps.value) Prefs.httpsPort.collectAsState() else Prefs.httpPort.collectAsState()
-    val url = remember(isHttps.value, port.value) {
-        UrlHelper.buildUrl(if (isHttps.value) "https" else "http", demoServerIp(), port.value)
+    val serverIp = demoServerIp()
+    val url = remember(isHttps.value, port.value, serverIp) {
+        UrlHelper.buildUrl(if (isHttps.value) "https" else "http", serverIp, port.value)
     }
 
     DemoPlayer(

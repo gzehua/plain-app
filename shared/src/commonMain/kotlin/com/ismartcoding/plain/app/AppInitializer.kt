@@ -7,7 +7,7 @@ import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.features.videos.VideoProgressHost
 import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
-import com.ismartcoding.plain.ui.app.LocalDeviceState
+import com.ismartcoding.plain.app.NetworkState
 
 /**
  * Shared preference and TempData initialization, called by both Android
@@ -21,7 +21,7 @@ suspend fun initCommonPreferences() {
     VideoProgressHost.restore()
     AudioEngineHost.start()
     TempData.deviceName.value = Prefs.get<String>(PrefKeys.DEVICE_NAME)
-    LocalDeviceState.refresh()
+    NetworkState.refresh()
     ChannelCacher.load()
     ChatCacher.load()
     LogCat.d("initCommonPreferences: clientId=${TempData.clientId}, deviceName=${TempData.deviceName.value}")

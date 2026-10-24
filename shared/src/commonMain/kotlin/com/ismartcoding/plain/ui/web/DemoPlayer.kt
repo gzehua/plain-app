@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.ui.web
 
-import com.ismartcoding.plain.ui.app.AppUiState
+import com.ismartcoding.plain.app.NetworkState
+import androidx.compose.runtime.collectAsState
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -42,7 +43,8 @@ import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.play_arrow as ui_drawable_play_arrow
 
 /** First LAN IPv4 known to the app, or a stable fallback for the demos. */
-internal fun demoServerIp(): String = AppUiState.primaryIpv4.value.ifEmpty { "192.0.2.20" }
+@Composable
+internal fun demoServerIp(): String = NetworkState.network.collectAsState().value.primaryIpv4.ifEmpty { "192.0.2.20" }
 
 /**
  * Shared player for the compose-drawn demo "videos": dark bezel, content box,

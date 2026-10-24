@@ -38,7 +38,7 @@ import com.ismartcoding.plain.platform.notifications.sendWebLoginNotification
 import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
 import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.rust.native.readRustStream
-import com.ismartcoding.plain.ui.app.LocalDeviceState
+import com.ismartcoding.plain.app.NetworkState
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.ui.feeds.FeedSyncUpdate
 import com.ismartcoding.plain.ui.feeds.FeedWorkerState
@@ -94,7 +94,7 @@ object RustEventHandler {
         val type = event.type
         val payload = event.payload
         when (type) {
-            EventType.NETWORK_CHANGED -> LocalDeviceState.refresh()
+            EventType.NETWORK_CHANGED -> NetworkState.refresh()
             EventType.WEB_LOGIN_COMPLETED -> {
                 val facts = JsonHelper.jsonDecode<WebLoginCompletedFacts>(payload)
                 val request = facts.request
@@ -104,7 +104,6 @@ object RustEventHandler {
             EventType.MEDIA_ACTION_FINISHED -> MediaActionProjection.apply(payload)
             EventType.HTTP_SERVER_STATE_CHANGED -> {
                 refreshHttpServerState()
-                LocalDeviceState.refresh()
             }
             EventType.PEER_STATUS_UPDATED -> {
                 ChatCacher.load()
@@ -160,9 +159,6 @@ object RustEventHandler {
             }
             EventType.ONLINE_CLIENTS_UPDATED -> setOnlineClientIds(
                 JsonHelper.jsonDecode<Set<String>>(payload))
-            EventType.PREFS_UPDATED -> {
-                LocalDeviceState.refresh()
-            }
             EventType.IMAGE_MODELS_UPDATED -> RustImageModels.apply(JsonHelper.jsonDecode<JsonObject>(payload))
             EventType.DLNA_SENDER_UPDATED -> RustDlnaSender.apply(JsonHelper.jsonDecode<JsonObject>(payload))
             EventType.WEB_LOGIN_REQUESTED -> {

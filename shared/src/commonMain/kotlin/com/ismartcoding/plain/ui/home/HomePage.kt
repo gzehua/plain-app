@@ -1,6 +1,8 @@
 package com.ismartcoding.plain.ui.home
 
-import com.ismartcoding.plain.ui.app.AppUiState
+import com.ismartcoding.plain.platform.network.vpnActive
+import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.app.events.EventType
 
 import com.ismartcoding.plain.preferences.*
 
@@ -53,7 +55,7 @@ import com.ismartcoding.plain.ui.navigation.MainNavScaffold
 import com.ismartcoding.plain.ui.settings.UpdateDialog
 import com.ismartcoding.plain.app.HttpServerManager
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.ui.app.LocalDeviceState
+import com.ismartcoding.plain.app.NetworkState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,6 +66,12 @@ fun HomePage(
     channelVM: ChannelViewModel,
     onTabSelected: (Int) -> Unit,
 ) {
+    var isVpnActive by remember { mutableStateOf(vpnActive()) }
+    LaunchedEffect(Unit) {
+        RustEventHandler.events.collect { event ->
+            if (event.type == EventType.NETWORK_CHANGED) isVpnActive = vpnActive()
+        }
+    }
     val serviceEnabled = Prefs.backgroundServiceEnabled.collectAsStateValue()
     var systemAlertWindow by remember { mutableStateOf(Permission.SYSTEM_ALERT_WINDOW.isGranted()) }
     val refreshState = rememberRefreshLayoutState {
@@ -90,7 +98,8 @@ fun HomePage(
                 }
 
                 is WindowFocusChangedEvent -> {
-                    LocalDeviceState.refresh()
+                    isVpnActive = vpnActive()
+                    NetworkState.refresh()
                     systemAlertWindow = Permission.SYSTEM_ALERT_WINDOW.isGranted()
                     if (event.hasFocus) {
                         HttpServerManager.ensureStarted()
@@ -121,7 +130,7 @@ fun HomePage(
                 item {
                     TopSpace()
                     if (serviceEnabled) {
-                        if (AppUiState.vpnActive.value) {
+                        if (isVpnActive) {
                             PAlert(
                                 description = stringResource(Res.string.vpn_web_conflict_warning),
                                 AlertType.WARNING,

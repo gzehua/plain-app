@@ -327,8 +327,8 @@ object Query {
         $$"query { appCacheSize }",
     )
 
-    fun app(): GraphqlRequest = GraphqlRequest(
-        $$"query { app { clientId deviceName deviceType httpsPort network { ipv4Addresses primaryIpv4 } } }",
+    fun appNetwork(): GraphqlRequest = GraphqlRequest(
+        $$"query { app { network { ipv4Addresses primaryIpv4 } } }",
     )
 
     fun feeds(withCount: Boolean): GraphqlRequest = GraphqlRequest(

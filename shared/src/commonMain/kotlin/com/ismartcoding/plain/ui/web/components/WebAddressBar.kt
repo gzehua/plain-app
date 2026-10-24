@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.web.components
 
 import com.ismartcoding.plain.preferences.PrefKeys
 
-import com.ismartcoding.plain.ui.app.AppUiState
+import com.ismartcoding.plain.app.NetworkState
 
 import kotlinx.coroutines.launch
 import androidx.compose.animation.AnimatedVisibility
@@ -59,8 +59,9 @@ fun WebAddressBar(
     var qrCodeUrl by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val scheme = if (isHttps) "https" else "http"
-    val ipList = AppUiState.ip4s.value.ifEmpty { listOf("127.0.0.1") }
-    val primaryIp = AppUiState.primaryIpv4.value.ifEmpty { "127.0.0.1" }
+    val network by NetworkState.network.collectAsState()
+    val ipList = network.ipv4Addresses.ifEmpty { listOf("127.0.0.1") }
+    val primaryIp = network.primaryIpv4.ifEmpty { "127.0.0.1" }
     val backupIps = listOf(hostname) + ipList.filter { it != primaryIp }
 
     Column(
