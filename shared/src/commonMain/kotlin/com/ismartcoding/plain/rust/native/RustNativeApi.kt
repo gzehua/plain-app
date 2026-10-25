@@ -19,6 +19,7 @@ internal expect object RustNativeApi {
 
     suspend fun restartHttpServer(): Boolean
     fun httpStatus(): String
+    suspend fun lanIpv4Addresses(): List<String>
     suspend fun bleIncoming(remoteHost: String, characteristicUuid: String, bytes: ByteArray): ByteArray
     suspend fun checkHttp(): Boolean
     suspend fun tlsCertificateSignature(): ByteArray

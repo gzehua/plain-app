@@ -274,7 +274,7 @@ fun MainNavGraph(
         composable<Routing.FeedCatalog> { FeedCatalogPage(navController) }
         composable<Routing.HowToUse> {
             val webVM: DesktopAccessSettingsViewModel = viewModel { DesktopAccessSettingsViewModel() }
-            HowToUsePage(navController, onRunDiagnostics = { webVM.dig() })
+            HowToUsePage(navController, webVM)
         }
         composable<Routing.Onboarding> { OnboardingPage(navController) }
         composable<Routing.AppDetails> { backStackEntry ->

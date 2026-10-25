@@ -17,8 +17,34 @@ import com.ismartcoding.plain.platform.system.isIgnoringBatteryOptimizations
 import com.ismartcoding.plain.platform.system.relaunchApp
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.launch
+import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.rust.native.RustNativeApi
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onSubscription
 
 class DesktopAccessSettingsViewModel : ViewModel() {
+    val lanIpv4Addresses = MutableStateFlow<List<String>?>(null)
+
+    suspend fun observeNetworkAddresses() {
+        RustEventHandler.events.onSubscription { refreshNetworkAddresses() }.collect { event ->
+            if (event.type == EventType.NETWORK_CHANGED) refreshNetworkAddresses()
+        }
+    }
+
+    private suspend fun refreshNetworkAddresses() {
+        try {
+            lanIpv4Addresses.value = RustNativeApi.lanIpv4Addresses()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            LogCat.e("Load network addresses", error)
+        }
+    }
+
     fun dig() {
         viewModelScope.launch {
             DialogHelper.showLoading()

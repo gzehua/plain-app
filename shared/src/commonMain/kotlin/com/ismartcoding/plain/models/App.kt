@@ -21,5 +21,4 @@ data class App(
     var downloadsDir: String,
     var developerMode: Boolean,
     var debug: Boolean,
-    var network: NetworkStatus = NetworkStatus(emptyList(), ""),
 )

@@ -327,10 +327,6 @@ object Query {
         $$"query { appCacheSize }",
     )
 
-    fun appNetwork(): GraphqlRequest = GraphqlRequest(
-        $$"query { app { network { ipv4Addresses primaryIpv4 } } }",
-    )
-
     fun feeds(withCount: Boolean): GraphqlRequest = GraphqlRequest(
         $$"query { feeds { $${Fragments.FEED_FIELDS} }" + (if (withCount) " feedEntryCounts { id count }" else "") + " }",
     )

@@ -36,6 +36,8 @@ internal actual object RustNativeApi {
     actual suspend fun restartHttpServer(): Boolean = nativeCall { restartHttpServerNative() }
     private external fun httpStatusNative(): String
     actual fun httpStatus(): String = httpStatusNative()
+    private external fun lanIpv4AddressesNative(): String
+    actual suspend fun lanIpv4Addresses(): List<String> = nativeCall { lanIpv4AddressesNative() }
     private external fun bleIncomingNative(remoteHost: String, characteristicUuid: String, bytes: ByteArray): ByteArray
     actual suspend fun bleIncoming(remoteHost: String, characteristicUuid: String, bytes: ByteArray): ByteArray =
         withContext(Dispatchers.IO) { bleIncomingNative(remoteHost, characteristicUuid, bytes) }

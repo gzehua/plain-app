@@ -12,11 +12,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.i18n.Res
@@ -34,6 +36,7 @@ import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.web.components.WebAddressPager
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 import com.ismartcoding.plain.ui.state.launchSafe
+import com.ismartcoding.plain.ui.settings.DesktopAccessSettingsViewModel
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.theme.tipsText
 import com.ismartcoding.plain.app.HttpServerManager
@@ -69,7 +72,12 @@ fun DesktopAccessSection(navController: NavHostController) {
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
         }
-        if (desktopAccessEnabled) WebAddressPager()
+        if (desktopAccessEnabled) {
+            val webVM: DesktopAccessSettingsViewModel = viewModel { DesktopAccessSettingsViewModel() }
+            val lanIpv4Addresses by webVM.lanIpv4Addresses.collectAsState()
+            LaunchedEffect(webVM) { webVM.observeNetworkAddresses() }
+            lanIpv4Addresses?.let { WebAddressPager(lanIpv4Addresses = it) }
+        }
         VerticalSpace(16.dp)
         PDivider(modifier = Modifier.padding(start = 16.dp))
         PListItem(modifier = Modifier.clickable {

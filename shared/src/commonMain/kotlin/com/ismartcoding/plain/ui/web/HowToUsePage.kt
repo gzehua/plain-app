@@ -19,6 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +42,7 @@ import com.ismartcoding.plain.ui.web.components.WebAddressPager
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 import com.ismartcoding.plain.features.web.WebHelper
 import com.ismartcoding.plain.ui.navigation.Routing
+import com.ismartcoding.plain.ui.settings.DesktopAccessSettingsViewModel
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import com.ismartcoding.plain.ui.theme.green
 import com.ismartcoding.plain.ui.theme.grey
@@ -62,8 +64,11 @@ private const val TROUBLESHOOTING_GUIDE_URL = "https://plainapp.app/docs/trouble
 @Composable
 fun HowToUsePage(
     navController: NavHostController,
-    onRunDiagnostics: () -> Unit,
+    webVM: DesktopAccessSettingsViewModel,
 ) {
+    val lanIpv4Addresses = webVM.lanIpv4Addresses.collectAsStateValue()
+    val demoIp = lanIpv4Addresses?.firstOrNull() ?: "192.0.2.20"
+    LaunchedEffect(webVM) { webVM.observeNetworkAddresses() }
 
     PScaffold(
         topBar = {
@@ -85,13 +90,13 @@ fun HowToUsePage(
                             StepItem(index = 2, title = stringResource(Res.string.step_choose_ip_title))
                             VerticalSpace(dp = 8.dp)
                             Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                                WebAddressPager()
+                                lanIpv4Addresses?.let { WebAddressPager(lanIpv4Addresses = it) }
                             }
                             VerticalSpace(dp = 16.dp)
                             StepItem(index = 3, title = stringResource(Res.string.step_open_url_title))
                             VerticalSpace(dp = 8.dp)
                             Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                                OpenAddressDemo()
+                                OpenAddressDemo(serverIp = demoIp)
                             }
                         }
                     }
@@ -115,14 +120,14 @@ fun HowToUsePage(
                             question = stringResource(Res.string.faq_cannot_open_q),
                             answer = stringResource(Res.string.faq_cannot_open_a),
                         ) {
-                            RunDiagnosticsChip(onClick = onRunDiagnostics)
+                            RunDiagnosticsChip(onClick = webVM::dig)
                         }
                         FaqItem(
                             icon = UiRes.drawable.ui_drawable_lock,
                             tint = MaterialTheme.colorScheme.orange,
                             question = stringResource(Res.string.faq_https_warning_q),
                             answer = stringResource(Res.string.browser_https_error_tips),
-                            answerFooter = { FaqCertDemo() },
+                            answerFooter = { FaqCertDemo(serverIp = demoIp) },
                             answerFooterFullWidth = true,
                         )
                         FaqItem(
@@ -130,7 +135,7 @@ fun HowToUsePage(
                             tint = MaterialTheme.colorScheme.orange,
                             question = stringResource(Res.string.faq_stay_online_q),
                             answer = stringResource(Res.string.faq_stay_online_a),
-                            answerFooter = { FaqStayOnlineDemo() },
+                            answerFooter = { FaqStayOnlineDemo(serverIp = demoIp) },
                             answerFooterFullWidth = true,
                         )
                     }

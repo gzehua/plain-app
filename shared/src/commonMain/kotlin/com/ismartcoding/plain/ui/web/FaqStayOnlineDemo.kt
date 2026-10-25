@@ -51,10 +51,9 @@ import com.ismartcoding.plain.ui.resources.qr_code as ui_drawable_qr_code
 private val DemoPillShape = RoundedCornerShape(50)
 
 @Composable
-fun FaqStayOnlineDemo() {
+fun FaqStayOnlineDemo(serverIp: String) {
     val isHttps = Prefs.https.collectAsState()
     val port = if (isHttps.value) Prefs.httpsPort.collectAsState() else Prefs.httpPort.collectAsState()
-    val serverIp = demoServerIp()
     val url = remember(isHttps.value, port.value, serverIp) {
         UrlHelper.buildUrl(if (isHttps.value) "https" else "http", serverIp, port.value)
     }

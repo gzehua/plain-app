@@ -54,7 +54,6 @@ import com.ismartcoding.plain.ui.navigation.MainNavScaffold
 import com.ismartcoding.plain.ui.settings.UpdateDialog
 import com.ismartcoding.plain.app.HttpServerManager
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.app.NetworkState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,7 +95,6 @@ fun HomePage(
 
                 is WindowFocusChangedEvent -> {
                     isVpnActive = vpnActive()
-                    NetworkState.refresh()
                     systemAlertWindow = Permission.SYSTEM_ALERT_WINDOW.isGranted()
                     if (event.hasFocus) {
                         HttpServerManager.ensureStarted()

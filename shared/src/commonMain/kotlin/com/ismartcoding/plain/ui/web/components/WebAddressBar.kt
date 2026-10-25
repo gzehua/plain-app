@@ -2,8 +2,6 @@ package com.ismartcoding.plain.ui.web.components
 
 import com.ismartcoding.plain.preferences.PrefKeys
 
-import com.ismartcoding.plain.app.NetworkState
-
 import kotlinx.coroutines.launch
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -48,6 +46,7 @@ import com.ismartcoding.plain.ui.resources.chevron_up as ui_drawable_chevron_up
 @Composable
 fun WebAddressBar(
     isHttps: Boolean,
+    lanIpv4Addresses: List<String>,
 ) {
     val port = if (isHttps) Prefs.httpsPort.collectAsState() else Prefs.httpPort.collectAsState()
     // Shared persisted state so the HTTP/HTTPS pager pages stay in sync.
@@ -59,10 +58,8 @@ fun WebAddressBar(
     var qrCodeUrl by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val scheme = if (isHttps) "https" else "http"
-    val network by NetworkState.network.collectAsState()
-    val ipList = network.ipv4Addresses.ifEmpty { listOf("127.0.0.1") }
-    val primaryIp = network.primaryIpv4.ifEmpty { "127.0.0.1" }
-    val backupIps = listOf(hostname) + ipList.filter { it != primaryIp }
+    val primaryAddress = lanIpv4Addresses.firstOrNull() ?: hostname
+    val backupAddresses = (listOf(hostname) + lanIpv4Addresses.drop(1)).filter { it != primaryAddress }
 
     Column(
         Modifier
@@ -73,29 +70,32 @@ fun WebAddressBar(
             )
             .padding(vertical = 8.dp),
     ) {
-        val primaryUrl = UrlHelper.buildUrl(scheme, primaryIp, port.value)
+        val primaryUrl = UrlHelper.buildUrl(scheme, primaryAddress, port.value)
         AddressRow(
             url = primaryUrl,
-            isHostnameRow = false,
-            onEditClick = { portDialogVisible = true },
+            isHostnameRow = primaryAddress == hostname,
+            onEditClick = {
+                if (primaryAddress == hostname) mdnsEditDialogVisible = true
+                else portDialogVisible = true
+            },
             onQrClick = {
                 qrCodeUrl = primaryUrl
                 qrCodeDialogVisible = true
             },
         )
         AnimatedVisibility(
-            visible = expanded.value,
+            visible = expanded.value && backupAddresses.isNotEmpty(),
             enter = expandVertically(),
             exit = shrinkVertically(),
         ) {
             Column {
-                backupIps.forEach { ip ->
-                    val url = UrlHelper.buildUrl(scheme, ip, port.value)
+                backupAddresses.forEach { address ->
+                    val url = UrlHelper.buildUrl(scheme, address, port.value)
                     AddressRow(
                         url = url,
-                        isHostnameRow = ip == hostname,
+                        isHostnameRow = address == hostname,
                         onEditClick = {
-                            if (ip == hostname) {
+                            if (address == hostname) {
                                 mdnsEditDialogVisible = true
                             } else {
                                 portDialogVisible = true
@@ -109,22 +109,24 @@ fun WebAddressBar(
                 }
             }
         }
-        val expansion = stringResource(if (expanded.value) Res.string.expanded else Res.string.collapsed)
-        PTextButton(
-            modifier = Modifier.padding(horizontal = 8.dp).semantics {
-                stateDescription = expansion
-            },
-            text = stringResource(if (expanded.value) Res.string.collapse_backup_addresses else Res.string.try_more_addresses),
-            icon = painterResource(
-                if (expanded.value)
-                    UiRes.drawable.ui_drawable_chevron_up
-                else
-                    UiRes.drawable.ui_drawable_chevron_down
-            ),
-            onClick = {
-                scope.launch { Prefs.set(PrefKeys.WEB_ADDRESS_BAR_EXPANDED, !expanded.value)}
-            },
-        )
+        if (backupAddresses.isNotEmpty()) {
+            val expansion = stringResource(if (expanded.value) Res.string.expanded else Res.string.collapsed)
+            PTextButton(
+                modifier = Modifier.padding(horizontal = 8.dp).semantics {
+                    stateDescription = expansion
+                },
+                text = stringResource(if (expanded.value) Res.string.collapse_backup_addresses else Res.string.try_more_addresses),
+                icon = painterResource(
+                    if (expanded.value)
+                        UiRes.drawable.ui_drawable_chevron_up
+                    else
+                        UiRes.drawable.ui_drawable_chevron_down
+                ),
+                onClick = {
+                    scope.launch { Prefs.set(PrefKeys.WEB_ADDRESS_BAR_EXPANDED, !expanded.value)}
+                },
+            )
+        }
     }
 
     if (mdnsEditDialogVisible) {

@@ -7,5 +7,4 @@ suspend fun initAppState() {
     Language.observeLocale()
     HttpServerManager.observeBackgroundService()
     AudioEngineHost.start()
-    NetworkState.refresh()
 }

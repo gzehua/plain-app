@@ -47,15 +47,14 @@ import com.ismartcoding.plain.ui.resources.triangle_alert as ui_drawable_triangl
 /**
  * Compose-drawn "video" demo for the HTTPS certificate FAQ: the browser
  * warning page → Advanced → Proceed, ending on the web login page.
- * The address is built live from TempData (the real server IP + https port).
  * Steps: 0 error + tap ring on Advanced, 1 expanded + tap ring on Proceed,
  * 2 login page. Played by the shared scrubbable DemoPlayer.
  */
 
 @Composable
-fun FaqCertDemo() {
+fun FaqCertDemo(serverIp: String) {
     val port = Prefs.httpsPort.collectAsState()
-    val host = UrlHelper.buildUrl("https", demoServerIp(), port.value).removePrefix("https://")
+    val host = UrlHelper.buildUrl("https", serverIp, port.value).removePrefix("https://")
 
     DemoPlayer(
         stepDurationsMs = listOf(1600L, 2400L),

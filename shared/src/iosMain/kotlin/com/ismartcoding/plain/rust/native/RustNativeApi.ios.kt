@@ -37,6 +37,7 @@ import com.ismartcoding.plain.rustprefs.plain_toggle_notification_app
 import com.ismartcoding.plain.rustprefs.plain_file_icon
 import com.ismartcoding.plain.rustprefs.plain_restart_http_server
 import com.ismartcoding.plain.rustprefs.plain_http_status
+import com.ismartcoding.plain.rustprefs.plain_lan_ipv4_addresses
 import com.ismartcoding.plain.rustprefs.plain_ble_incoming
 import com.ismartcoding.plain.rustprefs.plain_ble_incoming_buffer_free
 import com.ismartcoding.plain.rustprefs.plain_check_http
@@ -151,6 +152,10 @@ internal actual object RustNativeApi {
                 }
             }
         }
+    actual suspend fun lanIpv4Addresses(): List<String> = nativeCall {
+        val pointer = checkNotNull(plain_lan_ipv4_addresses())
+        try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+    }
     actual suspend fun checkHttp(): Boolean = nativeCall {
         val pointer = checkNotNull(plain_check_http())
         try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }

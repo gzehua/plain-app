@@ -34,6 +34,7 @@ void plain_ble_incoming_buffer_free(PlainBleIncomingBuffer buffer);
 char *plain_check_http(void);
 // Returns raw status JSON or NULL with an error. Free both strings with plain_prefs_string_free.
 char *plain_http_status(char **error);
+char *plain_lan_ipv4_addresses(void);
 char *plain_tls_certificate_signature(void);
 char *plain_regenerate_tls_certificate(void);
 char *plain_import_tls_certificate_pem(const char *certificate_pem, const char *private_key_pem);

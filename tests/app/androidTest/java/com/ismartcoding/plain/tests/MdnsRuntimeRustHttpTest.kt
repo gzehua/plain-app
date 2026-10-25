@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.tests
 
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+import com.ismartcoding.plain.rust.native.RustNativeApi
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.nearby.RustMdnsRuntime
@@ -62,7 +63,7 @@ class MdnsRuntimeRustHttpTest {
             val captured = RustMdnsRuntime.snapshot()
             val packets = RustMdnsRuntime.packets(captured, false)
             assertEquals(captured.getValue("running").jsonPrimitive.boolean, RustMdnsRuntime.running)
-            if (RustGraphqlApi.query("app { network { ipv4Addresses } }").getValue("app").jsonObject.getValue("network").jsonObject.getValue("ipv4Addresses").jsonArray.isEmpty()) {
+            if (RustNativeApi.lanIpv4Addresses().isEmpty()) {
                 assertTrue(packets.all { it.srcPort > 0 && it.size > 0 })
             } else assertTrue(packets.any { it.summary.contains("PTR") && it.detail.contains("_plainapp._tcp.local") && it.srcPort > 0 && it.size > 0 })
             assertTrue(RustMdnsRuntime.services(captured).all { it.serviceType == "_plainapp._tcp.local" })

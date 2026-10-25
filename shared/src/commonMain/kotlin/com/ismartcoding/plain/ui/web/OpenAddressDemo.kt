@@ -34,18 +34,15 @@ import com.ismartcoding.plain.ui.resources.search as ui_drawable_search
 /**
  * Compose-drawn "video" for Quick start step 2: a browser address bar where
  * the phone's real current URL is typed in, ending on the web login page.
- * The URL is built live from TempData (same source as the address bar above),
- * so the video always shows the address this device actually serves.
  * Steps: 0 typing into the address bar, 1 login page.
  */
 
 private const val DEMO_TYPING_MS = 2800L
 
 @Composable
-fun OpenAddressDemo() {
+fun OpenAddressDemo(serverIp: String) {
     val isHttps = Prefs.https.collectAsState()
     val port = if (isHttps.value) Prefs.httpsPort.collectAsState() else Prefs.httpPort.collectAsState()
-    val serverIp = demoServerIp()
     val url = remember(isHttps.value, port.value, serverIp) {
         UrlHelper.buildUrl(if (isHttps.value) "https" else "http", serverIp, port.value)
     }

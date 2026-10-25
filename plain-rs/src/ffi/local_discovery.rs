@@ -2,6 +2,18 @@ use super::management::{parts, reply};
 use super::values::{c_string, input};
 use std::ffi::c_char;
 
+fn lan_ipv4_addresses() -> String {
+    reply!((|| {
+        let (runtime, management) = parts()?;
+        runtime.block_on(management.lan_ipv4_addresses())
+    })())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn plain_lan_ipv4_addresses() -> *mut c_char {
+    c_string(lan_ipv4_addresses())
+}
+
 fn acquire_mdns_debug_session(token: String) -> String {
     reply!((|| {
         let (runtime, management) = parts()?;
@@ -43,6 +55,18 @@ mod android {
         objects::{JObject, JString},
         sys::jstring,
     };
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_lanIpv4AddressesNative(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            env.new_string(lan_ipv4_addresses())
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+
     #[unsafe(no_mangle)]
     pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_acquireMdnsDebugSessionNative(
         mut env: EnvUnowned<'_>,

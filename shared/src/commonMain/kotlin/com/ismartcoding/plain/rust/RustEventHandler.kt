@@ -35,7 +35,6 @@ import com.ismartcoding.plain.platform.notifications.sendWebLoginNotification
 import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
 import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.rust.native.readRustStream
-import com.ismartcoding.plain.app.NetworkState
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.ui.feeds.FeedSyncUpdate
 import com.ismartcoding.plain.ui.feeds.FeedWorkerState
@@ -90,7 +89,6 @@ object RustEventHandler {
         val type = event.type
         val payload = event.payload
         when (type) {
-            EventType.NETWORK_CHANGED -> NetworkState.refresh()
             EventType.WEB_LOGIN_COMPLETED -> {
                 val facts = JsonHelper.jsonDecode<WebLoginCompletedFacts>(payload)
                 val request = facts.request

@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
  * page is persisted to Prefs.https so every placement stays in sync.
  */
 @Composable
-fun WebAddressPager(modifier: Modifier = Modifier) {
+fun WebAddressPager(lanIpv4Addresses: List<String>, modifier: Modifier = Modifier) {
     val isHttps = Prefs.https.collectAsState()
     val pagerState = rememberPagerState(
         initialPage = if (isHttps.value) 1 else 0,
@@ -37,7 +37,7 @@ fun WebAddressPager(modifier: Modifier = Modifier) {
             state = pagerState,
             modifier = Modifier.fillMaxWidth(),
         ) { page ->
-            WebAddressBar(isHttps = page == 1)
+            WebAddressBar(isHttps = page == 1, lanIpv4Addresses = lanIpv4Addresses)
         }
         PRangeDots(
             items = listOf(0, 1),
