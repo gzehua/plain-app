@@ -13,7 +13,7 @@ import com.ismartcoding.plain.platform.setClipboardText
 import com.ismartcoding.plain.platform.system.clearMediaCache
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.system.readBatterySample
-import com.ismartcoding.plain.platform.system.sampleSystemProperties
+import com.ismartcoding.plain.platform.system.readSystemProperties
 import com.ismartcoding.plain.platform.system.scheduleBackgroundWake
 import com.ismartcoding.plain.rust.host.*
 import kotlinx.serialization.Serializable
@@ -51,7 +51,7 @@ internal object SystemAppHost {
             scheduleBackgroundWake(JsonHelper.jsonDecodeFromElement<BackgroundWakeRequest>(params).atMs)
             hostResult(true)
         }
-        "systemProperties" -> hostResult(sampleSystemProperties(
+        "systemProperties" -> hostResult(readSystemProperties(
             JsonHelper.jsonDecodeFromElement<SystemPropertiesRequest>(params).names,
         ))
         "systemBatterySample" -> hostResult(readBatterySample())

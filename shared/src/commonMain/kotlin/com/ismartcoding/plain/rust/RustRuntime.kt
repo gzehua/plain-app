@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.rust
 
-import kotlinx.coroutines.IO
-
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.preferences.Prefs
 
@@ -12,7 +10,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Dispatchers
 import kotlin.concurrent.Volatile
-import kotlinx.coroutines.runBlocking
 
 object RustRuntime {
     private val lock = PlatformLock()
@@ -30,13 +27,9 @@ object RustRuntime {
     private var sessionToken: String? = null
     private var collectorsStarted = false
 
-    private val startupConfig by lazy {
-        RustStartupConfig(isDebugBuild(), startupSystemProperties())
-    }
-
     fun start() = lock.withLock {
         val token = sessionToken ?: generateChaCha20Key().also { sessionToken = it }
-        val config = startupConfig
+        val config = rustStartupConfig
         val result = JsonHelper.jsonDecode<RustStartupResult>(RustNativeApi.startCore(
             dataDir, token, JsonHelper.jsonEncode(config)))
         check(result.errorCode.isEmpty()) { result.error }
@@ -45,9 +38,7 @@ object RustRuntime {
         logPath = result.logFile
         sharedPreviewPath = result.sharedPreviewDir
         if (!collectorsStarted) {
-            runBlocking(Dispatchers.IO) {
-                Prefs.load()
-            }
+            Prefs.load()
             isCoreInitialized = true
             RustEventHandler.start(scope)
             RustHostApiHandler.start(scope)

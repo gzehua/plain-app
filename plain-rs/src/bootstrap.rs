@@ -3,10 +3,10 @@ use std::sync::Arc;
 
 pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String, String> {
     let mut guard = crate::ffi::server::CORE.lock().map_err(|e| e.to_string())?;
-    let config: serde_json::Value = serde_json::from_str(config).map_err(|e| e.to_string())?;
-    let cache_directory = config["systemProperties"]["cacheDir"]
-        .as_str()
-        .ok_or("Startup cache directory required")?;
+    let config: plain_server::host::startup::StartupConfig =
+        serde_json::from_str(config).map_err(|error| error.to_string())?;
+    let cache_directory = config.cache_dir.clone().ok_or("Startup cache directory required")?;
+    let debug = config.debug;
     let directory = std::path::Path::new(data_dir);
     if !directory.is_absolute() {
         return Err("Absolute data directory required".into());
@@ -16,7 +16,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
     if let Some(core) = guard.as_mut() {
         if core.server.data_directory() != directory
             || core.token != token
-            || core.server.cache_paths().root() != std::path::Path::new(cache_directory)
+            || core.server.cache_paths().root() != std::path::Path::new(&cache_directory)
         {
             return Err("Rust core already initialized with another session".into());
         }
@@ -28,8 +28,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             let settings = plain_rs::prefs::settings::snapshot(core.server.preferences()?)
                 .map_err(|e| e.to_string())?;
             let (cert, key) = plain_server::services::tls_identity::identity(&paths.tls_identity())?;
-            core.server
-                .set_build_debug(config["debug"].as_bool().unwrap_or(false));
+            core.server.set_build_debug(debug);
             let (http, _) = core.runtime.block_on(
                 core.server.start_public(
                     settings.http_port as u16,
@@ -45,7 +44,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
         // Apply a pending restore and acquire the directory lock before loading preferences.
         let _data_directory = plain_server::assembly::data_directory::DataDirectory::open(
             directory,
-            std::path::Path::new(cache_directory),
+            std::path::Path::new(&cache_directory),
         )?;
         let prefs = Arc::new(
             plain_rs::prefs::Prefs::load(&paths.prefs())
@@ -56,26 +55,20 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             .enable_all()
             .build()
             .map_err(|e| e.to_string())?;
-        let mut properties = config["systemProperties"]
-            .as_object()
-            .ok_or("Startup system properties required")?
-            .clone();
-        properties.insert("debug".into(), config["debug"].clone());
         let settings = plain_rs::prefs::settings::snapshot(&prefs).map_err(|e| e.to_string())?;
         let (cert, key) = plain_server::services::tls_identity::identity(&paths.tls_identity())?;
         let server = runtime.block_on(ContentServer::start_http(
             directory,
             token,
             prefs,
-            properties,
+            config,
             settings.http_port as u16,
             settings.https_port as u16,
             cert,
             key,
-            config["debug"].as_bool().unwrap_or(false),
         ))?;
         started_listener = true;
-        crate::ffi::events::install(&runtime, &server);
+        crate::ffi::events::install(&runtime, &server)?;
         *guard = Some(crate::ffi::server::Core {
             token: token.into(),
             server,

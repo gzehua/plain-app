@@ -1,8 +1,10 @@
 package com.ismartcoding.plain.features.settings
 
 import com.ismartcoding.plain.preferences.*
+import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.platform.system.Locale
 import com.ismartcoding.plain.platform.system.setSystemLocale
+import kotlinx.coroutines.flow.collect
 
 object Language {
     val locales =
@@ -26,10 +28,11 @@ object Language {
             Locale("vi", ""),
         )
 
-    suspend fun initLocaleAsync() {
-        val locale = Prefs.localeValue()
-        if (locale != null) {
-            setSystemLocale(locale)
-        }
+    fun applyLocale() {
+        setSystemLocale(Prefs.localeValue())
+    }
+
+    fun observeLocale() = coMain {
+        Prefs.locale.collect { applyLocale() }
     }
 }

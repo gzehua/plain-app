@@ -1,7 +1,7 @@
 package com.ismartcoding.plain
 
 import com.ismartcoding.plain.app.Constants
-import com.ismartcoding.plain.app.initCommonPreferences
+import com.ismartcoding.plain.app.initAppState
 
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.rust.RustRuntime
@@ -60,9 +60,9 @@ object MainAppHelper {
         }
 
         coIO {
-            initCommonPreferences()
+            initAppState()
             setDarkMode(Prefs.darkTheme.value)
-            if (Prefs.get<Boolean>(PrefKeys.BACKGROUND_SERVICE_ENABLED) && PlugInControlReceiver.isUSBConnected(app)) {
+            if (Prefs.backgroundServiceEnabled.value && PlugInControlReceiver.isUSBConnected(app)) {
                 sendEvent(PowerConnectedEvent())
             }
 

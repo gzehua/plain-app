@@ -123,9 +123,7 @@ mod android {
         bytes: JByteArray<'_>,
     ) -> jbyteArray {
         env.with_env(|env| -> jni::errors::Result<_> {
-            let result = if env.get_array_length(&bytes)? as usize
-                > plain_rs::protocols::ble::MAX_MESSAGE
-            {
+            let result = if bytes.len(env)? > plain_rs::protocols::ble::MAX_MESSAGE {
                 Err("BLE message exceeds limit".into())
             } else {
                 ble_incoming(

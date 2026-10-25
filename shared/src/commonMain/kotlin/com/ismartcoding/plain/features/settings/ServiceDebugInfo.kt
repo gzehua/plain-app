@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.features.settings
 
-import com.ismartcoding.plain.preferences.PrefKeys
-
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.platform.network.ble.BleUuids
 import com.ismartcoding.plain.platform.network.ble.PairingTransport
@@ -47,8 +45,8 @@ fun getServiceDebugInfo(): ServiceDebugInfo {
     return ServiceDebugInfo(
         httpServerRunning = httpRunning,
         httpServerState = if (httpRunning) "ON" else "OFF",
-        httpPort = Prefs.get<Int>(PrefKeys.HTTP_PORT),
-        httpsPort = Prefs.get<Int>(PrefKeys.HTTPS_PORT),
+        httpPort = Prefs.httpPort.value,
+        httpsPort = Prefs.httpsPort.value,
         wsSessionCount = onlineClientIds.value.size,
         httpServerError = HttpServerManager.httpServerError.value,
 

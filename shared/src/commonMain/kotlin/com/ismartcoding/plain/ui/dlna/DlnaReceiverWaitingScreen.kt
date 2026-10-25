@@ -27,7 +27,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.StepNumber
@@ -40,7 +40,7 @@ import com.ismartcoding.plain.i18n.cast
 
 @Composable
 fun DlnaReceiverWaitingScreen() {
-    val deviceName = TempData.deviceName.collectAsState().value
+    val deviceName = Prefs.deviceName.collectAsState().value
     Column(
         modifier = Modifier.fillMaxWidth(),
     ) {

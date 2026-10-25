@@ -249,19 +249,16 @@ pub extern "C" fn plain_check_app_update(automatic: bool) -> *mut c_char {
     c_string(check_app_update(automatic))
 }
 
-fn get_pref(key: String) -> String {
+fn load_preferences() -> String {
     reply!((|| {
         let (_, management) = parts()?;
-        management.get_pref(&key)
+        management.preferences()
     })())
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn plain_get_pref(key: *const c_char) -> *mut c_char {
-    c_string(match input(key) {
-        Ok(key) => get_pref(key),
-        Err(error) => reply!(Err::<(), String>(error)),
-    })
+pub extern "C" fn plain_load_preferences() -> *mut c_char {
+    c_string(load_preferences())
 }
 
 fn set_pref(key: String, value: String) -> String {
@@ -280,14 +277,6 @@ pub extern "C" fn plain_set_pref(key: *const c_char, value: *const c_char) -> *m
             Err(error) => reply!(Err::<(), String>(error)),
         },
     )
-}
-
-fn preferences() -> String {
-    reply!(super::events::preferences())
-}
-#[unsafe(no_mangle)]
-pub extern "C" fn plain_preferences() -> *mut c_char {
-    c_string(preferences())
 }
 
 fn complete_onboarding() -> String {
@@ -521,12 +510,11 @@ mod android {
         .into_raw()
     }
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_getPrefNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_loadPreferencesNative(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
-        key: JString<'_>,
     ) -> jstring {
-        env.with_env(|env| -> jni::errors::Result<_> { env.new_string(get_pref(key.to_string())) })
+        env.with_env(|env| -> jni::errors::Result<_> { env.new_string(load_preferences()) })
             .resolve::<ThrowRuntimeExAndDefault>()
             .into_raw()
     }
@@ -543,15 +531,6 @@ mod android {
         })
         .resolve::<ThrowRuntimeExAndDefault>()
         .into_raw()
-    }
-    #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_preferencesNative(
-        mut env: EnvUnowned<'_>,
-        _: JObject<'_>,
-    ) -> jstring {
-        env.with_env(|env| -> jni::errors::Result<_> { env.new_string(preferences()) })
-            .resolve::<ThrowRuntimeExAndDefault>()
-            .into_raw()
     }
     #[unsafe(no_mangle)]
     pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_completeOnboardingNative(

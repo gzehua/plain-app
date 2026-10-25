@@ -32,8 +32,7 @@ import kotlinx.serialization.json.JsonObject
 
 import com.ismartcoding.plain.rustprefs.plain_complete_onboarding
 import com.ismartcoding.plain.rustprefs.plain_set_pref
-import com.ismartcoding.plain.rustprefs.plain_get_pref
-import com.ismartcoding.plain.rustprefs.plain_preferences
+import com.ismartcoding.plain.rustprefs.plain_load_preferences
 import com.ismartcoding.plain.rustprefs.plain_toggle_notification_app
 import com.ismartcoding.plain.rustprefs.plain_file_icon
 import com.ismartcoding.plain.rustprefs.plain_restart_http_server
@@ -222,17 +221,11 @@ internal actual object RustNativeApi {
             try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
         }
     }
-    actual fun getPrefResponse(key: String): String = memScoped {
-        val pointer = checkNotNull(plain_get_pref(key.cstr.ptr))
-        try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
+    actual fun loadPreferencesResponse(): String {
+        val pointer = checkNotNull(plain_load_preferences())
+        return try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
     }
 
-    actual suspend fun preferences(): JsonObject = nativeCall {
-        memScoped {
-            val pointer = checkNotNull(plain_preferences())
-            try { pointer.toKString() } finally { plain_prefs_string_free(pointer) }
-        }
-    }
     actual suspend fun toggleNotificationApp(packageName: String): Boolean = nativeCall {
         memScoped {
             val pointer = checkNotNull(plain_toggle_notification_app(packageName.cstr.ptr))

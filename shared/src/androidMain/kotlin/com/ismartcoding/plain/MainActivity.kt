@@ -162,7 +162,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen(); super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false); enableEdgeToEdge()
-        lifecycleScope.launch(Dispatchers.Default) { Language.initLocaleAsync() }
+        Language.applyLocale()
         WindowCompat.getInsetsController(window, window.decorView).systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         instance = WeakReference(this)
         mainActivity = this
@@ -181,7 +181,7 @@ class MainActivity : AppCompatActivity() {
         installComposeUi()
         HttpServerManager.ensureStarted()
         lifecycleScope.launch(Dispatchers.Default) {
-            publishLauncherShortcuts(Prefs.selectedLauncherShortcuts(Prefs.get<String>(PrefKeys.LAUNCHER_SHORTCUTS)))
+            publishLauncherShortcuts(Prefs.selectedLauncherShortcuts(Prefs.launcherShortcuts.value))
         }
     }
 
@@ -195,9 +195,7 @@ class MainActivity : AppCompatActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         PlainAccessibilityService.invalidateScreenSizeCache()
-        lifecycleScope.launch(Dispatchers.Default) {
-            Language.initLocaleAsync()
-        }
+        Language.applyLocale()
     }
 
     override fun onNewIntent(intent: Intent) {

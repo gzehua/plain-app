@@ -5,6 +5,10 @@ use tokio::runtime::Handle;
 
 const STREAM_TIMEOUT: Duration = Duration::from_secs(30);
 
+#[cfg(test)]
+#[path = "../../tests/unit/ffi/resources.rs"]
+mod tests;
+
 enum Stream {
     Open(NativeResourceStream),
     Failed(String),
@@ -50,9 +54,7 @@ fn open(id: &str) -> Result<String, String> {
     if id.is_empty() {
         return Err("Missing resource stream id".to_string());
     }
-    let (runtime, events) = super::server::with_core(|core| {
-        (core.runtime.handle().clone(), core.server.host_events())
-    })?;
+    let (runtime, events) = super::events::bridge()?;
     let stream = events.attach_resource(id)?;
     let request = runtime
         .block_on(async { tokio::time::timeout(STREAM_TIMEOUT, stream.next_request()).await });

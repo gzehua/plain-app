@@ -63,11 +63,9 @@ internal actual object RustNativeApi {
     actual suspend fun completeOnboarding(): Boolean = nativeCall { completeOnboardingNative() }
     private external fun setPrefNative(key: String, value: String): String
     actual suspend fun setPref(key: String, value: JsonElement): Boolean = nativeCall { setPrefNative(key, value.toString()) }
-    private external fun getPrefNative(key: String): String
-    actual fun getPrefResponse(key: String): String = getPrefNative(key)
+    private external fun loadPreferencesNative(): String
+    actual fun loadPreferencesResponse(): String = loadPreferencesNative()
 
-    private external fun preferencesNative(): String
-    actual suspend fun preferences(): JsonObject = nativeCall { preferencesNative() }
     private external fun toggleNotificationAppNative(packageName: String): String
     actual suspend fun toggleNotificationApp(packageName: String): Boolean = nativeCall { toggleNotificationAppNative(packageName) }
     private external fun verifyAdbTokenNative(token: String): String

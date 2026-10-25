@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.services
 
-import com.ismartcoding.plain.preferences.PrefKeys
-
 import android.graphics.drawable.Icon
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
@@ -66,14 +64,14 @@ class QSTileService : TileService() {
             toggleJob = serviceScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
-                        setDesktopAccessEnabled(!Prefs.get<Boolean>(PrefKeys.DESKTOP_ACCESS))
+                        setDesktopAccessEnabled(!Prefs.desktopAccess.value)
                     }
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (error: Exception) {
                     LogCat.e("Desktop access tile failed: ${error.message}")
                 } finally {
-                    updateTile(Prefs.get<Boolean>(PrefKeys.DESKTOP_ACCESS))
+                    updateTile(Prefs.desktopAccess.value)
                 }
             }
         }

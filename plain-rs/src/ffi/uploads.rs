@@ -55,7 +55,7 @@ mod android {
         bytes: JByteArray<'_>,
     ) -> jstring {
         env.with_env(|env| -> jni::errors::Result<_> {
-            let result = if env.get_array_length(&bytes)? as usize
+            let result = if bytes.len(env)?
                 > plain_server::native::uploads::MAX_NATIVE_UPLOAD_CHUNK_BYTES
             {
                 Err("Invalid upload chunk length".into())

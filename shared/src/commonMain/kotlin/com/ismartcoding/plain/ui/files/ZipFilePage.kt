@@ -16,10 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import org.jetbrains.compose.resources.stringResource
@@ -53,6 +51,7 @@ import com.ismartcoding.plain.ui.files.components.BreadcrumbView
 import com.ismartcoding.plain.ui.files.components.FileListContent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.share_2 as ui_drawable_share_2
 
@@ -69,6 +68,7 @@ fun ZipFilePage(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val previewerState = rememberPreviewerState()
     val itemsState by filesVM.itemsFlow.collectAsState()
+    val showHiddenFiles by Prefs.showHiddenFiles.collectAsState()
     val topRefreshLayoutState = rememberRefreshLayoutState {
         scope.launch { filesVM.loadAsync(); setRefreshState(RefreshContentState.Finished) }
     }
@@ -76,14 +76,14 @@ fun ZipFilePage(
     val zipVirtualRoot = remember(path) { ZipBrowserHelper.joinPath(path, "") }
 
     LaunchedEffect(path) {
-        scope.launch(Dispatchers.Default) {
+        withContext(Dispatchers.Default) {
             val appDataPath = appDir()
             val type = if (path.startsWith(appDataPath)) FilesType.APP else FilesType.INTERNAL_STORAGE
             val rootPath = when (type) { FilesType.APP -> appDataPath; else -> getInternalStoragePath() }
             filesVM.initSelectedPath(rootPath, type, zipVirtualRoot, zipVirtualRoot)
             filesVM.sortBy.value = Prefs.fileSortBy.value
-            filesVM.loadAsync()
             audioQueueVM.loadAsync()
+            Prefs.showHiddenFiles.collect { filesVM.loadAsync() }
         }
     }
 
@@ -130,10 +130,6 @@ fun ZipFilePage(
                     }
                     ActionButtonSort { filesVM.showSortDialog.value = true }
                     ActionButtonMoreWithMenu { dismiss ->
-                        var showHiddenFiles by remember { mutableStateOf(false) }
-                        LaunchedEffect(Unit) {
-                            showHiddenFiles = Prefs.showHiddenFiles.value
-                        }
                         PDropdownMenuItem(
                             text = { Text(stringResource(Res.string.show_hidden_files)) },
                             leadingIcon = {
@@ -142,9 +138,7 @@ fun ZipFilePage(
                             onClick = {
                                 dismiss()
                                 scope.launch(Dispatchers.Default) {
-                                    val nv = !showHiddenFiles
-                                    Prefs.set(PrefKeys.SHOW_HIDDEN_FILES, nv)
-                                    showHiddenFiles = nv; filesVM.loadAsync()
+                                    Prefs.set(PrefKeys.SHOW_HIDDEN_FILES, !showHiddenFiles)
                                 }
                             })
                         PDropdownMenuItem(

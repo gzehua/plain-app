@@ -143,7 +143,9 @@ internal suspend fun executeHostRequest(
     val params = request.params
     return when (method) {
         "prefsChanged" -> {
-            Prefs.update(params["values"]!!.jsonObject.keys)
+            for ((key, value) in params.getValue("values").jsonObject) {
+                Prefs.update(key, value)
+            }
             hostResult()
         }
         "fileResourceStream" -> { FileResourceStreamHost.start(exchangeScope, params); hostResult() }

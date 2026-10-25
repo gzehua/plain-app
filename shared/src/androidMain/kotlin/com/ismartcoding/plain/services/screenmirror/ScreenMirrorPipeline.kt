@@ -143,6 +143,7 @@ class ScreenMirrorPipeline(
     }
 
     fun setQuality(quality: ScreenMirrorQuality) {
+        if (this.quality == quality) return
         this.quality = quality
         rebuildEncoderAndResize("quality=${quality.mode}")
     }

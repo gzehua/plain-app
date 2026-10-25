@@ -51,7 +51,9 @@ actual suspend fun onHttpServerStopped() {
 
 /** Starts optional background retention independently of the HTTP server. */
 actual fun startHttpServerService() {
-    if (!Prefs.get<Boolean>(PrefKeys.BACKGROUND_SERVICE_ENABLED)) return
+    if (!Prefs.backgroundServiceEnabled.value) return
+    if (HttpServerManager.backgroundState.value == HttpServerState.ON ||
+        HttpServerManager.backgroundState.value.isProcessing()) return
     HttpServerManager.backgroundState.value = HttpServerState.STARTING
     HttpServerManager.backgroundError.value = ""
     coIO {

@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.app
 
 import com.ismartcoding.plain.app.TempData
-import com.ismartcoding.plain.app.initCommonPreferences
+import com.ismartcoding.plain.app.initAppState
 
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
@@ -27,8 +27,6 @@ import com.ismartcoding.plain.ui.pomodoro.PomodoroViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
 import com.ismartcoding.plain.ui.navigation.Main
 import com.ismartcoding.plain.ui.theme.AppTheme
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 import platform.UIKit.UIViewController
 import com.ismartcoding.plain.app.HttpServerManager
 import com.ismartcoding.plain.features.settings.Language
@@ -51,6 +49,7 @@ fun initIosApp() {
 
     setupIosImageLoader()
     RustRuntime.start()
+    Language.applyLocale()
 
     // Disk logging + HTTP request logging (debug=VERBOSE, release=WARN)
     initDiskLogging()
@@ -72,9 +71,8 @@ fun initIosApp() {
     // Coil image loader: iOS has no ServiceLoader-discovered network fetcher,
     // so register our NSURLSession-backed one explicitly.
 
-    // Initialize preferences and TempData (shared with Android via initCommonPreferences)
     coIO {
-        initCommonPreferences()
+        initAppState()
     }
 }
 
@@ -110,10 +108,7 @@ fun MainViewController(): UIViewController {
             val channelVM: ChannelViewModel = viewModel(factory = factory)
             Main(
                 navControllerState = navControllerState,
-                onLaunched = {
-                    // iOS has no Intent to handle; locale init runs in background.
-                    MainScope().launch { Language.initLocaleAsync() }
-                },
+                onLaunched = {},
                 mainVM = mainVM,
                 audioQueueVM = audioQueueVM,
                 pomodoroVM = pomodoroVM,

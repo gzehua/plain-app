@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.platform.media
 
 import com.ismartcoding.plain.features.screenmirror.ScreenMirrorControlInput
-import com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode
 import com.ismartcoding.plain.models.ScreenMirrorVideoCodec
 
 actual fun isScreenMirrorRunning(): Boolean = false
@@ -9,8 +8,6 @@ actual fun isScreenMirrorRunning(): Boolean = false
 actual suspend fun getScreenMirrorVideoCodec(): ScreenMirrorVideoCodec? = null
 
 actual fun isScreenMirrorControlEnabled(): Boolean = false
-
-actual fun onScreenMirrorQualityChanged(mode: ScreenMirrorMode) = Unit
 
 actual fun stopScreenMirror() = Unit
 

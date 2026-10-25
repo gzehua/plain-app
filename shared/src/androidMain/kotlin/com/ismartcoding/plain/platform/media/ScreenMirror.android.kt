@@ -3,7 +3,6 @@ package com.ismartcoding.plain.platform.media
 
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.screenmirror.ScreenMirrorControlInput
-import com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode
 import com.ismartcoding.plain.services.PlainAccessibilityService
 import com.ismartcoding.plain.services.ScreenMirrorService
 import com.ismartcoding.plain.models.ScreenMirrorVideoCodec
@@ -20,10 +19,6 @@ actual suspend fun getScreenMirrorVideoCodec(): ScreenMirrorVideoCodec? =
 
 actual fun isScreenMirrorControlEnabled(): Boolean =
     PlainAccessibilityService.isEnabled()
-
-actual fun onScreenMirrorQualityChanged(mode: ScreenMirrorMode) {
-    ScreenMirrorService.instance?.onQualityChanged()
-}
 
 actual fun stopScreenMirror() {
     ScreenMirrorService.instance?.stop()

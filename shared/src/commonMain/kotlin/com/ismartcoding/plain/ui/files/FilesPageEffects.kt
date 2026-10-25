@@ -12,6 +12,7 @@ import com.ismartcoding.plain.features.files.FilesType
 import com.ismartcoding.plain.app.events.ActionEvent
 import com.ismartcoding.plain.app.events.FolderKanbanSelectEvent
 import com.ismartcoding.plain.app.events.PermissionsResultEvent
+import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.ui.components.StoragePermissionResumeEffect
 import com.ismartcoding.plain.ui.components.refreshStoragePermission
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
@@ -22,6 +23,7 @@ import com.ismartcoding.plain.ui.state.exitSelectMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 internal fun FilesPageEffects(
@@ -51,7 +53,7 @@ internal fun FilesPageEffects(
     }
 
     LaunchedEffect(folderPath) {
-        scope.launch(Dispatchers.Default) {
+        withContext(Dispatchers.Default) {
             if (folderPath.isNotEmpty()) {
                 if (fileExists(folderPath)) {
                     val appDataPath = appDir()
@@ -64,10 +66,12 @@ internal fun FilesPageEffects(
             } else {
                 filesVM.loadLastPathAsync()
             }
-            if (filesVM.hasPermission.value || filesVM.type == FilesType.APP) {
-                filesVM.loadAsync()
-            }
             audioQueueVM.loadAsync()
+            Prefs.showHiddenFiles.collect {
+                if (filesVM.hasPermission.value || filesVM.type == FilesType.APP) {
+                    filesVM.loadAsync()
+                }
+            }
         }
     }
 

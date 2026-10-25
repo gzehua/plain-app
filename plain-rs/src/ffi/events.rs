@@ -10,9 +10,9 @@ static BRIDGE: Mutex<Option<(Handle, Arc<HostEvents>)>> = Mutex::new(None);
 pub(crate) fn install(
     runtime: &tokio::runtime::Runtime,
     server: &plain_server::assembly::server::ContentServer,
-) {
+) -> Result<(), String> {
     let _entered = runtime.enter();
-    let host = Arc::new(server.host_events());
+    let host = Arc::new(server.host_events()?);
     let changes = Arc::new(tokio::sync::Notify::new());
     let receiver = changes.clone();
     let weak = Arc::downgrade(&host);
@@ -22,28 +22,32 @@ pub(crate) fn install(
             tokio::select! {
                 biased;
                 _ = host.wait_disconnected() => return,
-                _ = receiver.notified() => host.prefs_changed().await,
+                _ = receiver.notified() => {
+                    if let Err(error) = host.prefs_changed().await {
+                        eprintln!("Host preferences update failed: {error}");
+                    }
+                },
             }
         }
     });
-    server.preferences().expect("Core preferences initialized").set_change_hook(Some(Arc::new(move || changes.notify_one())));
-    *BRIDGE.lock().unwrap() = Some((runtime.handle().clone(), host));
+    server.preferences()?.set_change_hook(Some(Arc::new({
+        let changes = changes.clone();
+        move || changes.notify_one()
+    })));
+    changes.notify_one();
+    *BRIDGE.lock().map_err(|error| error.to_string())? = Some((runtime.handle().clone(), host));
+    Ok(())
 }
 pub(crate) fn clear() {
     BRIDGE.lock().unwrap().take();
 }
-fn bridge() -> Result<(Handle, Arc<HostEvents>), String> {
+pub(super) fn bridge() -> Result<(Handle, Arc<HostEvents>), String> {
     BRIDGE
         .lock()
         .map_err(|e| e.to_string())?
         .clone()
         .ok_or("Rust event bridge not initialized".into())
 }
-pub(super) fn preferences() -> Result<serde_json::Map<String, serde_json::Value>, String> {
-    let (runtime, bridge) = bridge()?;
-    runtime.block_on(bridge.preferences())
-}
-
 fn next(stream: &str) -> Result<String, String> {
     let (runtime, bridge) = bridge()?;
     runtime.block_on(async {

@@ -29,10 +29,7 @@ fun WebAddressPager(modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
-            val https = page == 1
-            if (isHttps.value != https) {
-                scope.launch { Prefs.set(PrefKeys.HTTPS, https)}
-            }
+            Prefs.set(PrefKeys.HTTPS, page == 1)
         }
     }
     Column(modifier = modifier.fillMaxWidth()) {

@@ -87,7 +87,7 @@ fun Permission.grant(): Boolean {
 }
 
 suspend fun Permission.isEnabledAsync(): Boolean =
-    name in Prefs.get<Set<String>>(PrefKeys.API_PERMISSIONS)
+    name in Prefs.apiPermissions.value
 
 /** Enabled for the web client *and* granted by the OS. Both answers are local. */
 suspend fun Permission.enabledAndIsGrantedAsync(): Boolean = isEnabledAsync() && isGranted()

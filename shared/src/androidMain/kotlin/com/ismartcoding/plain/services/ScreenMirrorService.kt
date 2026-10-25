@@ -1,9 +1,5 @@
 package com.ismartcoding.plain.services
 
-import com.ismartcoding.plain.models.ScreenMirrorQuality
-
-import com.ismartcoding.plain.preferences.PrefKeys
-
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.i18n.*
 import android.annotation.SuppressLint
@@ -12,6 +8,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import android.media.projection.MediaProjection
 import com.ismartcoding.plain.lib.extensions.parcelable
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -24,6 +21,8 @@ import com.ismartcoding.plain.mediaProjectionManager
 import com.ismartcoding.plain.services.screenmirror.ScreenMirrorOrientationState
 import com.ismartcoding.plain.services.screenmirror.ScreenMirrorPipeline
 import com.ismartcoding.plain.preferences.Prefs
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 
 class ScreenMirrorService : LifecycleService() {
 
@@ -46,6 +45,16 @@ class ScreenMirrorService : LifecycleService() {
                 PlainAccessibilityService.invalidateScreenSizeCache()
                 pipeline?.onOrientationChanged()
             }
+        lifecycleScope.launch {
+            try {
+                Prefs.screenMirrorQuality.collect { pipeline?.setQuality(it) }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                LogCat.e("screen mirror: pipeline quality change failed: ${error.message}", error)
+                stop()
+            }
+        }
     }
 
     private fun currentConfigurationIsPortrait(): Boolean {
@@ -125,7 +134,7 @@ class ScreenMirrorService : LifecycleService() {
         val p = ScreenMirrorPipeline(
             context = this,
             projection = mMediaProjection,
-            quality = qualityData,
+            quality = Prefs.screenMirrorQuality.value,
             getIsPortrait = { orientationState.isPortrait },
         )
         try {
@@ -158,10 +167,6 @@ class ScreenMirrorService : LifecycleService() {
 
     fun getPipeline(): ScreenMirrorPipeline? = pipeline
 
-    fun onQualityChanged() {
-        pipeline?.setQuality(qualityData)
-    }
-
     fun stop() {
         if (!running) return
         running = false
@@ -178,6 +183,5 @@ class ScreenMirrorService : LifecycleService() {
     companion object {
         @Volatile
         var instance: ScreenMirrorService? = null
-        val qualityData get() = Prefs.get<ScreenMirrorQuality>(PrefKeys.SCREEN_MIRROR_QUALITY)
     }
 }

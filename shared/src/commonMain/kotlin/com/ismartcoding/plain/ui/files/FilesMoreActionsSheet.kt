@@ -9,12 +9,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
@@ -44,10 +41,7 @@ import com.ismartcoding.plain.i18n.sort
 @Composable
 fun FilesMoreActionsSheet(filesVM: FilesViewModel, onDismiss: () -> Unit) {
     val scope = rememberCoroutineScope()
-    var showHiddenFiles by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        showHiddenFiles = Prefs.showHiddenFiles.value
-    }
+    val showHiddenFiles by Prefs.showHiddenFiles.collectAsState()
     val isZip = ZipBrowserHelper.isZipPath(filesVM.selectedPath)
 
     PModalBottomSheet(onDismissRequest = onDismiss) {
@@ -71,17 +65,15 @@ fun FilesMoreActionsSheet(filesVM: FilesViewModel, onDismiss: () -> Unit) {
                             onDismiss()
                             scope.launch(Dispatchers.Default) {
                                 Prefs.set(PrefKeys.SHOW_HIDDEN_FILES, !showHiddenFiles)
-                                filesVM.loadAsync()
                             }
                         },
                     icon = if (showHiddenFiles) UiRes.drawable.ui_drawable_eye else UiRes.drawable.ui_drawable_eye_off,
                     title = stringResource(Res.string.show_hidden_files),
                     action = {
-                        Switch(checked = showHiddenFiles, onCheckedChange = {
+                        Switch(checked = showHiddenFiles, onCheckedChange = { enabled ->
                             onDismiss()
                             scope.launch(Dispatchers.Default) {
-                                Prefs.set(PrefKeys.SHOW_HIDDEN_FILES, !showHiddenFiles)
-                                filesVM.loadAsync()
+                                Prefs.set(PrefKeys.SHOW_HIDDEN_FILES, enabled)
                             }
                         })
                     },

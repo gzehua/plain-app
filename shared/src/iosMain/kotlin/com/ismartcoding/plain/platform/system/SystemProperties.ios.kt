@@ -1,7 +1,10 @@
 package com.ismartcoding.plain.platform.system
 
+import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.buildChannel
+import com.ismartcoding.plain.platform.media.getDownloadsDirPath
 import com.ismartcoding.plain.platform.network.isWifiAwareSupported
-
+import com.ismartcoding.plain.rust.RustStartupConfig
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
@@ -13,10 +16,23 @@ import platform.Foundation.currentLocale
 import platform.Foundation.languageCode
 import platform.UIKit.UIScreen
 import platform.UIKit.UIDevice
-import com.ismartcoding.plain.app.TempData
-import com.ismartcoding.plain.platform.files.getInternalStoragePath
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonNull
+
+internal actual fun createRustStartupConfig(): RustStartupConfig = RustStartupConfig(
+    debug = isDebugBuild(),
+    cacheDir = cacheDirPath(),
+    name = UIDevice.currentDevice.name,
+    deviceType = getDeviceType().name,
+    buildChannel = AppChannelType.fromString(buildChannel).name,
+    downloadsDir = getDownloadsDirPath(),
+    osName = UIDevice.currentDevice.systemName,
+    osVersion = UIDevice.currentDevice.systemVersion,
+    appVersion = NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleShortVersionString") as? String ?: "",
+    appBuildNumber = NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleVersion") as? String ?: "",
+    wifiAwareSupported = isWifiAwareSupported,
+    recentFilesCatalog = false,
+    systemMediaCatalog = false,
+    supportedAbis = emptyList(),
+)
 
 @OptIn(ExperimentalForeignApi::class)
 internal actual fun readSystemProperties(names: List<String>): Map<String, JsonElement> {
@@ -28,19 +44,7 @@ internal actual fun readSystemProperties(names: List<String>): Map<String, JsonE
     }
     return names.associateWith { name ->
         when (name) {
-            "files.recentCatalog" -> JsonPrimitive(false)
-            "files.recentRoot" -> JsonPrimitive(getInternalStoragePath())
-            "media.systemCatalog" -> JsonPrimitive(false)
-            "supportedAbis" -> JsonArray(emptyList())
-            "updateSource" -> JsonNull
-            "deviceType" -> JsonPrimitive(getDeviceType().name)
-            "wifiAwareSupported" -> JsonPrimitive(isWifiAwareSupported)
             "wifiAwareRunning" -> JsonPrimitive(TempData.awareRunning.value)
-            "name" -> JsonPrimitive(UIDevice.currentDevice.name)
-            "osName" -> JsonPrimitive(UIDevice.currentDevice.systemName)
-            "osVersion" -> JsonPrimitive(UIDevice.currentDevice.systemVersion)
-            "appVersion" -> JsonPrimitive(NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleShortVersionString") as? String ?: "")
-            "appBuildNumber" -> JsonPrimitive(NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleVersion") as? String ?: "")
             "language" -> JsonPrimitive(NSLocale.currentLocale.languageCode ?: "")
             "display.width" -> JsonPrimitive(display.first)
             "display.height" -> JsonPrimitive(display.second)
@@ -49,5 +53,3 @@ internal actual fun readSystemProperties(names: List<String>): Map<String, JsonE
         }
     }
 }
-
-internal actual fun startupPlatformPropertyNames(): List<String> = listOf("osName")

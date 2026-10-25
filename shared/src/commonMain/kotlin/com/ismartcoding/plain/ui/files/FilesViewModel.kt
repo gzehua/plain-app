@@ -12,7 +12,6 @@ import com.ismartcoding.plain.ui.state.launchSafe
 
 import com.ismartcoding.plain.models.File as FileEntry
 
-import com.ismartcoding.plain.preferences.PrefKeys
 import com.ismartcoding.plain.preferences.Prefs
 
 import com.ismartcoding.plain.i18n.*
@@ -226,7 +225,7 @@ class FilesViewModel : ISearchableViewModel<FileEntry>, ISelectableViewModel<Fil
     fun getQuery(): String = queryText.value.trim()
 
     suspend fun loadAsync() {
-        val showHiddenFiles = Prefs.get<Boolean>(PrefKeys.SHOW_HIDDEN_FILES)
+        val showHiddenFiles = Prefs.showHiddenFiles.value
         withIO {
             isLoading.value = true
             val query = getQuery()

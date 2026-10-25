@@ -31,8 +31,7 @@ internal expect object RustNativeApi {
     suspend fun exportAppBackup(): String
     suspend fun createCrashReport(report: String): String
     suspend fun completeOnboarding(): Boolean
-    fun getPrefResponse(key: String): String
-    suspend fun preferences(): JsonObject
+    fun loadPreferencesResponse(): String
     suspend fun setPref(key: String, value: JsonElement): Boolean
     suspend fun toggleNotificationApp(packageName: String): Boolean
     suspend fun verifyAdbToken(token: String): Boolean
