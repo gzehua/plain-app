@@ -5,7 +5,6 @@ import com.ismartcoding.plain.features.chat.ChatCacher
 import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.preferences.*
-import com.ismartcoding.plain.features.videos.VideoProgressHost
 import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
 import com.ismartcoding.plain.app.NetworkState
 
@@ -18,7 +17,6 @@ import com.ismartcoding.plain.app.NetworkState
  * or after this function as needed.
  */
 suspend fun initCommonPreferences() {
-    VideoProgressHost.restore()
     AudioEngineHost.start()
     TempData.deviceName.value = Prefs.get<String>(PrefKeys.DEVICE_NAME)
     NetworkState.refresh()

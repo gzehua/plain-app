@@ -2,8 +2,6 @@ package com.ismartcoding.plain.ui.media.viewer.video
 
 import com.ismartcoding.plain.features.media.MediaClient
 
-import com.ismartcoding.plain.ui.app.AppUiState
-
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
@@ -18,11 +16,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -30,10 +26,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
-import com.ismartcoding.plain.features.videos.VideoProgressHost
-import com.ismartcoding.plain.ui.platform.media.rememberVideoPlayerController
 import com.ismartcoding.plain.ui.platform.media.VideoPlayerSurface
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.ui.media.viewer.DEFAULT_OFFSET_X
 import com.ismartcoding.plain.ui.media.viewer.DEFAULT_OFFSET_Y
 import com.ismartcoding.plain.ui.media.viewer.DEFAULT_ROTATION
@@ -42,8 +35,6 @@ import com.ismartcoding.plain.ui.media.viewer.PreviewItem
 import com.ismartcoding.plain.ui.media.viewer.RawGesture
 import com.ismartcoding.plain.ui.media.viewer.SizeChangeContent
 import com.ismartcoding.plain.ui.media.viewer.detectTransformGestures
-import kotlin.math.abs
-import com.ismartcoding.plain.platform.media.getVideoMediaId
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -62,7 +53,6 @@ fun MediaVideo(
     onSizeChange: suspend (SizeChangeContent) -> Unit = {},
     boundClip: Boolean = true,
 ) {
-    val scope = rememberCoroutineScope()
     val viewerAlpha = remember { Animatable(0F) }
     var bSize by remember { mutableStateOf(IntSize(0, 0)) }
     var vSize by remember { mutableStateOf(IntSize(0, 0)) }
@@ -96,106 +86,14 @@ fun MediaVideo(
         }
     }
 
-    val controller = rememberVideoPlayerController()
-    var mediaId by remember(model.path, model.mediaId) { mutableStateOf(model.mediaId) }
-    var wasActive by remember { mutableStateOf(false) }
-    var playRecorded by remember { mutableStateOf(false) }
     var firstFrameRendered by remember { mutableStateOf(false) }
-    // Track which media item is already prepared on this controller so an
-    // already-preloaded (adjacent) video is not reset when it becomes active.
-    var preparedPath by remember { mutableStateOf<String?>(null) }
-
-    controller.setEventListener { event ->
-        when (event) {
-            is VideoPlayerEvent.StateChanged -> {
-                if (!videoState.isPreviewerOpen || pagerState.settledPage != page) return@setEventListener
-                if (event.durationMs > 0L) {
-                    videoState.totalTime = event.durationMs
-                }
-                if (event.isPlaying && !playRecorded) {
-                    VideoProgressHost.started(mediaId, controller.currentPositionMs)
-                    playRecorded = true
-                }
-                videoState.isPlaying = event.isPlaying
-                videoState.updateTime()
-            }
-            VideoPlayerEvent.PositionDiscontinuity -> {
-                if (!videoState.isPreviewerOpen || pagerState.settledPage != page) return@setEventListener
-                videoState.isSeeking = false
-            }
-            VideoPlayerEvent.FirstFrameRendered -> {
-                // Always track per-page mounting (even while this page is only
-                // preloaded as an adjacent page) so the page is ready to show
-                // without a loading state the moment it becomes the active page.
-                firstFrameRendered = true
-            }
-        }
+    val controller = rememberMediaVideoController(pagerState, videoState, page, model) {
+        firstFrameRendered = true
     }
-
     LaunchedEffect(firstFrameRendered) {
         if (firstFrameRendered) {
             viewerAlpha.snapTo(1F)
             onMounted()
-        }
-    }
-
-    LaunchedEffect(controller, pagerState.settledPage, videoState.isPreviewerOpen) {
-        val isActive = videoState.isPreviewerOpen && pagerState.settledPage == page
-        if (wasActive && !isActive) {
-            VideoProgressHost.save(mediaId, controller.currentPositionMs)
-        }
-        if (!isActive) playRecorded = false
-        wasActive = isActive
-        if (!videoState.isPreviewerOpen) {
-            controller.abandonAudioFocus()
-            controller.stop()
-            preparedPath = null
-            return@LaunchedEffect
-        }
-        if (isActive) {
-            if (mediaId.isEmpty()) mediaId = getVideoMediaId(model.path).orEmpty()
-            videoState.initData(controller)
-            val expectedTotalMs = (model.data as? MediaVideo)?.durationMs ?: 0L
-            if (expectedTotalMs > 0L) {
-                videoState.totalTime = expectedTotalMs
-            }
-            val savedPos = if (mediaId.isNotEmpty()) AppUiState.videoPlayProgressMap[mediaId] else null
-            val atEnd = savedPos != null && savedPos > 0 && expectedTotalMs > 0 && savedPos >= expectedTotalMs - 1000
-            if (savedPos != null && savedPos > 0L && !atEnd) {
-                videoState.currentTime = savedPos
-            }
-            if (preparedPath != model.path) {
-                controller.setMediaItem(model.path)
-                controller.prepare()
-                preparedPath = model.path
-            }
-            controller.seekTo(if (savedPos != null && savedPos > 0 && !atEnd) savedPos else 0L)
-            controller.requestAudioFocus()
-            controller.play()
-        } else if (abs(page - pagerState.settledPage) <= 1) {
-            // Preload the adjacent page: prepare its video so it is buffered and
-            // its first frame is rendered ahead of time — switching to it then
-            // never shows a loading state. Also pause + release audio focus so a
-            // previously-active video stops playing as soon as the user swipes away.
-            if (preparedPath != model.path) {
-                controller.setMediaItem(model.path)
-                controller.prepare()
-                preparedPath = model.path
-            }
-            controller.pause()
-            controller.abandonAudioFocus()
-        } else {
-            controller.stop()
-            preparedPath = null
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            if (wasActive) VideoProgressHost.save(mediaId, controller.currentPositionMs)
-            controller.abandonAudioFocus()
-            controller.stop()
-            controller.release()
         }
     }
 

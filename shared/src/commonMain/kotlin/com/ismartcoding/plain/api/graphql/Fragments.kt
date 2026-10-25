@@ -11,7 +11,7 @@ internal object Fragments {
     const val TAG_FIELDS = "id name type count"
     const val FEED_FIELDS = "id name url logo fetchContent lastSyncAt lastError { code detail } createdAt updatedAt"
     const val ENTRY_FIELDS = "id title url image description author content feedId rawId publishedAt read createdAt updatedAt"
-    const val VIDEO_PROGRESS = "mediaId positionMs updatedAt"
+    const val MEDIA_PLAY_HISTORY = "mediaId positionMs playedAt"
     const val AUDIO_TRACK_FIELDS = "mediaId path title artist durationMs"
     const val AUDIO_PLAYLIST_FIELDS = "id name itemCount createdAt updatedAt"
     const val NOTE_FIELDS = "id title content deletedAt createdAt updatedAt"

@@ -97,9 +97,9 @@ object Query {
         mapOf(variable("query", query)),
     )
 
-    fun recentVideoPlayProgress(since: String): GraphqlRequest = GraphqlRequest(
-        $$"query($since: Instant!) { recentVideoPlayProgress(since: $since) { $${Fragments.VIDEO_PROGRESS} } }",
-        mapOf(variable("since", since)),
+    fun mediaPlayHistory(query: String, offset: Int, limit: Int): GraphqlRequest = GraphqlRequest(
+        $$"query($query: String!, $offset: Int!, $limit: Int!) { mediaPlayHistory(query: $query, offset: $offset, limit: $limit) { $${Fragments.MEDIA_PLAY_HISTORY} } }",
+        mapOf(variable("query", query), variable("offset", offset), variable("limit", limit)),
     )
 
     fun audioPlaylistCovers(ids: Collection<String>): GraphqlRequest = GraphqlRequest(

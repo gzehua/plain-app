@@ -13,6 +13,7 @@ import com.ismartcoding.plain.models.ImageEditorProjectInput
 import com.ismartcoding.plain.models.NoteInput
 import com.ismartcoding.plain.models.PairingDeviceInput
 import com.ismartcoding.plain.models.PairingRequestInput
+import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import com.ismartcoding.plain.rust.graphql.variable
 import kotlin.time.Instant
@@ -118,14 +119,14 @@ object Mutation {
         $$"mutation { exportFeeds }",
     )
 
-    fun saveVideoPlayProgress(mediaId: String, positionMs: Long): GraphqlRequest = GraphqlRequest(
-        $$"mutation($mediaId: ID!, $positionMs: Long!) { saveVideoPlayProgress(mediaId: $mediaId, positionMs: $positionMs) { $${Fragments.VIDEO_PROGRESS} } }",
-        mapOf(variable("mediaId", mediaId), variable("positionMs", positionMs)),
+    fun saveMediaPlayProgress(mediaId: String, type: DataType, positionMs: Long): GraphqlRequest = GraphqlRequest(
+        $$"mutation($mediaId: ID!, $type: MediaDataType!, $positionMs: Long!) { saveMediaPlayProgress(mediaId: $mediaId, type: $type, positionMs: $positionMs) }",
+        mapOf(variable("mediaId", mediaId), variable("type", type.name), variable("positionMs", positionMs)),
     )
 
-    fun recordVideoPlay(mediaId: String, positionMs: Long): GraphqlRequest = GraphqlRequest(
-        $$"mutation($mediaId: ID!, $positionMs: Long!) { recordVideoPlay(mediaId: $mediaId, positionMs: $positionMs) { mediaId } }",
-        mapOf(variable("mediaId", mediaId), variable("positionMs", positionMs)),
+    fun recordMediaPlay(mediaId: String, type: DataType, positionMs: Long): GraphqlRequest = GraphqlRequest(
+        $$"mutation($mediaId: ID!, $type: MediaDataType!, $positionMs: Long!) { recordMediaPlay(mediaId: $mediaId, type: $type, positionMs: $positionMs) }",
+        mapOf(variable("mediaId", mediaId), variable("type", type.name), variable("positionMs", positionMs)),
     )
 
     fun createAudioPlaylist(name: String): GraphqlRequest = GraphqlRequest(

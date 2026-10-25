@@ -42,7 +42,6 @@ import com.ismartcoding.plain.app.NetworkState
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.ui.feeds.FeedSyncUpdate
 import com.ismartcoding.plain.ui.feeds.FeedWorkerState
-import com.ismartcoding.plain.ui.media.actions.MediaActionProjection
 import com.ismartcoding.plain.ui.notes.NotesViewModel
 import com.ismartcoding.plain.ui.pomodoro.PomodoroProjection
 import kotlinx.coroutines.*
@@ -101,7 +100,6 @@ object RustEventHandler {
                 sendWebLoginNotification(request.browserName, request.browserVersion, request.osName, request.osVersion, facts.clientIp)
             }
 
-            EventType.MEDIA_ACTION_FINISHED -> MediaActionProjection.apply(payload)
             EventType.HTTP_SERVER_STATE_CHANGED -> {
                 refreshHttpServerState()
             }
