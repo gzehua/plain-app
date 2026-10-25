@@ -15,7 +15,7 @@ import androidx.compose.runtime.setValue
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.models.ImageFileInfo
-import com.ismartcoding.plain.util.FormatHelper
+import com.ismartcoding.plain.helpers.FormatHelper
 import com.ismartcoding.plain.ui.base.PListItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

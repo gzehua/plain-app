@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
 import com.ismartcoding.plain.ui.platform.rememberClipboardReader
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.clear as ui_string_clear
@@ -56,6 +57,7 @@ fun PTextField(
     keyboardActions: KeyboardActions = KeyboardActions(),
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    showPasteAction: Boolean = true,
 ) {
     val readClipboard = rememberClipboardReader()
     val scope = rememberCoroutineScope()
@@ -76,11 +78,17 @@ fun PTextField(
             modifier
                 .focusRequester(focusRequester)
                 .fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
         colors =
             TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent,
+                focusedContainerColor = MaterialTheme.colorScheme.cardBackgroundNormal,
+                unfocusedContainerColor = MaterialTheme.colorScheme.cardBackgroundNormal,
+                disabledContainerColor = MaterialTheme.colorScheme.cardBackgroundNormal,
+                errorContainerColor = MaterialTheme.colorScheme.cardBackgroundNormal,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                errorIndicatorColor = Color.Transparent,
             ),
         maxLines = if (singleLine) 1 else Int.MAX_VALUE,
         enabled = enabled,
@@ -99,7 +107,7 @@ fun PTextField(
         placeholder = {
             Text(
                 text = placeholder,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.8f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
             )
         },
@@ -129,10 +137,10 @@ fun PTextField(
                                 }
                             ),
                         contentDescription = if (isPassword) stringResource(if (showPassword) UiRes.string.ui_string_hide_password else UiRes.string.ui_string_show_password) else stringResource(UiRes.string.ui_string_clear),
-                        tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-            } else if (!readOnly && value.isEmpty()) {
+            } else if (showPasteAction && !readOnly && value.isEmpty()) {
                 IconButton(enabled = enabled, onClick = {
                     scope.launch { readClipboard()?.let(onValueChange) }
                 }) {

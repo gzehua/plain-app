@@ -1,9 +1,8 @@
 package com.ismartcoding.plain.ui.base
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,24 +17,21 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun NoDataColumn(loading: Boolean = false, search: Boolean = false, modifier: Modifier = Modifier) {
-    LazyColumn(
+    Box(
         modifier
             .fillMaxWidth()
             .fillMaxHeight(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        contentAlignment = Alignment.Center,
     ) {
         val text = if (search) {
             if (loading) UiRes.string.ui_string_searching else UiRes.string.ui_string_no_results_found
         } else {
             if (loading) UiRes.string.ui_string_loading else UiRes.string.ui_string_no_data
         }
-        item {
-            Text(
-                text = stringResource(text),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        Text(
+            text = stringResource(text),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

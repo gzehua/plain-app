@@ -32,7 +32,7 @@ internal object Fragments {
     const val SMS = "id body address sentAt serviceCenter read threadId type typeCode subscriptionId isMms attachments { path contentType name }"
     const val DLNA_STATE = "version devices { id hostAddress name } currentDevice { id hostAddress name } items { path title albumArt artist durationMs audio } currentUri playing progressMs durationMs supportsCallback"
     const val IMAGE_EDITOR_SUMMARY = "id thumbnail canvasWidth canvasHeight layerCount updatedAt"
-    const val IMAGE_EDITOR_PROJECT = $$"$${IMAGE_EDITOR_SUMMARY} stateB64 createdAt"
+    const val IMAGE_EDITOR_PROJECT = $$"$$IMAGE_EDITOR_SUMMARY stateB64 createdAt"
     const val PEER = "id name ip key publicKey status port deviceType token createdAt updatedAt online address { bestIp name baseUrl apiUrl statusWsUrl }"
     const val CHANNEL_FIELDS = "id ownerId name actions { isOwner canRename canManageMembers canLeave canDelete } members { peerId status } version status createdAt updatedAt"
     const val CHAT_DOWNLOAD_QUEUE = "runtimeId revision tasks { id messageId status error downloaded total speed file { id: fileId uri size durationMs width height summary fileName } peer { id name ip key publicKey status port deviceType token createdAt updatedAt } }"
@@ -45,6 +45,6 @@ internal object Fragments {
             DataType.DOC -> "durationMs extension"
             else -> error("Unsupported media type: $type")
         }
-        return $$"$${MEDIA_COMMON} $${extra}"
+        return $$"$$MEDIA_COMMON $$extra"
     }
 }

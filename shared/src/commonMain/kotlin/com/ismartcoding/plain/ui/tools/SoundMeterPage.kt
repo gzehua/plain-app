@@ -37,15 +37,10 @@ import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.ui.platform.media.SoundMeterRecorder
 import com.ismartcoding.plain.app.events.RequestPermissionsEvent
-import com.ismartcoding.plain.util.FormatHelper
+import com.ismartcoding.plain.helpers.FormatHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.base.*
-import com.ismartcoding.plain.ui.apps.components.*
-import com.ismartcoding.plain.ui.audio.components.*
-import com.ismartcoding.plain.ui.notes.components.*
-import com.ismartcoding.plain.ui.web.components.*
 import com.ismartcoding.plain.ui.components.*
-import com.ismartcoding.plain.ui.media.*
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 import com.ismartcoding.plain.ui.base.PTextButton
 import kotlin.math.abs

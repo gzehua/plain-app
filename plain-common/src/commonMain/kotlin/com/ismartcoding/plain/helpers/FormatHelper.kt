@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.util
+package com.ismartcoding.plain.helpers
 
 import kotlin.math.pow
 import kotlin.math.round
