@@ -23,12 +23,9 @@ val rustupExe = cargoBinDir.resolve("rustup")
 val cargoExe = cargoBinDir.resolve("cargo")
 val localCoreOverride = rootProject.file(".cargo/core-dependency-state").exists()
 
-val generatePrefKeys = tasks.register<Exec>("generatePrefKeys") {
-    val output = layout.buildDirectory.file("generated/prefKeys/PrefKeys.kt")
-    commandLine("python3", rootProject.file("scripts/generate-pref-keys.py"), "--cargo", cargoExe, "--output", output.get().asFile)
-    outputs.dir(layout.buildDirectory.dir("generated/prefKeys"))
-    outputs.upToDateWhen { false }
-}
+apply(from = rootProject.file("gradle/rust-constants.gradle.kts"))
+val generatePrefKeys = tasks.named("generatePrefKeys")
+val generateHttpServerPorts = tasks.named("generateHttpServerPorts")
 
 kotlin {
     jvmToolchain(17)
@@ -59,12 +56,6 @@ kotlin {
     val iosTargets = mutableListOf<KotlinNativeTarget>()
     if (enableDeviceTarget) iosTargets.add(iosArm64())
     iosTargets.add(iosSimulatorArm64())
-    // Skip DWARF debug-info generation: measured ~50% faster incremental iOS
-    // dev cycles (2m17s -> 1m10s for a single-line change; the K/N backend
-    // emits debug info at link time). Trade-off: no source-level Kotlin
-    // debugging in lldb and no line numbers in debug-build crash traces.
-    // Restore with -PkotlinDebuggable=true when you need to debug Kotlin.
-    val kotlinDebuggable = (findProperty("kotlinDebuggable") as? String)?.toBoolean() ?: false
     iosTargets.forEach { iosTarget ->
         val rustTarget = if (iosTarget.name == "iosArm64") "aarch64-apple-ios" else "aarch64-apple-ios-sim"
         val rustTargetDir = layout.buildDirectory.dir("rust-target")
@@ -100,7 +91,6 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "PlainShared"
             isStatic = true
-            debuggable = kotlinDebuggable
         }
         tasks.matching { it.name.startsWith("link") && it.name.contains(iosTarget.name.replaceFirstChar { c -> c.uppercase() }) }.configureEach {
             dependsOn(buildPlainRust)
@@ -114,7 +104,10 @@ kotlin {
                 resources.setSrcDirs(listOf(rootProject.file("tests/shared/$name/resources")))
             }
         }
-        commonMain { kotlin.srcDir(generatePrefKeys) }
+        commonMain {
+            kotlin.srcDir(generatePrefKeys)
+            kotlin.srcDir(generateHttpServerPorts)
+        }
         commonMain.dependencies {
             api(project(":plain-common"))
             api(libs.atomicfu)
@@ -227,7 +220,7 @@ compose.resources {
 // This task fails the build at compile time so the issue is caught before any
 // device/emulator run. Also detects within-file duplicates.
 // ============================================================================
-val checkStringResourceDuplicates by tasks.registering {
+val checkStringResourceDuplicates = tasks.register("checkStringResourceDuplicates") {
     group = "verification"
     description = "Checks for duplicate string resource keys within each locale directory."
 
@@ -293,7 +286,7 @@ tasks.matching { it.name.contains("ComposeResources", ignoreCase = true) }.confi
 }
 tasks.named("check").configure { dependsOn(checkStringResourceDuplicates) }
 
-val checkJava21Collisions by tasks.registering {
+val checkJava21Collisions = tasks.register("checkJava21Collisions") {
     group = "verification"
     description = "Rejects Java 21 collection member calls in androidMain (unavailable below API 35)"
     dependsOn(":ui-check:checkAndroidCollections")

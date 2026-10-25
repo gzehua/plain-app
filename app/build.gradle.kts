@@ -203,7 +203,7 @@ val cargoBinDir = File(System.getenv("CARGO_HOME") ?: "${System.getProperty("use
 val rustupExe = cargoBinDir.resolve("rustup")
 val cargoExe = cargoBinDir.resolve("cargo")
 
-val installRustAndroidTarget by tasks.registering(Exec::class) {
+val installRustAndroidTarget = tasks.register<Exec>("installRustAndroidTarget") {
     commandLine(rustupExe.absolutePath, "target", "add", rustAndroidTarget)
 }
 
