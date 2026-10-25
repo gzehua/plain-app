@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.ui.chat.ChatViewModel
-import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.features.chat.ChatChannelStatus
 import com.ismartcoding.plain.features.nearby.PeerStatus
@@ -93,7 +92,7 @@ fun ChatPage(
 ) {
     val itemsState = chatVM.itemsFlow.collectAsState()
     val chatTarget = chatVM.target.collectAsState()
-    val channelsState = ChannelCacher.channels.collectAsState()
+    val channelsState = channelVM.channels.collectAsState()
     val peers by peerVM.peersMap.collectAsState()
     val scope = rememberCoroutineScope()
     var inputValue by remember { mutableStateOf("") }
@@ -133,7 +132,7 @@ fun ChatPage(
         }
     }
 
-    ChatPageEffects(chatVM, peerVM, focusManager, scrollState)
+    ChatPageEffects(chatVM, peerVM, channelVM, chatTarget.value.type, focusManager, scrollState)
 
     PBackHandler(enabled = chatVM.selectMode.value || previewerState.visible) {
         if (previewerState.visible) scope.launch { previewerState.closeTransform() }

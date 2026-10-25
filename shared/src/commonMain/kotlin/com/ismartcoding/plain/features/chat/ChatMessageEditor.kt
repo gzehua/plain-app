@@ -2,7 +2,6 @@ package com.ismartcoding.plain.features.chat
 
 import com.ismartcoding.plain.api.graphql.Mutation
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-import com.ismartcoding.plain.features.chat.ChatCacher
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.models.ChatTextEdit
 import com.ismartcoding.plain.lib.JsonHelper
@@ -19,7 +18,6 @@ object ChatMessageEditor {
         item.statusData = current.statusData
         item.content = current.content
         item.updatedAt = current.updatedAt
-        ChatCacher.load()
         return result.changed
     }
 }

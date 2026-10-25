@@ -5,15 +5,10 @@ import com.ismartcoding.plain.app.events.HChannelInviteCanceledEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
 import kotlinx.serialization.json.JsonObject
-import com.ismartcoding.plain.features.chat.ChatClient
 
 object ChannelSystemMessageReceiver {
     suspend fun applyCommitted(result: JsonObject) {
         val event = JsonHelper.jsonDecodeFromElement<ChannelRuntimeEvent>(result)
-        if (event.changed) {
-            ChannelCacher.load()
-            ChatClient.refreshLatestChats()
-        }
         event.invite?.let { invite ->
             val channel = snapshotChannelsGraphql().firstOrNull { it.id == invite.channelId }
             if (channel != null) {

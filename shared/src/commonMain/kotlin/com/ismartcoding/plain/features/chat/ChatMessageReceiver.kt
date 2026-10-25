@@ -30,7 +30,6 @@ object ChatMessageReceiver {
             },
             items = listOf(item),
         )
-        ChatClient.refreshLatestChats()
         emitNotificationIfNeeded(item, fromPeer, fromChannel)
     }
 

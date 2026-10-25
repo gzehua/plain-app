@@ -6,19 +6,54 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.features.chat.channel.ChannelCacher
+import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.features.chat.channel.ChannelManager
+import com.ismartcoding.plain.features.chat.channel.snapshotChannelsGraphql
+import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.models.ChatChannel
+import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.ui.components.ToastManager
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class ChannelViewModel : ViewModel() {
+    private val lock = Mutex()
+    val channels = MutableStateFlow<List<ChatChannel>>(emptyList())
 
     val pendingIds = mutableStateSetOf<String>()
 
     val showCreateChannelDialog = mutableStateOf(false)
     val renameChannelId = mutableStateOf("")
 
+    suspend fun observe() = coroutineScope {
+        launch(start = CoroutineStart.UNDISPATCHED) {
+            RustEventHandler.events.collect { event ->
+                if (event.type == EventType.CHANNELS_UPDATED || event.type == EventType.CONTENT_CHANGED) {
+                    refreshSafely()
+                }
+            }
+        }
+        refreshSafely()
+    }
+
+    private suspend fun refresh() = lock.withLock {
+        channels.value = snapshotChannelsGraphql()
+    }
+
+    private suspend fun refreshSafely() {
+        try { refresh() }
+        catch (cancelled: CancellationException) { throw cancelled }
+        catch (error: Exception) { LogCat.e("Load channels", error) }
+    }
+
     fun load() {
-        viewModelScope.launchSafe { ChannelCacher.load() }
+        viewModelScope.launch { refreshSafely() }
     }
 
     fun createChannel(name: String) {

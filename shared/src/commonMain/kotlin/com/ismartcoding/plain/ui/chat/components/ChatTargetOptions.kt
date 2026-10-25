@@ -8,10 +8,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.ui.chat.PeerViewModel
+import com.ismartcoding.plain.ui.chat.ChannelViewModel
+import com.ismartcoding.plain.ui.chat.sortChatChannels
 import com.ismartcoding.plain.ui.platform.system.getIcon
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.ui.resources.bot as ui_drawable_bot
@@ -38,15 +39,18 @@ data class ChatTargetOption(
 @Composable
 fun chatTargetOptions(): List<ChatTargetOption> {
     val peerVM: PeerViewModel = viewModel(key = "chatTargetPeers") { PeerViewModel() }
+    val channelVM: ChannelViewModel = viewModel(key = "chatTargetChannels") { ChannelViewModel() }
     val pairedPeers = peerVM.pairedPeers.collectAsStateValue()
+    val latestChats by peerVM.latestChats.collectAsState()
     LaunchedEffect(peerVM) { peerVM.observe() }
-    val channels by ChannelCacher.channels.collectAsState()
+    LaunchedEffect(channelVM) { channelVM.observe() }
+    val channels by channelVM.channels.collectAsState()
     val localTitle = stringResource(Res.string.local_chat)
     val localDesc = stringResource(Res.string.local_chat_desc)
     val membersLabel = stringResource(Res.string.channel_members)
     return buildList {
         add(ChatTargetOption(ChatTarget("local", ChatTargetType.PEER), localTitle, localDesc, UiRes.drawable.ui_drawable_bot))
-        channels.filter { it.isJoined() }.forEach { channel ->
+        sortChatChannels(channels, latestChats).filter { it.isJoined() }.forEach { channel ->
             add(
                 ChatTargetOption(
                     ChatTarget(channel.id, ChatTargetType.CHANNEL),

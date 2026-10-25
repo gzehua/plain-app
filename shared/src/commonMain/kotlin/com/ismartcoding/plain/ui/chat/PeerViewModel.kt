@@ -5,7 +5,7 @@ import com.ismartcoding.plain.preferences.PrefKeys
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.features.chat.ChatCacher
+import com.ismartcoding.plain.features.chat.RustChatStore
 import com.ismartcoding.plain.features.chat.peer.PeerManager
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 import com.ismartcoding.plain.features.nearby.PeerStatus
@@ -31,11 +31,12 @@ import kotlin.time.Instant
 class PeerViewModel : ViewModel() {
     private val lock = Mutex()
     private val peers = MutableStateFlow<Map<String, Peer>>(emptyMap())
+    val latestChats = MutableStateFlow<Map<String, ChatItem>>(emptyMap())
     val peersMap = peers.asStateFlow()
-    val pairedPeers = combine(peers, ChatCacher.latestChatMap) { values, chats ->
+    val pairedPeers = combine(peers, latestChats) { values, chats ->
         sortPeers(values.values.filter { it.isPaired() }, chats)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
-    val unpairedPeers = combine(peers, ChatCacher.latestChatMap) { values, chats ->
+    val unpairedPeers = combine(peers, latestChats) { values, chats ->
         sortPeers(values.values.filter { it.status == PeerStatus.UNPAIRED }, chats)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
@@ -51,6 +52,7 @@ class PeerViewModel : ViewModel() {
 
     private suspend fun refresh() = lock.withLock {
         peers.value = RustPeerStore.getAll().associateBy { it.id }
+        latestChats.value = RustChatStore.getLatestConversations()
     }
 
     private suspend fun refreshSafely() {
@@ -67,7 +69,7 @@ class PeerViewModel : ViewModel() {
 
     fun removePeer(peerId: String) {
         viewModelScope.launchSafe {
-            if (PeerManager.deletePeer(peerId)) refresh()
+            PeerManager.deletePeer(peerId)
         }
     }
 
@@ -90,6 +92,9 @@ internal fun isPeerUpdate(type: EventType): Boolean = when (type) {
     EventType.CHANNELS_UPDATED,
     EventType.CONTENT_CHANGED,
     EventType.PAIRING_SUCCESS,
-    EventType.WEB_LOGIN_COMPLETED -> true
+    EventType.WEB_LOGIN_COMPLETED,
+    EventType.MESSAGE_CREATED,
+    EventType.MESSAGE_UPDATED,
+    EventType.MESSAGE_DELETED -> true
     else -> false
 }

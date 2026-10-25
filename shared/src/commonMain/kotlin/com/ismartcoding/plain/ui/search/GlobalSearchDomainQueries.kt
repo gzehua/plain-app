@@ -13,7 +13,7 @@ import com.ismartcoding.plain.models.Doc as Document
 import com.ismartcoding.plain.models.Video as MediaVideo
 import com.ismartcoding.plain.models.Image as MediaImage
 import com.ismartcoding.plain.features.chat.ChatQueries
-import com.ismartcoding.plain.features.chat.channel.ChannelCacher
+import com.ismartcoding.plain.features.chat.channel.snapshotChannelsGraphql
 import com.ismartcoding.plain.features.chat.models.getMessagePreview
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 import com.ismartcoding.plain.platform.system.DataType
@@ -23,6 +23,7 @@ import com.ismartcoding.plain.features.feeds.FeedEntriesClient
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.models.Audio
 import com.ismartcoding.plain.models.ChatItem
+import com.ismartcoding.plain.models.ChatChannel
 import com.ismartcoding.plain.models.Doc
 import com.ismartcoding.plain.models.FeedEntry
 import com.ismartcoding.plain.models.File
@@ -97,7 +98,10 @@ internal suspend fun GlobalSearchViewModel.queryDomain(
         GlobalSearchDomain.CHAT -> {
             val items = ChatQueries.searchAsync(q, limit, offset)
             val peers = if (items.isEmpty()) emptyMap() else RustPeerStore.getAll().associateBy { it.id }
-            items.map { it.toHit(q, peers) }
+            val channels = if (items.any { !it.channelId.isNullOrEmpty() }) {
+                snapshotChannelsGraphql().associateBy { it.id }
+            } else emptyMap()
+            items.map { it.toHit(q, peers, channels) }
         }
         GlobalSearchDomain.APPS ->
             PackagesClient.search(q, limit, offset, FileSortBy.DATE_DESC).filter { it.name.isNotBlank() }.map { it.toHit() }
@@ -207,14 +211,14 @@ private fun FeedEntry.toHit(q: String): GlobalSearchHit = GlobalSearchHit(
     action = GlobalSearchAction.Navigate(Routing.FeedEntry(id)),
 )
 
-private fun ChatItem.toHit(q: String, peers: Map<String, Peer>): GlobalSearchHit {
+private fun ChatItem.toHit(q: String, peers: Map<String, Peer>, channels: Map<String, ChatChannel>): GlobalSearchHit {
     val channelId = channelId.orEmpty()
     val isChannel = channelId.isNotEmpty()
     val conversation: String
     val chatRoute: String
     val senderName: String
     if (isChannel) {
-        conversation = ChannelCacher.getChannel(channelId)?.name ?: channelId
+        conversation = channels[channelId]?.name ?: channelId
         chatRoute = "channel:$channelId"
         senderName = if (fromId == "me") LocaleHelper.getString(Res.string.me)
         else peers[fromId]?.name ?: fromId

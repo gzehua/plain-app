@@ -15,8 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.features.chat.ChatCacher
-import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.features.chat.models.getBestIp
 import com.ismartcoding.plain.features.chat.peer.PeerStatusClient
 import com.ismartcoding.plain.ui.components.ButtonSize
@@ -71,15 +69,16 @@ fun ChatListPage(
 ) {
     val pairedPeers = peerVM.pairedPeers.collectAsStateValue()
     val unpairedPeers = peerVM.unpairedPeers.collectAsStateValue()
-    val latestChats by ChatCacher.latestChatMap.collectAsState()
+    val latestChats by peerVM.latestChats.collectAsState()
     LaunchedEffect(peerVM) { peerVM.observe() }
+    LaunchedEffect(channelVM) { channelVM.observe() }
     val refreshState = rememberRefreshLayoutState {
         PeerStatusClient.reconnectNow("chat_list_pull_refresh")
         peerVM.load()
         channelVM.load()
         setRefreshState(RefreshContentState.Finished)
     }
-    val channels = ChannelCacher.channels.collectAsStateValue()
+    val channels = sortChatChannels(channelVM.channels.collectAsStateValue(), latestChats)
 
     val bleAvailability by bleAvailabilityFlow.collectAsState()
     val capabilities = getDeviceCapabilities()

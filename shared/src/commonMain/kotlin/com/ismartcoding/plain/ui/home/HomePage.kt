@@ -48,7 +48,6 @@ import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
-import com.ismartcoding.plain.ui.chat.ChannelViewModel
 import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.ui.settings.UpdateViewModel
 import com.ismartcoding.plain.ui.navigation.MainNavScaffold
@@ -63,7 +62,6 @@ fun HomePage(
     navController: NavHostController,
     mainVM: MainViewModel,
     updateVM: UpdateViewModel,
-    channelVM: ChannelViewModel,
     onTabSelected: (Int) -> Unit,
 ) {
     var isVpnActive by remember { mutableStateOf(vpnActive()) }
@@ -76,7 +74,6 @@ fun HomePage(
     var systemAlertWindow by remember { mutableStateOf(Permission.SYSTEM_ALERT_WINDOW.isGranted()) }
     val refreshState = rememberRefreshLayoutState {
         PeerStatusClient.reconnectNow("home_pull_refresh")
-        channelVM.load()
         setRefreshState(RefreshContentState.Finished)
     }
     val serverError = HttpServerManager.httpServerError.collectAsStateValue()

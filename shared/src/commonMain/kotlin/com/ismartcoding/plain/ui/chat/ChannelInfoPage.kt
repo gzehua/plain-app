@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.ui.chat.ChatViewModel
-import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.features.chat.models.getBestIp
 import com.ismartcoding.plain.features.chat.models.getName
@@ -69,7 +68,8 @@ fun ChannelInfoPage(
     val chatTarget = chatVM.target.collectAsState()
     val peers by peerVM.peersMap.collectAsState()
     LaunchedEffect(peerVM) { peerVM.observe() }
-    val channels = ChannelCacher.channels.collectAsState()
+    LaunchedEffect(channelVM) { channelVM.observe() }
+    val channels = channelVM.channels.collectAsState()
     val liveChannel = channels.value.find { it.id == chatTarget.value.toId }
     val showRenameDialog = remember { mutableStateOf(false) }
     val selectedMemberPeerId = remember { mutableStateOf<String?>(null) }

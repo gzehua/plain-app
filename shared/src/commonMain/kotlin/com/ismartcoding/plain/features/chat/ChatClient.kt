@@ -18,10 +18,6 @@ object ChatClient {
     suspend fun writeDraft(id: String, value: String) = RustGraphqlApi.writeSavedValue(draftKey(id), value)
     private fun draftKey(id: String) = "chat_input_text:${ChatTarget.parseId(id).encodedToId}"
 
-    suspend fun refreshLatestChats() = withIO {
-        ChatCacher.load()
-    }
-
     suspend fun getChatItem(id: String): ChatItem? = ChatQueries.getChatItem(id)
 
     suspend fun sendContent(target: ChatTarget, content: MessageContent): ChatItem =

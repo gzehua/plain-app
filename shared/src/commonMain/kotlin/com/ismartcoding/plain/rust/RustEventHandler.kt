@@ -7,11 +7,8 @@ import com.ismartcoding.plain.app.events.HWebRequestReceivedEvent
 import com.ismartcoding.plain.app.events.HostEvent
 import com.ismartcoding.plain.app.events.HostEventData
 import com.ismartcoding.plain.app.refreshHttpServerState
-import com.ismartcoding.plain.features.chat.ChatCacher
-import com.ismartcoding.plain.features.chat.ChatClient
 import com.ismartcoding.plain.features.chat.ChatMessageReceiver
 import com.ismartcoding.plain.features.chat.RustChatStore
-import com.ismartcoding.plain.features.chat.channel.ChannelCacher
 import com.ismartcoding.plain.features.chat.channel.ChannelSystemMessageReceiver
 import com.ismartcoding.plain.features.chat.channel.channelGraphql
 import com.ismartcoding.plain.features.chat.data.ChatTarget
@@ -103,9 +100,6 @@ object RustEventHandler {
             EventType.HTTP_SERVER_STATE_CHANGED -> {
                 refreshHttpServerState()
             }
-            EventType.PEER_STATUS_UPDATED -> {
-                ChatCacher.load()
-            }
             EventType.PEER_TRANSPORT_UPDATED -> PeerTransportProjection.apply(JsonHelper.jsonDecode<JsonArray>(payload))
             EventType.MDNS_UPDATED, EventType.NEARBY_DISCOVERY_STARTED, EventType.NEARBY_DISCOVERY_STOPPED -> RustMdnsRuntime.refresh()
             EventType.DLNA_RENDERER_UPDATED -> DlnaRendererState.apply(
@@ -127,7 +121,6 @@ object RustEventHandler {
                             val target = if (item.channelId.isNullOrEmpty()) ChatTarget.parseId("peer:" + item.toId)
                                 else ChatTarget.parseId("channel:" + item.channelId)
                             ChatViewModel.onMessagesCreated(target, listOf(item), scroll = true)
-                            ChatCacher.load()
                         } else RustPeerStore.getById(item.fromId)?.let { peer ->
                             val channel = item.channelId?.takeIf { it.isNotEmpty() }?.let { channelGraphql(it) }
                             ChatMessageReceiver.applyCommitted(item, peer, channel)
@@ -139,7 +132,6 @@ object RustEventHandler {
                 val target = JsonHelper.jsonDecode<String>(payload)
                 if (target.startsWith("ids=")) ChatViewModel.onMessagesDeleted(target.removePrefix("ids=").split(',').filter { it.isNotEmpty() }.toSet())
                 else ChatViewModel.onConversationCleared(target)
-                ChatCacher.load()
             }
             EventType.CHANNELS_UPDATED -> {
                 val result = JsonHelper.jsonDecode<JsonElement>(payload).jsonObject
@@ -150,7 +142,6 @@ object RustEventHandler {
                     RustChatStore.getById(value.id)
                 }
                 items.forEach { ChatViewModel.update(it) }
-                ChatCacher.load()
             }
             EventType.DOWNLOAD_PROGRESS -> {
                 DownloadQueue.refresh()
@@ -176,8 +167,6 @@ object RustEventHandler {
             EventType.APP_UPDATE_DOWNLOAD_UPDATED -> AppUpdateDownloads.apply(JsonHelper.jsonDecode(payload))
             EventType.FEED_SYNC_UPDATED -> FeedWorkerState.apply(JsonHelper.jsonDecode<FeedSyncUpdate>(payload))
             EventType.CONTENT_CHANGED -> {
-                ChannelCacher.load()
-                ChatClient.refreshLatestChats()
                 try { FavoriteFoldersClient.refresh() }
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) { LogCat.e("Favorite folders refresh",error) }
