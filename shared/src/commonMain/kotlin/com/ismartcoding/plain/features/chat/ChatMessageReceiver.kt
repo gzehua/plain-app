@@ -7,11 +7,12 @@ import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.models.ChatChannel
 import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.features.chat.models.getMessagePreview
-import com.ismartcoding.plain.events.HChatMessageNotificationEvent
+import com.ismartcoding.plain.platform.notifications.sendChatMessageNotification
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.peer_chat
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 
@@ -28,10 +29,10 @@ object ChatMessageReceiver {
             },
             items = listOf(item),
         )
-        emitNotificationIfNeeded(item, fromPeer, fromChannel)
+        sendNotificationIfNeeded(item, fromPeer, fromChannel)
     }
 
-    private fun emitNotificationIfNeeded(
+    private suspend fun sendNotificationIfNeeded(
         item: ChatItem,
         fromPeer: Peer,
         fromChannel: ChatChannel?,
@@ -51,11 +52,9 @@ object ChatMessageReceiver {
             )
         }
         if (ChatViewModel.visibleConversationId.value == targetId) return
-        sendEvent(HChatMessageNotificationEvent(
-            targetId = targetId,
-            targetName = targetName,
-            messageText = messageText,
-        ))
+        withContext(Dispatchers.Main.immediate) {
+            sendChatMessageNotification(targetId, targetName, messageText)
+        }
     }
 }
 

@@ -21,7 +21,6 @@ import com.ismartcoding.plain.ui.theme.DarkTheme
 fun AppContent(
     navControllerState: MutableState<NavHostController?> = remember { mutableStateOf(null) },
     onLaunched: () -> Unit = {},
-    mainVM: MainViewModel = viewModel { MainViewModel() },
     audioQueueVM: AudioQueueViewModel = viewModel { AudioQueueViewModel() },
     pomodoroVM: PomodoroViewModel = viewModel { PomodoroViewModel() },
     peerVM: PeerViewModel = viewModel { PeerViewModel() },
@@ -35,7 +34,7 @@ fun AppContent(
         amoledDarkTheme = Prefs.amoledDarkTheme.collectAsStateValue(),
     ) {
         Main(
-            navControllerState, onLaunched, mainVM, audioQueueVM, pomodoroVM, peerVM, channelVM,
+            navControllerState, onLaunched, audioQueueVM, pomodoroVM, peerVM, channelVM,
             platformPages = platformPages,
             batterySettings = batterySettings,
         )

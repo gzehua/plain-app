@@ -1,17 +1,18 @@
 package com.ismartcoding.plain.ui.components
 
-import com.ismartcoding.plain.lib.ChannelEvent
-import com.ismartcoding.plain.lib.sendEvent
+import androidx.compose.runtime.mutableStateOf
 
-data class ToastEvent(
+class ToastMessage(
     val message: String,
     val type: ToastType = ToastType.INFO,
     val durationMs: Long = 2000L,
     val actionLabel: String? = null,
     val onAction: (() -> Unit)? = null,
-) : ChannelEvent()
+)
 
 object ToastManager {
+    val current = mutableStateOf<ToastMessage?>(null)
+
     fun showToast(
         message: String,
         type: ToastType = ToastType.INFO,
@@ -19,7 +20,7 @@ object ToastManager {
         actionLabel: String? = null,
         onAction: (() -> Unit)? = null,
     ) {
-        sendEvent(ToastEvent(message, type, durationMs, actionLabel, onAction))
+        current.value = ToastMessage(message, type, durationMs, actionLabel, onAction)
     }
 
     fun showInfoToast(message: String, durationMs: Long = 2000L) {

@@ -16,7 +16,6 @@ import com.ismartcoding.plain.platform.network.ble.client.BleScanner
 import com.ismartcoding.plain.platform.network.ble.server.AndroidBleGattServer
 import com.ismartcoding.plain.platform.network.ble.server.BleGattServer
 import com.ismartcoding.plain.events.PermissionsResultEvent
-import com.ismartcoding.plain.features.bluetooth.BluetoothPermissionResultEvent
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.extensions.hasPermission
@@ -50,7 +49,7 @@ private fun computeBleAvailability(): BleAvailability {
 
 actual fun bleAvailability(): BleAvailability = computeBleAvailability()
 
-actual val bleAvailabilityFlow: StateFlow<BleAvailability> by lazy {
+private val availability by lazy {
     MutableStateFlow(computeBleAvailability()).also { flow ->
         appContextValue?.applicationContext?.registerReceiver(
             object : BroadcastReceiver() {
@@ -64,12 +63,20 @@ actual val bleAvailabilityFlow: StateFlow<BleAvailability> by lazy {
         )
         coIO {
             Channel.sharedFlow.collect { event ->
-                if (event is BluetoothPermissionResultEvent || event is PermissionsResultEvent) {
+                if (event is PermissionsResultEvent) {
                     flow.value = computeBleAvailability()
                 }
             }
         }
     }
+}
+
+actual val bleAvailabilityFlow: StateFlow<BleAvailability> get() = availability
+
+internal fun refreshBleAvailability(): BleAvailability {
+    val current = computeBleAvailability()
+    availability.value = current
+    return current
 }
 
 actual fun bleTransport(): BleTransport = AndroidBleTransport

@@ -2,6 +2,9 @@ package com.ismartcoding.plain.ui.pomodoro
 
 import com.ismartcoding.plain.ui.state.launchSafe
 
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -27,12 +30,18 @@ class PomodoroViewModel : ViewModel() {
 
     private var totalSeconds = Prefs.pomodoroSettings.value.workDurationMin * 60
 
+    init {
+        viewModelScope.launch {
+            snapshotFlow { PomodoroProjection.today.value }.filterNotNull().collect { applyToday(it) }
+        }
+    }
+
     suspend fun loadAsync() {
         settings.value = Prefs.pomodoroSettings.value
         refreshAsync()
     }
-    suspend fun refreshAsync() { applySnapshot(PomodoroClient.today()) }
-    fun applySnapshot(today: PomodoroToday) {
+    suspend fun refreshAsync() { PomodoroProjection.refresh() }
+    private fun applyToday(today: PomodoroToday) {
         currentState.value = today.state
         completedCount.intValue = today.completedCount
         currentRound.intValue = today.currentRound
@@ -41,10 +50,10 @@ class PomodoroViewModel : ViewModel() {
         isRunning.value = today.isRunning
         isPaused.value = today.isPaused
     }
-    fun startSession() { viewModelScope.launchSafe { applySnapshot(PomodoroClient.start(timeLeft.intValue)) } }
-    fun pauseSession() { viewModelScope.launchSafe { applySnapshot(PomodoroClient.pause()) } }
-    fun resetTimer() { viewModelScope.launchSafe { applySnapshot(PomodoroClient.stop()) } }
-    fun adjustTime(seconds: Int) { viewModelScope.launchSafe { applySnapshot(PomodoroClient.adjust(seconds)) } }
+    fun startSession() { viewModelScope.launchSafe { PomodoroProjection.today.value = PomodoroClient.start(timeLeft.intValue) } }
+    fun pauseSession() { viewModelScope.launchSafe { PomodoroProjection.today.value = PomodoroClient.pause() } }
+    fun resetTimer() { viewModelScope.launchSafe { PomodoroProjection.today.value = PomodoroClient.stop() } }
+    fun adjustTime(seconds: Int) { viewModelScope.launchSafe { PomodoroProjection.today.value = PomodoroClient.adjust(seconds) } }
     fun updateTimeForCurrentState() { viewModelScope.launchSafe { loadAsync() } }
     fun formatTime(seconds: Int): String = "${(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}"
     fun getTotalSeconds(): Int = totalSeconds

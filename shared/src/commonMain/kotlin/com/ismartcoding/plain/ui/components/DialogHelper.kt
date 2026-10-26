@@ -1,17 +1,15 @@
 package com.ismartcoding.plain.ui.components
 
-import com.ismartcoding.plain.ui.format.errorMessage
-
-import com.ismartcoding.plain.network.ApiResult
-import com.ismartcoding.plain.events.ConfirmDialogEvent
-import com.ismartcoding.plain.events.LoadingDialogEvent
+import androidx.compose.runtime.mutableStateOf
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.lib.sendEvent
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString as getComposeString
 
 object DialogHelper {
+    val loading = mutableStateOf(false)
+    val confirmation = mutableStateOf<ConfirmDialog?>(null)
+
     fun showMessage(
         message: String,
         durationMs: Long = 2000L,
@@ -34,20 +32,16 @@ object DialogHelper {
         coIO { showMessage(getComposeString(resource)) }
     }
 
-    fun showMessage(r: ApiResult) {
-        ToastManager.showErrorToast(r.errorMessage())
-    }
-
     fun showMessage(ex: Throwable) {
         ToastManager.showErrorToast(ex.toString())
     }
 
-    fun showLoading(message: String = "") {
-        sendEvent(LoadingDialogEvent(true, message))
+    fun showLoading() {
+        loading.value = true
     }
 
     fun hideLoading() {
-        sendEvent(LoadingDialogEvent(false))
+        loading.value = false
     }
 
     fun showConfirmDialog(
@@ -58,10 +52,10 @@ object DialogHelper {
         danger: Boolean = false,
     ) {
         if (confirmButton != null) {
-            sendEvent(ConfirmDialogEvent(title, message, confirmButton, dismissButton, danger))
+            confirmation.value = ConfirmDialog(title, message, confirmButton, dismissButton, danger)
         } else {
             coIO {
-                sendEvent(ConfirmDialogEvent(title, message, Pair(getComposeString(Res.string.ok)) {}, dismissButton, danger))
+                confirmation.value = ConfirmDialog(title, message, Pair(getComposeString(Res.string.ok)) {}, dismissButton, danger)
             }
         }
     }
@@ -73,7 +67,7 @@ object DialogHelper {
         callback: () -> Unit = {},
     ) {
         coIO {
-            sendEvent(ConfirmDialogEvent(title, message, Pair(getComposeString(Res.string.ok), callback), null, danger))
+            confirmation.value = ConfirmDialog(title, message, Pair(getComposeString(Res.string.ok), callback), null, danger)
         }
     }
 
@@ -82,7 +76,7 @@ object DialogHelper {
         callback: () -> Unit = {},
     ) {
         coIO {
-            sendEvent(ConfirmDialogEvent(getComposeString(Res.string.error), message, Pair(getComposeString(Res.string.ok), callback), null))
+            confirmation.value = ConfirmDialog(getComposeString(Res.string.error), message, Pair(getComposeString(Res.string.ok), callback), null)
         }
     }
 
@@ -99,11 +93,9 @@ suspend inline fun confirmActionAsync(
     noinline callback: () -> Unit = {},
     danger: Boolean = false,
 ) {
-    sendEvent(
-        ConfirmDialogEvent(
-            getComposeString(title), getComposeString(message),
-            Pair(getComposeString(Res.string.confirm), callback),
-            Pair(getComposeString(Res.string.cancel)) { }, danger
-        )
+    DialogHelper.confirmation.value = ConfirmDialog(
+        getComposeString(title), getComposeString(message),
+        Pair(getComposeString(Res.string.confirm), callback),
+        Pair(getComposeString(Res.string.cancel)) { }, danger
     )
 }

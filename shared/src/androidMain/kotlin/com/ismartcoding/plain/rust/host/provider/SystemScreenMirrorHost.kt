@@ -1,10 +1,15 @@
 package com.ismartcoding.plain.rust.host.provider
 
-import com.ismartcoding.plain.app.events.HOpenAccessibilitySettingsEvent
-import com.ismartcoding.plain.app.events.HRequestScreenMirrorAudioEvent
-import com.ismartcoding.plain.app.events.HStartScreenMirrorEvent
+import android.content.Intent
+import android.provider.Settings
+import com.ismartcoding.plain.MainActivity
+import com.ismartcoding.plain.appContext
+import com.ismartcoding.plain.mainActivity
+import com.ismartcoding.plain.startScreenMirror
+import com.ismartcoding.plain.requestScreenMirrorAudio
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.lib.sendEvent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.ismartcoding.plain.platform.media.ScreenMirrorControlsFacts
 import com.ismartcoding.plain.platform.media.dispatchScreenMirrorControl
 import com.ismartcoding.plain.platform.media.getScreenMirrorVideoCodec
@@ -21,8 +26,10 @@ import kotlinx.serialization.json.*
 
 internal object SystemScreenMirrorHost {
     internal suspend fun handle(method: String, params: JsonObject): HostResult = when (method) {
-        "systemOpenAccessibilitySettings" -> {
-            sendEvent(HOpenAccessibilitySettingsEvent())
+        "systemOpenAccessibilitySettings" -> withContext(Dispatchers.Main.immediate) {
+            appContext.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            })
             hostResult(true)
         }
         "systemScreenMirrorControls" -> {
@@ -43,11 +50,7 @@ internal object SystemScreenMirrorHost {
         }
         "systemStartScreenMirror" -> {
             val request = JsonHelper.jsonDecodeFromElement<StartScreenMirrorRequest>(params)
-            sendEvent(
-                HStartScreenMirrorEvent(
-                    request.audio
-                )
-            )
+            withContext(Dispatchers.Main.immediate) { activity().startScreenMirror(request.audio) }
             hostResult(true)
         }
         "systemStopScreenMirror" -> {
@@ -57,9 +60,7 @@ internal object SystemScreenMirrorHost {
         "systemRequestScreenMirrorAudio" -> {
             val granted = Permission.RECORD_AUDIO.isGranted()
             if (!granted) {
-                sendEvent(
-                    HRequestScreenMirrorAudioEvent()
-                )
+                withContext(Dispatchers.Main.immediate) { activity().requestScreenMirrorAudio() }
             }
             hostResult(granted)
         }
@@ -69,6 +70,10 @@ internal object SystemScreenMirrorHost {
         }
         else -> error("Unsupported provider operation")
     }
+
+    private fun activity(): MainActivity = (mainActivity as? MainActivity)
+        ?.takeUnless { it.isDestroyed || it.isFinishing }
+        ?: error("Screen mirroring requires an active main activity")
 }
 
 @Serializable

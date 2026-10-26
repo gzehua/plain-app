@@ -1,10 +1,8 @@
 package com.ismartcoding.plain.rust
 
 import com.ismartcoding.plain.HttpServerManager
+import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HConfirmToAcceptLoginEvent
-import com.ismartcoding.plain.events.HWebLoginClosedEvent
-import com.ismartcoding.plain.events.HWebRequestReceivedEvent
 import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.events.HostEventData
 import com.ismartcoding.plain.features.chat.ChatMessageReceiver
@@ -30,7 +28,6 @@ import com.ismartcoding.plain.features.settings.AppUpdateDownloads
 import com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.lib.sendEvent as sendAppEvent
 import com.ismartcoding.plain.platform.notifications.sendWebLoginNotification
 import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
 import com.ismartcoding.plain.rust.native.RustNativeBindings
@@ -150,15 +147,13 @@ object RustEventHandler {
             EventType.DLNA_SENDER_UPDATED -> RustDlnaSender.apply(JsonHelper.jsonDecode<JsonObject>(payload))
             EventType.WEB_LOGIN_REQUESTED -> {
                 val facts = JsonHelper.jsonDecode<WebLoginRequestFacts>(payload)
-                sendAppEvent(HConfirmToAcceptLoginEvent(
-                    facts.clientId, facts.request, facts.requestId, facts.clientIp))
+                MainViewModel.pendingLoginRequest.value = facts
             }
             EventType.WEB_LOGIN_CLOSED -> {
                 val facts = JsonHelper.jsonDecode<WebLoginClosedFacts>(payload)
-                sendAppEvent(HWebLoginClosedEvent(facts.requestId))
-            }
-            EventType.WEB_REQUEST_RECEIVED -> {
-                sendAppEvent(HWebRequestReceivedEvent())
+                if (MainViewModel.pendingLoginRequest.value?.requestId == facts.requestId) {
+                    MainViewModel.pendingLoginRequest.value = null
+                }
             }
             EventType.SHARED_FOLDER_DOWNLOAD_UPDATED -> SharedFolderDownloadEngine.refresh()
             EventType.AUDIO_PLAYBACK_UPDATED -> AudioEngineHost.restore(JsonHelper.jsonDecode<JsonObject>(payload))

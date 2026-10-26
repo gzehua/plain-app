@@ -7,11 +7,9 @@ import com.ismartcoding.plain.models.PairingRequestInput
 import com.ismartcoding.plain.ui.nearby.NearbyItemStatus
 import com.ismartcoding.plain.ui.nearby.NearbyViewModel
 import kotlinx.serialization.json.*
-import com.ismartcoding.plain.events.HPairingCanceledEvent
-import com.ismartcoding.plain.events.HPairingRequestReceivedEvent
-import com.ismartcoding.plain.events.HPairingSuccessEvent
+import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
-import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.features.chat.peer.PeerStatusClient
 
 // Rust broadcasts pairing events to both mobile and web clients; projections must not republish them.
 object PairingProjection {
@@ -68,7 +66,7 @@ object PairingProjection {
     suspend fun request(payload: String) {
         val request = JsonHelper.jsonDecode<PairingRequestInput>(payload)
         if (!RustPairingRuntime.currentRequest(request.fromId, request.signature)) return
-        sendEvent(HPairingRequestReceivedEvent(request))
+        MainViewModel.pendingPairingRequest.value = request
     }
 
     private val terminalPhases = setOf("SUCCEEDED", "FAILED", "CANCELLED")
@@ -84,7 +82,7 @@ object PairingProjection {
         reconcileUnknown(id)
         if (hasActive(id)) return
         NearbyViewModel.itemStatus.remove(id)
-        sendEvent(HPairingCanceledEvent(id))
+        if (MainViewModel.pendingPairingRequest.value?.fromId == id) MainViewModel.pendingPairingRequest.value = null
     }
 
     suspend fun success(payload: String) {
@@ -92,9 +90,7 @@ object PairingProjection {
         val peer = RustPeerStore.getById(value.deviceId) ?: return
         if (!peer.isPaired() || peer.key != value.key) return
         NearbyViewModel.handlePairingSuccess(peer.id)
-        sendEvent(HPairingSuccessEvent(
-            peer.id, peer.name, value.ip, peer.key,
-        ))
+        PeerStatusClient.reconnectNow("post_pairing")
     }
 
     suspend fun timeout(payload: String) {
@@ -113,4 +109,4 @@ private data class PairingStarted(val deviceId: String, val generation: String)
 private data class PairingDeviceEvent(val deviceId: String)
 
 @Serializable
-private data class PairingSucceeded(val deviceId: String, val key: String, val ip: String)
+private data class PairingSucceeded(val deviceId: String, val key: String)

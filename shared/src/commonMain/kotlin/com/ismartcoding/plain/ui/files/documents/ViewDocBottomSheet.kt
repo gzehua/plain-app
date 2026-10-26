@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.files.documents
 
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.features.files.FilesClient
 
 import androidx.compose.foundation.layout.Column
@@ -27,7 +26,7 @@ import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
 import com.ismartcoding.plain.lib.extensions.getMimeType
-import com.ismartcoding.plain.events.AddMediaShortcutEvent
+import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.platform.system.Capability
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.system.formatDateTime
@@ -86,7 +85,7 @@ fun ViewDocBottomSheet(
     if (showAddToHomeDialog && canAddToHome) {
         AddToHomeDialog(
             defaultLabel = remember(m.path) { m.path.getFilenameWithoutExtensionFromPath() },
-            onAddToHome = { label -> sendEvent(AddMediaShortcutEvent(m.path, label)) },
+            onAddToHome = { label -> MainViewModel.addMediaShortcut(m.path, label) },
             onDismiss = {
                 showAddToHomeDialog = false
                 onDismiss()

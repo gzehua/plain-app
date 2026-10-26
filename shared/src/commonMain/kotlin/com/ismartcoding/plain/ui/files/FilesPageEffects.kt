@@ -7,10 +7,7 @@ import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.platform.system.appDir
 import com.ismartcoding.plain.platform.files.fileExists
 import com.ismartcoding.plain.platform.files.getInternalStoragePath
-import com.ismartcoding.plain.ui.state.ActionSourceType
 import com.ismartcoding.plain.features.files.FilesType
-import com.ismartcoding.plain.events.ActionEvent
-import com.ismartcoding.plain.events.FolderKanbanSelectEvent
 import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.components.StoragePermissionResumeEffect
@@ -78,14 +75,7 @@ internal fun FilesPageEffects(
         Channel.sharedFlow.collect { event ->
             when (event) {
                 is PermissionsResultEvent -> refreshStoragePermission(filesVM.hasPermission, reloadAfterGrant)
-                is FolderKanbanSelectEvent -> {
-                    val m = event.data
-                    filesVM.offset = 0
-                    filesVM.drawerFolderTitle.value = if (m.isFavoriteFolder) m.fullPath to m.title else null
-                    filesVM.initSelectedPath(m.rootPath, m.type, m.fullPath, m.fullPath)
-                    scope.launch(Dispatchers.Default) { filesVM.loadAsync() }
-                }
-                is ActionEvent -> if (event.source == ActionSourceType.FILE) scope.launch(Dispatchers.Default) { filesVM.loadAsync() }
+
             }
         }
     }

@@ -22,11 +22,10 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.Prefs
-import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.events.DownloadUpdateEvent
+import com.ismartcoding.plain.features.settings.AppUpdateDownloads
 import com.ismartcoding.plain.lib.UrlHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.system.getAppVersion
@@ -74,12 +73,9 @@ fun SettingsPage(navController: NavHostController, updateViewModel: UpdateViewMo
         }
     }
 
-    LaunchedEffect(Unit) {
-        Channel.sharedFlow.collect { event ->
-            if (event is DownloadUpdateEvent) {
-                listState.animateScrollToItem(0)
-            }
-        }
+    val download = AppUpdateDownloads.state.collectAsStateValue()
+    LaunchedEffect(download.taskId, download.status) {
+        if (download.status == "DOWNLOADING") listState.animateScrollToItem(0)
     }
 
     UpdateDialog(updateViewModel)

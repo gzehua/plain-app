@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.features.images.search
 
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.lib.sendEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.JsonObject
@@ -18,8 +17,6 @@ internal object RustImageModels {
             if (next.version < version) return@withLock
             version = next.version
             state.value = next
-            sendEvent(HImageSearchStatusChangedEvent(next.status,next.downloadProgress,next.errorMessage))
-            sendEvent(HImageIndexProgressEvent(next.totalImages,next.indexedImages,next.isIndexing))
         }
     }
 }

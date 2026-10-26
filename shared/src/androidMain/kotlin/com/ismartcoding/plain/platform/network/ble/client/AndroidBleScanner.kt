@@ -15,7 +15,7 @@ import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.nearby.BleAdvertisement
 import com.ismartcoding.plain.platform.network.ble.BleUuids
 import com.ismartcoding.plain.features.nearby.RustBleServiceData
-import com.ismartcoding.plain.features.bluetooth.client.BluetoothUtil
+import com.ismartcoding.plain.features.bluetooth.client.BluetoothPermission
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.map
@@ -78,7 +78,7 @@ object AndroidBleScanner : BleScanner {
         return appContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
-    override suspend fun ensurePermission(): Boolean = BluetoothUtil.ensurePermissionAsync()
+    override suspend fun ensurePermission(): Boolean = BluetoothPermission.ensurePermissionAsync()
 
     @SuppressLint("MissingPermission")
     override fun scan(serviceUuid: String): Flow<BleGattClient> {

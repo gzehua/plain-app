@@ -1,8 +1,5 @@
 package com.ismartcoding.plain.ui.feeds
 
-import com.ismartcoding.plain.features.feeds.entry
-import com.ismartcoding.plain.features.feeds.feed
-
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +9,8 @@ import com.ismartcoding.plain.models.Feed
 import com.ismartcoding.plain.models.FeedEntry
 import com.ismartcoding.plain.ui.state.launchSafe
 import com.ismartcoding.plain.features.feeds.fetchContentAsync
+import com.ismartcoding.plain.lib.logcat.LogCat
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 
 /**
@@ -80,6 +79,10 @@ class FeedEntryPagerViewModel : ViewModel() {
                 try {
                     m.fetchContentAsync()
                     cacheContent(neighbor, m.content)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    LogCat.e("Preload feed entry content", error)
                 } finally {
                     fetchingIds.remove(neighbor)
                 }

@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.events
 
-import com.ismartcoding.plain.lib.ChannelEvent
 import kotlinx.serialization.Serializable
 
 sealed class HostEventData {
@@ -24,8 +23,7 @@ sealed class HostEventData {
 class HostEvent(
     val type: EventType,
     val data: HostEventData,
-) : ChannelEvent()
-{
+) {
     constructor(type: EventType, data: String) : this(type, HostEventData.Text(data))
     constructor(type: EventType, data: ByteArray) : this(type, HostEventData.Binary(data))
 }

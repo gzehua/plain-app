@@ -32,7 +32,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.features.nearby.PairingResponder
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.components.ButtonType
@@ -49,10 +49,11 @@ private const val PAIRING_REQUEST_TIMEOUT_SECONDS = 90
 @Composable
 fun PairingRequestPage(
     request: PairingRequestInput,
-    navController: NavHostController,
+    onClose: () -> Unit,
 ) {
     var remainingSeconds by remember { mutableIntStateOf(PAIRING_REQUEST_TIMEOUT_SECONDS) }
     var expired by remember { mutableStateOf(false) }
+    PBackHandler(onBack = onClose)
     var accepting by remember { mutableStateOf(false) }
     var denying by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -150,7 +151,7 @@ fun PairingRequestPage(
                         modifier = Modifier.fillMaxWidth(),
                         text = stringResource(Res.string.close),
                         buttonSize = ButtonSize.LARGE,
-                        onClick = { navController.popBackStack() },
+                        onClick = onClose,
                     )
                 } else {
                     Text(
@@ -173,7 +174,7 @@ fun PairingRequestPage(
                             accepting = true
                             scope.launch {
                                 PairingResponder.respond(request, true)
-                                navController.popBackStack()
+                                onClose()
                             }
                         },
                     )
@@ -189,7 +190,7 @@ fun PairingRequestPage(
                             denying = true
                             scope.launch {
                                 PairingResponder.respond(request, false)
-                                navController.popBackStack()
+                                onClose()
                             }
                         },
                     )

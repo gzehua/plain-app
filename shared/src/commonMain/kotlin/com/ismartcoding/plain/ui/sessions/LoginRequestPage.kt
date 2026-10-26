@@ -28,10 +28,10 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.components.ButtonType
-import com.ismartcoding.plain.events.HConfirmToAcceptLoginEvent
+import com.ismartcoding.plain.features.sessions.WebLoginRequestFacts
+import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.lib.extensions.capitalize
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PFilledButton
@@ -43,15 +43,14 @@ import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.chrome as ui_drawable_chrome
 import com.ismartcoding.plain.ui.resources.laptop as ui_drawable_laptop
 import com.ismartcoding.plain.features.sessions.RustWebLogin
-import com.ismartcoding.plain.ui.navigation.Routing
 
 @Composable
-fun LoginRequestPage(
-    event: HConfirmToAcceptLoginEvent,
-    clientIp: String,
-    navController: NavHostController,
+internal fun LoginRequestPage(
+    loginRequest: WebLoginRequestFacts,
+    onClose: () -> Unit,
 ) {
-    val request = event.request
+    PBackHandler(onBack = onClose)
+    val request = loginRequest.request
     val isWeb = request.browserName != "PlainApp"
     val titleRes = Res.string.allow_desktop_access
     val descRes = when {
@@ -122,7 +121,7 @@ fun LoginRequestPage(
                 )
                 PListItem(
                     title = stringResource(Res.string.ip_address),
-                    value = clientIp,
+                    value = loginRequest.clientIp,
                 )
                 if (request.verificationCode.isNotEmpty()) {
                     PListItem(
@@ -148,8 +147,8 @@ fun LoginRequestPage(
                     onClick = {
                         allowing = true
                         scope.launchSafe(onDone = { allowing = false }) {
-                            RustWebLogin.complete(event)
-                            navController.popBackStack<Routing.LoginRequest>(inclusive = true)
+                            RustWebLogin.complete(loginRequest.requestId)
+                            onClose()
                         }
                     },
                 )
@@ -164,8 +163,8 @@ fun LoginRequestPage(
                     onClick = {
                         denying = true
                         scope.launchSafe(onDone = { denying = false }) {
-                            RustWebLogin.cancel(event.requestId)
-                            navController.popBackStack<Routing.LoginRequest>(inclusive = true)
+                            RustWebLogin.cancel(loginRequest.requestId)
+                            onClose()
                         }
                     },
                 )

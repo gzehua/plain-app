@@ -1,8 +1,6 @@
 package com.ismartcoding.plain.rust
 
 import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HChatMessageNotificationEvent
-import com.ismartcoding.plain.events.HEvent
 import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.jsonObject
@@ -34,26 +32,17 @@ class EventDirectionContractTest {
     }
 
     @Test
-    fun httpEventsHaveAnExplicitLocalOriginAndHandlersCannotSendHostEvents() {
+    fun incomingRustHandlersDoNotSendHostEvents() {
         val root = generateSequence(File(System.getProperty("user.dir"))) { it.parentFile }
             .first { File(it, "shared/src/commonMain").isDirectory }
         val sources = File(root, "shared/src/commonMain/kotlin/com/ismartcoding/plain")
-        val httpEvents = File(sources, "app/events/HttpApiEvents.kt").readText()
-        val declarations = Regex("(?:data )?class (\\w+)[^\\n]*: (\\w+)\\(\\)")
-            .findAll(httpEvents).toList()
-        assertTrue(declarations.isNotEmpty())
-        declarations.forEach { declaration ->
-            assertTrue(declaration.value, declaration.groupValues[1].startsWith("H"))
-            assertTrue(declaration.value, declaration.groupValues[2] == HEvent::class.java.simpleName)
-        }
-        assertTrue(!HEvent::class.java.isAssignableFrom(HostEvent::class.java))
-        assertTrue(HEvent::class.java.isAssignableFrom(HChatMessageNotificationEvent::class.java))
         val handler = File(sources, "rust/RustEventHandler.kt").readText()
         val stateUpdates = handler.substringAfter("    internal suspend fun handleEvent(", missingDelimiterValue = "")
             .substringBefore("\n}\n")
         assertTrue(stateUpdates.isNotBlank())
         assertFalse(stateUpdates.contains("HostEvent"))
         assertFalse(stateUpdates.contains("RustNativeBindings.send"))
+        assertFalse(stateUpdates.contains("sendEventToRust"))
         for (path in listOf("features/chat/ChatMessageReceiver.kt", "features/nearby/PairingProjection.kt",
             "features/nearby/RustNearbyDevices.kt", "features/nearby/RustMdnsRuntime.kt",
             "features/chat/channel/ChannelSystemMessageReceiver.kt", "features/images/search/RustImageModels.kt",

@@ -2,6 +2,8 @@ package com.ismartcoding.plain
 
 import com.ismartcoding.plain.app.Constants
 
+import com.ismartcoding.plain.ui.app.MainViewModel
+
 import com.ismartcoding.plain.ui.app.navControllerState
 import com.ismartcoding.plain.app.AppIntents
 import com.ismartcoding.plain.app.IntentExtras
@@ -32,12 +34,6 @@ internal fun MainActivity.handleIntent(intent: Intent) {
         AppIntents.actionOpenShortcut(AppFeatureType.FILES) -> openToolShortcut(Routing.Files())
     }
 
-    if (intent.getBooleanExtra("navigate_to_web_settings", false)) {
-        val nav = navControllerState.value
-        val alreadyThere = nav?.currentBackStackEntry?.destination?.hasRoute(Routing.DesktopAccessSettings::class) == true
-        if (!alreadyThere) nav?.navigate(Routing.DesktopAccessSettings)
-    }
-
     intent.getStringExtra(IntentExtras.CHAT_TARGET_ID)?.let { targetId ->
         val nav = navControllerState.value
         val alreadyThere = nav?.currentBackStackEntry?.destination?.hasRoute(Routing.Chat::class) == true
@@ -65,7 +61,7 @@ internal fun MainActivity.handleIntent(intent: Intent) {
             navControllerState.value?.navigate(Routing.PlayMedia(path))
         } else {
             // Images/videos preview as an overlay above the app UI (no black route).
-            mainVM.shortcutMediaPath.value = path
+            MainViewModel.shortcutMediaPath.value = path
         }
     }
 }

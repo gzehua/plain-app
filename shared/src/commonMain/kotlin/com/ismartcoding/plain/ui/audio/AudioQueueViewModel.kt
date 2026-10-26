@@ -3,13 +3,18 @@ package com.ismartcoding.plain.ui.audio
 import com.ismartcoding.plain.features.audio.toPlaylistAudio
 import com.ismartcoding.plain.models.Audio as AudioTrack
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModel
-import com.ismartcoding.plain.events.ClearAudioQueueEvent
 import com.ismartcoding.plain.features.audio.AudioQueueClient
 import com.ismartcoding.plain.models.AudioItem
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.media.audioJustPlay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.lib.logcat.LogCat
 
 class AudioQueueViewModel : ViewModel() {
     val audioPlayerVisible = MutableStateFlow(false)
@@ -25,6 +30,28 @@ class AudioQueueViewModel : ViewModel() {
     val selectedPath = mutableStateOf("")
 
     private val pageLimit = 200
+
+    init {
+        viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            RustEventHandler.events.collect { event ->
+                try {
+                    when (event.type) {
+                        EventType.AUDIO_PLAYBACK_UPDATED -> {
+                            val playback = AudioQueueClient.playback()
+                            selectedPath.value = playback.path.orEmpty()
+                            selectedMediaId.value = playback.mediaId
+                        }
+                        EventType.CONTENT_CHANGED, EventType.AUDIO_LIBRARY_UPDATED -> loadAsync()
+                        else -> Unit
+                    }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    LogCat.e("Refresh audio queue", error)
+                }
+            }
+        }
+    }
 
     suspend fun loadAsync() {
         val playback = AudioQueueClient.playback()
@@ -63,7 +90,6 @@ class AudioQueueViewModel : ViewModel() {
         selectedPath.value = ""
         selectedMediaId.value = null
         refreshWindow()
-        sendEvent(ClearAudioQueueEvent())
     }
 
     suspend fun onStarted(audio: AudioItem) {

@@ -33,7 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.Prefs
-import com.ismartcoding.plain.events.AppEvents
+import com.ismartcoding.plain.features.audio.AudioSleepTimer
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.navigation.PBackHandler
@@ -71,7 +71,7 @@ fun AudioPlayerPage(audioQueueVM: AudioQueueViewModel, onDismissRequest: () -> U
     var showQueue by remember { mutableStateOf(false) }
     var showSleepTimer by remember { mutableStateOf(false) }
     var isDragging by remember { mutableStateOf(false) }
-    val sleepTimerEndsAt by AppEvents.audioSleepTimerEndsAt.collectAsState()
+    val sleepTimerEndsAt by AudioSleepTimer.endsAt
     var viewMode by remember { mutableStateOf(PlayerView.COVER) }
     val currentPlayingPath = audioQueueVM.selectedPath
 

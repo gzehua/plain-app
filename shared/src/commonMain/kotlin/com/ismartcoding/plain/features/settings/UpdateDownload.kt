@@ -1,9 +1,10 @@
 package com.ismartcoding.plain.features.settings
 
 import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.lib.coIO
+import com.ismartcoding.plain.ui.components.DialogHelper
+import kotlinx.coroutines.CancellationException
 
-
-import com.ismartcoding.plain.features.settings.AppUpdateDownload
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
@@ -18,11 +19,17 @@ object AppUpdateDownloads {
         if (value.coreId != snapshot.value.coreId || value.revision >= snapshot.value.revision) snapshot.value = value
     }
 
-    suspend fun start() {
-        apply(RustNativeApi.startAppUpdateDownload())
-    }
+    fun start() = runCommand { RustNativeApi.startAppUpdateDownload() }
 
-    suspend fun cancel() {
-        apply(RustNativeApi.cancelAppUpdateDownload())
+    fun cancel() = runCommand { RustNativeApi.cancelAppUpdateDownload() }
+
+    private fun runCommand(action: suspend () -> AppUpdateDownload) = coIO {
+        try {
+            apply(action())
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            DialogHelper.showErrorMessage(error.toString())
+        }
     }
 }

@@ -7,9 +7,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HFeedStatusEvent
-import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
-import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshLayoutState
@@ -21,6 +18,7 @@ import com.ismartcoding.plain.ui.state.launchSafe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.lib.JsonHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,27 +41,21 @@ internal fun FeedEntriesPageEffects(
 
     LaunchedEffect(feedEntriesVM, feedsVM, tagsVM) {
         RustEventHandler.events.collect { event ->
-            if (event.type == EventType.CONTENT_CHANGED) {
+            val completed = if (event.type == EventType.FEED_SYNC_UPDATED) {
+                JsonHelper.jsonDecode<FeedSyncUpdate>(event.payload).states.lastOrNull { state ->
+                    state.status in setOf("COMPLETED", "ERROR", "CANCELLED") &&
+                        state.revision >= (FeedWorkerState.revision(state.feedId) ?: -1L)
+                }
+            } else null
+            if (completed != null) {
+                topRefreshLayoutState.setRefreshState(
+                    if (completed.status == "ERROR") RefreshContentState.Failed else RefreshContentState.Finished,
+                )
+            }
+            if (event.type == EventType.CONTENT_CHANGED || completed != null) {
                 feedsVM.loadAsync(withCount = true)
                 feedsVM.refreshSelectedItemAsync()
                 scope.launch(Dispatchers.IO) { feedEntriesVM.loadAsync(tagsVM) }
-            }
-        }
-    }
-
-    LaunchedEffect(Channel.sharedFlow) {
-        Channel.sharedFlow.collect { event ->
-            if (event is HFeedStatusEvent) {
-                if (event.status == FeedWorkerStatus.COMPLETED || event.status == FeedWorkerStatus.ERROR || event.status == FeedWorkerStatus.CANCELLED) {
-                    topRefreshLayoutState.setRefreshState(
-                        if (event.status == FeedWorkerStatus.ERROR) RefreshContentState.Failed else RefreshContentState.Finished,
-                    )
-                    // Sync outcomes are persisted on Feed by Rust; reload so the
-                    // banner, drawer dots and the open feed sheet reflect the new state.
-                    feedsVM.loadAsync(withCount = true)
-                    feedsVM.refreshSelectedItemAsync()
-                    scope.launch(Dispatchers.IO) { feedEntriesVM.loadAsync(tagsVM) }
-                }
             }
         }
     }

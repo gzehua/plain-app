@@ -3,7 +3,6 @@ package com.ismartcoding.plain.app
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.ismartcoding.plain.HttpServerManager
-import com.ismartcoding.plain.events.ApplyBackgroundServiceSettingEvent
 import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.settings.ServiceState
@@ -23,7 +22,6 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 
@@ -33,13 +31,12 @@ internal object HttpServerForegroundServiceManager {
     fun observe() = scope.launch(start = CoroutineStart.UNDISPATCHED) {
         merge(
             Channel.sharedFlow.filter { event ->
-                event is ApplyBackgroundServiceSettingEvent ||
-                    event is PermissionsResultEvent && event.has(Permission.POST_NOTIFICATIONS)
+                event is PermissionsResultEvent && event.has(Permission.POST_NOTIFICATIONS)
             },
-            Prefs.backgroundServiceEnabled.map { ApplyBackgroundServiceSettingEvent() },
-        ).collect { event ->
+            Prefs.backgroundServiceEnabled,
+        ).collect { change ->
             try {
-                if (event is PermissionsResultEvent && !Permission.POST_NOTIFICATIONS.isGranted()) {
+                if (change is PermissionsResultEvent && !Permission.POST_NOTIFICATIONS.isGranted()) {
                     stop()
                     Prefs.set(PrefKeys.BACKGROUND_SERVICE_ENABLED, false)
                 } else {

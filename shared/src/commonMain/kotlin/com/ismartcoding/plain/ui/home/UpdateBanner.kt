@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.home
 
+import com.ismartcoding.plain.features.settings.AppUpdateDownloads
+
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
 import com.ismartcoding.plain.platform.system.AppFeatureType
@@ -25,10 +27,7 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.components.ButtonSize
-import com.ismartcoding.plain.events.CancelUpdateDownloadEvent
-import com.ismartcoding.plain.events.DownloadUpdateEvent
-import com.ismartcoding.plain.events.InstallAppUpdateEvent
-import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.ui.base.PBanner
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -58,7 +57,7 @@ fun UpdateBanner(updateVM: UpdateViewModel) {
                 newVersion = newVersion.toString(),
                 progress = downloadProgress,
                 onCancel = {
-                    sendEvent(CancelUpdateDownloadEvent())
+                    AppUpdateDownloads.cancel()
                 },
             )
             VerticalSpace(dp = 16.dp)
@@ -67,10 +66,10 @@ fun UpdateBanner(updateVM: UpdateViewModel) {
         isDownloadComplete -> {
             DownloadCompleteBanner(
                 onInstall = {
-                    sendEvent(InstallAppUpdateEvent(downloadedFilePath))
+                    MainViewModel.installAppUpdate(downloadedFilePath)
                 },
                 onDismiss = {
-                    updateVM.resetDownload()
+                    AppUpdateDownloads.cancel()
                 },
             )
             VerticalSpace(dp = 16.dp)
@@ -80,9 +79,9 @@ fun UpdateBanner(updateVM: UpdateViewModel) {
             DownloadFailedBanner(
                 onGitHub = { WebHelper.open(GITHUB_RELEASES_URL) },
                 onRetry = {
-                    sendEvent(DownloadUpdateEvent())
+                    AppUpdateDownloads.start()
                 },
-                onDismiss = { updateVM.resetDownload() },
+                onDismiss = { AppUpdateDownloads.cancel() },
             )
             VerticalSpace(dp = 16.dp)
         }

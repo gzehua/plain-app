@@ -8,7 +8,6 @@ import com.ismartcoding.plain.rust.RustEventHandler
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HConfirmToAcceptLoginEvent
 import com.ismartcoding.plain.features.sessions.AuthRequest
 import com.ismartcoding.plain.features.sessions.RustSessionStore
 import com.ismartcoding.plain.features.sessions.RustWebLogin
@@ -64,11 +63,9 @@ class SessionMigrationRustHttpTest {
                 assertEquals("PENDING", pending.getValue("status").jsonPrimitive.content)
                 val facts = JsonHelper.jsonDecode<JsonObject>(notification.await().payload)
                 pendingId = facts.getValue("requestId").jsonPrimitive.content
-                val event = HConfirmToAcceptLoginEvent(id,
-                    JsonHelper.jsonDecodeFromElement<AuthRequest>(facts.getValue("request")),
-                    pendingId, facts.getValue("clientIp").jsonPrimitive.content)
-                assertEquals("", event.request.password)
-                RustWebLogin.complete(event)
+                val pendingRequest = JsonHelper.jsonDecodeFromElement<AuthRequest>(facts.getValue("request"))
+                assertEquals("", pendingRequest.password)
+                RustWebLogin.complete(pendingId)
                 val response = JsonHelper.jsonDecode<JsonObject>(requireNotNull(chaCha20Decrypt(passwordKey,
                     requireNotNull(withTimeout(10_000) { socket.incoming.receive() }.binary))).decodeToString())
                 assertEquals("COMPLETED", response.getValue("status").jsonPrimitive.content)
@@ -80,7 +77,7 @@ class SessionMigrationRustHttpTest {
                 assertArrayEquals(Base64Lenient.decode(requireNotNull(shared)), RustSessionStore.list().firstOrNull { it.clientId == id }?.token?.let(Base64Lenient::decode))
                 assertTrue(renameSessionListItemAsync(id, "Renamed fixture"))
                 assertEquals("Renamed fixture", fetchSessionsListItemsAsync().single { it.clientId == id }.name)
-                assertTrue(runCatching { RustWebLogin.complete(event) }.isFailure)
+                assertTrue(runCatching { RustWebLogin.complete(pendingId) }.isFailure)
             }
             deleteSessionListItemAsync(id)
             assertNull(RustSessionStore.list().firstOrNull { it.clientId == id }?.token?.let(Base64Lenient::decode))

@@ -1,14 +1,10 @@
 package com.ismartcoding.plain.ui.navigation
 
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -17,7 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -25,7 +20,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.toRoute
-import com.ismartcoding.plain.events.HChannelInviteReceivedEvent
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.features.downloads.DownloadCenter
 import com.ismartcoding.plain.features.downloads.isTerminalDownloadStatus
@@ -47,7 +41,6 @@ import com.ismartcoding.plain.ui.audio.playlists.PlaylistDetailPage
 import com.ismartcoding.plain.ui.casting.CastSessionPage
 import com.ismartcoding.plain.ui.casting.CastViewModel
 import com.ismartcoding.plain.ui.chat.ChannelInfoPage
-import com.ismartcoding.plain.ui.chat.ChannelInvitePage
 import com.ismartcoding.plain.ui.chat.ChannelViewModel
 import com.ismartcoding.plain.ui.chat.ChatListPage
 import com.ismartcoding.plain.ui.chat.ChatPage
@@ -73,7 +66,6 @@ import com.ismartcoding.plain.ui.nav.navExitTransition
 import com.ismartcoding.plain.ui.nav.navPopEnterTransition
 import com.ismartcoding.plain.ui.nav.navPopExitTransition
 import com.ismartcoding.plain.ui.nearby.NearbyPage
-import com.ismartcoding.plain.ui.nearby.PairingRequestPage
 import com.ismartcoding.plain.ui.notes.NotePage
 import com.ismartcoding.plain.ui.notes.NotesPage
 import com.ismartcoding.plain.ui.permissions.checkNotificationPermission
@@ -84,7 +76,6 @@ import com.ismartcoding.plain.ui.scan.ScanHistoryPage
 import com.ismartcoding.plain.ui.scan.ScanPage
 import com.ismartcoding.plain.ui.search.GlobalSearchPage
 import com.ismartcoding.plain.ui.search.GlobalSearchViewModel
-import com.ismartcoding.plain.ui.sessions.LoginRequestPage
 import com.ismartcoding.plain.ui.settings.UpdateViewModel
 import com.ismartcoding.plain.ui.state.launchSafe
 import com.ismartcoding.plain.ui.tags.TagsViewModel
@@ -95,7 +86,6 @@ import com.ismartcoding.plain.ui.videos.VideosPage
 @Composable
 fun MainNavGraph(
     navController: NavHostController,
-    mainVM: MainViewModel,
     audioQueueVM: AudioQueueViewModel,
     peerVM: PeerViewModel,
     channelVM: ChannelViewModel,
@@ -135,10 +125,10 @@ fun MainNavGraph(
             addMainFilePages(navController, audioQueueVM)
             addMainSettingsPages(navController, updateVM, peerVM, batterySettings)
             composable<Routing.Home> {
-                val selectedTab by mainVM.currentRootTab
-                val onTabSelected: (Int) -> Unit = { mainVM.currentRootTab.value = it }
+                val selectedTab by MainViewModel.currentRootTab
+                val onTabSelected: (Int) -> Unit = { MainViewModel.currentRootTab.value = it }
                 when (selectedTab) {
-                    0 -> HomePage(navController, mainVM, updateVM, onTabSelected = onTabSelected)
+                    0 -> HomePage(navController, updateVM, onTabSelected = onTabSelected)
                     1 -> ChatListPage(navController, peerVM = peerVM, channelVM = channelVM, onTabSelected = onTabSelected)
                     2 -> ToolsPage(navController, onTabSelected = onTabSelected)
                     3 -> GlobalSearchPage(navController, audioQueueVM, globalSearchVM, onTabSelected = onTabSelected)
@@ -223,55 +213,7 @@ fun MainNavGraph(
             composable<Routing.DlnaReceiver> { DlnaReceiverPage(navController) }
             composable<Routing.DlnaCastHistory> { DlnaCastHistoryPage(navController) }
             composable<Routing.CastSession> { CastSessionPage(navController) }
-            composableNoAnim<Routing.PairingRequest> {
-                val request = mainVM.pendingPairingRequest.value
-                if (request != null) {
-                    PairingRequestPage(
-                        request = request,
-                        navController = navController,
-                    )
-                } else {
-                    navController.popBackStack<Routing.PairingRequest>(inclusive = true)
-                }
-            }
-            composableNoAnim<Routing.LoginRequest> {
-                val event = mainVM.pendingLoginEvent.value
-                if (event != null) {
-                    val clientIp = event.clientIp
-                    LoginRequestPage(
-                        event = event,
-                        clientIp = clientIp,
-                        navController = navController,
-                    )
-                } else {
-                    navController.popBackStack<Routing.LoginRequest>(inclusive = true)
-                }
-            }
-            composableNoAnim<Routing.ChannelInviteRequest> { backStackEntry ->
-                val r = backStackEntry.toRoute<Routing.ChannelInviteRequest>()
-
-                DisposableEffect(r.channelId) {
-                    mainVM.pendingChannelInvite.value = HChannelInviteReceivedEvent(
-                        channelId = r.channelId,
-                        channelName = r.channelName,
-                        ownerPeerId = r.ownerPeerId,
-                        ownerPeerName = r.ownerPeerName,
-                    )
-                    onDispose {
-                        if (mainVM.pendingChannelInvite.value?.channelId == r.channelId) {
-                            mainVM.pendingChannelInvite.value = null
-                        }
-                    }
-                }
-
-                ChannelInvitePage(
-                    channelId = r.channelId,
-                    channelName = r.channelName,
-                    ownerPeerName = r.ownerPeerName,
-                    channelVM = channelVM,
-                    navController = navController,
-                )
-            }
+            addMainRequestPages(navController, channelVM)
         }
 
         if (!onShareFolderPage && shareTasks.any { !it.status.isTerminalDownloadStatus() }) {
@@ -285,16 +227,4 @@ fun MainNavGraph(
     if (showDownloads) {
         DownloadListSheet(onDismiss = { showDownloads = false })
     }
-}
-
-private inline fun <reified T : Any> NavGraphBuilder.composableNoAnim(
-    noinline content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit,
-) {
-    composable<T>(
-        enterTransition = { EnterTransition.None },
-        exitTransition = { ExitTransition.None },
-        popEnterTransition = { EnterTransition.None },
-        popExitTransition = { ExitTransition.None },
-        content = content,
-    )
 }

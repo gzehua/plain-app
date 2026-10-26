@@ -19,9 +19,7 @@ import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.mp3.Mp3Extractor
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.features.audio.AudioAction
 import com.ismartcoding.plain.platform.media.AndroidAudioPlayer
 import com.ismartcoding.plain.features.audio.AudioCommands
 import com.ismartcoding.plain.features.audio.AudioServiceAction
@@ -38,32 +36,6 @@ class AudioPlayerService : MediaLibraryService() {
     }
     private lateinit var player: Player
     private lateinit var session: MediaLibrarySession
-
-    private val listener = object : Player.Listener {
-
-        override fun onEvents(player: Player, events: Player.Events) {
-            val eventItems = mutableListOf<Int>()
-            for (i in 0 until events.size()) {
-                eventItems.add(events.get(i))
-            }
-            LogCat.d("onEvents: ${eventItems.joinToString(",")}")
-            if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) {
-                LogCat.d("onEvents: EVENT_MEDIA_ITEM_TRANSITION")
-                coMain {
-                    val mediaItem = player.currentMediaItem
-                    if (mediaItem == null) {
-                        return@coMain
-                    }
-                    AndroidAudioPlayer.setChangedNotify(AudioAction.MEDIA_ITEM_TRANSITION)
-                }
-            }
-        }
-
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
-            LogCat.d("onIsPlayingChanged: $isPlaying")
-        }
-
-    }
 
     private fun createPlayer(): Player {
         val attributes = AudioAttributes.Builder().setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).setUsage(C.USAGE_MEDIA).build()
@@ -92,7 +64,6 @@ class AudioPlayerService : MediaLibraryService() {
         }
         player = createPlayer()
         nativePlayer = player
-        player.addListener(listener)
         val forwardingPlayer = object : ForwardingPlayer(player) {
             override fun play() = audioPlay()
             override fun pause() = audioPause()

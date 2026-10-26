@@ -1,10 +1,9 @@
 package com.ismartcoding.plain.rust.host.provider
 
-import com.ismartcoding.plain.events.HOpenWebSettingsEvent
-import com.ismartcoding.plain.events.RestartAppEvent
+import com.ismartcoding.plain.ui.app.MainViewModel
+import com.ismartcoding.plain.ui.web.AccessFeatureHighlight
 import com.ismartcoding.plain.features.web.WebSettingsFeature
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.network.getNetworkType
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
@@ -15,6 +14,7 @@ import com.ismartcoding.plain.platform.system.readBatterySample
 import com.ismartcoding.plain.platform.system.readSystemProperties
 import com.ismartcoding.plain.platform.system.scheduleBackgroundWake
 import com.ismartcoding.plain.rust.host.*
+import com.ismartcoding.plain.lib.coMain
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
@@ -38,7 +38,8 @@ internal object SystemAppHost {
                 ?.let { name ->
                     WebSettingsFeature.entries.firstOrNull { it.name == name }
                 }
-            sendEvent(HOpenWebSettingsEvent(feature))
+            AccessFeatureHighlight.pending.value = feature
+            MainViewModel.desktopAccessSettingsRequested.value = true
             hostResult(true)
         }
         "systemNetworkType" -> hostResult(getNetworkType().name)
@@ -56,7 +57,7 @@ internal object SystemAppHost {
             hostResult(true)
         }
         "systemRelaunchApp" -> {
-            sendEvent(RestartAppEvent())
+            coMain { MainViewModel.relaunchApp() }
             hostResult(true)
         }
         else -> error("Unsupported provider operation")

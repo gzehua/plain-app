@@ -117,7 +117,13 @@ fun FilesPage(
                     filesVM = filesVM,
                     drawerState = drawerState,
                     navController = navController,
-                    onSelect = { scope.launch { drawerState.close() } },
+                    onSelect = { folder ->
+                        filesVM.offset = 0
+                        filesVM.drawerFolderTitle.value = if (folder.isFavoriteFolder) folder.fullPath to folder.title else null
+                        filesVM.initSelectedPath(folder.rootPath, folder.type, folder.fullPath, folder.fullPath)
+                        scope.launch(Dispatchers.Default) { filesVM.loadAsync() }
+                        scope.launch { drawerState.close() }
+                    },
                 )
             }
         }) {

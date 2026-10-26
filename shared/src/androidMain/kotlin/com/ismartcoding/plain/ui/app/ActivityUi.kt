@@ -35,7 +35,7 @@ internal fun MainActivity.installComposeUi() {
         ) {
             AppContent(
                 navControllerState, onLaunched = { handleIntent(intent) },
-                mainVM, audioQueueVM, pomodoroVM, peerVM, channelVM,
+                audioQueueVM, pomodoroVM, peerVM, channelVM,
                 platformPages = { controller -> addPlatformPages(controller) },
                 batterySettings = { BatteryOptimizationSettings() },
             ) {

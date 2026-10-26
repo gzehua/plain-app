@@ -2,10 +2,8 @@ package com.ismartcoding.plain.ui.feeds
 
 import androidx.compose.runtime.mutableStateMapOf
 import com.ismartcoding.plain.models.FeedSyncState
-import com.ismartcoding.plain.events.HFeedStatusEvent
 import com.ismartcoding.plain.features.feeds.FeedsClient
 import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
-import com.ismartcoding.plain.lib.sendEvent
 import kotlinx.serialization.Serializable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -21,6 +19,8 @@ object FeedWorkerState {
 
     fun status(id: String): FeedWorkerStatus? = states[id]?.let { FeedWorkerStatus.valueOf(it.status) }
 
+    internal fun revision(id: String): Long? = states[id]?.revision
+
     suspend fun refresh() = lock.withLock { applyLocked(FeedsClient.syncStates(), replace = true) }
     internal suspend fun apply(update: FeedSyncUpdate) = lock.withLock {
         withContext(Dispatchers.Main) { update.removed.forEach(states::remove) }
@@ -31,8 +31,7 @@ object FeedWorkerState {
         if (replace) states.keys.retainAll(values.map { it.feedId }.toSet())
         values.forEach { state ->
             if (!replace && (states[state.feedId]?.revision ?: -1L) > state.revision) return@forEach
-            val previous = states.put(state.feedId, state)
-            if (previous != state) sendEvent(HFeedStatusEvent(state.feedId, FeedWorkerStatus.valueOf(state.status)))
+            states[state.feedId] = state
         }
     }
 }

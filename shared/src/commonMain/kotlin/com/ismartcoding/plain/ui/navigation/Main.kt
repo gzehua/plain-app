@@ -11,10 +11,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -24,12 +21,8 @@ import androidx.navigation.compose.rememberNavController
 import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.platform.system.applySystemBarAppearanceForDarkTheme
 import com.ismartcoding.plain.platform.system.isDebugBuild
-import com.ismartcoding.plain.ui.platform.system.keepScreenOn
 import com.ismartcoding.plain.ui.theme.DarkTheme
-import com.ismartcoding.plain.events.ConfirmDialogEvent
-import com.ismartcoding.plain.events.LoadingDialogEvent
 import com.ismartcoding.plain.ui.base.DebugCornerBadge
-import com.ismartcoding.plain.ui.components.ToastEvent
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.chat.ChannelViewModel
 import com.ismartcoding.plain.ui.feeds.FeedEntryPagerViewModel
@@ -48,7 +41,6 @@ import kotlinx.coroutines.launch
 fun Main(
     navControllerState: MutableState<NavHostController?>,
     onLaunched: () -> Unit,
-    mainVM: MainViewModel,
     audioQueueVM: AudioQueueViewModel,
     pomodoroVM: PomodoroViewModel,
     peerVM: PeerViewModel,
@@ -64,16 +56,8 @@ fun Main(
     navControllerState.value = navController
     val useDarkTheme = DarkTheme.isDarkTheme(Prefs.darkTheme.collectAsStateValue())
 
-    var confirmDialogEvent by remember { mutableStateOf<ConfirmDialogEvent?>(null) }
-    var loadingDialogEvent by remember { mutableStateOf<LoadingDialogEvent?>(null) }
-    var toastState by remember { mutableStateOf<ToastEvent?>(null) }
-
     LaunchedEffect(audioQueueVM.selectedPath.value) {
         if (audioQueueVM.selectedPath.value.isEmpty()) audioQueueVM.audioPlayerVisible.value = false
-    }
-
-    LaunchedEffect(loadingDialogEvent) {
-        keepScreenOn(loadingDialogEvent != null)
     }
 
     LaunchedEffect(Unit) {
@@ -91,14 +75,6 @@ fun Main(
         }
     }
 
-    MainEventCollector(
-        scope, mainVM, audioQueueVM, pomodoroVM, peerVM, navController,
-        onConfirmDialog = { confirmDialogEvent = it },
-        onLoadingDialog = { loadingDialogEvent = if (it.show) it else null },
-        onToast = { toastState = it },
-        clearToast = { toastState = null },
-    )
-
     // Single source of truth for the system bar appearance: the theme Compose
     // is actually rendering. SideEffect re-applies after EVERY recomposition,
     // so any competing writer (enableEdgeToEdge's config-change re-apply,
@@ -109,7 +85,8 @@ fun Main(
     }
 
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.backgroundNormal)) {
-        MainNavGraph(navController, mainVM, audioQueueVM, peerVM, channelVM, feedTagsVM, feedEntryPagerVM, noteTagsVM, pomodoroVM, platformPages, batterySettings)
+        MainNavGraph(navController, audioQueueVM, peerVM, channelVM, feedTagsVM, feedEntryPagerVM, noteTagsVM, pomodoroVM, platformPages, batterySettings)
+        MainRequestNavigation(navController)
 
         // Global fullscreen audio player: hosted above all pages so playback
         // keeps working across tabs, with the page beneath visible during the
@@ -121,13 +98,13 @@ fun Main(
 
         // Home-screen shortcut media preview: overlay instead of a route so the
         // app UI stays composed beneath and closing the preview reveals it.
-        val shortcutMediaPath by mainVM.shortcutMediaPath
+        val shortcutMediaPath by MainViewModel.shortcutMediaPath
         if (shortcutMediaPath != null) {
-            ShortcutMediaPreviewer(shortcutMediaPath!!) { mainVM.shortcutMediaPath.value = null }
+            ShortcutMediaPreviewer(shortcutMediaPath!!) { MainViewModel.shortcutMediaPath.value = null }
         }
 
         DlnaReceiverOverlay()
-        MainDialogs(loadingDialogEvent, confirmDialogEvent, { confirmDialogEvent = null }, toastState, { toastState = null })
+        MainDialogs()
         if (isDebugBuild()) {
             DebugCornerBadge(Modifier.align(Alignment.TopStart))
         }

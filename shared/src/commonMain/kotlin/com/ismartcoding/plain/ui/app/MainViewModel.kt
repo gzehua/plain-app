@@ -3,17 +3,21 @@ package com.ismartcoding.plain.ui.app
 import com.ismartcoding.plain.models.PairingRequestInput
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
-import com.ismartcoding.plain.events.HConfirmToAcceptLoginEvent
-import com.ismartcoding.plain.events.HChannelInviteReceivedEvent
+import com.ismartcoding.plain.features.sessions.WebLoginRequestFacts
+import com.ismartcoding.plain.ui.navigation.Routing
 
-class MainViewModel : ViewModel() {
+object MainViewModel {
+    lateinit var relaunchApp: () -> Unit
+        internal set
+    lateinit var installAppUpdate: (String) -> Unit
+        internal set
+    lateinit var addMediaShortcut: (String, String) -> Unit
+        internal set
+
     val shortcutMediaPath = mutableStateOf<String?>(null)
-    var currentRootTab = mutableIntStateOf(0)
-    var pendingLoginEvent = mutableStateOf<HConfirmToAcceptLoginEvent?>(null)
-    var pendingPairingRequest = mutableStateOf<PairingRequestInput?>(null)
-    // The channel invite currently on top of the back stack (if any). Used by
-    // HChannelInviteCanceledEvent handling to pop the right page. Not saved across
-    // process death — a fresh invite will re-fire HChannelInviteReceivedEvent.
-    var pendingChannelInvite = mutableStateOf<HChannelInviteReceivedEvent?>(null)
+    val currentRootTab = mutableIntStateOf(0)
+    internal val pendingLoginRequest = mutableStateOf<WebLoginRequestFacts?>(null)
+    val pendingPairingRequest = mutableStateOf<PairingRequestInput?>(null)
+    val pendingChannelInvite = mutableStateOf<Routing.ChannelInviteRequest?>(null)
+    val desktopAccessSettingsRequested = mutableStateOf(false)
 }

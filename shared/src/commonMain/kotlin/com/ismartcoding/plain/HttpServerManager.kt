@@ -1,6 +1,5 @@
 package com.ismartcoding.plain
 
-import com.ismartcoding.plain.events.ApplyBackgroundServiceSettingEvent
 import com.ismartcoding.plain.events.RequestPermissionsEvent
 import com.ismartcoding.plain.features.settings.ServiceState
 import com.ismartcoding.plain.i18n.Res
@@ -28,12 +27,9 @@ object HttpServerManager {
     val foregroundServiceError = MutableStateFlow("")
 
     fun setBackgroundServiceEnabled(enable: Boolean) = coIO {
-        val unchanged = enable == Prefs.backgroundServiceEnabled.value
         Prefs.set(PrefKeys.BACKGROUND_SERVICE_ENABLED, enable)
         if (enable && !Permission.POST_NOTIFICATIONS.isGranted()) {
             sendEvent(RequestPermissionsEvent(Permission.POST_NOTIFICATIONS))
-        } else if (unchanged) {
-            sendEvent(ApplyBackgroundServiceSettingEvent())
         }
     }
 

@@ -3,11 +3,9 @@ package com.ismartcoding.plain.platform.system
 import com.ismartcoding.plain.ui.platform.media.VideoPlayerCacheManager
 
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.features.PackageHelper
 import com.ismartcoding.plain.app.AppHelper
 import com.ismartcoding.plain.platform.system.AppLogHelper
 import java.io.File
-import kotlin.system.exitProcess
 import android.content.Intent
 import android.provider.Settings
 import coil3.SingletonImageLoader
@@ -15,11 +13,6 @@ import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.powerManager
 
 actual fun isAppForegrounded(): Boolean = AppHelper.foregrounded()
-fun installApk(path: String) = PackageHelper.install(appContext, File(path))
-fun exitApp() {
-    exitProcess(0)
-}
-
 internal actual fun shareLogArchive(path: String) = AppLogHelper.share(appContext, File(path))
 
 internal actual suspend fun clearMediaCache(): Unit = withIO {

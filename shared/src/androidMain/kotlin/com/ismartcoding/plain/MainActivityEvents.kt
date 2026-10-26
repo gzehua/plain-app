@@ -1,221 +1,38 @@
 package com.ismartcoding.plain
 
-import com.ismartcoding.plain.ui.app.navControllerState
-import android.Manifest
-
-import android.annotation.SuppressLint
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.compose.runtime.snapshotFlow
+import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.lib.Channel
-import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.features.chat.peer.PeerStatusClient
-import com.ismartcoding.plain.events.HChannelInviteCanceledEvent
-import com.ismartcoding.plain.events.HChannelInviteReceivedEvent
-import com.ismartcoding.plain.events.HConfirmToAcceptLoginEvent
-import com.ismartcoding.plain.ui.permissions.Permissions
-import com.ismartcoding.plain.features.dlna.HDlnaCastRequestEvent
 import com.ismartcoding.plain.events.ExportFileEvent
-import com.ismartcoding.plain.app.events.IgnoreBatteryOptimizationEvent
-import com.ismartcoding.plain.events.InstallAppUpdateEvent
-import com.ismartcoding.plain.events.AddMediaShortcutEvent
-import com.ismartcoding.plain.events.OpenNotificationSettingsEvent
-import com.ismartcoding.plain.events.HPairingCanceledEvent
-import com.ismartcoding.plain.events.HPairingRequestReceivedEvent
-import com.ismartcoding.plain.events.HPairingSuccessEvent
-import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.events.PickFileEvent
-import com.ismartcoding.plain.events.RequestNotificationPermissionEvent
-import com.ismartcoding.plain.app.events.HRequestScreenMirrorAudioEvent
-import com.ismartcoding.plain.events.RestartAppEvent
-import com.ismartcoding.plain.app.events.HStartScreenMirrorEvent
-import com.ismartcoding.plain.app.events.HOpenAccessibilitySettingsEvent
-import com.ismartcoding.plain.events.HOpenWebSettingsEvent
-import com.ismartcoding.plain.platform.permissions.Permission
-import com.ismartcoding.plain.platform.permissions.isGranted
-import com.ismartcoding.plain.platform.system.installApk
-import com.ismartcoding.plain.platform.system.exitApp
-import com.ismartcoding.plain.ui.platform.media.addMediaShortcut
-import com.ismartcoding.plain.ui.components.DialogHelper
 import com.ismartcoding.plain.app.AppHelper
-import com.ismartcoding.plain.ui.navigation.Routing
-import com.ismartcoding.plain.ui.web.AccessFeatureHighlight
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.distinctUntilChanged
+import com.ismartcoding.plain.features.dlna.DlnaRendererState
 
-@SuppressLint("CheckResult")
 internal fun MainActivity.initEvents() {
+    lifecycleScope.launch {
+        merge(
+            snapshotFlow { MainViewModel.pendingPairingRequest.value }.map { it != null },
+            snapshotFlow { MainViewModel.pendingChannelInvite.value }.map { it != null },
+            snapshotFlow { MainViewModel.pendingLoginRequest.value }.map { it != null },
+            snapshotFlow { MainViewModel.desktopAccessSettingsRequested.value },
+            DlnaRendererState.pendingCastRequest.map { it != null }.distinctUntilChanged(),
+        ).collect { hasRequest ->
+            if (hasRequest && !AppHelper.foregrounded()) openNew()
+        }
+    }
     lifecycleScope.launch {
         Channel.sharedFlow.collect { event ->
             if (isDestroyed || isFinishing) return@collect
 
             when (event) {
-                is InstallAppUpdateEvent -> {
-                    try {
-                        installApk(event.path)
-                        exitApp()
-                    } catch (error: Exception) {
-                        DialogHelper.showMessage(error)
-                    }
-                }
-                is AddMediaShortcutEvent -> {
-                    try { addMediaShortcut(event.path, event.label) }
-                    catch (error: Exception) { DialogHelper.showMessage(error) }
-                }
-                is PermissionsResultEvent -> {
-                    // handled by individual feature flows
-                }
-
-                is HStartScreenMirrorEvent -> {
-                    try {
-                        if (event.audio && !Permission.RECORD_AUDIO.isGranted()) {
-                            recordAudioForMirror.launch(Manifest.permission.RECORD_AUDIO)
-                        } else {
-                            screenCapture.launch(mediaProjectionManager.createScreenCaptureIntent())
-                        }
-                    } catch (e: IllegalStateException) {
-                        LogCat.e("Error launching screen capture: ${e.message}")
-                    }
-                }
-
-                is HRequestScreenMirrorAudioEvent -> {
-                    try {
-                        if (Permission.RECORD_AUDIO.isGranted()) sendScreenMirrorAudioStatus(true)
-                        else recordAudioForMirrorLate.launch(Manifest.permission.RECORD_AUDIO)
-                    } catch (e: IllegalStateException) {
-                        LogCat.e("Error requesting RECORD_AUDIO: ${e.message}")
-                    }
-                }
-
-                is IgnoreBatteryOptimizationEvent -> {
-                    try {
-                        ignoreBatteryOptimizationActivityLauncher.launch(Intent().apply {
-                            action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS; data = Uri.parse("package:$packageName")
-                        })
-                    } catch (e: IllegalStateException) {
-                        LogCat.e("Error launching battery optimization: ${e.message}")
-                    }
-                }
-
-                is OpenNotificationSettingsEvent -> {
-                    try {
-                        Permissions.launchNotificationSettings()
-                    } catch (e: Exception) {
-                        LogCat.e("Error opening notification settings: ${e.message}")
-                    }
-                }
-
-                is RequestNotificationPermissionEvent -> {
-                    try {
-                        // Runtime dialog first; only pre-T devices (no runtime
-                        // notification permission) fall back to the settings page.
-                        if (!Permissions.launchNotificationDialog()) {
-                            Permissions.launchNotificationSettings()
-                        }
-                    } catch (e: Exception) {
-                        LogCat.e("Error requesting notification permission: ${e.message}")
-                    }
-                }
-
-                is RestartAppEvent -> {
-                    startActivity(Intent(this@initEvents, MainActivity::class.java).apply { flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK })
-                    Runtime.getRuntime().exit(0)
-                }
-
-                is HOpenAccessibilitySettingsEvent -> {
-                    try {
-                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        startActivity(intent)
-                    } catch (e: Exception) {
-                        LogCat.e("Error opening accessibility settings: ${e.message}")
-                    }
-                }
-
-                is HOpenWebSettingsEvent -> {
-                    try {
-                        AccessFeatureHighlight.pending.value = event.feature
-                        val nav = navControllerState.value
-                        val alreadyThere = nav?.currentBackStackEntry?.destination?.hasRoute<Routing.DesktopAccessSettings>() == true
-                        if (AppHelper.foregrounded()) {
-                            if (!alreadyThere) nav?.navigate(Routing.DesktopAccessSettings)
-                        } else {
-                            val intent = Intent(this@initEvents, MainActivity::class.java).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                                putExtra("navigate_to_web_settings", true)
-                            }
-                            startActivity(intent)
-                        }
-                    } catch (e: Exception) {
-                        LogCat.e("Error navigating to WebSettings: ${e.message}")
-                    }
-                }
-
                 is PickFileEvent -> handlePickFileEvent(event)
                 is ExportFileEvent -> handleExportFileEvent(event)
-                is HConfirmToAcceptLoginEvent -> {
-                    openNew()
-                }
 
-                is HDlnaCastRequestEvent -> {
-                    // A DLNA cast is being handled — bring the app to the foreground
-                    // when it is in the background so the request dialog / player
-                    // appears and playback starts immediately (same as login requests).
-                    if (!AppHelper.foregrounded()) {
-                        openNew()
-                    }
-                }
-
-                is HPairingRequestReceivedEvent -> {
-                    mainVM.pendingPairingRequest.value = event.request
-                    val nav = navControllerState.value
-                    if (nav?.currentBackStackEntry?.destination?.hasRoute<Routing.PairingRequest>() != true) {
-                        nav?.navigate(Routing.PairingRequest)
-                    }
-                    if (!AppHelper.foregrounded()) {
-                        openNew()
-                    }
-                }
-
-                is HChannelInviteReceivedEvent -> {
-                    val nav = navControllerState.value
-                    if (nav?.currentBackStackEntry?.destination?.hasRoute<Routing.ChannelInviteRequest>() != true) {
-                        nav?.navigate(
-                            Routing.ChannelInviteRequest(
-                                channelId = event.channelId,
-                                channelName = event.channelName,
-                                ownerPeerId = event.ownerPeerId,
-                                ownerPeerName = event.ownerPeerName,
-                            )
-                        )
-                    }
-                    openNew()
-                }
-
-                is HPairingCanceledEvent -> {
-                    val nav = navControllerState.value
-                    val current = nav?.currentBackStackEntry
-                    if (current != null && current.destination.hasRoute<Routing.PairingRequest>() &&
-                        mainVM.pendingPairingRequest.value?.fromId == event.fromId
-                    ) {
-                        nav.popBackStack<Routing.PairingRequest>(inclusive = true)
-                    }
-                }
-
-                is HChannelInviteCanceledEvent -> {
-                    val nav = navControllerState.value
-                    val current = nav?.currentBackStackEntry
-                    if (current != null && current.destination.hasRoute<Routing.ChannelInviteRequest>() &&
-                        mainVM.pendingChannelInvite.value?.channelId == event.channelId
-                    ) {
-                        nav.popBackStack<Routing.ChannelInviteRequest>(inclusive = true)
-                    }
-                }
-
-                is HPairingSuccessEvent -> {
-                    PeerStatusClient.reconnectNow("post_pairing")
-                }
             }
         }
     }

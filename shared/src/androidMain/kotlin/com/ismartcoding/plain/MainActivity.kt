@@ -27,7 +27,6 @@ import com.ismartcoding.plain.features.settings.Language
 import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.features.files.PickFileType
 import com.ismartcoding.plain.events.ExportFileResultEvent
-import com.ismartcoding.plain.app.events.IgnoreBatteryOptimizationResultEvent
 import com.ismartcoding.plain.events.PickFileResultEvent
 import com.ismartcoding.plain.events.WindowFocusChangedEvent
 import com.ismartcoding.plain.platform.permissions.Permission
@@ -36,13 +35,11 @@ import com.ismartcoding.plain.features.bluetooth.client.BluetoothPermission
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.platform.system.publishLauncherShortcuts
 import com.ismartcoding.plain.receivers.NetworkStateReceiver
-import com.ismartcoding.plain.receivers.PlugInControlReceiver
 import com.ismartcoding.plain.services.PlainAccessibilityService
 import com.ismartcoding.plain.services.ScreenMirrorService
 import com.ismartcoding.plain.platform.system.FilePickHelper
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.chat.ChannelViewModel
-import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.ui.chat.PeerViewModel
 import com.ismartcoding.plain.ui.pomodoro.PomodoroViewModel
 import com.ismartcoding.plain.lib.sendEvent
@@ -57,7 +54,6 @@ class MainActivity : AppCompatActivity() {
     internal var pickFileType = PickFileType.IMAGE
     internal var pickFileTag = PickFileTag.SEND_MESSAGE
     internal var exportFileType = ExportFileType.OPML
-    internal val mainVM: MainViewModel by viewModels()
     internal val audioQueueVM: AudioQueueViewModel by viewModels()
     val pomodoroVM: PomodoroViewModel by viewModels()
     internal val peerVM: PeerViewModel by viewModels()
@@ -125,11 +121,6 @@ class MainActivity : AppCompatActivity() {
             sendEvent(ExportFileResultEvent(exportFileType, uri.toString()))
         }
     }
-    internal val ignoreBatteryOptimizationActivityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        sendEvent(IgnoreBatteryOptimizationResultEvent())
-    }
-
-    private val plugInReceiver = PlugInControlReceiver()
     private val networkStateReceiver = NetworkStateReceiver()
 
     override fun onStart() {
@@ -161,11 +152,10 @@ class MainActivity : AppCompatActivity() {
         } catch (_: Exception) {
         }
         BluetoothPermission.init(this); Permissions.init(this); initEvents()
-        val powerFilter = IntentFilter().apply { addAction(Intent.ACTION_POWER_CONNECTED); addAction(Intent.ACTION_POWER_DISCONNECTED) }
         if (isTPlus()) {
-            registerReceiver(plugInReceiver, powerFilter, RECEIVER_NOT_EXPORTED); registerReceiver(networkStateReceiver, IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION), RECEIVER_NOT_EXPORTED)
+            registerReceiver(networkStateReceiver, IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION), RECEIVER_NOT_EXPORTED)
         } else {
-            registerReceiver(plugInReceiver, powerFilter); registerReceiver(networkStateReceiver, IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION))
+            registerReceiver(networkStateReceiver, IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION))
         }
         installComposeUi()
         lifecycleScope.launch(Dispatchers.Default) {
@@ -176,7 +166,6 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Permissions.release()
-        unregisterReceiver(plugInReceiver)
         unregisterReceiver(networkStateReceiver)
     }
 

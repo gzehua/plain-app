@@ -1,9 +1,8 @@
 package com.ismartcoding.plain.features.chat.channel
 
-import com.ismartcoding.plain.events.HChannelInviteReceivedEvent
-import com.ismartcoding.plain.events.HChannelInviteCanceledEvent
+import com.ismartcoding.plain.ui.app.MainViewModel
+import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.lib.sendEvent
 import kotlinx.serialization.json.JsonObject
 
 object ChannelSystemMessageReceiver {
@@ -12,13 +11,18 @@ object ChannelSystemMessageReceiver {
         event.invite?.let { invite ->
             val channel = snapshotChannelsGraphql().firstOrNull { it.id == invite.channelId }
             if (channel != null) {
-                sendEvent(HChannelInviteReceivedEvent(channel.id, channel.name, invite.ownerPeerId, invite.ownerPeerName))
+                MainViewModel.pendingChannelInvite.value = Routing.ChannelInviteRequest(
+                    channel.id, channel.name, invite.ownerPeerId, invite.ownerPeerName,
+                )
             }
         }
         event.cancel?.let { cancel ->
             val stillExists = snapshotChannelsGraphql().any { it.id == cancel.channelId }
             if (!stillExists) {
-                sendEvent(HChannelInviteCanceledEvent(cancel.channelId, cancel.ownerPeerId))
+                val invite = MainViewModel.pendingChannelInvite.value
+                if (invite?.channelId == cancel.channelId && invite.ownerPeerId == cancel.ownerPeerId) {
+                    MainViewModel.pendingChannelInvite.value = null
+                }
             }
         }
     }

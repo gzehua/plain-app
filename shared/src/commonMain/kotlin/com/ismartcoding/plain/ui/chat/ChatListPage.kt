@@ -21,7 +21,6 @@ import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.platform.system.getIcon
 import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.events.RequestPermissionsEvent
-import com.ismartcoding.plain.features.bluetooth.BluetoothPermissionResultEvent
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.grant_permission
 import com.ismartcoding.plain.i18n.local_chat
@@ -57,7 +56,7 @@ import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.bot as ui_drawable_bot
 import com.ismartcoding.plain.ui.resources.hash as ui_drawable_hash
 import com.ismartcoding.plain.ui.theme.PlainTheme
-import kotlinx.coroutines.launch
+import com.ismartcoding.plain.ui.state.launchSafe
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -86,19 +85,11 @@ fun ChatListPage(
     val awarePermission = remember { wifiAwarePermission() }
     var awareReady by remember(awareSupported, awarePermission) { mutableStateOf(!awareSupported || awarePermission?.isGranted() == true) }
     val bleReady = Capability.BLE_DISCOVERY !in capabilities || bleAvailability == BleAvailability.READY
-    var pendingNearbyRequest by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         Channel.sharedFlow.collect { event ->
             when (event) {
-                is BluetoothPermissionResultEvent -> {
-                    if (pendingNearbyRequest && !awareReady) {
-                        pendingNearbyRequest = false
-                        awarePermission?.let { sendEvent(RequestPermissionsEvent(it)) }
-                    }
-                }
-
                 is PermissionsResultEvent -> {
                     val permission = awarePermission ?: return@collect
                     val key = permission.toSysPermission()
@@ -134,9 +125,11 @@ fun ChatListPage(
                             onClick = {
                                 when {
                                     !bleReady -> {
-                                        pendingNearbyRequest = !awareReady
                                         if (canRequestBluetoothAccess()) {
-                                            scope.launch { ensureBlePermissionAsync() }
+                                            scope.launchSafe {
+                                                ensureBlePermissionAsync()
+                                                if (!awareReady) awarePermission?.let { sendEvent(RequestPermissionsEvent(it)) }
+                                            }
                                         } else {
                                             openAppSettings()
                                         }

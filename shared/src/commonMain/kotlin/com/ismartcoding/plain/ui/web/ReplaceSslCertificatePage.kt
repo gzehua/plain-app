@@ -30,10 +30,12 @@ import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.features.files.PickFileType
 import com.ismartcoding.plain.events.PickFileEvent
 import com.ismartcoding.plain.events.PickFileResultEvent
-import com.ismartcoding.plain.events.RestartAppEvent
+import com.ismartcoding.plain.ui.app.MainViewModel
+import com.ismartcoding.plain.platform.system.Capability
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
+import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.files.queryPickedFileInfo
 import com.ismartcoding.plain.platform.files.readPickedFileBytes
@@ -101,8 +103,11 @@ fun ReplaceSslCertificatePage(navController: NavHostController) {
                     )
                 }
                 DialogHelper.hideLoading()
-                DialogHelper.showConfirmDialog("", LocaleHelper.getStringAsync(Res.string.ssl_certificate_replaced)) {
-                    sendEvent(RestartAppEvent())
+                val message = LocaleHelper.getStringAsync(Res.string.ssl_certificate_replaced)
+                if (Capability.APP_RELAUNCH in getDeviceCapabilities()) {
+                    DialogHelper.showConfirmDialog("", message) { MainViewModel.relaunchApp() }
+                } else {
+                    DialogHelper.showConfirmDialog("", message)
                 }
             } catch (ex: Exception) {
                 LogCat.e("Replace SSL certificate failed: ${ex.message}")

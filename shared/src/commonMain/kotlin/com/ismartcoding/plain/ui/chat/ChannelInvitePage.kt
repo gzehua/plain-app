@@ -23,7 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
+import com.ismartcoding.plain.ui.navigation.PBackHandler
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -44,8 +44,9 @@ fun ChannelInvitePage(
     channelName: String,
     ownerPeerName: String,
     channelVM: ChannelViewModel,
-    navController: NavHostController,
+    onClose: () -> Unit,
 ) {
+    PBackHandler(onBack = onClose)
     var accepting by remember { mutableStateOf(false) }
     var declining by remember { mutableStateOf(false) }
 
@@ -117,7 +118,7 @@ fun ChannelInvitePage(
                         accepting = true
                         channelVM.acceptInvite(
                             channelId = channelId,
-                            onSuccess = { navController.popBackStack() },
+                            onSuccess = onClose,
                             onDone = { accepting = false },
                         )
                     },
@@ -136,7 +137,7 @@ fun ChannelInvitePage(
                             channelId = channelId,
                             onDone = {
                                 declining = false
-                                navController.popBackStack()
+                                onClose()
                             },
                         )
                     },

@@ -1,15 +1,10 @@
 package com.ismartcoding.plain.features.feeds
 
-import com.ismartcoding.plain.features.feeds.FeedEntriesClient
 import com.ismartcoding.plain.models.FeedEntry
-import com.ismartcoding.plain.network.ApiResult
-import kotlinx.coroutines.CancellationException
 
-suspend fun FeedEntry.fetchContentAsync(): ApiResult = try {
+suspend fun FeedEntry.fetchContentAsync() {
     val refreshed = FeedEntriesClient.syncContent(id)
     content = refreshed.content
     image = refreshed.image
     updatedAt = refreshed.updatedAt
-    ApiResult(success = true)
-} catch (cancelled: CancellationException) { throw cancelled }
-catch (error: Exception) { ApiResult(exception = error) }
+}

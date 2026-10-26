@@ -22,7 +22,7 @@ import com.ismartcoding.plain.features.permissions.getGrantedWebPermissionsAsync
 import com.ismartcoding.plain.features.notifications.RustNotificationEvents
 import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.events.HostEvent
-import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.rust.sendEventToRust
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -128,7 +128,7 @@ class PNotificationListenerService : NotificationListenerService() {
         // in-app toggle involved, so no PermissionsResultEvent ever fires. Push
         // the fresh snapshot so web clients drop their no-permission state.
         coIO {
-            sendEvent(
+            sendEventToRust(
                 HostEvent(
                     EventType.PERMISSIONS_UPDATED,
                     JsonHelper.jsonEncode(getGrantedWebPermissionsAsync()),

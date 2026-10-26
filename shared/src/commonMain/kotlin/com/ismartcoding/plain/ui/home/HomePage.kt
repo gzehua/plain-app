@@ -3,7 +3,6 @@ package com.ismartcoding.plain.ui.home
 import com.ismartcoding.plain.platform.network.vpnActive
 import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.ApplyBackgroundServiceSettingEvent
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -21,7 +20,6 @@ import androidx.navigation.NavHostController
 import com.ismartcoding.plain.features.chat.peer.PeerStatusClient
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.ui.components.ButtonSize
-import com.ismartcoding.plain.features.settings.ServiceState
 import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.events.RequestPermissionsEvent
@@ -45,7 +43,6 @@ import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
-import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.ui.settings.UpdateViewModel
 import com.ismartcoding.plain.ui.navigation.MainNavScaffold
 import com.ismartcoding.plain.ui.settings.UpdateDialog
@@ -57,7 +54,6 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun HomePage(
     navController: NavHostController,
-    mainVM: MainViewModel,
     updateVM: UpdateViewModel,
     onTabSelected: (Int) -> Unit,
 ) {
@@ -145,13 +141,12 @@ fun HomePage(
                 }
                 item {
                     PlainAppServiceSection(
-                        foregroundServiceActive = foregroundServiceState == ServiceState.ON || foregroundServiceState == ServiceState.STARTING,
+                        backgroundServiceEnabled = backgroundServiceEnabled,
                         foregroundServiceState = foregroundServiceState,
                         errorMessage = httpServerError.ifEmpty { httpServerResourcesError }.ifEmpty { foregroundServiceError },
-                        onRetry = {
-                            if (httpServerError.isNotEmpty() || httpServerResourcesError.isNotEmpty()) HttpServerManager.restartHttpServer()
-                            else sendEvent(ApplyBackgroundServiceSettingEvent())
-                        },
+                        onRetry = if (httpServerError.isNotEmpty() || httpServerResourcesError.isNotEmpty()) {
+                            { HttpServerManager.restartHttpServer() }
+                        } else null,
                         onStayOnline = { showStayOnlineOverlay = true },
                     )
                     VerticalSpace(16.dp)

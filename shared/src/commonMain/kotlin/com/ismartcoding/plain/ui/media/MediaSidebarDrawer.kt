@@ -11,6 +11,7 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -25,8 +26,6 @@ import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.events.MediaStoreChangedEvent
-import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.MediaSidebarBucketItem
@@ -82,13 +81,11 @@ fun <T : IData> MediaSidebarDrawer(
             }
         }
     }
-    // Keep folder counts and the trash badge fresh when rows are
-    // trashed/restored/deleted from the detail sheet or select mode.
-    LaunchedEffect(Channel.sharedFlow) {
-        Channel.sharedFlow.collect { event ->
-            if (event is MediaStoreChangedEvent && event.dataType == mediaVM.dataType) {
-                mediaFoldersVM.loadAsync()
-            }
+    DisposableEffect(mediaVM, mediaFoldersVM) {
+        val refreshFolders: suspend () -> Unit = { mediaFoldersVM.loadAsync() }
+        mediaVM.onMediaChanged = refreshFolders
+        onDispose {
+            if (mediaVM.onMediaChanged === refreshFolders) mediaVM.onMediaChanged = null
         }
     }
 

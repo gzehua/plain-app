@@ -2,19 +2,21 @@ package com.ismartcoding.plain.services
 
 import com.ismartcoding.plain.appContext
 
+import android.content.BroadcastReceiver
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.Context
 import android.os.PowerManager
 import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.lib.Channel
-import com.ismartcoding.plain.lib.coIO
+import com.ismartcoding.plain.lib.coMain
+import kotlinx.coroutines.launch
+import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.events.KeepAwakeChangedEvent
-import com.ismartcoding.plain.events.PowerConnectedEvent
-import com.ismartcoding.plain.events.PowerDisconnectedEvent
-import com.ismartcoding.plain.events.HWebRequestReceivedEvent
 import com.ismartcoding.plain.events.WindowFocusChangedEvent
 import com.ismartcoding.plain.powerManager
-import com.ismartcoding.plain.receivers.PlugInControlReceiver
+import com.ismartcoding.plain.platform.isTPlus
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -29,44 +31,57 @@ internal class HttpServerWakeLock(private val context: Context) {
         "${appContext.packageName}:http_server",
     )
 
-    @Volatile private var lastActivityMs: Long = System.currentTimeMillis()
-    @Volatile private var keepAwake: Boolean = true
+    private var lastActivityMs: Long = System.currentTimeMillis()
 
     private var inactivityJob: Job? = null
     private var eventJob: Job? = null
 
+    private val powerReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                Intent.ACTION_POWER_CONNECTED -> {
+                    inactivityJob?.cancel()
+                    inactivityJob = null
+                    acquireWakeLock()
+                    scheduleInactivityTimer()
+                }
+                Intent.ACTION_POWER_DISCONNECTED -> {
+                    lastActivityMs = System.currentTimeMillis()
+                    scheduleInactivityTimer()
+                }
+            }
+        }
+    }
+
     fun start() {
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_POWER_CONNECTED)
+            addAction(Intent.ACTION_POWER_DISCONNECTED)
+        }
+        if (isTPlus()) context.registerReceiver(powerReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        else context.registerReceiver(powerReceiver, filter)
         acquireWakeLock()
-        eventJob = coIO {
-            keepAwake = Prefs.keepAwake.value
-            scheduleInactivityTimer()
+        eventJob = coMain {
+            launch {
+                Prefs.keepAwake.collect { enabled ->
+                    inactivityJob?.cancel()
+                    inactivityJob = null
+                    if (enabled) acquireWakeLock()
+                    lastActivityMs = System.currentTimeMillis()
+                    scheduleInactivityTimer()
+                }
+            }
+            launch {
+                RustEventHandler.events.collect { event ->
+                    if (event.type == EventType.WEB_REQUEST_RECEIVED) lastActivityMs = System.currentTimeMillis()
+                }
+            }
             Channel.sharedFlow.collect { event ->
                 when (event) {
-                    is HWebRequestReceivedEvent -> lastActivityMs = System.currentTimeMillis()
                     is WindowFocusChangedEvent -> if (event.hasFocus) {
                         lastActivityMs = System.currentTimeMillis()
                         acquireWakeLock()
                         scheduleInactivityTimer()
-                    }
-                    is PowerConnectedEvent -> {
-                        inactivityJob?.cancel()
-                        inactivityJob = null
-                        acquireWakeLock()
-                        scheduleInactivityTimer()
-                    }
-                    is PowerDisconnectedEvent -> {
-                        lastActivityMs = System.currentTimeMillis()
-                        scheduleInactivityTimer()
-                    }
-                    is KeepAwakeChangedEvent -> {
-                        keepAwake = event.enabled
-                        if (keepAwake) {
-                            inactivityJob?.cancel()
-                            inactivityJob = null
-                        } else {
-                            lastActivityMs = System.currentTimeMillis()
-                            scheduleInactivityTimer()
-                        }
                     }
                 }
             }
@@ -74,6 +89,7 @@ internal class HttpServerWakeLock(private val context: Context) {
     }
 
     fun stop() {
+        context.unregisterReceiver(powerReceiver)
         eventJob?.cancel()
         eventJob = null
         inactivityJob?.cancel()
@@ -93,20 +109,27 @@ internal class HttpServerWakeLock(private val context: Context) {
         if (wakeLock.isHeld) { wakeLock.release(); LogCat.d("WakeLock released") }
     }
 
+    private fun isUsbConnected(): Boolean {
+        val filter = IntentFilter("android.hardware.usb.action.USB_STATE")
+        val intent = if (isTPlus()) context.registerReceiver(null, filter, Context.RECEIVER_NOT_EXPORTED)
+        else context.registerReceiver(null, filter)
+        return intent?.getBooleanExtra("connected", false) == true
+    }
+
     private fun scheduleInactivityTimer() {
-        if (keepAwake || PlugInControlReceiver.isUSBConnected(context)) {
+        if (Prefs.keepAwake.value || isUsbConnected()) {
             inactivityJob?.cancel()
             inactivityJob = null
             return
         }
         if (inactivityJob?.isActive == true) return
-        inactivityJob = coIO {
+        inactivityJob = coMain {
             while (isActive) {
                 delay(CHECK_INTERVAL_MS)
                 if (System.currentTimeMillis() - lastActivityMs >= INACTIVITY_TIMEOUT_MS) {
                     LogCat.d("Inactivity timeout: releasing wake lock")
                     releaseWakeLock()
-                    return@coIO
+                    return@coMain
                 }
             }
         }

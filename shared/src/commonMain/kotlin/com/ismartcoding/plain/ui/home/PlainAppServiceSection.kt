@@ -33,10 +33,10 @@ import com.ismartcoding.plain.ui.resources.chevron_up as ui_drawable_chevron_up
 
 @Composable
 fun PlainAppServiceSection(
-    foregroundServiceActive: Boolean,
+    backgroundServiceEnabled: Boolean,
     foregroundServiceState: ServiceState,
     errorMessage: String,
-    onRetry: () -> Unit,
+    onRetry: (() -> Unit)?,
     onStayOnline: () -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -50,7 +50,7 @@ fun PlainAppServiceSection(
                 subtitle = stringResource(Res.string.keep_online_in_background_desc),
             ) {
                 Switch(
-                    checked = foregroundServiceActive,
+                    checked = backgroundServiceEnabled,
                     enabled = !foregroundServiceState.isProcessing(),
                     onCheckedChange = { HttpServerManager.setBackgroundServiceEnabled(it) },
                 )
@@ -58,7 +58,9 @@ fun PlainAppServiceSection(
         }
         if (errorMessage.isNotEmpty()) {
             PAlert(description = errorMessage, type = AlertType.ERROR) {
-                PTextButton(text = stringResource(Res.string.retry), onClick = onRetry)
+                if (onRetry != null) {
+                    PTextButton(text = stringResource(Res.string.retry), onClick = onRetry)
+                }
             }
         }
         PTextButton(

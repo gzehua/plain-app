@@ -16,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -28,11 +27,8 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.lib.TimeHelper
-import com.ismartcoding.plain.events.AppEvents
+import com.ismartcoding.plain.features.audio.AudioSleepTimer
 import com.ismartcoding.plain.ui.components.ButtonType
-import com.ismartcoding.plain.events.SleepTimerEvent
-import com.ismartcoding.plain.events.CancelSleepTimerEvent
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.PModalBottomSheet
 import kotlinx.coroutines.delay
@@ -41,8 +37,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun SleepTimerPage(onDismissRequest: () -> Unit) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val durationMs by AppEvents.audioSleepTimerDurationMs.collectAsState()
-    val endsAt by AppEvents.audioSleepTimerEndsAt.collectAsState()
+    val durationMs by AudioSleepTimer.durationMs
+    val endsAt by AudioSleepTimer.endsAt
     var remainingTimeMs by remember(endsAt) { mutableLongStateOf(maxOf(0L, endsAt - TimeHelper.nowMillis())) }
     var selectedTimeMinutes by remember { mutableIntStateOf(15) }
     val timerActive = remainingTimeMs > 0
@@ -92,7 +88,7 @@ fun SleepTimerPage(onDismissRequest: () -> Unit) {
                             modifier = Modifier.fillMaxWidth(),
                             text = stringResource(Res.string.cancel_timer),
                             onClick = {
-                                sendEvent(CancelSleepTimerEvent())
+                                AudioSleepTimer.cancel()
                             }, type = ButtonType.DANGER
                         )
                         Spacer(modifier = Modifier.height(24.dp))
@@ -110,7 +106,7 @@ fun SleepTimerPage(onDismissRequest: () -> Unit) {
                             modifier = Modifier.fillMaxWidth(),
                             text = stringResource(Res.string.start_timer),
                             onClick = {
-                                sendEvent(SleepTimerEvent(selectedTimeMinutes * 60 * 1000L))
+                                AudioSleepTimer.start(selectedTimeMinutes * 60 * 1000L)
                             })
                         Spacer(modifier = Modifier.height(24.dp))
                     }

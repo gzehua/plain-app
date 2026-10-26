@@ -13,8 +13,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.KeepAwakeChangedEvent
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.rust.native.RustNativeApi
@@ -66,7 +64,6 @@ class DesktopAccessSettingsViewModel : ViewModel() {
     fun enableKeepAwake(enable: Boolean) {
         viewModelScope.launchSafe {
             Prefs.set(PrefKeys.KEEP_AWAKE, enable)
-            sendEvent(KeepAwakeChangedEvent(enable))
         }
     }
 }

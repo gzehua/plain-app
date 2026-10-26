@@ -9,11 +9,8 @@ import androidx.media3.session.SessionToken
 import androidx.core.content.ContextCompat
 import com.google.common.util.concurrent.ListenableFuture
 import com.ismartcoding.plain.platform.system.awaitPlatformFuture
-import com.ismartcoding.plain.features.audio.AudioAction
-import com.ismartcoding.plain.events.AudioActionEvent
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
 import com.ismartcoding.plain.services.AudioPlayerService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,7 +65,6 @@ internal object AndroidAudioPlayer {
             player?.pause()
             refreshPlayingState()
             LogCat.e("Audio playback: ${error.message}")
-            setChangedNotify(AudioAction.NOT_FOUND)
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -212,7 +208,4 @@ internal object AndroidAudioPlayer {
         player?.play()
     }
 
-    fun setChangedNotify(action: AudioAction) {
-        sendEvent(AudioActionEvent(action))
-    }
 }

@@ -11,12 +11,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.platform.system.DataType
-import com.ismartcoding.plain.events.MediaStoreChangedEvent
 import com.ismartcoding.plain.features.tags.TagsClient
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.helpers.SearchHelper
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.media.deleteMedia
 import com.ismartcoding.plain.platform.media.restoreMedia
@@ -27,6 +25,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
 abstract class BaseMediaViewModel<T : IData> : ISearchableViewModel<T>, ViewModel() {
+    internal var onMediaChanged: (suspend () -> Unit)? = null
+
     internal val _itemsFlow = MutableStateFlow<List<T>>(emptyList())
     val itemsFlow: StateFlow<List<T>> = _itemsFlow
     var tag = mutableStateOf<Tag?>(null)
@@ -129,7 +129,7 @@ abstract class BaseMediaViewModel<T : IData> : ISearchableViewModel<T>, ViewMode
             try { loadAsync(tagsVM) }
             finally {
                 DialogHelper.hideLoading()
-                sendEvent(MediaStoreChangedEvent(dataType))
+                onMediaChanged?.invoke()
             }
         }
     }

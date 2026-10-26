@@ -26,12 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.features.files.FilesType
-import com.ismartcoding.plain.events.FolderKanbanSelectEvent
 import com.ismartcoding.plain.features.files.FavoriteFoldersClient
 import com.ismartcoding.plain.features.shares.SharesClient
 import com.ismartcoding.plain.models.ShareRecord
 import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.base.PDropdownMenu
 import com.ismartcoding.plain.ui.base.PDropdownMenuItem
 import com.ismartcoding.plain.ui.base.PDropdownMenuItemDelete
@@ -124,7 +122,7 @@ fun FilesDrawerContent(
                 label = item.title,
                 icon = if (item.type == FilesType.RECENTS) UiRes.drawable.ui_drawable_history else UiRes.drawable.ui_drawable_folder,
                 isSelected = item.isChecked,
-                onClick = { sendEvent(FolderKanbanSelectEvent(item)); onSelect(item) }
+                onClick = { onSelect(item) }
             )
         }
 
@@ -143,7 +141,7 @@ fun FilesDrawerContent(
                             icon = UiRes.drawable.ui_drawable_folder,
                             isSelected = item.isChecked,
                             onLongClick = { contextMenuPath = item.fullPath },
-                            onClick = { sendEvent(FolderKanbanSelectEvent(item)); onSelect(item) }
+                            onClick = { onSelect(item) }
                         )
                         PDropdownMenu(
                             expanded = contextMenuPath == item.fullPath,

@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.settings
 
+import com.ismartcoding.plain.features.settings.AppUpdateDownloads
+
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
 import com.ismartcoding.plain.platform.system.AppFeatureType
@@ -26,8 +28,6 @@ import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.ui.components.ButtonSize
-import com.ismartcoding.plain.events.DownloadUpdateEvent
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -87,7 +87,7 @@ fun UpdateDialog(updateVM: UpdateViewModel) {
                     buttonSize = ButtonSize.MEDIUM,
                     onClick = {
                         updateVM.hideDialog()
-                        sendEvent(DownloadUpdateEvent())
+                        AppUpdateDownloads.start()
                     },
                 )
             },

@@ -2,7 +2,6 @@ package com.ismartcoding.plain.features.dlna
 
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.coIO
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.lib.dlna.DlnaMediaType
 import com.ismartcoding.plain.lib.dlna.PendingCastRequest
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,9 +50,7 @@ object DlnaRendererState {
             playbackState.value = state.playbackState
             seekTargetMs.value = state.seekTargetMs
             startError.value = state.startError
-            val wasPending = pendingCastRequest.value != null
             pendingCastRequest.value = state.pendingCastRequest
-            if (!wasPending && state.pendingCastRequest != null) sendEvent(HDlnaCastRequestEvent())
         }
     }
 }

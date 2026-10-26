@@ -4,9 +4,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.events.CancelUpdateDownloadEvent
 import com.ismartcoding.plain.features.settings.AppUpdateDownloads
-import com.ismartcoding.plain.lib.sendEvent
 import kotlinx.coroutines.launch
 
 class UpdateViewModel : ViewModel() {
@@ -31,5 +29,4 @@ class UpdateViewModel : ViewModel() {
 
     fun showDialog() { updateDialogVisible.value = true }
     fun hideDialog() { updateDialogVisible.value = false }
-    fun resetDownload() { sendEvent(CancelUpdateDownloadEvent()) }
 }

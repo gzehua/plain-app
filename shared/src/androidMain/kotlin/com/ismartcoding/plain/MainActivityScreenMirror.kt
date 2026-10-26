@@ -1,19 +1,36 @@
 package com.ismartcoding.plain
 
+import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.i18n.*
 
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.events.HostEvent
-import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.rust.sendEventToRust
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.ui.components.DialogHelper
+import com.ismartcoding.plain.platform.permissions.Permission
+import com.ismartcoding.plain.platform.permissions.isGranted
+
+internal fun MainActivity.startScreenMirror(audio: Boolean) {
+    if (audio && !Permission.RECORD_AUDIO.isGranted()) {
+        recordAudioForMirror.launch(Manifest.permission.RECORD_AUDIO)
+    } else {
+        screenCapture.launch(mediaProjectionManager.createScreenCaptureIntent())
+    }
+}
+
+internal fun MainActivity.requestScreenMirrorAudio() {
+    if (Permission.RECORD_AUDIO.isGranted()) sendScreenMirrorAudioStatus(true)
+    else recordAudioForMirrorLate.launch(Manifest.permission.RECORD_AUDIO)
+}
 
 internal fun MainActivity.sendScreenMirrorAudioStatus(granted: Boolean) {
-    sendEvent(HostEvent(EventType.SCREEN_MIRROR_AUDIO_GRANTED, JsonHelper.jsonEncode(granted)))
+    coIO { sendEventToRust(HostEvent(EventType.SCREEN_MIRROR_AUDIO_GRANTED, JsonHelper.jsonEncode(granted))) }
 }
 
 internal fun MainActivity.openAppDetailsSettingsForAudio() {
