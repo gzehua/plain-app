@@ -1,7 +1,5 @@
 package com.ismartcoding.plain
 
-import com.ismartcoding.plain.app.Constants
-
 import com.ismartcoding.plain.ui.app.MainViewModel
 
 import com.ismartcoding.plain.ui.app.navControllerState

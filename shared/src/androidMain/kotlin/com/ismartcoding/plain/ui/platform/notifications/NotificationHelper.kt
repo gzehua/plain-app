@@ -21,7 +21,7 @@ import com.ismartcoding.plain.lib.extensions.hasPermission
 import com.ismartcoding.plain.platform.isSPlus
 import com.ismartcoding.plain.platform.isTPlus
 import com.ismartcoding.plain.ui.theme.BrandPrimary
-import com.ismartcoding.plain.app.Constants
+import com.ismartcoding.plain.Constants
 import com.ismartcoding.plain.app.AppIntents
 import com.ismartcoding.plain.app.IntentExtras
 import com.ismartcoding.plain.appContext

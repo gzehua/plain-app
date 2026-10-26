@@ -11,7 +11,7 @@ import android.media.ThumbnailUtils
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import com.ismartcoding.plain.app.Constants
+import com.ismartcoding.plain.Constants
 import com.ismartcoding.plain.app.AppIntents
 import com.ismartcoding.plain.features.media.MediaClient
 import com.ismartcoding.plain.lib.extensions.isAudioFast

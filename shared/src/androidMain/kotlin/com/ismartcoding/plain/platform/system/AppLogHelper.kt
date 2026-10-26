@@ -7,7 +7,7 @@ import com.ismartcoding.plain.i18n.*
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
-import com.ismartcoding.plain.app.Constants
+import com.ismartcoding.plain.Constants
 import com.ismartcoding.plain.app.AppIntents
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import java.io.File

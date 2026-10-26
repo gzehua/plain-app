@@ -1,7 +1,5 @@
 package com.ismartcoding.plain
 
-import com.ismartcoding.plain.app.Constants
-
 import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.app.AppIntents

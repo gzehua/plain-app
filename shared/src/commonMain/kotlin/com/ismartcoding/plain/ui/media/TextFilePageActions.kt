@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.ui.media
 
-import com.ismartcoding.plain.app.Constants
+import com.ismartcoding.plain.Constants
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.MaterialTheme

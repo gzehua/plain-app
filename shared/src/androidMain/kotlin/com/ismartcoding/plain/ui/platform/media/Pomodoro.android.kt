@@ -15,7 +15,7 @@ import android.net.Uri
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.ismartcoding.plain.app.Constants
+import com.ismartcoding.plain.Constants
 import com.ismartcoding.plain.MainActivity
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.ui.platform.notifications.NotificationHelper

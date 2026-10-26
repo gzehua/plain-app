@@ -10,7 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.app.Constants
+import com.ismartcoding.plain.Constants
 import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.features.feeds.FeedEntriesClient
 import com.ismartcoding.plain.lib.TimeHelper
