@@ -2,16 +2,13 @@
 
 package com.ismartcoding.plain.platform.media
 
-import com.ismartcoding.plain.app.TempData
-import com.ismartcoding.plain.features.audio.AudioQueueClient
 import com.ismartcoding.plain.models.AudioItem
+import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryPlayback
@@ -44,12 +41,18 @@ private object AVPlayerAudioPlayer : AudioPlayer {
     private var currentAudio: AudioItem? = null
     private var pendingStart: Pair<AudioItem, Long>? = null
     private var activeRevision = -1L
+    private var lastPositionMs = 0L
     private var completionObserver: Any? = null
     private var playbackSpeed = 1f
 
     override fun bindRevision(revision: Long) {
         activeRevision = revision
         observeCompletion()
+    }
+
+    override fun restorePlayback(revision: Long, positionMs: Long) {
+        lastPositionMs = positionMs
+        bindRevision(revision)
     }
 
     private fun observeCompletion() {
@@ -62,52 +65,55 @@ private object AVPlayerAudioPlayer : AudioPlayer {
             AVPlayerItemDidPlayToEndTimeNotification, `object` = item, queue = NSOperationQueue.mainQueue,
         ) {
             if (activeRevision == revision && player?.currentItem == item) {
-                scope.launch { AudioQueueClient.onCompleted(path, revision) }
+                flushPendingStart()
+                stopObservingPlayback()
+                AudioEngineHost.reportCompleted(path, revision, progress)
             }
         }
     }
     override val currentPath: String get() = if (player == null) "" else currentAudio?.path.orEmpty()
 
     override suspend fun load(audio: AudioItem, positionMs: Long, speed: Float, revision: Long) = withContext(Dispatchers.Main) {
-        stopObservingStart()
-        currentAudio = audio
-        TempData.audioPlayPosition = positionMs
-        playInternal(audio, speed, revision)
+        AudioEngineHost.stopProgressReporting()
+        stopObservingPlayback()
+        lastPositionMs = positionMs
+        playInternal(audio, positionMs, speed, revision)
     }
 
     private var playWhenReady = false
-    private var startObserver: Pair<AVPlayer, Any>? = null
-    private val scope = CoroutineScope(Dispatchers.Main)
+    private var playbackObserver: Pair<AVPlayer, Any>? = null
 
     override val progress: Long
         get() {
-            val p = player ?: return TempData.audioPlayPosition
+            val p = player ?: return lastPositionMs
             return mediaTimeMs(p.currentTime())
         }
 
     override suspend fun seekTo(positionMs: Long) = withContext(Dispatchers.Main) {
-        TempData.audioPlayPosition = positionMs
+        lastPositionMs = positionMs
         player?.let { it.seekToTime(CMTimeMake(positionMs, 1000)) }
         Unit
     }
 
     override suspend fun pause() = withContext(Dispatchers.Main) {
+        if (player?.timeControlStatus == AVPlayerTimeControlStatusPlaying) flushPendingStart()
+        AudioEngineHost.stopProgressReporting(currentPath, activeRevision, progress)
         playWhenReady = false
         player?.let {
-            TempData.audioPlayPosition = mediaTimeMs(it.currentTime())
+            lastPositionMs = mediaTimeMs(it.currentTime())
             it.pause()
         }
         _isPlayingFlow.value = false
-        stopObservingStart()
+        stopObservingPlayback()
     }
 
     override suspend fun play() = withContext(Dispatchers.Main) {
         playWhenReady = true
         player?.let {
+            observePlayback()
             it.play()
             it.rate = playbackSpeed
             _isPlayingFlow.value = true
-            observeStart()
         }
         Unit
     }
@@ -124,8 +130,10 @@ private object AVPlayerAudioPlayer : AudioPlayer {
     }
 
     override suspend fun clear() = withContext(Dispatchers.Main) {
+        if (player?.timeControlStatus == AVPlayerTimeControlStatusPlaying) flushPendingStart()
+        AudioEngineHost.stopProgressReporting(currentPath, activeRevision, progress)
         playWhenReady = false
-        stopObservingStart()
+        stopObservingPlayback()
         completionObserver?.let { NSNotificationCenter.defaultCenter.removeObserver(it) }
         completionObserver = null
         player?.let {
@@ -136,7 +144,7 @@ private object AVPlayerAudioPlayer : AudioPlayer {
         currentAudio = null
         pendingStart = null
         _isPlayingFlow.value = false
-        TempData.audioPlayPosition = 0
+        lastPositionMs = 0
     }
 
     override suspend fun setPlaybackSpeed(speed: Float) = withContext(Dispatchers.Main) {
@@ -145,34 +153,35 @@ private object AVPlayerAudioPlayer : AudioPlayer {
         Unit
     }
 
-    private fun playInternal(audio: AudioItem, speed: Float, revision: Long) {
+    private fun playInternal(audio: AudioItem, positionMs: Long, speed: Float, revision: Long) {
         try {
             configureSession()
             playbackSpeed = speed
             val url = NSURL.fileURLWithPath(audio.path)
             val item = AVPlayerItem(uRL = url)
-            val seekMs = TempData.audioPlayPosition
             pendingStart = audio to revision
             val existing = player
-            if (existing != null) {
+            val source = if (existing != null) {
                 existing.replaceCurrentItemWithPlayerItem(item)
-                existing.seekToTime(CMTimeMake(seekMs, 1000))
-                existing.play()
-                existing.rate = speed
+                existing.seekToTime(CMTimeMake(positionMs, 1000))
+                existing
             } else {
                 val newPlayer = AVPlayer(playerItem = item)
-                if (seekMs > 0) newPlayer.seekToTime(CMTimeMake(seekMs, 1000))
-                newPlayer.play()
-                newPlayer.rate = speed
+                if (positionMs > 0) newPlayer.seekToTime(CMTimeMake(positionMs, 1000))
                 player = newPlayer
+                newPlayer
             }
+            currentAudio = audio
             observeCompletion()
             playWhenReady = true
+            observePlayback()
+            source.play()
+            source.rate = speed
             _isPlayingFlow.value = true
-            observeStart()
 
         } catch (e: Exception) {
-            stopObservingStart()
+            AudioEngineHost.stopProgressReporting(currentPath, activeRevision, progress)
+            stopObservingPlayback()
             pendingStart = null
             playWhenReady = false
             _isPlayingFlow.value = false
@@ -184,28 +193,29 @@ private object AVPlayerAudioPlayer : AudioPlayer {
         check(AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, null)) { "Audio session configuration failed" }
     }
 
-    private fun observeStart() {
-        stopObservingStart()
-        val pending = pendingStart ?: return
+    private fun observePlayback() {
+        stopObservingPlayback()
         val source = player ?: return
         val item = source.currentItem ?: return
-        val observer = source.addPeriodicTimeObserverForInterval(CMTimeMake(200, 1000), queue = null) {
-            if (playWhenReady && player == source && source.currentItem == item &&
-                pendingStart === pending && source.timeControlStatus == AVPlayerTimeControlStatusPlaying) {
-                scope.launch {
-                    if (playWhenReady && player == source && source.currentItem == item && pendingStart === pending) {
-                        pendingStart = null
-                        stopObservingStart()
-                        AudioQueueClient.onStarted(pending.first, pending.second)
-                    }
+        val observer = source.addPeriodicTimeObserverForInterval(CMTimeMake(1, 1), queue = null) {
+            if (player == source && source.currentItem == item) {
+                if (source.timeControlStatus == AVPlayerTimeControlStatusPlaying) flushPendingStart()
+                if (pendingStart == null) {
+                    AudioEngineHost.reportProgress(currentPath, activeRevision, mediaTimeMs(source.currentTime()))
                 }
             }
         }
-        startObserver = source to observer
+        playbackObserver = source to observer
     }
 
-    private fun stopObservingStart() {
-        startObserver?.let { (source, observer) -> source.removeTimeObserver(observer) }
-        startObserver = null
+    private fun flushPendingStart() {
+        val pending = pendingStart ?: return
+        pendingStart = null
+        AudioEngineHost.reportStarted(pending.first.path, pending.second)
+    }
+
+    private fun stopObservingPlayback() {
+        playbackObserver?.let { (source, observer) -> source.removeTimeObserver(observer) }
+        playbackObserver = null
     }
 }

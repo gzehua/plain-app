@@ -3,10 +3,6 @@ package com.ismartcoding.plain
 import com.ismartcoding.plain.ui.app.installComposeUi
 import com.ismartcoding.plain.ui.app.pendingCrashReport
 
-import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
-
-import com.ismartcoding.plain.preferences.*
-
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
@@ -24,18 +20,16 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavHostController
-import com.ismartcoding.plain.app.HttpServerManager
 import com.ismartcoding.plain.platform.isTPlus
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.features.files.ExportFileType
 import com.ismartcoding.plain.features.settings.Language
 import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.features.files.PickFileType
-import com.ismartcoding.plain.app.events.ExportFileResultEvent
+import com.ismartcoding.plain.events.ExportFileResultEvent
 import com.ismartcoding.plain.app.events.IgnoreBatteryOptimizationResultEvent
-import com.ismartcoding.plain.app.events.PickFileResultEvent
-import com.ismartcoding.plain.app.events.WindowFocusChangedEvent
+import com.ismartcoding.plain.events.PickFileResultEvent
+import com.ismartcoding.plain.events.WindowFocusChangedEvent
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.ui.permissions.Permissions
 import com.ismartcoding.plain.features.bluetooth.client.BluetoothPermission
@@ -51,12 +45,7 @@ import com.ismartcoding.plain.ui.chat.ChannelViewModel
 import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.ui.chat.PeerViewModel
 import com.ismartcoding.plain.ui.pomodoro.PomodoroViewModel
-import com.ismartcoding.plain.ui.theme.DarkTheme
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.ui.settings.CrashReportDialog
-import com.ismartcoding.plain.ui.navigation.Routing
-import com.ismartcoding.plain.ui.navigation.Main
-import com.ismartcoding.plain.ui.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -179,7 +168,6 @@ class MainActivity : AppCompatActivity() {
             registerReceiver(plugInReceiver, powerFilter); registerReceiver(networkStateReceiver, IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION))
         }
         installComposeUi()
-        HttpServerManager.ensureStarted()
         lifecycleScope.launch(Dispatchers.Default) {
             publishLauncherShortcuts(Prefs.selectedLauncherShortcuts(Prefs.launcherShortcuts.value))
         }

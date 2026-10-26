@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.nearby
 
-import com.ismartcoding.plain.api.graphql.Mutation
-import com.ismartcoding.plain.api.graphql.Query
+import com.ismartcoding.plain.graphql.Mutation
+import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.rust.sendEventToRust
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
@@ -9,8 +9,8 @@ import com.ismartcoding.plain.models.NearbyDevice
 import com.ismartcoding.plain.models.PairingRequestInput
 import com.ismartcoding.plain.models.PairingDeviceInput
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
 import kotlinx.serialization.json.*
 
 object RustPairingRuntime {

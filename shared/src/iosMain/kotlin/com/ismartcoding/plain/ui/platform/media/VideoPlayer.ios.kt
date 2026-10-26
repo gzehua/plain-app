@@ -2,9 +2,13 @@
 
 package com.ismartcoding.plain.ui.platform.media
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitView
 import com.ismartcoding.plain.ui.media.viewer.video.VideoPlayerController
@@ -12,6 +16,7 @@ import com.ismartcoding.plain.ui.media.viewer.video.VideoPlayerEvent
 import com.ismartcoding.plain.ui.media.viewer.video.VideoState
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -37,13 +42,15 @@ import com.ismartcoding.plain.platform.media.mediaTimeMs
 import platform.CoreGraphics.CGRect
 import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSCoder
+import com.ismartcoding.plain.lib.coMain
+import com.ismartcoding.plain.platform.system.IosPlatformRegistry
 import platform.Foundation.NSURL
 import platform.UIKit.UIView
-import platform.darwin.NSObject
 
 private class AVPlayerVideoController : VideoPlayerController {
     private val scope = CoroutineScope(Dispatchers.Main)
-    private var player: AVPlayer? = null
+    private var player by mutableStateOf<AVPlayer?>(null)
+    private var firstFrameReported = false
     private var pollJob: Job? = null
     private var eventListener: ((VideoPlayerEvent) -> Unit)? = null
     private var lastIsPlaying = false
@@ -97,6 +104,7 @@ private class AVPlayerVideoController : VideoPlayerController {
     }
 
     override fun setMediaItem(path: String) {
+        firstFrameReported = false
         val url = if (path.startsWith("http")) {
             NSURL.URLWithString(path)
         } else {
@@ -161,7 +169,13 @@ private class AVPlayerVideoController : VideoPlayerController {
         pollJob = null
     }
 
-    fun getPlayer(): NSObject? = player
+    fun getPlayer(): AVPlayer? = player
+
+    fun onFirstFrameRendered(item: AVPlayerItem?) {
+        if (item == null || item != player?.currentItem || firstFrameReported) return
+        firstFrameReported = true
+        eventListener?.invoke(VideoPlayerEvent.FirstFrameRendered)
+    }
 }
 
 @Composable
@@ -176,19 +190,22 @@ actual fun VideoPlayerSurface(
     videoState: VideoState?,
 ) {
     val avController = controller as? AVPlayerVideoController ?: return
+    val player = avController.getPlayer()
     UIKitView(
         modifier = modifier,
         factory = {
             PlayerContainerView(frame = CGRectMake(0.0, 0.0, 0.0, 0.0)).apply {
-                attachPlayer(avController.getPlayer())
+                attachPlayer(player, avController::onFirstFrameRendered)
             }
         },
         update = { view ->
-            view.attachPlayer(avController.getPlayer())
+            view.attachPlayer(player, avController::onFirstFrameRendered)
         },
+        onRelease = { it.release() },
     )
 }
 
+@OptIn(BetaInteropApi::class)
 internal class PlayerContainerView : UIView {
     @OverrideInit
     constructor(frame: CValue<CGRect>) : super(frame)
@@ -197,14 +214,29 @@ internal class PlayerContainerView : UIView {
     constructor(coder: NSCoder) : super(coder)
 
     private val playerLayer = AVPlayerLayer()
+    private var onFirstFrame: ((AVPlayerItem?) -> Unit)? = null
+    private val readinessObservation = IosPlatformRegistry.observeVideoFrame(playerLayer) {
+        val item = playerLayer.player?.currentItem
+        coMain { onFirstFrame?.invoke(item) }
+    }
 
     init {
         playerLayer.videoGravity = AVLayerVideoGravityResizeAspect
         layer.addSublayer(playerLayer)
     }
 
-    fun attachPlayer(player: NSObject?) {
-        playerLayer.player = player as? AVPlayer
+    fun attachPlayer(player: AVPlayer?, onFirstFrame: (AVPlayerItem?) -> Unit) {
+        this.onFirstFrame = onFirstFrame
+        if (playerLayer.player != player) {
+            playerLayer.player = player
+            if (playerLayer.readyForDisplay) onFirstFrame(player?.currentItem)
+        }
+    }
+
+    fun release() {
+        onFirstFrame = null
+        readinessObservation.close()
+        playerLayer.player = null
     }
 
     override fun layoutSubviews() {

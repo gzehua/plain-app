@@ -1,10 +1,7 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.platform.files.backup
-import com.ismartcoding.plain.platform.files.restore
-
-import com.ismartcoding.plain.app.events.ExportFileEvent
-import com.ismartcoding.plain.app.events.PickFileEvent
+import com.ismartcoding.plain.events.ExportFileEvent
+import com.ismartcoding.plain.events.PickFileEvent
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.receiveEventHandler
 import kotlinx.coroutines.Job
@@ -20,7 +17,6 @@ import kotlinx.coroutines.Job
  * [IosFilePickerCallback.onPickResult] / [IosFilePickerCallback.onExportResult],
  * which send `PickFileResultEvent` / `ExportFileResultEvent` back to commonMain.
  *
- * Call [register] once at app startup (from [com.ismartcoding.plain.ui.app.initIosApp]).
  */
 object IosFilePickerEvents {
     private var pickJob: Job? = null

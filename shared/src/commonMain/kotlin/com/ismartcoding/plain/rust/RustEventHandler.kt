@@ -1,12 +1,12 @@
 package com.ismartcoding.plain.rust
 
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent
-import com.ismartcoding.plain.app.events.HWebLoginClosedEvent
-import com.ismartcoding.plain.app.events.HWebRequestReceivedEvent
-import com.ismartcoding.plain.app.events.HostEvent
-import com.ismartcoding.plain.app.events.HostEventData
-import com.ismartcoding.plain.app.refreshHttpServerState
+import com.ismartcoding.plain.HttpServerManager
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HConfirmToAcceptLoginEvent
+import com.ismartcoding.plain.events.HWebLoginClosedEvent
+import com.ismartcoding.plain.events.HWebRequestReceivedEvent
+import com.ismartcoding.plain.events.HostEvent
+import com.ismartcoding.plain.events.HostEventData
 import com.ismartcoding.plain.features.chat.ChatMessageReceiver
 import com.ismartcoding.plain.features.chat.RustChatStore
 import com.ismartcoding.plain.features.chat.channel.ChannelSystemMessageReceiver
@@ -33,7 +33,7 @@ import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent as sendAppEvent
 import com.ismartcoding.plain.platform.notifications.sendWebLoginNotification
 import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
-import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.rust.native.RustNativeBindings
 import com.ismartcoding.plain.rust.native.readRustStream
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.ui.feeds.FeedSyncUpdate
@@ -49,8 +49,8 @@ import kotlinx.serialization.json.*
 suspend fun sendEventToRust(event: HostEvent) {
     val error = withContext(Dispatchers.IO) {
         when (val data = event.data) {
-            is HostEventData.Text -> RustNativeApi.send("text", JsonHelper.jsonEncode(mapOf("type" to event.type.name, "payload" to data.value)), byteArrayOf())
-            is HostEventData.Binary -> RustNativeApi.send("binary", event.type.name, data.value)
+            is HostEventData.Text -> RustNativeBindings.send("text", JsonHelper.jsonEncode(mapOf("type" to event.type.name, "payload" to data.value)), byteArrayOf())
+            is HostEventData.Binary -> RustNativeBindings.send("binary", event.type.name, data.value)
         }
     }
     require(error.isEmpty()) { error }
@@ -71,7 +71,7 @@ object RustEventHandler {
         }
         scope.launch {
             readRustStream(
-                next = { RustNativeApi.next("events") },
+                next = { RustNativeBindings.next("events") },
                 consume = { value ->
                     try {
                         incoming.emit(JsonHelper.jsonDecode<RustEvent>(value))
@@ -96,7 +96,7 @@ object RustEventHandler {
             }
 
             EventType.HTTP_SERVER_STATE_CHANGED -> {
-                refreshHttpServerState()
+                HttpServerManager.refreshHttpServerState()
             }
             EventType.PEER_TRANSPORT_UPDATED -> PeerTransportProjection.apply(JsonHelper.jsonDecode<JsonArray>(payload))
             EventType.MDNS_UPDATED, EventType.NEARBY_DISCOVERY_STARTED, EventType.NEARBY_DISCOVERY_STOPPED -> RustMdnsRuntime.refresh()

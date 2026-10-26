@@ -1,8 +1,7 @@
 package com.ismartcoding.plain.rust.host.provider
 
-import com.ismartcoding.plain.app.events.HOpenAccessibilitySettingsEvent
-import com.ismartcoding.plain.app.events.HOpenWebSettingsEvent
-import com.ismartcoding.plain.app.events.RestartAppEvent
+import com.ismartcoding.plain.events.HOpenWebSettingsEvent
+import com.ismartcoding.plain.events.RestartAppEvent
 import com.ismartcoding.plain.features.web.WebSettingsFeature
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
@@ -33,10 +32,6 @@ internal object SystemAppHost {
             hostResult(PermissionFacts(
                 granted = granted,
             ))
-        }
-        "systemOpenAccessibilitySettings" -> {
-            sendEvent(HOpenAccessibilitySettingsEvent())
-            hostResult(true)
         }
         "systemOpenWebSettings" -> {
             val feature = JsonHelper.jsonDecodeFromElement<WebSettingsRequest>(params).feature

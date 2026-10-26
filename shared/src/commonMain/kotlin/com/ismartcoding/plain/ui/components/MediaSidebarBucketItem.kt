@@ -2,32 +2,18 @@ package com.ismartcoding.plain.ui.components
 
 import com.ismartcoding.plain.models.MediaBucket
 import com.ismartcoding.plain.i18n.*
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil3.compose.LocalPlatformContext
-import coil3.compose.rememberAsyncImagePainter
-import coil3.request.ImageRequest
 import com.ismartcoding.plain.lib.extensions.formatBytes
-import com.ismartcoding.plain.platform.media.combineBitmapGrid
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.ismartcoding.plain.ui.media.MediaThumbnailGrid
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.folder as ui_drawable_folder
 import com.ismartcoding.plain.i18n.folder
 
-/**
- * Sidebar drawer item for a media bucket (folder). Shows a combined thumbnail
- * for media buckets or a folder icon otherwise, with the bucket size as subtitle.
- */
 @Composable
 fun MediaSidebarBucketItem(
     m: MediaBucket,
@@ -35,13 +21,6 @@ fun MediaSidebarBucketItem(
     isSelected: Boolean = false,
     onClick: () -> Unit,
 ) {
-    val bitmapResult = remember { mutableStateOf<Any?>(null) }
-    LaunchedEffect(m.id, m.topItemPaths) {
-        bitmapResult.value = withContext(Dispatchers.Default) {
-            combineBitmapGrid(m.topItemPaths, 150)
-        }
-    }
-
     val showThumbnail = isMedia && m.topItemPaths.isNotEmpty()
     SidebarItem(
         label = m.name,
@@ -51,15 +30,10 @@ fun MediaSidebarBucketItem(
         icon = if (showThumbnail) null else UiRes.drawable.ui_drawable_folder,
         leading = if (showThumbnail) {
             {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        ImageRequest.Builder(LocalPlatformContext.current)
-                            .data(bitmapResult.value)
-                            .build()
-                    ),
+                MediaThumbnailGrid(
+                    paths = m.topItemPaths,
                     contentDescription = null,
-                    modifier = Modifier.size(40.dp).clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(40.dp).clip(MaterialTheme.shapes.medium),
                 )
             }
         } else null,

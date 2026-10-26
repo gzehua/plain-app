@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.settings
 
-import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.theme.PlainTheme
 
 import com.ismartcoding.plain.i18n.*
@@ -22,11 +21,12 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.app.events.DownloadUpdateEvent
+import com.ismartcoding.plain.events.DownloadUpdateEvent
 import com.ismartcoding.plain.lib.UrlHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.system.getAppVersion

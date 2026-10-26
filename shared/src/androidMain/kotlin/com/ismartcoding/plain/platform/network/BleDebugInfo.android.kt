@@ -3,7 +3,7 @@ package com.ismartcoding.plain.platform.network
 import com.ismartcoding.plain.platform.isSPlus
 
 import android.Manifest
-import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.platform.network.ble.BleUuids
 import com.ismartcoding.plain.platform.network.ble.PairingTransport
@@ -41,7 +41,7 @@ actual fun getBleDebugInfo(): BleDebugInfo {
         blePermissionGranted = blePermissionGranted,
         advertiseReady = advertiseReady,
         advertisingRunning = advertisingRunning,
-        clientId = TempData.clientId,
+        clientId = Prefs.clientId.value,
         serviceUuid = BleUuids.SERVICE_UUID,
     )
 }

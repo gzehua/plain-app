@@ -1,0 +1,127 @@
+package com.ismartcoding.plain.ui.web
+
+import com.ismartcoding.plain.i18n.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.ismartcoding.plain.ui.components.ActionButtonMoreWithMenu
+import com.ismartcoding.plain.ui.base.BottomSpace
+import com.ismartcoding.plain.ui.base.HorizontalSpace
+import com.ismartcoding.plain.ui.base.PDropdownMenuItem
+import com.ismartcoding.plain.ui.base.PScaffold
+import com.ismartcoding.plain.ui.base.PTopAppBar
+import com.ismartcoding.plain.ui.base.PSectionTitle
+import com.ismartcoding.plain.ui.base.TopSpace
+import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.settings.NotificationSettingsViewModel
+import com.ismartcoding.plain.platform.system.AppFeatureType
+import com.ismartcoding.plain.platform.system.has
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import com.ismartcoding.plain.ui.resources.Res as UiRes
+import com.ismartcoding.plain.ui.resources.delete_forever as ui_drawable_delete_forever
+import com.ismartcoding.plain.ui.resources.plus as ui_drawable_plus
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+fun NotificationSettingsPage(
+    navController: NavHostController,
+) {
+    if (!AppFeatureType.NOTIFICATIONS.has()) return
+    val vm = viewModel { NotificationSettingsViewModel() }
+    val scope = rememberCoroutineScope()
+    val selectedAppsState by vm.selectedAppsFlow.collectAsState()
+
+    PScaffold(
+        topBar = {
+            PTopAppBar(
+                onNavigateBack = { navController.navigateUp() },
+                title = stringResource(Res.string.notification_filter_settings),
+                actions = {
+                    if (selectedAppsState.isNotEmpty()) {
+                        ActionButtonMoreWithMenu { dismiss ->
+                            PDropdownMenuItem(
+                                leadingIcon = {
+                                    Icon(painter = painterResource(UiRes.drawable.ui_drawable_delete_forever),
+                                        tint = MaterialTheme.colorScheme.error,
+                                        contentDescription = stringResource(Res.string.clear_all))
+                                },
+                                onClick = { dismiss(); scope.launch(Dispatchers.Default) { vm.clearAllAsync() } },
+                                text = { Text(text = stringResource(Res.string.clear_all)) }
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(modifier = Modifier.padding(top = paddingValues.calculateTopPadding())) {
+            item {
+                TopSpace()
+                PSectionTitle(title = stringResource(Res.string.filter_mode))
+                NotificationFilterModeCard(
+                    mode = vm.filterData.value.mode,
+                    onToggleMode = { scope.launch(Dispatchers.Default) { vm.toggleModeAsync() } }
+                )
+                VerticalSpace(dp = 16.dp)
+            }
+
+            item {
+                PSectionTitle(title = stringResource(
+                    if (vm.filterData.value.mode == "allowlist") Res.string.allowed_apps else Res.string.blocked_apps
+                ))
+            }
+
+            if (!vm.isLoading.value) {
+                items(selectedAppsState, key = { it.id }) { app ->
+                    NotificationAppListItem(app = app, onRemove = {
+                        scope.launch(Dispatchers.Default) { vm.removeAppAsync(app.id) }
+                    })
+                }
+                item {
+                    Button(
+                        onClick = { vm.showAppSelectorDialog() },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                    ) {
+                        Icon(painter = painterResource(UiRes.drawable.ui_drawable_plus), contentDescription = null, modifier = Modifier.size(18.dp))
+                        HorizontalSpace(dp = 8.dp)
+                        Text(stringResource(Res.string.add_app))
+                    }
+                    VerticalSpace(dp = 16.dp)
+                }
+            }
+
+            item { BottomSpace(paddingValues) }
+        }
+    }
+
+    if (vm.showAppSelector.value) {
+        AppSelectorBottomSheet(
+            vm = vm,
+            onDismiss = { vm.showAppSelector.value = false },
+            onAppsSelected = { packageNames ->
+                scope.launch(Dispatchers.Default) { vm.addAppsAsync(packageNames) }
+                vm.showAppSelector.value = false
+            }
+        )
+    }
+}

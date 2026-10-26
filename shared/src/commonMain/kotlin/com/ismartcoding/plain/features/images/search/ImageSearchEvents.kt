@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.images.search
 
-import com.ismartcoding.plain.app.events.HEvent
+import com.ismartcoding.plain.events.HEvent
 import kotlinx.serialization.Serializable
 
 data class HImageSearchStatusChangedEvent(

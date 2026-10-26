@@ -6,8 +6,6 @@ import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
 import com.ismartcoding.plain.ui.theme.PlainTheme
 
-import com.ismartcoding.plain.preferences.*
-
 import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.clickable
@@ -25,29 +23,19 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.extensions.toSignature
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.components.ButtonType
 import com.ismartcoding.plain.features.settings.PasswordType
-import com.ismartcoding.plain.app.events.RestartAppEvent
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.app.generateSSLKeyStore
-import com.ismartcoding.plain.app.getSSLSignature
-import com.ismartcoding.plain.app.resetPasswordAsync
-import com.ismartcoding.plain.app.restartServer
+import com.ismartcoding.plain.HttpServerManager
+import com.ismartcoding.plain.Prefs
+import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.ui.base.*
-import com.ismartcoding.plain.ui.apps.components.*
-import com.ismartcoding.plain.ui.audio.components.*
-import com.ismartcoding.plain.ui.notes.components.*
-import com.ismartcoding.plain.ui.web.components.*
 import com.ismartcoding.plain.ui.components.*
-import com.ismartcoding.plain.ui.media.*
 import com.ismartcoding.plain.ui.components.DialogHelper
 import com.ismartcoding.plain.ui.navigation.Routing
 import kotlinx.coroutines.Dispatchers
@@ -69,7 +57,7 @@ fun WebSecurityPage(navController: NavHostController) {
         if (editPassword.value != password) editPassword.value = password
         scope.launch(Dispatchers.Default) {
             try {
-                sslSignature = getSSLSignature().toSignature()
+                sslSignature = RustNativeApi.tlsCertificateSignature().toSignature()
             } catch (ex: Exception) {
                 LogCat.e("Failed to get SSL signature: ${ex.message}"); ex.printStackTrace()
             }
@@ -86,20 +74,20 @@ fun WebSecurityPage(navController: NavHostController) {
                         PListItem(modifier = Modifier.clickable {
                             scope.launch(Dispatchers.Default) {
                                 Prefs.setPasswordType(
-                                    if (passwordType == PasswordType.NONE.value) PasswordType.FIXED else PasswordType.NONE
+                                    if (passwordType == PasswordType.NONE) PasswordType.FIXED else PasswordType.NONE
                                 )
                             }
                         }, title = stringResource(Res.string.require_password)) {
-                            Switch(checked = passwordType != PasswordType.NONE.value, onCheckedChange = {
+                            Switch(checked = passwordType != PasswordType.NONE, onCheckedChange = {
                                 scope.launch(Dispatchers.Default) {
                                     Prefs.setPasswordType(
-                                        if (passwordType == PasswordType.NONE.value) PasswordType.FIXED else PasswordType.NONE
+                                        if (passwordType == PasswordType.NONE) PasswordType.FIXED else PasswordType.NONE
                                     )
                                 }
                             })
                             HorizontalSpace(8.dp)
                         }
-                        if (passwordType != PasswordType.NONE.value) {
+                        if (passwordType != PasswordType.NONE) {
                             PasswordTextField(
                                 value = editPassword.value, isChanged = { editPassword.value != password },
                                 onValueChange = { editPassword.value = it }, onConfirm = { scope.launch(Dispatchers.Default) { Prefs.setPassword(it )} })
@@ -107,7 +95,7 @@ fun WebSecurityPage(navController: NavHostController) {
                                 modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 16.dp),
                                 text = stringResource(Res.string.generate_password),
                                 buttonSize = ButtonSize.MEDIUM,
-                                onClick = { scope.launch(Dispatchers.Default) { resetPasswordAsync() } })
+                                onClick = { scope.launch(Dispatchers.Default) { Prefs.resetPassword() } })
                         }
                     }
                 }
@@ -142,9 +130,8 @@ fun WebSecurityPage(navController: NavHostController) {
                             scope.launch(Dispatchers.Default) {
                                 DialogHelper.showLoading()
 
-                                generateSSLKeyStore()
-                                sslSignature = getSSLSignature().toSignature()
-                                restartServer()
+                                sslSignature = RustNativeApi.regenerateTlsCertificate().toSignature()
+                                HttpServerManager.restartHttpServer()
                                 DialogHelper.hideLoading()
                                 DialogHelper.showConfirmDialog("", LocaleHelper.getStringAsync(Res.string.ssl_certificate_reset))
                             }

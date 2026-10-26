@@ -1,11 +1,12 @@
 package com.ismartcoding.plain.rust
 
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 
 import com.ismartcoding.plain.platform.system.*
-import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.rust.native.RustNativeBindings
 import com.ismartcoding.plain.rust.host.RustHostApiHandler
+import com.ismartcoding.plain.rust.host.audio.AudioCatalogObserver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Dispatchers
@@ -27,10 +28,10 @@ object RustRuntime {
     private var sessionToken: String? = null
     private var collectorsStarted = false
 
-    fun start() = lock.withLock {
+    fun start(audioCatalogObserver: AudioCatalogObserver? = null) = lock.withLock {
         val token = sessionToken ?: generateChaCha20Key().also { sessionToken = it }
         val config = rustStartupConfig
-        val result = JsonHelper.jsonDecode<RustStartupResult>(RustNativeApi.startCore(
+        val result = JsonHelper.jsonDecode<RustStartupResult>(RustNativeBindings.startCore(
             dataDir, token, JsonHelper.jsonEncode(config)))
         check(result.errorCode.isEmpty()) { result.error }
         require(result.logFile.startsWith('/')) { "Rust log file path required" }
@@ -41,7 +42,7 @@ object RustRuntime {
             Prefs.load()
             isCoreInitialized = true
             RustEventHandler.start(scope)
-            RustHostApiHandler.start(scope)
+            RustHostApiHandler.start(scope, audioCatalogObserver)
             collectorsStarted = true
         }
     }

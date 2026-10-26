@@ -18,7 +18,6 @@ import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.base.PDialogRadioRow
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.components.DialogHelper
-import com.ismartcoding.plain.ui.feeds.FeedSettingsViewModel
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 import kotlinx.coroutines.launch
 

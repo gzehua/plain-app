@@ -3,7 +3,6 @@ package com.ismartcoding.plain.ui.audio
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.CancellationException
 import com.ismartcoding.plain.features.audio.AudioOverviewClient
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.conflate
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,8 +23,8 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.platform.system.AppFeatureType
-import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.features.audio.AudioPlaylistsClient
 import com.ismartcoding.plain.features.audio.AudioQueueClient
 import com.ismartcoding.plain.i18n.*
@@ -38,16 +37,12 @@ import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.components.NeedPermissionColumn
 import com.ismartcoding.plain.ui.base.PSheetActionRow
-import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.media.MediaTopBar
 import com.ismartcoding.plain.ui.audio.components.PlaylistNameDialog
-import com.ismartcoding.plain.ui.audio.AudioHomeViewModel
-import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
-import com.ismartcoding.plain.ui.audio.AudioViewModel
 import com.ismartcoding.plain.ui.casting.CastViewModel
 import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
@@ -166,7 +161,7 @@ fun AudioHomePage(
         scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
         onSortSelected = { sortBy ->
             scope.launch(Dispatchers.Default) {
-                Prefs.set(PrefKeys.AUDIO_SORT_BY, sortBy.ordinal)
+                Prefs.set(PrefKeys.AUDIO_SORT_BY, sortBy.name)
                 audioVM.sortBy.value = sortBy
                 audioVM.loadAsync(tagsVM)
             }

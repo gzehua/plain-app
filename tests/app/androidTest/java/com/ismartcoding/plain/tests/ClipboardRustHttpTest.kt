@@ -4,9 +4,9 @@ import com.ismartcoding.plain.rust.sendEventToRust
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.clipboard.ClipboardClient
-import com.ismartcoding.plain.app.events.ClipboardReportData
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.events.ClipboardReportData
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isEnabledAsync

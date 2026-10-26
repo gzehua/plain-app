@@ -25,6 +25,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.Capability
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
@@ -36,7 +37,6 @@ import com.ismartcoding.plain.i18n.casting_to
 import com.ismartcoding.plain.i18n.customize_home_features
 import com.ismartcoding.plain.i18n.launcher_shortcuts
 import com.ismartcoding.plain.i18n.tools
-import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.components.ActionButtonAddWithMenu
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PDropdownMenuItem

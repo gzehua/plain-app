@@ -2,8 +2,6 @@ package com.ismartcoding.plain.ui.onboarding
 
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
-import com.ismartcoding.plain.preferences.*
-
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
@@ -21,8 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.theme.DarkTheme
-import com.ismartcoding.plain.i18n.*
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes

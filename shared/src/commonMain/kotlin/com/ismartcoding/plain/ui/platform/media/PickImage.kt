@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import com.ismartcoding.plain.features.files.PickFileTag
-import com.ismartcoding.plain.app.events.PickFileResultEvent
+import com.ismartcoding.plain.events.PickFileResultEvent
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException

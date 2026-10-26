@@ -66,7 +66,7 @@ mod android {
         sys::jstring,
     };
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_filePathsNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_filePaths(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         paths: JString<'_>,
@@ -79,7 +79,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_importNoteImageNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_importNoteImage(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         source: JString<'_>,
@@ -93,7 +93,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_importPomodoroSoundNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_importPomodoroSound(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         source: JString<'_>,

@@ -6,8 +6,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.features.pomodoro.PomodoroClient
-import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.models.PomodoroState
 import com.ismartcoding.plain.models.PomodoroToday
 import kotlinx.coroutines.Job

@@ -2,8 +2,6 @@ package com.ismartcoding.plain.ui.audio.player.components
 
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
-import com.ismartcoding.plain.preferences.*
-
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.theme.DarkTheme
 import androidx.compose.foundation.background
@@ -35,6 +33,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.theme.listItemSubtitle

@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.*
 import kotlinx.serialization.json.*
 import kotlin.test.*
-import com.ismartcoding.plain.app.TempData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -21,7 +20,12 @@ class AudioEngineHostTest {
         override val isPlayingFlow = MutableStateFlow(false)
         override var currentPath = "song"
         override var progress = 0L
+        var lastPositionMs = 0L
         override fun bindRevision(revision: Long) { calls += "bind:$revision" }
+        override fun restorePlayback(revision: Long, positionMs: Long) {
+            lastPositionMs = positionMs
+            bindRevision(revision)
+        }
         override suspend fun load(audio: AudioItem, positionMs: Long, speed: Float, revision: Long) {
             calls += "load"
             gate.await()
@@ -91,19 +95,17 @@ class AudioEngineHostTest {
         val player = Player()
         player.gate.complete(Unit)
         val previous = AudioEngineHost.install(player)
-        val position = TempData.audioPlayPosition
         try {
             AudioEngineHost.command(command(true))
-            TempData.audioPlayPosition = 777
+            player.lastPositionMs = 777
             AudioEngineHost.restore(buildJsonObject { put("path", "song"); put("revision", 4); put("positionMs", 0) })
-            assertEquals(777L, TempData.audioPlayPosition)
+            assertEquals(777L, player.lastPositionMs)
             AudioEngineHost.restore(buildJsonObject { put("path", "song"); put("revision", 6); put("positionMs", 1234) })
-            assertEquals(1234L, TempData.audioPlayPosition)
+            assertEquals(1234L, player.lastPositionMs)
             AudioEngineHost.restore(buildJsonObject { put("path", "song"); put("revision", 6); put("positionMs", 0) })
-            assertEquals(1234L, TempData.audioPlayPosition)
+            assertEquals(1234L, player.lastPositionMs)
             assertEquals(listOf("bind:5", "load", "bind:6"), player.calls)
         } finally {
-            TempData.audioPlayPosition = position
             AudioEngineHost.install(previous)
             Dispatchers.resetMain()
         }

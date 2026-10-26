@@ -2,62 +2,58 @@ package com.ismartcoding.plain.rust.native
 
 import com.ismartcoding.plain.features.sessions.CreatedSession
 import com.ismartcoding.plain.features.settings.AppUpdateDownload
+import com.ismartcoding.plain.lib.JsonHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
-/** Local-only JNI (Android) / C (iOS) boundary; no HTTP or session routing. */
-internal expect object RustNativeApi {
-    fun startCore(dataDir: String, token: String, configJson: String): String
-    fun graphql(request: String): String
-    fun next(stream: String): String
-    fun send(action: String, message: String, bytes: ByteArray): String
-    fun uploadChunk(id: String, index: Long, bytes: ByteArray): String
-    fun resourceOpen(id: String): String
-    fun resourceWrite(id: String, bytes: ByteArray): String
-    fun resourceClose(id: String, failed: Boolean): String
-    fun fileIcon(extension: String): String
-
-    suspend fun restartHttpServer(): Boolean
-    fun httpStatus(): String
-    suspend fun lanIpv4Addresses(): List<String>
-    suspend fun bleIncoming(remoteHost: String, characteristicUuid: String, bytes: ByteArray): ByteArray
-    suspend fun checkHttp(): Boolean
-    suspend fun tlsCertificateSignature(): ByteArray
-    suspend fun regenerateTlsCertificate(): ByteArray
-    suspend fun importTlsCertificatePem(certificatePem: String, privateKeyPem: String): ByteArray
-    suspend fun importTlsCertificatePkcs12(data: ByteArray, password: String): ByteArray
-    suspend fun createSession(name: String): CreatedSession
-    suspend fun confirmWebLogin(requestId: String, allowed: Boolean): Boolean
-    suspend fun stageAppRestore(path: String): Boolean
-    suspend fun exportAppBackup(): String
-    suspend fun createCrashReport(report: String): String
-    suspend fun completeOnboarding(): Boolean
-    fun loadPreferencesResponse(): String
-    suspend fun setPref(key: String, value: JsonElement): Boolean
-    suspend fun toggleNotificationApp(packageName: String): Boolean
-    suspend fun verifyAdbToken(token: String): Boolean
-    suspend fun startAppUpdateDownload(): AppUpdateDownload
-    suspend fun cancelAppUpdateDownload(): AppUpdateDownload
-    suspend fun checkAppUpdate(automatic: Boolean): String
-
-    suspend fun resetPassword(): Boolean
-    suspend fun resetUrlToken(): Boolean
-    suspend fun resetAdbToken(): Boolean
-    suspend fun setNotificationFilterMode(mode: String): Boolean
-    suspend fun clearNotificationFilterApps(): Boolean
-    suspend fun isPairingRequestCurrent(id: String, signature: String): Boolean
-    suspend fun reconnectPeers(): Boolean
-    suspend fun filePaths(paths: List<String>): List<String?>
-    suspend fun importNoteImage(source: String, fileName: String): String
-    suspend fun importPomodoroSound(source: String): String
-    suspend fun dlnaReceiver(): JsonObject
-    suspend fun retryDlnaReceiver(): JsonObject
-    suspend fun removeDlnaRule(ip: String, allowed: Boolean): JsonObject
-    suspend fun acceptDlnaCast(remember: Boolean): JsonObject
-    suspend fun rejectDlnaCast(remember: Boolean): JsonObject
-    suspend fun scanHistory(): List<String>
-    suspend fun addScanHistory(text: String): Boolean
-    suspend fun removeScanHistory(text: String): Boolean
-    suspend fun acquireMdnsDebugSession(token: String): JsonObject
-    suspend fun releaseMdnsDebugSession(token: String): JsonObject
+internal object RustNativeApi {
+    suspend fun restartHttpServer(): Boolean = nativeCall { RustNativeBindings.restartHttpServer() }
+    suspend fun lanIpv4Addresses(): List<String> = nativeCall { RustNativeBindings.lanIpv4Addresses() }
+    suspend fun bleIncoming(remoteHost: String, characteristicUuid: String, bytes: ByteArray): ByteArray =
+        withContext(Dispatchers.IO) { RustNativeBindings.bleIncoming(remoteHost, characteristicUuid, bytes) }
+    suspend fun checkHttp(): Boolean = nativeCall { RustNativeBindings.checkHttp() }
+    suspend fun tlsCertificateSignature(): ByteArray = nativeCertificate { RustNativeBindings.tlsCertificateSignature() }
+    suspend fun regenerateTlsCertificate(): ByteArray = nativeCertificate { RustNativeBindings.regenerateTlsCertificate() }
+    suspend fun importTlsCertificatePem(certificatePem: String, privateKeyPem: String): ByteArray =
+        nativeCertificate { RustNativeBindings.importTlsCertificatePem(certificatePem, privateKeyPem) }
+    suspend fun importTlsCertificatePkcs12(data: ByteArray, password: String): ByteArray =
+        nativeCertificate { RustNativeBindings.importTlsCertificatePkcs12(data, password) }
+    suspend fun createSession(name: String): CreatedSession = nativeCall { RustNativeBindings.createSession(name) }
+    suspend fun confirmWebLogin(requestId: String, allowed: Boolean): Boolean =
+        nativeCall { RustNativeBindings.confirmWebLogin(requestId, allowed) }
+    suspend fun stageAppRestore(path: String): Boolean = nativeCall { RustNativeBindings.stageAppRestore(path) }
+    suspend fun exportAppBackup(): String = nativeCall { RustNativeBindings.exportAppBackup() }
+    suspend fun createCrashReport(report: String): String = nativeCall { RustNativeBindings.createCrashReport(report) }
+    suspend fun completeOnboarding(): Boolean = nativeCall { RustNativeBindings.completeOnboarding() }
+    suspend fun setPref(key: String, value: JsonElement): Boolean = nativeCall { RustNativeBindings.setPref(key, value.toString()) }
+    suspend fun toggleNotificationApp(packageName: String): Boolean = nativeCall { RustNativeBindings.toggleNotificationApp(packageName) }
+    suspend fun verifyAdbToken(token: String): Boolean = nativeCall { RustNativeBindings.verifyAdbToken(token) }
+    suspend fun startAppUpdateDownload(): AppUpdateDownload = nativeCall { RustNativeBindings.startAppUpdateDownload() }
+    suspend fun cancelAppUpdateDownload(): AppUpdateDownload = nativeCall { RustNativeBindings.cancelAppUpdateDownload() }
+    suspend fun checkAppUpdate(automatic: Boolean): String = nativeCall { RustNativeBindings.checkAppUpdate(automatic) }
+    suspend fun resetPassword(): Boolean = nativeCall { RustNativeBindings.resetPassword() }
+    suspend fun resetUrlToken(): Boolean = nativeCall { RustNativeBindings.resetUrlToken() }
+    suspend fun resetAdbToken(): Boolean = nativeCall { RustNativeBindings.resetAdbToken() }
+    suspend fun setNotificationFilterMode(mode: String): Boolean = nativeCall { RustNativeBindings.setNotificationFilterMode(mode) }
+    suspend fun clearNotificationFilterApps(): Boolean = nativeCall { RustNativeBindings.clearNotificationFilterApps() }
+    suspend fun isPairingRequestCurrent(id: String, signature: String): Boolean =
+        nativeCall { RustNativeBindings.isPairingRequestCurrent(id, signature) }
+    suspend fun reconnectPeers(): Boolean = nativeCall { RustNativeBindings.reconnectPeers() }
+    suspend fun filePaths(paths: List<String>): List<String?> = nativeCall { RustNativeBindings.filePaths(JsonHelper.jsonEncode(paths)) }
+    suspend fun importNoteImage(source: String, fileName: String): String =
+        nativeCall { RustNativeBindings.importNoteImage(source, fileName) }
+    suspend fun importPomodoroSound(source: String): String = nativeCall { RustNativeBindings.importPomodoroSound(source) }
+    suspend fun dlnaReceiver(): JsonObject = nativeCall { RustNativeBindings.dlnaReceiver() }
+    suspend fun retryDlnaReceiver(): JsonObject = nativeCall { RustNativeBindings.retryDlnaReceiver() }
+    suspend fun removeDlnaRule(ip: String, allowed: Boolean): JsonObject = nativeCall { RustNativeBindings.removeDlnaRule(ip, allowed) }
+    suspend fun acceptDlnaCast(remember: Boolean): JsonObject = nativeCall { RustNativeBindings.acceptDlnaCast(remember) }
+    suspend fun rejectDlnaCast(remember: Boolean): JsonObject = nativeCall { RustNativeBindings.rejectDlnaCast(remember) }
+    suspend fun scanHistory(): List<String> = nativeCall { RustNativeBindings.scanHistory() }
+    suspend fun addScanHistory(text: String): Boolean = nativeCall { RustNativeBindings.addScanHistory(text) }
+    suspend fun removeScanHistory(text: String): Boolean = nativeCall { RustNativeBindings.removeScanHistory(text) }
+    suspend fun acquireMdnsDebugSession(token: String): JsonObject = nativeCall { RustNativeBindings.acquireMdnsDebugSession(token) }
+    suspend fun releaseMdnsDebugSession(token: String): JsonObject = nativeCall { RustNativeBindings.releaseMdnsDebugSession(token) }
 }

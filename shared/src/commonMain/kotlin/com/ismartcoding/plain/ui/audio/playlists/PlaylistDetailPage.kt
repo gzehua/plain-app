@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.IDData
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.features.audio.AudioPlaylistsClient
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.i18n.*
@@ -201,7 +202,7 @@ fun PlaylistDetailPage(
         scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
         onSortSelected = { sortBy ->
             scope.launch {
-                Prefs.set(PrefKeys.AUDIO_SORT_BY, sortBy.ordinal)
+                Prefs.set(PrefKeys.AUDIO_SORT_BY, sortBy.name)
                 audioVM.sortBy.value = sortBy
             }
         },

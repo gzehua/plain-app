@@ -11,7 +11,7 @@ import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException
-import com.ismartcoding.plain.app.events.RestartAppEvent
+import com.ismartcoding.plain.events.RestartAppEvent
 import com.ismartcoding.plain.lib.sendEvent
 
 fun backup(uriStr: String) = exportBackup { path ->

@@ -2,8 +2,6 @@ package com.ismartcoding.plain.ui.settings
 
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
-import com.ismartcoding.plain.preferences.*
-
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.i18n.*
@@ -25,14 +23,14 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.ui.components.ButtonSize
-import com.ismartcoding.plain.app.events.DownloadUpdateEvent
+import com.ismartcoding.plain.events.DownloadUpdateEvent
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.ui.settings.UpdateViewModel
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 import kotlinx.coroutines.launch
 import kotlin.time.Instant

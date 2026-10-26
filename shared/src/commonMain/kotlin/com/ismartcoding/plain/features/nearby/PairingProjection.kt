@@ -7,9 +7,9 @@ import com.ismartcoding.plain.models.PairingRequestInput
 import com.ismartcoding.plain.ui.nearby.NearbyItemStatus
 import com.ismartcoding.plain.ui.nearby.NearbyViewModel
 import kotlinx.serialization.json.*
-import com.ismartcoding.plain.app.events.HPairingCanceledEvent
-import com.ismartcoding.plain.app.events.HPairingRequestReceivedEvent
-import com.ismartcoding.plain.app.events.HPairingSuccessEvent
+import com.ismartcoding.plain.events.HPairingCanceledEvent
+import com.ismartcoding.plain.events.HPairingRequestReceivedEvent
+import com.ismartcoding.plain.events.HPairingSuccessEvent
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 import com.ismartcoding.plain.lib.sendEvent
 

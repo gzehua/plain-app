@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.files.documents
 
+import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.features.files.FilesClient
 
 import androidx.compose.foundation.layout.Column
@@ -22,13 +23,13 @@ import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.models.TagRelation
 import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.i18n.file
 import com.ismartcoding.plain.lib.extensions.formatBytes
-import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
 import com.ismartcoding.plain.lib.extensions.getMimeType
-import com.ismartcoding.plain.ui.platform.media.addMediaShortcut
+import com.ismartcoding.plain.events.AddMediaShortcutEvent
+import com.ismartcoding.plain.platform.system.Capability
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.system.formatDateTime
 import com.ismartcoding.plain.ui.media.fileIconData
 import com.ismartcoding.plain.platform.system.openFileExternal
@@ -53,7 +54,6 @@ import com.ismartcoding.plain.ui.components.AddToHomeHelpAction
 import com.ismartcoding.plain.ui.components.FileRenameDialog
 import com.ismartcoding.plain.ui.components.TagSelector
 import com.ismartcoding.plain.ui.components.confirmActionAsync
-import com.ismartcoding.plain.ui.files.documents.DocsViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.archive_restore as ui_drawable_archive_restore
@@ -77,15 +77,16 @@ fun ViewDocBottomSheet(
 ) {
     val scope = rememberCoroutineScope()
     var showAddToHomeDialog by remember { mutableStateOf(false) }
+    val canAddToHome = Capability.LAUNCHER_SHORTCUTS in getDeviceCapabilities()
     val m = docsVM.selectedItem.value ?: return
     val onDismiss = {
         docsVM.selectedItem.value = null
     }
 
-    if (showAddToHomeDialog) {
+    if (showAddToHomeDialog && canAddToHome) {
         AddToHomeDialog(
             defaultLabel = remember(m.path) { m.path.getFilenameWithoutExtensionFromPath() },
-            onAddToHome = { label -> addMediaShortcut(m.path, label) },
+            onAddToHome = { label -> sendEvent(AddMediaShortcutEvent(m.path, label)) },
             onDismiss = {
                 showAddToHomeDialog = false
                 onDismiss()
@@ -172,18 +173,20 @@ fun ViewDocBottomSheet(
                     VerticalSpace(12.dp)
                     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
                         Column {
-                            PSheetActionRow(
-                                title = stringResource(Res.string.add_to_home),
-                                start = {
-                                    AsyncImage(
-                                        model = fileIconData(m.extension),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
-                                    )
-                                },
-                                trailing = { AddToHomeHelpAction() },
-                            ) {
-                                showAddToHomeDialog = true
+                            if (canAddToHome) {
+                                PSheetActionRow(
+                                    title = stringResource(Res.string.add_to_home),
+                                    start = {
+                                        AsyncImage(
+                                            model = fileIconData(m.extension),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(24.dp),
+                                        )
+                                    },
+                                    trailing = { AddToHomeHelpAction() },
+                                ) {
+                                    showAddToHomeDialog = true
+                                }
                             }
                             PSheetActionRow(UiRes.drawable.ui_drawable_square_arrow_out_up_right, stringResource(Res.string.open_with)) {
                                 openFileExternal(m.path)

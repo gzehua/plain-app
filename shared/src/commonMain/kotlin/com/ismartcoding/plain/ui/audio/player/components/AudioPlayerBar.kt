@@ -15,7 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.media.audioIsPlayingFlow
 import com.ismartcoding.plain.platform.media.audioPause
@@ -54,7 +53,6 @@ fun AudioPlayerBar(
                 title = audio.title; artist = audio.artist
                 durationMs = audio.durationMs.toFloat(); progress = audioPlayerProgress().toFloat()
             }
-            if (TempData.audioPlayerVisible.value) TempData.audioPlayerVisible.value = path.isNotEmpty()
         }
     }
 
@@ -80,7 +78,7 @@ fun AudioPlayerBar(
             progress = progress,
             durationMs = durationMs,
             isPlaying = isPlaying,
-            onClickContent = { TempData.audioPlayerVisible.value = true },
+            onClickContent = { audioQueueVM.audioPlayerVisible.value = true },
             onClickQueue = { showQueue = true },
             onPlayPause = { if (isPlaying) audioPause() else audioPlay() },
         )

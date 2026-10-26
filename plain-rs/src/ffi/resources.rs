@@ -198,7 +198,7 @@ mod android {
         sys::{jboolean, jstring},
     };
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_resourceFileNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_resourceFile(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         id: JString<'_>,
@@ -214,7 +214,7 @@ mod android {
         .into_raw()
     }
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_resourceOpenNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_resourceOpen(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         id: JString<'_>,
@@ -226,7 +226,7 @@ mod android {
         .into_raw()
     }
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_resourceWriteNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_resourceWrite(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         id: JString<'_>,
@@ -241,7 +241,7 @@ mod android {
         .into_raw()
     }
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_resourceCloseNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_resourceClose(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         id: JString<'_>,

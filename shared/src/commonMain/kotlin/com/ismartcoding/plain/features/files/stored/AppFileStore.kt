@@ -1,22 +1,13 @@
 package com.ismartcoding.plain.features.files.stored
 
-import com.ismartcoding.plain.api.graphql.Mutation
-import com.ismartcoding.plain.api.graphql.Query
+import com.ismartcoding.plain.graphql.Mutation
+import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import kotlinx.serialization.Serializable
 import com.ismartcoding.plain.models.AppFile
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.platform.files.queryPickedFileInfo
-import com.ismartcoding.plain.features.feeds.*
-import com.ismartcoding.plain.ui.feeds.*
-import com.ismartcoding.plain.features.files.*
-import com.ismartcoding.plain.ui.files.*
-import com.ismartcoding.plain.features.notes.*
-import com.ismartcoding.plain.ui.notes.*
-import com.ismartcoding.plain.features.tags.*
-import com.ismartcoding.plain.ui.tags.*
-import com.ismartcoding.plain.rust.graphql.*
 import com.ismartcoding.plain.ui.files.stored.VAppFile
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable

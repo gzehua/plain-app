@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.bookmarks
 
-import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.models.Bookmark
 import com.ismartcoding.plain.lib.JsonHelper

@@ -12,7 +12,7 @@ import com.ismartcoding.plain.ui.state.launchSafe
 
 import com.ismartcoding.plain.models.File as FileEntry
 
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 
 import com.ismartcoding.plain.i18n.*
 
@@ -39,7 +39,6 @@ import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
 

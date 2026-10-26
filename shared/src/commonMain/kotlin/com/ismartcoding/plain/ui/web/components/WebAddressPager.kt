@@ -12,6 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.PRangeDots
 import kotlinx.coroutines.launch
 

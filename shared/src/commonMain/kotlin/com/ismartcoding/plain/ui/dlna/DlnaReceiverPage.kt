@@ -17,13 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.features.dlna.DlnaRendererState
 import com.ismartcoding.plain.ui.base.AlertType
@@ -35,7 +34,6 @@ import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.components.PIconButton
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
-import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.state.launchSafe
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.resources.Res as UiRes

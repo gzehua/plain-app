@@ -19,7 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.features.files.PickFileType
-import com.ismartcoding.plain.app.events.PickFileEvent
+import com.ismartcoding.plain.events.PickFileEvent
 import com.ismartcoding.plain.lib.sendEvent
 
 @Composable

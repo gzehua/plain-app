@@ -2,7 +2,7 @@ package com.ismartcoding.plain.rust
 
 import com.ismartcoding.plain.models.PomodoroState
 import com.ismartcoding.plain.models.PomodoroToday
-import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.features.pomodoro.PomodoroClient.today
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +13,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineStart
 import com.ismartcoding.plain.lib.Channel
-import com.ismartcoding.plain.app.events.HPomodoroChangedEvent
+import com.ismartcoding.plain.events.HPomodoroChangedEvent
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonElement
 import kotlin.test.Test

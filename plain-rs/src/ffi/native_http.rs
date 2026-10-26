@@ -115,7 +115,7 @@ mod android {
     };
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_bleIncomingNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_bleIncoming(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         remote_host: JString<'_>,
@@ -148,7 +148,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_checkHttpNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_checkHttp(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -158,7 +158,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_httpStatusNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_httpStatus(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {

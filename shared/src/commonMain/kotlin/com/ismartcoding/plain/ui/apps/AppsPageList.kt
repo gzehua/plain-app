@@ -32,7 +32,6 @@ import com.ismartcoding.plain.ui.apps.AppsViewModel
 import com.ismartcoding.plain.models.Package as AppPackage
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.theme.PlainTheme
-import com.ismartcoding.plain.platform.system.getApplicationIcon
 import androidx.compose.foundation.layout.PaddingValues
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -59,7 +58,7 @@ fun AppsPageList(
                     ) {
                         item { TopSpace() }
                         items(items, key = { it.id }) { m ->
-                            PackageListItem(item = m, iconProvider = { getApplicationIcon(it) }, modifier = PlainTheme.getCardModifier(), onClick = { navController.navigate(Routing.AppDetails(m.id)) })
+                            PackageListItem(item = m, modifier = PlainTheme.getCardModifier(), onClick = { navController.navigate(Routing.AppDetails(m.id)) })
                             VerticalSpace(dp = 8.dp)
                         }
                         item {

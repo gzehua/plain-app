@@ -37,7 +37,7 @@ import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.platform.system.isGestureInteractionMode
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.components.NeedPermissionColumn
@@ -64,7 +64,6 @@ import com.ismartcoding.plain.ui.media.groupMediaByDate
 import com.ismartcoding.plain.ui.casting.CastViewModel
 import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
-import com.ismartcoding.plain.ui.videos.VideosViewModel
 import com.ismartcoding.plain.ui.state.exitSearchMode
 import com.ismartcoding.plain.ui.navigation.NavLoadGate
 import com.ismartcoding.plain.ui.casting.CastDialog
@@ -172,7 +171,7 @@ fun VideosPage(
                 scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
                 onSortSelected = { sortBy ->
                     scope.launch(Dispatchers.Default) {
-                        Prefs.set(PrefKeys.VIDEO_SORT_BY, sortBy.ordinal)
+                        Prefs.set(PrefKeys.VIDEO_SORT_BY, sortBy.name)
                         videosVM.sortBy.value = sortBy
                         videosVM.loadAsync(tagsVM)
                     }

@@ -3,10 +3,10 @@ package com.ismartcoding.plain
 import com.ismartcoding.plain.ui.Identifiable
 
 @PublishedApi
-internal expect var buildTypeValue: String
+internal var buildTypeValue: String = ""
 
 @PublishedApi
-internal expect var buildChannelValue: String
+internal var buildChannelValue: String = ""
 
 val buildType: String
     get() = buildTypeValue

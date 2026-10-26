@@ -16,19 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.features.settings.HttpServerState
+import com.ismartcoding.plain.features.settings.ServiceState
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.app.HttpServerManager
+import com.ismartcoding.plain.HttpServerManager
 import com.ismartcoding.plain.platform.system.Capability
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.ui.base.*
-import com.ismartcoding.plain.ui.apps.components.*
-import com.ismartcoding.plain.ui.audio.components.*
-import com.ismartcoding.plain.ui.notes.components.*
-import com.ismartcoding.plain.ui.web.components.*
-import com.ismartcoding.plain.ui.components.*
-import com.ismartcoding.plain.ui.media.*
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import com.ismartcoding.plain.ui.theme.tipsText
 import org.jetbrains.compose.resources.painterResource
@@ -39,8 +33,8 @@ import com.ismartcoding.plain.ui.resources.chevron_up as ui_drawable_chevron_up
 
 @Composable
 fun PlainAppServiceSection(
-    backgroundEnabled: Boolean,
-    backgroundState: HttpServerState,
+    foregroundServiceActive: Boolean,
+    foregroundServiceState: ServiceState,
     errorMessage: String,
     onRetry: () -> Unit,
     onStayOnline: () -> Unit,
@@ -56,9 +50,9 @@ fun PlainAppServiceSection(
                 subtitle = stringResource(Res.string.keep_online_in_background_desc),
             ) {
                 Switch(
-                    checked = backgroundEnabled,
-                    enabled = !backgroundState.isProcessing(),
-                    onCheckedChange = { HttpServerManager.setBackgroundEnabled(it) },
+                    checked = foregroundServiceActive,
+                    enabled = !foregroundServiceState.isProcessing(),
+                    onCheckedChange = { HttpServerManager.setBackgroundServiceEnabled(it) },
                 )
             }
         }

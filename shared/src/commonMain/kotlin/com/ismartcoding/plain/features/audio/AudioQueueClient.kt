@@ -1,8 +1,7 @@
 package com.ismartcoding.plain.features.audio
 
-import com.ismartcoding.plain.api.graphql.Mutation
-import com.ismartcoding.plain.api.graphql.Query
-import com.ismartcoding.plain.rust.sendEventToRust
+import com.ismartcoding.plain.graphql.Mutation
+import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import kotlinx.serialization.Serializable
 import com.ismartcoding.plain.models.AudioPlayback
@@ -10,8 +9,6 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.rust.graphql.*
 import kotlinx.serialization.json.*
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
 
 object AudioQueueClient {
     suspend fun playback(): AudioPlayback = JsonHelper.jsonDecodeFromElement(
@@ -40,20 +37,6 @@ object AudioQueueClient {
     suspend fun queuedMediaIds(): Set<String> = RustGraphqlApi.graphql(
         Query.audioQueueIds(Int.MAX_VALUE),
     ).getValue("audioQueueItems").let { JsonHelper.jsonDecodeFromElement<List<QueuedMediaId>>(it) }.mapNotNull { it.mediaId }.toSet()
-
-    suspend fun onStarted(audio: AudioItem, revision: Long) {
-        sendEventToRust(HostEvent(
-            EventType.AUDIO_STARTED_REPORTED,
-            JsonHelper.jsonEncode(AudioPlaybackReport(audio.path, revision)),
-        ))
-    }
-
-    suspend fun onCompleted(path: String, revision: Long) {
-        sendEventToRust(HostEvent(
-            EventType.AUDIO_COMPLETED_REPORTED,
-            JsonHelper.jsonEncode(AudioPlaybackReport(path, revision)),
-        ))
-    }
 
     suspend fun queueTotal(): Int = RustGraphqlApi.graphql(Query.audioQueueItemCount()).getValue("audioQueueItemCount").jsonPrimitive.int
     suspend fun queuePage(offset: Int, limit: Int): List<AudioItem> = queuePageFiltered("",offset,limit)

@@ -1,8 +1,7 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.platform.media.call
 
-import com.ismartcoding.plain.app.events.WindowFocusChangedEvent
+import com.ismartcoding.plain.events.WindowFocusChangedEvent
 import com.ismartcoding.plain.lib.sendEvent
 import platform.Foundation.NSNotificationCenter
 import platform.UIKit.UIApplicationDidEnterBackgroundNotification

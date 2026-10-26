@@ -16,12 +16,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,50 +28,33 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.lib.TimeHelper
-import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.events.AppEvents
 import com.ismartcoding.plain.ui.components.ButtonType
-import com.ismartcoding.plain.app.events.SleepTimerEvent
-import com.ismartcoding.plain.app.events.CancelSleepTimerEvent
+import com.ismartcoding.plain.events.SleepTimerEvent
+import com.ismartcoding.plain.events.CancelSleepTimerEvent
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.PModalBottomSheet
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SleepTimerPage(onDismissRequest: () -> Unit) {
-    val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var timerActive by remember { mutableStateOf(false) }
-    var remainingTimeMs by remember { mutableLongStateOf(0L) }
+    val durationMs by AppEvents.audioSleepTimerDurationMs.collectAsState()
+    val endsAt by AppEvents.audioSleepTimerEndsAt.collectAsState()
+    var remainingTimeMs by remember(endsAt) { mutableLongStateOf(maxOf(0L, endsAt - TimeHelper.nowMillis())) }
     var selectedTimeMinutes by remember { mutableIntStateOf(15) }
-    var timerJob by remember { mutableStateOf<Job?>(null) }
+    val timerActive = remainingTimeMs > 0
 
     LaunchedEffect(Unit) {
-        val futureTime = TempData.audioSleepTimerFutureTime
-        if (futureTime > 0) {
-            timerActive = true
-            val remaining = futureTime - TimeHelper.nowMillis()
-            if (remaining > 0) remainingTimeMs = remaining
-        }
         sheetState.expand()
     }
 
-    LaunchedEffect(timerActive) {
-        if (timerActive && remainingTimeMs > 0) {
-            timerJob?.cancel()
-            timerJob = scope.launch {
-                while (true) {
-                    delay(1000)
-                    remainingTimeMs = maxOf(0, TempData.audioSleepTimerFutureTime - TimeHelper.nowMillis())
-                    if (remainingTimeMs <= 0) {
-                        timerActive = false; break
-                    }
-                }
-            }
+    LaunchedEffect(endsAt) {
+        while (remainingTimeMs > 0) {
+            delay(1000)
+            remainingTimeMs = maxOf(0L, endsAt - TimeHelper.nowMillis())
         }
     }
 
@@ -104,17 +86,13 @@ fun SleepTimerPage(onDismissRequest: () -> Unit) {
                             .fillMaxWidth()
                             .weight(1f)
                     ) {
-                        SleepTimerActiveContent(remainingTimeMs, selectedTimeMinutes)
+                        SleepTimerActiveContent(remainingTimeMs, durationMs)
                         Spacer(modifier = Modifier.weight(1f))
                         PFilledButton(
                             modifier = Modifier.fillMaxWidth(),
                             text = stringResource(Res.string.cancel_timer),
                             onClick = {
-                                scope.launch {
-                                    withIO { TempData.audioSleepTimerFutureTime = 0 }
-                                    timerJob?.cancel(); timerActive = false; remainingTimeMs = 0
-                                    sendEvent(CancelSleepTimerEvent())
-                                }
+                                sendEvent(CancelSleepTimerEvent())
                             }, type = ButtonType.DANGER
                         )
                         Spacer(modifier = Modifier.height(24.dp))
@@ -132,15 +110,7 @@ fun SleepTimerPage(onDismissRequest: () -> Unit) {
                             modifier = Modifier.fillMaxWidth(),
                             text = stringResource(Res.string.start_timer),
                             onClick = {
-                                scope.launch {
-                                    withIO {
-                                        val durationMs = selectedTimeMinutes * 60 * 1000L
-                                        TempData.audioSleepTimerFutureTime = TimeHelper.nowMillis() + durationMs
-                                        remainingTimeMs = durationMs
-                                    }
-                                    timerActive = true
-                                    sendEvent(SleepTimerEvent(selectedTimeMinutes * 60 * 1000L))
-                                }
+                                sendEvent(SleepTimerEvent(selectedTimeMinutes * 60 * 1000L))
                             })
                         Spacer(modifier = Modifier.height(24.dp))
                     }

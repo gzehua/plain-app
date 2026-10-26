@@ -1,13 +1,13 @@
 package com.ismartcoding.plain
 
+import com.ismartcoding.plain.app.Constants
+
 import com.ismartcoding.plain.ui.app.navControllerState
 import com.ismartcoding.plain.app.AppIntents
-import com.ismartcoding.plain.app.Constants
 import com.ismartcoding.plain.app.IntentExtras
 
 import android.content.Intent
 import androidx.navigation.NavDestination.Companion.hasRoute
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.i18n.Res
@@ -65,7 +65,7 @@ internal fun MainActivity.handleIntent(intent: Intent) {
             navControllerState.value?.navigate(Routing.PlayMedia(path))
         } else {
             // Images/videos preview as an overlay above the app UI (no black route).
-            TempData.shortcutMediaPath.value = path
+            mainVM.shortcutMediaPath.value = path
         }
     }
 }

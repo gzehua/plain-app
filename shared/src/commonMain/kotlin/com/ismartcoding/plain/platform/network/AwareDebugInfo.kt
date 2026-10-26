@@ -34,6 +34,3 @@ data class AwareDebugInfo(
     val subscribeSessionStatus: String = "",
     val discoveredPeerCount: Int = 0,
 )
-
-/** Returns a fresh snapshot of Wi-Fi Aware debug info. */
-expect fun getAwareDebugInfo(): AwareDebugInfo

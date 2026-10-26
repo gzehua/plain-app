@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.files
 
-import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import kotlinx.serialization.json.jsonPrimitive
 

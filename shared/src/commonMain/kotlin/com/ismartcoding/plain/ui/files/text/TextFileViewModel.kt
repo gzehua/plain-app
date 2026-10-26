@@ -7,12 +7,11 @@ import com.ismartcoding.plain.preferences.*
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.state.launchSafe
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.files.getFileByMediaId
 import com.ismartcoding.plain.platform.files.isContentUri
-import com.ismartcoding.plain.platform.files.openByteSource
-import com.ismartcoding.plain.platform.files.writeByteChunksStreaming
 import com.ismartcoding.plain.ui.components.codeeditor.EditorFileIO
 import com.ismartcoding.plain.ui.components.codeeditor.EditorController
 import com.ismartcoding.plain.ui.components.codeeditor.EditorLoadState

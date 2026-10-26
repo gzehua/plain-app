@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.nearby.connections
 
-import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.theme.PlainTheme
 
 import com.ismartcoding.plain.i18n.*
@@ -10,13 +9,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.lib.UrlHelper
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.components.CornerCopyCard
 import com.ismartcoding.plain.ui.base.PFilledButton
@@ -34,7 +34,7 @@ fun ApiTokenTipsPage(
     clientId: String,
     token: String,
 ) {
-    val hostname = remember { TempData.mdnsHostname }
+    val hostname by Prefs.mdnsHostname.collectAsState()
     val httpPort = Prefs.httpPort.collectAsState()
 
     val curlReal = remember(clientId, token, hostname, httpPort.value) {

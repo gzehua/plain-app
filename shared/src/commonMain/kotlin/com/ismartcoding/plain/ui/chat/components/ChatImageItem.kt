@@ -30,7 +30,7 @@ import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.formatDurationMs
 import com.ismartcoding.plain.lib.extensions.isVideoFast
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.ui.platform.media.TransformImageView
+import com.ismartcoding.plain.ui.media.viewer.previewer.TransformImageViewWithUri
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.media.viewer.previewer.rememberTransformItemState
 import com.ismartcoding.plain.ui.media.MediaPreviewData
@@ -88,7 +88,7 @@ internal fun ChatImageItem(
             }
         },
     ) {
-        TransformImageView(
+        TransformImageViewWithUri(
             modifier = Modifier.size(imageWidthDp).clip(RoundedCornerShape(6.dp)),
             path = previewPath,
             fileName = item.fileName,

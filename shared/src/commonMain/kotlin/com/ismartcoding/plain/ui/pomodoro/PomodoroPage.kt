@@ -1,8 +1,5 @@
 package com.ismartcoding.plain.ui.pomodoro
 
-import com.ismartcoding.plain.ui.permissions.getText
-import com.ismartcoding.plain.ui.permissions.getGrantAccessText
-
 import com.ismartcoding.plain.models.PomodoroSettings
 import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.i18n.*
@@ -28,13 +25,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.components.PCapsuleMoreClose
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PSheetActionRow
 import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.ui.pomodoro.PomodoroViewModel
 import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.settings as ui_drawable_settings

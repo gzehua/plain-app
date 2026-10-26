@@ -32,10 +32,9 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.Prefs
+import com.ismartcoding.plain.events.AppEvents
 import com.ismartcoding.plain.models.AudioItem
-import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.lib.TimeHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.platform.media.audioIsPlayingFlow
@@ -47,7 +46,6 @@ import com.ismartcoding.plain.platform.media.audioSeekTo
 import com.ismartcoding.plain.platform.media.audioSkipToNext
 import com.ismartcoding.plain.platform.media.audioSkipToPrevious
 import com.ismartcoding.plain.ui.platform.system.exitImmersiveFullscreen
-import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.base.PModalBottomSheet
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.resources.Res as UiRes
@@ -73,7 +71,7 @@ fun AudioPlayerPage(audioQueueVM: AudioQueueViewModel, onDismissRequest: () -> U
     var showQueue by remember { mutableStateOf(false) }
     var showSleepTimer by remember { mutableStateOf(false) }
     var isDragging by remember { mutableStateOf(false) }
-    var isTimerActive by remember { mutableStateOf(false) }
+    val sleepTimerEndsAt by AppEvents.audioSleepTimerEndsAt.collectAsState()
     var viewMode by remember { mutableStateOf(PlayerView.COVER) }
     val currentPlayingPath = audioQueueVM.selectedPath
 
@@ -113,13 +111,6 @@ fun AudioPlayerPage(audioQueueVM: AudioQueueViewModel, onDismissRequest: () -> U
                 progress = audioPlayerProgress().toFloat()
                 delay(250)
             }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            isTimerActive = TempData.audioSleepTimerFutureTime > TimeHelper.nowMillis()
-            delay(1000)
         }
     }
 
@@ -201,7 +192,7 @@ fun AudioPlayerPage(audioQueueVM: AudioQueueViewModel, onDismissRequest: () -> U
                 },
                 playMode = playMode,
                 playbackSpeed = playbackSpeed,
-                isTimerActive = isTimerActive,
+                isTimerActive = sleepTimerEndsAt > 0,
                 onSleepTimer = { showSleepTimer = true },
                 onOpenQueue = { showQueue = true },
                 onPlayPrevious = { audioSkipToPrevious() },
@@ -213,7 +204,7 @@ fun AudioPlayerPage(audioQueueVM: AudioQueueViewModel, onDismissRequest: () -> U
     }
 
     if (showSleepTimer) {
-        SleepTimerPage(onDismissRequest = { showSleepTimer = false; isTimerActive = TempData.audioSleepTimerFutureTime > TimeHelper.nowMillis() })
+        SleepTimerPage(onDismissRequest = { showSleepTimer = false })
     }
     if (showQueue) {
         AudioQueuePage(audioQueueVM, onDismissRequest = { showQueue = false })

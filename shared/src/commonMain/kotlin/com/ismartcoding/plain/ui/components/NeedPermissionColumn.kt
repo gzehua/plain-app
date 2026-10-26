@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.components
 
-import com.ismartcoding.plain.ui.permissions.getText
 import com.ismartcoding.plain.ui.permissions.getGrantAccessText
 
 import com.ismartcoding.plain.ui.base.AnimatedIconContainer
@@ -33,7 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ismartcoding.plain.platform.permissions.FeaturePermission
-import com.ismartcoding.plain.app.events.RequestPermissionsEvent
+import com.ismartcoding.plain.events.RequestPermissionsEvent
 import com.ismartcoding.plain.lib.sendEvent
 
 @Composable

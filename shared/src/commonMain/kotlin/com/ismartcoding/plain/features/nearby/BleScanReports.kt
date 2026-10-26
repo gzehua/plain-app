@@ -5,9 +5,8 @@ import com.ismartcoding.plain.rust.sendEventToRust
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
-import kotlinx.serialization.json.*
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
 
 object BleScanReports {
     suspend fun scanState(id: String, active: Boolean) {

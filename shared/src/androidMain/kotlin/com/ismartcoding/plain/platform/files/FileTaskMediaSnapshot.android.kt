@@ -7,7 +7,7 @@ import android.provider.MediaStore
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.platform.media.MediaStoreFileRow
 
-actual fun queryFileTaskMedia(paths: List<String>): List<MediaStoreFileRow> {
+fun queryFileTaskMedia(paths: List<String>): List<MediaStoreFileRow> {
     if (paths.isEmpty()) return emptyList()
     require(paths.size <= 128)
     check(Permission.WRITE_EXTERNAL_STORAGE.isGranted()) { "Media identity permission denied" }

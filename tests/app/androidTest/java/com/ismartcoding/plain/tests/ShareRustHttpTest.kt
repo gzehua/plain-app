@@ -7,7 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.ismartcoding.plain.features.shares.SharedLinkClient
 import com.ismartcoding.plain.features.shares.SharesClient
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.network.*
 import com.ismartcoding.plain.testing.CryptoFixtures
 import kotlinx.coroutines.runBlocking

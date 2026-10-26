@@ -33,11 +33,6 @@ import com.ismartcoding.plain.ui.resources.file_video as ui_drawable_file_video
 import com.ismartcoding.plain.ui.resources.image as ui_drawable_image
 import com.ismartcoding.plain.i18n.image
 
-/**
- * CommonMain variant that accepts a String uri (e.g. a MediaStore content-uri string).
- * The Android [applyForceVideoDecoder] installs [com.ismartcoding.plain.platform.system.ForceVideoDecoder]
- * when [forceVideoDecoder] is true; on iOS it is a no-op.
- */
 @Composable
 fun TransformImageViewWithUri(
     modifier: Modifier = Modifier,

@@ -12,16 +12,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.dlna_receiver
 import com.ismartcoding.plain.i18n.dlna_receiver_desc
-import com.ismartcoding.plain.features.dlna.DlnaRendererState
 import com.ismartcoding.plain.ui.resources.cast as ui_drawable_cast
-import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import androidx.compose.material3.Switch
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 import com.ismartcoding.plain.ui.state.launchSafe
@@ -29,7 +27,6 @@ import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.theme.tipsText
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.i18n.cast
 
 @Composable
 fun DlnaReceiverSection(navController: NavHostController) {

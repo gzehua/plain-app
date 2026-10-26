@@ -3,13 +3,11 @@ package com.ismartcoding.plain.ui.chat
 import com.ismartcoding.plain.features.chat.sendPickedAttachments
 
 import androidx.compose.ui.focus.FocusManager
-import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.features.files.PickFileType
-import com.ismartcoding.plain.app.events.PickFileResultEvent
+import com.ismartcoding.plain.events.PickFileResultEvent
 import com.ismartcoding.plain.features.chat.ChatMessageEditor
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.lib.coMain
-import com.ismartcoding.plain.ui.chat.PeerViewModel
 
 fun handleChatFileSelection(
     event: PickFileResultEvent,

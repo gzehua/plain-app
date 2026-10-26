@@ -2,13 +2,13 @@ package com.ismartcoding.plain.features.permissions
 
 import com.ismartcoding.plain.ui.permissions.PermissionItem
 
-import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.platform.permissions.Permission
 
 import com.ismartcoding.plain.platform.system.AppFeatureType
+import com.ismartcoding.plain.platform.system.Capability
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.call_log as ui_drawable_call_log
 import com.ismartcoding.plain.ui.resources.contact_round as ui_drawable_contact_round
@@ -17,8 +17,7 @@ import com.ismartcoding.plain.ui.resources.folder as ui_drawable_folder
 import com.ismartcoding.plain.ui.resources.message_square_text as ui_drawable_message_square_text
 import com.ismartcoding.plain.ui.resources.package2 as ui_drawable_package2
 import com.ismartcoding.plain.ui.resources.phone_call as ui_drawable_phone_call
-import com.ismartcoding.plain.i18n.folder
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 
 suspend fun checkEnabledAsync(permissions: Set<Permission>) {
     val enabled = Prefs.apiPermissions.value
@@ -35,7 +34,9 @@ fun allGranted(permissions: Set<Permission>): Boolean {
 fun getWebList(): List<PermissionItem> {
     val list = mutableListOf<PermissionItem>()
     list.add(PermissionItem.create(UiRes.drawable.ui_drawable_folder, Permission.WRITE_EXTERNAL_STORAGE))
-    list.add(PermissionItem.create(UiRes.drawable.ui_drawable_contact_round, Permission.WRITE_CONTACTS, setOf(Permission.READ_CONTACTS, Permission.WRITE_CONTACTS)))
+    if (AppFeatureType.CONTACTS.has()) {
+        list.add(PermissionItem.create(UiRes.drawable.ui_drawable_contact_round, Permission.WRITE_CONTACTS, setOf(Permission.READ_CONTACTS, Permission.WRITE_CONTACTS)))
+    }
     if (AppFeatureType.SMS.has()) {
         list.add(PermissionItem.create(UiRes.drawable.ui_drawable_message_square_text, Permission.READ_SMS, setOf(Permission.READ_SMS)))
         list.add(PermissionItem.create(UiRes.drawable.ui_drawable_message_square_text, Permission.SEND_SMS, setOf(Permission.SEND_SMS)))
@@ -43,7 +44,9 @@ fun getWebList(): List<PermissionItem> {
     if (AppFeatureType.CALLS.has()) {
         list.add(PermissionItem.create(UiRes.drawable.ui_drawable_call_log, Permission.WRITE_CALL_LOG, setOf(Permission.READ_CALL_LOG, Permission.WRITE_CALL_LOG)))
     }
-    list.add(PermissionItem.create(UiRes.drawable.ui_drawable_phone_call, Permission.CALL_PHONE))
+    if (Capability.CALL_PHONE in getDeviceCapabilities()) {
+        list.add(PermissionItem.create(UiRes.drawable.ui_drawable_phone_call, Permission.CALL_PHONE))
+    }
     list.add(PermissionItem.create(UiRes.drawable.ui_drawable_file_digit, Permission.READ_PHONE_NUMBERS, setOf(Permission.READ_PHONE_STATE, Permission.READ_PHONE_NUMBERS)))
     if (AppFeatureType.APPS.has()) {
         list.add(PermissionItem.create(UiRes.drawable.ui_drawable_package2, Permission.QUERY_ALL_PACKAGES))

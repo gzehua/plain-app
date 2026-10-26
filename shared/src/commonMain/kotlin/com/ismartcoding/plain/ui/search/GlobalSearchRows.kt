@@ -26,7 +26,6 @@ import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
 import com.ismartcoding.plain.platform.media.audioIsPlayingFlow
-import com.ismartcoding.plain.platform.system.getApplicationIcon
 import com.ismartcoding.plain.platform.media.getMediaItemUriString
 import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.PIcon
@@ -158,7 +157,6 @@ fun GlobalSearchRow(
         is GlobalSearchSource.App -> CardSpace {
             PackageListItem(
                 item = src.info,
-                iconProvider = { getApplicationIcon(it) },
                 modifier = PlainTheme.getCardModifier(),
                 onClick = { onOpen(hit) },
             )

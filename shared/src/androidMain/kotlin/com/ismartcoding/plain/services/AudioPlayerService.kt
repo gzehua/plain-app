@@ -21,7 +21,6 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.audio.AudioAction
 import com.ismartcoding.plain.platform.media.AndroidAudioPlayer
 import com.ismartcoding.plain.features.audio.AudioCommands
@@ -160,18 +159,16 @@ class AudioPlayerService : MediaLibraryService() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         releaseMediaSession()
+        super.onDestroy()
     }
 
     private fun releaseMediaSession() {
-        session.run {
-            release()
-            player.stop()
-            nativePlayer = null
-            player.release()
-            AndroidAudioPlayer.release()
-        }
+        AndroidAudioPlayer.release()
+        session.release()
+        player.stop()
+        nativePlayer = null
+        player.release()
     }
 }
 

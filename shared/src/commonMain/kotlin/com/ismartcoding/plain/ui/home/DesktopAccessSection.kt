@@ -1,14 +1,9 @@
 package com.ismartcoding.plain.ui.home
 
-import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.theme.PlainTheme
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,18 +15,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.access_settings
 import com.ismartcoding.plain.i18n.desktop_access
 import com.ismartcoding.plain.i18n.desktop_access_desc
 import com.ismartcoding.plain.ui.resources.devices as ui_drawable_devices
 import com.ismartcoding.plain.i18n.open_web_address
-import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PDivider
 import com.ismartcoding.plain.ui.base.PListItem
 import androidx.compose.material3.Switch
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.web.components.WebAddressPager
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
@@ -39,12 +33,10 @@ import com.ismartcoding.plain.ui.state.launchSafe
 import com.ismartcoding.plain.ui.settings.DesktopAccessSettingsViewModel
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.theme.tipsText
-import com.ismartcoding.plain.app.HttpServerManager
 import com.ismartcoding.plain.features.sessions.onlineClientIds
 import kotlinx.coroutines.flow.map
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.i18n.devices
 import com.ismartcoding.plain.platform.system.setDesktopAccessEnabled
 
 @Composable

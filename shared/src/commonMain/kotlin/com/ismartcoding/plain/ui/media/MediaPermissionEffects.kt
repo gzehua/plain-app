@@ -3,7 +3,7 @@ package com.ismartcoding.plain.ui.media
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import com.ismartcoding.plain.app.events.PermissionsResultEvent
+import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.hasPermission

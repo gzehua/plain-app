@@ -1,6 +1,8 @@
 package com.ismartcoding.plain.api.graphql
 
 import com.ismartcoding.plain.features.files.FileTaskOp
+import com.ismartcoding.plain.graphql.Mutation
+import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.models.ImageEditorProject
 import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import com.ismartcoding.plain.platform.system.DataType

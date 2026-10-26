@@ -102,6 +102,7 @@ class SystemProviderSerializationTest {
             .map { it.relativeTo(root).path }.toList()
         assertTrue(systemSources.isNotEmpty())
         val sources = systemSources + listOf(
+            "shared/src/androidMain/kotlin/com/ismartcoding/plain/rust/host/RustHostApi.android.kt",
             "shared/src/androidMain/kotlin/com/ismartcoding/plain/features/telephony/sms/SmsHelper.kt",
             "shared/src/androidMain/kotlin/com/ismartcoding/plain/features/telephony/sms/SmsConversationHelper.kt",
             "shared/src/iosMain/kotlin/com/ismartcoding/plain/platform/system/SystemProviders.ios.kt",

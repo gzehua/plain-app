@@ -19,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -37,7 +36,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.features.chat.ChatChannelStatus
@@ -64,7 +62,7 @@ import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.media.viewer.previewer.rememberPreviewerState
-import com.ismartcoding.plain.ui.audio.AudioQueueViewModelBase
+import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.chat.ChannelViewModel
 import com.ismartcoding.plain.ui.chat.PeerViewModel
 import com.ismartcoding.plain.ui.chat.VChat
@@ -84,7 +82,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ChatPage(
     navController: NavHostController,
-    audioQueueVM: AudioQueueViewModelBase,
+    audioQueueVM: AudioQueueViewModel,
     chatVM: ChatViewModel,
     peerVM: PeerViewModel,
     channelVM: ChannelViewModel,
@@ -116,13 +114,6 @@ fun ChatPage(
     val focusManager = LocalFocusManager.current
     val previewerState = rememberPreviewerState()
 
-    DisposableEffect(id) {
-        TempData.activeToId = id
-        onDispose {
-            TempData.activeToId = ""
-        }
-    }
-
     LaunchedEffect(id) {
         inputValue = ChatClient.readDraft(id)
         scope.launch(Dispatchers.Default) {
@@ -132,7 +123,7 @@ fun ChatPage(
         }
     }
 
-    ChatPageEffects(chatVM, peerVM, channelVM, chatTarget.value.type, focusManager, scrollState)
+    ChatPageEffects(chatVM, peerVM, channelVM, id, chatTarget.value.type, focusManager, scrollState)
 
     PBackHandler(enabled = chatVM.selectMode.value || previewerState.visible) {
         if (previewerState.visible) scope.launch { previewerState.closeTransform() }

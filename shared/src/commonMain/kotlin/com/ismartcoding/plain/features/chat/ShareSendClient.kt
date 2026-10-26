@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.chat
 
 import com.ismartcoding.plain.rust.graphql.GraphqlRequest
-import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.features.chat.data.ChatTarget

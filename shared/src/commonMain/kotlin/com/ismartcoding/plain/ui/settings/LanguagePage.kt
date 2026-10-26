@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.Role
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.features.settings.Language
 import com.ismartcoding.plain.platform.system.Locale
 import com.ismartcoding.plain.ui.base.BottomSpace
@@ -28,7 +29,6 @@ import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.theme.PlainTheme
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

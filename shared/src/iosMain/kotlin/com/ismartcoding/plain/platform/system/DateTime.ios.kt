@@ -41,10 +41,3 @@ actual fun Instant.formatTime(): String {
     formatter.timeStyle = NSDateFormatterShortStyle
     return formatter.stringFromDate(NSDate(timeIntervalSinceReferenceDate = epochSeconds.toDouble() - EPOCH_TO_REFERENCE_DATE_SECONDS))
 }
-
-actual fun Instant.formatName(): String {
-    val formatter = NSDateFormatter()
-    formatter.locale = NSLocale.localeWithLocaleIdentifier("en_US_POSIX")
-    formatter.dateFormat = InstantFormats.FILE_NAME_DATE_FORMAT
-    return formatter.stringFromDate(NSDate(timeIntervalSinceReferenceDate = epochSeconds.toDouble() - EPOCH_TO_REFERENCE_DATE_SECONDS))
-}

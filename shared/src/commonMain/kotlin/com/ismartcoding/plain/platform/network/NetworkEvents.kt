@@ -2,8 +2,8 @@ package com.ismartcoding.plain.platform.network
 
 import com.ismartcoding.plain.rust.sendEventToRust
 
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.rust.RustRuntime

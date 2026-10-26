@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.platform.media.provider
 
-import com.ismartcoding.plain.app.TempData
 
 import com.ismartcoding.plain.models.Video as MediaVideo
 import com.ismartcoding.plain.helpers.ContentWhere

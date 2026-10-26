@@ -1,12 +1,33 @@
 package com.ismartcoding.plain.platform.system
 
-
 import com.ismartcoding.plain.lib.logcat.DiskLogAdapter
 import com.ismartcoding.plain.lib.logcat.DiskLogStrategy
 import com.ismartcoding.plain.lib.logcat.FormatStrategy
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.logcat.LogStrategy
 import com.ismartcoding.plain.rust.RustRuntime
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format
+import kotlinx.datetime.format.char
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+
+private val logDateFormat = LocalDateTime.Format {
+    year()
+    char('-')
+    monthNumber()
+    char('-')
+    day()
+    char(' ')
+    hour()
+    char(':')
+    minute()
+    char(':')
+    second()
+    char('.')
+    secondFraction(3)
+}
 
 class DiskLogFormatStrategy(private val logStrategy: LogStrategy) : FormatStrategy {
     override fun log(
@@ -25,7 +46,6 @@ class DiskLogFormatStrategy(private val logStrategy: LogStrategy) : FormatStrate
     }
 
     companion object {
-        internal const val LOG_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS"
         private const val NEW_LINE = "\n"
         private const val SEPARATOR = " "
 
@@ -35,19 +55,10 @@ class DiskLogFormatStrategy(private val logStrategy: LogStrategy) : FormatStrate
     }
 }
 
-expect fun currentDateTimeString(): String
+fun currentDateTimeString(): String = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).format(logDateFormat)
 
-/**
- * Absolute path to the latest log file (e.g. `<logFolder>/latest.log`).
- */
 fun getLatestLogFilePath(): String = RustRuntime.logFile
 
-/**
- * Initialize disk logging.
- * - Debug builds: all log levels (VERBOSE+) are written to disk
- * - Release builds: only WARN+ are written to disk
- * Idempotent — safe to call multiple times (LogCat.addLogAdapter just appends).
- */
 fun initDiskLogging() {
     LogCat.logFilePath = getLatestLogFilePath()
     LogCat.addLogAdapter(
@@ -56,7 +67,4 @@ fun initDiskLogging() {
             minPriority = if (isDebugBuild()) LogCat.VERBOSE else LogCat.WARN,
         ),
     )
-    // Self-test: guarantee at least one line is written so the log file is
-    // never empty. A WARN always passes the adapter's minPriority filter.
-    LogCat.w("DiskLog: initialized (debug=${isDebugBuild()})")
 }

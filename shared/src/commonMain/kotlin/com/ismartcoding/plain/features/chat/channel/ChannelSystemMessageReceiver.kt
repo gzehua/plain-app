@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.chat.channel
 
-import com.ismartcoding.plain.app.events.HChannelInviteReceivedEvent
-import com.ismartcoding.plain.app.events.HChannelInviteCanceledEvent
+import com.ismartcoding.plain.events.HChannelInviteReceivedEvent
+import com.ismartcoding.plain.events.HChannelInviteCanceledEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.sendEvent
 import kotlinx.serialization.json.JsonObject

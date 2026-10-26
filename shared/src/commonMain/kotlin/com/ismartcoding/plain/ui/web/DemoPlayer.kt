@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.i18n.*
 import org.jetbrains.compose.resources.painterResource
 import kotlinx.coroutines.launch

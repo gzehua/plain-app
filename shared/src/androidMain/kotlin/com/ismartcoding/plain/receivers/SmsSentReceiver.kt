@@ -5,13 +5,12 @@ import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.ismartcoding.plain.lib.TimeHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.features.telephony.sms.SmsPartSentReport
 import com.ismartcoding.plain.lib.JsonHelper
 

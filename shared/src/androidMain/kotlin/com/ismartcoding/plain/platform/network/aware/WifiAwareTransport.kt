@@ -19,6 +19,8 @@ object WifiAwareTransport {
     private val session = AwareSession()
     private val pool = AwareLinkPool(session, connectivityManager)
 
+    val attached get() = session.attached
+
     // Exposed for the Wi-Fi Aware debug page so it can read the live
     // attach/publish/subscribe session state without leaking the whole
     // AwareSession implementation.

@@ -1,8 +1,5 @@
 package com.ismartcoding.plain.ui.platform.notifications
 
-import com.ismartcoding.plain.platform.notifications.sendChatMessageNotification
-import com.ismartcoding.plain.platform.notifications.sendWebLoginNotification
-
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 
 import com.ismartcoding.plain.i18n.*
@@ -20,7 +17,9 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 import androidx.compose.ui.graphics.toArgb
 import com.ismartcoding.plain.lib.extensions.notificationManager
+import com.ismartcoding.plain.lib.extensions.hasPermission
 import com.ismartcoding.plain.platform.isSPlus
+import com.ismartcoding.plain.platform.isTPlus
 import com.ismartcoding.plain.ui.theme.BrandPrimary
 import com.ismartcoding.plain.app.Constants
 import com.ismartcoding.plain.app.AppIntents
@@ -94,6 +93,12 @@ object NotificationHelper {
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun sendChatMessageNotification(context: Context, targetId: String, targetName: String, messageText: String) {
+        val notificationsEnabled = if (isTPlus()) {
+            context.hasPermission(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            NotificationManagerCompat.from(context).areNotificationsEnabled()
+        }
+        if (!notificationsEnabled) return
         ensureChatChannel()
 
         val notificationId = ("chat_$targetId").hashCode()
@@ -137,15 +142,13 @@ object NotificationHelper {
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-    fun sendWebLoginNotification(context: Context, browserName: String, browserVersion: String, osName: String, osVersion: String, clientIp: String) {
+    fun postWebLoginNotification(context: Context, title: String, description: String) {
         if (!Permission.POST_NOTIFICATIONS.isGranted()) return
         ensureDefaultChannel()
-        val browserDisplay = browserName.replaceFirstChar { it.uppercase() } + " " + browserVersion
-        val description = listOf(clientIp, browserDisplay, "$osName $osVersion").filter { it.isNotBlank() }.joinToString(" · ")
         val notification = NotificationCompat.Builder(context, Constants.NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(notificationDrawableId())
             .setColor(BrandPrimary.toArgb())
-            .setContentTitle(LocaleHelper.getString(Res.string.client_connected))
+            .setContentTitle(title)
             .setContentText(description)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)

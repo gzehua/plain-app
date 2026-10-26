@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.ui.audio.components
 
+import com.ismartcoding.plain.lib.sendEvent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import com.ismartcoding.plain.features.audio.AudioQueueClient
 
 import com.ismartcoding.plain.models.Audio as AudioTrack
 import androidx.compose.foundation.layout.Column
@@ -22,7 +22,9 @@ import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.audio.AudioPlaylistsClient
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.ui.platform.media.addMediaShortcut
+import com.ismartcoding.plain.events.AddMediaShortcutEvent
+import com.ismartcoding.plain.platform.system.Capability
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.media.getMediaItemUriString
 import com.ismartcoding.plain.platform.system.openFileExternal
 import com.ismartcoding.plain.platform.system.shareFiles
@@ -67,6 +69,7 @@ internal fun AudioActionButtons(
 ) {
     val scope = rememberCoroutineScope()
     var showAddToHomeDialog by remember { mutableStateOf(false) }
+    val canAddToHome = Capability.LAUNCHER_SHORTCUTS in getDeviceCapabilities()
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PSheetHeader(
             thumbnail = {
@@ -137,8 +140,10 @@ internal fun AudioActionButtons(
                     }
                 }
                 if (!audioVM.trash.value && !m.path.isUrl()) {
-                    PSheetActionRow(UiRes.drawable.ui_drawable_smartphone, stringResource(Res.string.add_to_home), trailing = { AddToHomeHelpAction() }) {
-                        showAddToHomeDialog = true
+                    if (canAddToHome) {
+                        PSheetActionRow(UiRes.drawable.ui_drawable_smartphone, stringResource(Res.string.add_to_home), trailing = { AddToHomeHelpAction() }) {
+                            showAddToHomeDialog = true
+                        }
                     }
                     PSheetActionRow(UiRes.drawable.ui_drawable_square_arrow_out_up_right, stringResource(Res.string.open_with)) {
                         openFileExternal(m.path)
@@ -147,10 +152,10 @@ internal fun AudioActionButtons(
             }
         }
     }
-    if (showAddToHomeDialog) {
+    if (showAddToHomeDialog && canAddToHome) {
         AddToHomeDialog(
             defaultLabel = remember(m.path) { m.path.getFilenameWithoutExtensionFromPath() },
-            onAddToHome = { label -> addMediaShortcut(m.path, label) },
+            onAddToHome = { label -> sendEvent(AddMediaShortcutEvent(m.path, label)) },
             onDismiss = {
                 showAddToHomeDialog = false
                 onDismiss()

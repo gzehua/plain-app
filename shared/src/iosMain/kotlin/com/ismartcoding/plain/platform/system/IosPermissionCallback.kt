@@ -4,7 +4,7 @@ import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.ui.permissions.showPermissionDeniedDialog
 
-import com.ismartcoding.plain.app.events.PermissionsResultEvent
+import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent
 

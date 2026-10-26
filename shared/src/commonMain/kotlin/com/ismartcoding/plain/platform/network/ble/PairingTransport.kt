@@ -5,9 +5,9 @@ import com.ismartcoding.plain.rust.sendEventToRust
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
-import com.ismartcoding.plain.app.TempData
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.platform.network.wifiAwareAttached
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.network.BleAvailability
 import com.ismartcoding.plain.platform.network.bleAvailabilityFlow
@@ -15,7 +15,6 @@ import com.ismartcoding.plain.platform.network.ble.server.BleGattServer
 import com.ismartcoding.plain.platform.network.bleTransport
 import com.ismartcoding.plain.platform.system.PlatformLock
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.serialization.json.*
 import kotlin.io.encoding.Base64
@@ -74,7 +73,7 @@ object PairingTransport {
         }
 
         suspend fun observeFacts() {
-            combine(bleAvailabilityFlow, TempData.awareRunning) { available, aware ->
+            combine(bleAvailabilityFlow, wifiAwareAttached) { available, aware ->
                 AdvertisingFacts(available == BleAvailability.READY, aware, lease)
             }.collect { facts ->
                 if (!lock.withLock { !closed && current === this }) return@collect

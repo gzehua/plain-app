@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.feeds
 
-import kotlinx.coroutines.flow.collect
-
 import com.ismartcoding.plain.ui.state.launchSafe
 
 import com.ismartcoding.plain.preferences.*
@@ -13,8 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.app.Constants
-import com.ismartcoding.plain.platform.system.DataType
-import com.ismartcoding.plain.features.tags.TagsClient
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.features.feeds.FeedEntriesClient
 import com.ismartcoding.plain.lib.TimeHelper
 import kotlinx.coroutines.launch

@@ -1,8 +1,5 @@
 package com.ismartcoding.plain.ui.settings
 
-import com.ismartcoding.plain.ui.permissions.getText
-import com.ismartcoding.plain.ui.permissions.getGrantAccessText
-
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 import com.ismartcoding.plain.ui.theme.PlainTheme
 
@@ -18,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -31,8 +27,8 @@ import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PScaffold
 import androidx.compose.material3.Switch
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.PTopAppBar
-import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import kotlinx.coroutines.launch
@@ -64,7 +60,7 @@ fun DarkThemePage(navController: NavHostController) {
                                 modifier = Modifier.selectable(
                                     selected = it == darkTheme,
                                     role = Role.RadioButton,
-                                    onClick = { scope.launch { Prefs.set(PrefKeys.DARK_THEME, it.value) } },
+                                    onClick = { scope.launch { Prefs.set(PrefKeys.DARK_THEME, it.name) } },
                                 ),
                                 title = it.getText(),
                             ) {

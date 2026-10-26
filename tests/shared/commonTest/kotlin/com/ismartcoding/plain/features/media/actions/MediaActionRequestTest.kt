@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.media.actions
 
-import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.graphql.Mutation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

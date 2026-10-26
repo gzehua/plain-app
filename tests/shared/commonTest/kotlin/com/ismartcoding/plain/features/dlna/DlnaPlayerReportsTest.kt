@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.features.dlna
 
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
-import com.ismartcoding.plain.app.events.HostEventData
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
+import com.ismartcoding.plain.events.HostEventData
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.serialization.json.*

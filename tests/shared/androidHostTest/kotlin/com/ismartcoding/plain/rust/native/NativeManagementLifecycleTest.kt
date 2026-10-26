@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.rust.native
 
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.rust.RustRuntime
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test

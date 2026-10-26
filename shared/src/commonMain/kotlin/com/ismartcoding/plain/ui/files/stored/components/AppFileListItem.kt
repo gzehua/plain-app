@@ -47,7 +47,7 @@ import com.ismartcoding.plain.platform.media.getExtensionFromMimeType
 import com.ismartcoding.plain.ui.media.fileIconData
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
-import com.ismartcoding.plain.ui.platform.media.TransformImageView
+import com.ismartcoding.plain.ui.media.viewer.previewer.TransformImageViewWithUri
 import com.ismartcoding.plain.ui.media.viewer.previewer.TransformItemState
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.files.stored.VAppFile
@@ -134,7 +134,7 @@ fun AppFileListItem(
 
                 if (isImage || isVideo) {
                     val widthPx = with(density) { 40.dp.toPx() }.toInt()
-                    TransformImageView(
+                    TransformImageViewWithUri(
                         modifier = Modifier.size(40.dp),
                         path = path,
                         fileName = fileName,

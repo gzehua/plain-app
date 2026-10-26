@@ -10,8 +10,6 @@ import platform.UIKit.UIApplication
 import platform.UIKit.UIApplicationState
 
 actual fun isAppForegrounded(): Boolean = UIApplication.sharedApplication.applicationState != UIApplicationState.UIApplicationStateBackground
-actual fun installApk(path: String) {}
-actual fun exitApp() {}
 
 internal actual fun shareLogArchive(path: String) = shareFile(path)
 
@@ -20,6 +18,3 @@ internal actual suspend fun clearMediaCache(): Unit = withIO {
     loader.diskCache?.clear()
     loader.memoryCache?.clear()
 }
-actual fun getAppIcon(packageName: String): Any? = null
-actual fun isIgnoringBatteryOptimizations(): Boolean = false
-actual fun openBatteryOptimizationSettings() {}

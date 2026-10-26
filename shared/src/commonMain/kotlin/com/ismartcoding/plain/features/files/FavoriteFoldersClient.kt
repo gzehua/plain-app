@@ -1,23 +1,11 @@
 package com.ismartcoding.plain.features.files
 
 import com.ismartcoding.plain.rust.graphql.GraphqlRequest
-import com.ismartcoding.plain.api.graphql.Mutation
-import com.ismartcoding.plain.api.graphql.Query
+import com.ismartcoding.plain.graphql.Mutation
+import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.models.FavoriteFolder
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.native.*
-import com.ismartcoding.plain.features.feeds.*
-import com.ismartcoding.plain.ui.feeds.*
-import com.ismartcoding.plain.features.files.*
-import com.ismartcoding.plain.ui.files.*
-import com.ismartcoding.plain.features.notes.*
-import com.ismartcoding.plain.ui.notes.*
-import com.ismartcoding.plain.features.tags.*
-import com.ismartcoding.plain.ui.tags.*
-import com.ismartcoding.plain.rust.graphql.*
-import com.ismartcoding.plain.rust.host.*
-import com.ismartcoding.plain.network.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex

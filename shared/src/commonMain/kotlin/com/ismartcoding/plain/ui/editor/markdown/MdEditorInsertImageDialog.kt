@@ -2,14 +2,6 @@ package com.ismartcoding.plain.ui.editor.markdown
 
 import com.ismartcoding.plain.i18n.*
 
-import com.ismartcoding.plain.ui.editor.markdown.*
-import com.ismartcoding.plain.ui.base.*
-import com.ismartcoding.plain.ui.apps.components.*
-import com.ismartcoding.plain.ui.audio.components.*
-import com.ismartcoding.plain.ui.notes.components.*
-import com.ismartcoding.plain.ui.web.components.*
-import com.ismartcoding.plain.ui.components.*
-import com.ismartcoding.plain.ui.media.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -33,12 +25,11 @@ import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.features.files.PickFileType
-import com.ismartcoding.plain.app.events.PickFileEvent
+import com.ismartcoding.plain.events.PickFileEvent
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.platform.media.PickImageEffect
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.ui.editor.markdown.MdEditorViewModel
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)

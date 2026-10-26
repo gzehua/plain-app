@@ -14,27 +14,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import org.jetbrains.compose.resources.pluralStringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.ismartcoding.plain.lib.extensions.formatBytes
-import com.ismartcoding.plain.platform.media.combineBitmapGrid
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.theme.cardBackgroundActive
 import com.ismartcoding.plain.ui.theme.listItemSubtitle
 import com.ismartcoding.plain.ui.theme.listItemTitle
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -44,18 +36,10 @@ fun MediaFolderGridItem(
     isSelected: Boolean = false,
     onClick: () -> Unit,
 ) {
-    val bitmapResult = remember { mutableStateOf<Any?>(null) }
-
-    LaunchedEffect(Unit) {
-        bitmapResult.value = withContext(Dispatchers.Default) {
-            combineBitmapGrid(m.topItemPaths, 200)
-        }
-    }
-
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(6.dp)
+            .padding(8.dp)
             .clip(MaterialTheme.shapes.medium)
             .background(if (isSelected) MaterialTheme.colorScheme.cardBackgroundActive else Color.Transparent)
             .clickable { onClick() }
@@ -63,7 +47,7 @@ fun MediaFolderGridItem(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
@@ -72,15 +56,14 @@ fun MediaFolderGridItem(
                     .aspectRatio(1f)
                     .clip(MaterialTheme.shapes.medium)
             ) {
-                AsyncImage(
-                    model = bitmapResult.value,
+                MediaThumbnailGrid(
+                    paths = m.topItemPaths,
                     contentDescription = m.name,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
                 )
             }
 
-            VerticalSpace(12.dp)
+            VerticalSpace(16.dp)
 
             Text(
                 text = m.name,

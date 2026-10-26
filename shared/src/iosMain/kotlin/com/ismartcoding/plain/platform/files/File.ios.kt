@@ -41,7 +41,7 @@ import platform.posix.fclose
 import platform.posix.fopen
 import platform.posix.fread
 import com.ismartcoding.plain.platform.media.IosPhotoResource
-import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.rust.native.RustNativeBindings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import platform.posix.O_RDONLY
@@ -211,8 +211,6 @@ actual suspend fun decodeThumbnailBytes(
     }
 }
 
-actual fun isContentUri(path: String): Boolean = false
-
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 actual suspend fun readTextFile(path: String): String = withIO {
     val url = if (path.contains("://")) {
@@ -261,7 +259,7 @@ actual suspend fun getFileByMediaId(mediaId: String): FileEntry? = null
 
 @OptIn(ExperimentalForeignApi::class)
 internal actual suspend fun provideResourceFile(id: String, uri: String): Unit = withResourceFile(uri) { descriptor, length ->
-    val error = RustNativeApi.resourceFile(id, descriptor, 0, length)
+    val error = RustNativeBindings.resourceFile(id, descriptor, 0, length)
     check(error.isEmpty()) { error }
 }
 

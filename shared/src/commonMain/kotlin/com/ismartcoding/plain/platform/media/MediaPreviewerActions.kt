@@ -22,24 +22,6 @@ import kotlinx.coroutines.CancellationException
 
 val canSavePreviewMedia: Boolean get() = Capability.FILE_EXPORT in getDeviceCapabilities()
 
-suspend fun sharePreviewMedia(m: PreviewItem) {
-    if (m.mediaId.isNotEmpty() || !m.path.isUrl()) {
-        sharePreviewFile(m.path, m.getMimeType(), m.mediaId)
-        return
-    }
-    if (useCachedPreviewFile(m.path) { sharePreviewFile(it, m.getMimeType(), "") }) return
-    DialogHelper.showLoading()
-    try {
-        sharePreviewFile(RemoteFiles.cache(m.path), m.getMimeType(), "")
-    } catch (cancelled: CancellationException) {
-        throw cancelled
-    } catch (error: Exception) {
-        DialogHelper.showMessage(error.toString())
-    } finally {
-        DialogHelper.hideLoading()
-    }
-}
-
 suspend fun savePreviewMedia(m: PreviewItem, dir: String?) {
     check(canSavePreviewMedia) { "Unsupported capability FILE_EXPORT" }
     val name = (m.data as? MessageFile)?.fileName?.takeIf { it.isNotEmpty() }
@@ -74,5 +56,4 @@ private suspend fun savePreviewFile(path: String, name: String, directory: Strin
     }
 }
 
-internal expect fun sharePreviewFile(path: String, mimeType: String, mediaId: String)
 internal expect suspend fun useCachedPreviewFile(path: String, consume: suspend (String) -> Unit): Boolean

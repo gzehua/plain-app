@@ -5,6 +5,8 @@ import com.ismartcoding.plain.features.dlna.sender.CastItem
 import com.ismartcoding.plain.features.files.FileTaskOp
 import com.ismartcoding.plain.features.files.FileTaskType
 import com.ismartcoding.plain.features.media.actions.MediaAction
+import com.ismartcoding.plain.graphql.Mutation
+import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.models.ImageEditorProject

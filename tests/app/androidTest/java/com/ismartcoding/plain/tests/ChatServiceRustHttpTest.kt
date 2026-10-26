@@ -10,7 +10,6 @@ import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.features.chat.models.MessageFiles
 import com.ismartcoding.plain.features.chat.models.MessageImages
 import com.ismartcoding.plain.features.chat.models.MessageShare
-import com.ismartcoding.plain.features.chat.models.toJSONString
 import com.ismartcoding.plain.features.chat.ChatStatus
 import com.ismartcoding.plain.features.shares.SharesClient
 import com.ismartcoding.plain.models.ChatItem
@@ -31,7 +30,7 @@ import com.ismartcoding.plain.features.chat.ChatCacher
 import com.ismartcoding.plain.features.chat.sendPickedAttachments
 import com.ismartcoding.plain.features.shares.SharedLinkClient
 import com.ismartcoding.plain.platform.network.ble.server.HttpServiceHandler
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 
 @RunWith(AndroidJUnit4::class)
 class ChatServiceRustHttpTest {

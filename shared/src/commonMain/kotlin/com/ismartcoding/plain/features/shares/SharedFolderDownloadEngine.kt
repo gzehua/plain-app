@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.shares
 
-import com.ismartcoding.plain.api.graphql.Mutation
-import com.ismartcoding.plain.api.graphql.Query
+import com.ismartcoding.plain.graphql.Mutation
+import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.features.downloads.*

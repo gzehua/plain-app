@@ -26,11 +26,10 @@ import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
 import com.ismartcoding.plain.ui.media.viewer.previewer.rememberPreviewerState
-import com.ismartcoding.plain.ui.files.stored.AppFilesViewModel
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.files.stored.components.AppFileListContent
 import com.ismartcoding.plain.ui.state.launchSafe
-import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.rust.RustEventHandler
 
 @OptIn(ExperimentalMaterial3Api::class)

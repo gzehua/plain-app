@@ -19,8 +19,8 @@ import com.ismartcoding.plain.features.chat.models.getBestIp
 import com.ismartcoding.plain.features.chat.peer.PeerStatusClient
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.platform.system.getIcon
-import com.ismartcoding.plain.app.events.PermissionsResultEvent
-import com.ismartcoding.plain.app.events.RequestPermissionsEvent
+import com.ismartcoding.plain.events.PermissionsResultEvent
+import com.ismartcoding.plain.events.RequestPermissionsEvent
 import com.ismartcoding.plain.features.bluetooth.BluetoothPermissionResultEvent
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.grant_permission

@@ -6,8 +6,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import com.ismartcoding.plain.platform.isTPlus
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.app.events.PowerConnectedEvent
-import com.ismartcoding.plain.app.events.PowerDisconnectedEvent
+import com.ismartcoding.plain.events.PowerConnectedEvent
+import com.ismartcoding.plain.events.PowerDisconnectedEvent
 import com.ismartcoding.plain.lib.sendEvent
 
 class PlugInControlReceiver : BroadcastReceiver() {

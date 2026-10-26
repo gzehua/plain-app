@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.preferences
 
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.rust.native.nativeValue
 import kotlinx.serialization.SerializationException
 import kotlin.test.Test

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.rust
 
-import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.features.images.search.RustImageModels
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

@@ -10,7 +10,7 @@ import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.desktop_access
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.system.setDesktopAccessEnabled
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

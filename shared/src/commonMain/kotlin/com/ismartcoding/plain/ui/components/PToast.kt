@@ -2,9 +2,6 @@ package com.ismartcoding.plain.ui.components
 
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
-import com.ismartcoding.plain.preferences.*
-
-import com.ismartcoding.plain.i18n.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -36,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.theme.DarkTheme
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.circle_alert as ui_drawable_circle_alert

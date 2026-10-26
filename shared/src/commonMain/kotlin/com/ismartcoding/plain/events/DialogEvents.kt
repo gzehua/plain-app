@@ -1,0 +1,16 @@
+package com.ismartcoding.plain.events
+
+import com.ismartcoding.plain.lib.ChannelEvent
+
+class ConfirmDialogEvent(
+    val title: String,
+    val message: String,
+    val confirmButton: Pair<String, () -> Unit>,
+    val dismissButton: Pair<String, () -> Unit>?,
+    val danger: Boolean = false
+) : ChannelEvent()
+
+class LoadingDialogEvent(
+    val show: Boolean,
+    val message: String = ""
+) : ChannelEvent()

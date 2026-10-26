@@ -1,31 +1,18 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+
 package com.ismartcoding.plain.platform.notifications
 
-import com.ismartcoding.plain.models.Notification as AppNotification
-import kotlin.concurrent.Volatile
+import platform.Foundation.NSUUID
 
-@Volatile
-private var notificationIdCounter = 1000
+internal actual fun postWebLoginNotification(title: String, description: String) {
+    sendLocalNotification(NSUUID().UUIDString, title, description)
+}
 
-actual fun toggleNotificationListener(enabled: Boolean) {}
-
-actual suspend fun getNotificationApp(packageName: String): DNotificationApp? = null
-
-actual suspend fun getAllNotificationApps(): List<DNotificationApp> = emptyList()
-
-actual suspend fun notificationFacts(): List<AppNotification> = emptyList()
-
-actual suspend fun cancelNotificationFacts(ids: Set<String>): Set<String> = emptySet()
-
-actual fun replyNotification(id: String, actionIndex: Int, text: String): Boolean = false
-
-actual fun sendWebLoginNotification(
-    browserName: String,
-    browserVersion: String,
-    osName: String,
-    osVersion: String,
-    clientIp: String,
-) {}
-
-actual fun generateNotificationId(): Int = ++notificationIdCounter
-
-actual fun sendChatMessageNotification(targetId: String, targetName: String, messageText: String) {}
+actual fun sendChatMessageNotification(targetId: String, targetName: String, messageText: String) {
+    sendLocalNotification(
+        identifier = "chat_$targetId",
+        title = targetName,
+        body = messageText,
+        threadIdentifier = "chat_$targetId",
+    )
+}

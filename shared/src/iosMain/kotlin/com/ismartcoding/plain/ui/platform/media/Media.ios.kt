@@ -3,8 +3,6 @@
 package com.ismartcoding.plain.ui.platform.media
 
 
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.ImageBitmapConfig
 import androidx.compose.ui.unit.IntSize
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.toByteArray
@@ -38,15 +36,7 @@ actual fun tryDecodeQrCode(path: String): String? = try {
     null
 }
 
-actual fun generateQrCode(text: String, width: Int, height: Int): ImageBitmap {
-    return ImageBitmap(width, height, ImageBitmapConfig.Argb8888)
-}
-
 actual fun getSvgSize(path: String): IntSize = parseSvgSize(path) ?: IntSize(150, 150)
-
-actual fun addMediaShortcut(path: String, label: String) {
-    // iOS does not support dynamic home-screen shortcuts for arbitrary files
-}
 
 private fun parseSvgSize(path: String): IntSize? {
     return try {

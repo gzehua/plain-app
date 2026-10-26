@@ -24,7 +24,7 @@ import android.graphics.ImageDecoder
 import android.os.Environment
 import com.ismartcoding.plain.helpers.PathHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.rust.native.RustNativeBindings
 import com.ismartcoding.plain.ui.media.thumbnail.ThumbnailGenerator
 import kotlinx.coroutines.CancellationException
 
@@ -139,8 +139,6 @@ actual suspend fun decodeThumbnailBytes(
     ThumbnailGenerator.decodeBytesAsync(appContext, file, width, height, centerCrop, mediaId, fileName)
 }
 
-actual fun isContentUri(path: String): Boolean = path.startsWith("content://")
-
 actual suspend fun readTextFile(path: String): String = withIO {
     try {
         if (path.startsWith("content://")) {
@@ -189,7 +187,7 @@ actual suspend fun getFileByMediaId(mediaId: String): FileEntry? = withIO {
 
 internal actual suspend fun provideResourceFile(id: String, uri: String): Unit = withIO {
     appContext.contentResolver.openAssetFileDescriptor(Uri.parse(uri), "r")?.use { asset ->
-        val error = RustNativeApi.resourceFile(
+        val error = RustNativeBindings.resourceFile(
             id, asset.parcelFileDescriptor.fd, asset.startOffset, asset.declaredLength,
         )
         check(error.isEmpty()) { error }

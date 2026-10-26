@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.ui.images.editor.scene
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import com.ismartcoding.plain.lib.yjs.CanvasSize
 import com.ismartcoding.plain.lib.yjs.EditorLayer
@@ -24,9 +25,15 @@ data class SceneState(
     val hideLayerId: String? = null,
 )
 
+internal val LocalEditorCanvas = staticCompositionLocalOf<(@Composable (SceneState, Modifier, () -> Unit) -> Unit)?> { null }
+
 @Composable
-expect fun NativeEditorCanvas(
+fun NativeEditorCanvas(
     state: SceneState,
     modifier: Modifier,
     onReady: () -> Unit = {},
-)
+) {
+    val renderer = LocalEditorCanvas.current
+    if (renderer == null) SceneCanvas(state, modifier, onReady)
+    else renderer(state, modifier, onReady)
+}

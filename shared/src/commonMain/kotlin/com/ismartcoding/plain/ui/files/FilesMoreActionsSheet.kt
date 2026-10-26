@@ -22,8 +22,8 @@ import com.ismartcoding.plain.ui.base.PModalBottomSheet
 import com.ismartcoding.plain.ui.base.PSheetActionCard
 import com.ismartcoding.plain.ui.base.PSheetActionRow
 import androidx.compose.material3.Switch
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.ui.files.FilesViewModel
 import com.ismartcoding.plain.ui.state.enterSelectMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

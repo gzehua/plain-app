@@ -2,8 +2,6 @@ package com.ismartcoding.plain.ui.home
 
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
-import com.ismartcoding.plain.preferences.*
-
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.i18n.*
@@ -25,12 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.components.ButtonSize
-import com.ismartcoding.plain.app.events.CancelUpdateDownloadEvent
-import com.ismartcoding.plain.app.events.DownloadUpdateEvent
+import com.ismartcoding.plain.events.CancelUpdateDownloadEvent
+import com.ismartcoding.plain.events.DownloadUpdateEvent
+import com.ismartcoding.plain.events.InstallAppUpdateEvent
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.platform.system.exitApp
-import com.ismartcoding.plain.platform.system.installApk
 import com.ismartcoding.plain.ui.base.PBanner
 import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.VerticalSpace
@@ -69,8 +67,7 @@ fun UpdateBanner(updateVM: UpdateViewModel) {
         isDownloadComplete -> {
             DownloadCompleteBanner(
                 onInstall = {
-                    installApk(downloadedFilePath)
-                    exitApp()
+                    sendEvent(InstallAppUpdateEvent(downloadedFilePath))
                 },
                 onDismiss = {
                     updateVM.resetDownload()

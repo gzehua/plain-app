@@ -1,9 +1,9 @@
 package com.ismartcoding.plain.rust
 
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HChatMessageNotificationEvent
-import com.ismartcoding.plain.app.events.HEvent
-import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HChatMessageNotificationEvent
+import com.ismartcoding.plain.events.HEvent
+import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -53,7 +53,7 @@ class EventDirectionContractTest {
             .substringBefore("\n}\n")
         assertTrue(stateUpdates.isNotBlank())
         assertFalse(stateUpdates.contains("HostEvent"))
-        assertFalse(stateUpdates.contains("RustNativeApi.send"))
+        assertFalse(stateUpdates.contains("RustNativeBindings.send"))
         for (path in listOf("features/chat/ChatMessageReceiver.kt", "features/nearby/PairingProjection.kt",
             "features/nearby/RustNearbyDevices.kt", "features/nearby/RustMdnsRuntime.kt",
             "features/chat/channel/ChannelSystemMessageReceiver.kt", "features/images/search/RustImageModels.kt",

@@ -3,12 +3,11 @@ package com.ismartcoding.plain.ui.components
 import com.ismartcoding.plain.ui.format.errorMessage
 
 import com.ismartcoding.plain.network.ApiResult
-import com.ismartcoding.plain.app.events.ConfirmDialogEvent
-import com.ismartcoding.plain.app.events.LoadingDialogEvent
+import com.ismartcoding.plain.events.ConfirmDialogEvent
+import com.ismartcoding.plain.events.LoadingDialogEvent
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.ui.components.ToastManager
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString as getComposeString
 

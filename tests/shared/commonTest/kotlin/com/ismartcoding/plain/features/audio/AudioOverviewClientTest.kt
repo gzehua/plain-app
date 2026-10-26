@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.audio
 
-import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.events.EventType
 import kotlin.test.*
 
 class AudioOverviewClientTest {

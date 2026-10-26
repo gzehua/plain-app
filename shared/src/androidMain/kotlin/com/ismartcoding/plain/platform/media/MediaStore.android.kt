@@ -22,7 +22,6 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.CancellationException
 import android.content.ContentUris
 import android.os.Environment
-import com.ismartcoding.plain.features.contacts.ContactInput
 import com.ismartcoding.plain.features.telephony.sms.MmsCandidateFacts
 import com.ismartcoding.plain.features.telephony.sms.MmsHelper
 import com.ismartcoding.plain.features.telephony.sms.SmsDeletionReceipt
@@ -31,7 +30,7 @@ import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.currentCoroutineContext
 
-actual suspend fun deleteSmsRows(ids: List<String>): SmsDeletionReceipt = withIO {
+suspend fun deleteSmsRows(ids: List<String>): SmsDeletionReceipt = withIO {
     check(ShizukuHelper.isGranted()) { "Shizuku is not available or not granted" }
     val deleted = mutableListOf<String>()
     val failed = mutableListOf<String>()
@@ -70,14 +69,14 @@ internal fun getSystemMediaItemUriString(dataType: DataType, id: String): String
 }
 
 
-actual fun divideSmsText(body: String, subscriptionId: Int?): List<String> = SmsHelper.divideText(body, subscriptionId)
-actual fun sendSmsParts(request: SmsDispatchRequest) = SmsHelper.sendParts(request)
+fun divideSmsText(body: String, subscriptionId: Int?): List<String> = SmsHelper.divideText(body, subscriptionId)
+fun sendSmsParts(request: SmsDispatchRequest) = SmsHelper.sendParts(request)
 
-actual fun call(number: String, showDialer: Boolean) =
+fun call(number: String, showDialer: Boolean) =
     CallMediaStoreHelper.call(appContext, number, showDialer)
 
 
-actual fun launchDefaultSmsApp(
+fun launchDefaultSmsApp(
     number: String,
     body: String,
     attachments: List<Pair<String, String>>,
@@ -86,7 +85,7 @@ actual fun launchDefaultSmsApp(
     return System.currentTimeMillis() / 1000 - 1
 }
 
-actual fun getLatestSentMmsId(): Long {
+fun getLatestSentMmsId(): Long {
     return runCatching {
         appContext.contentResolver.query(
             Telephony.Mms.CONTENT_URI,
@@ -100,25 +99,10 @@ actual fun getLatestSentMmsId(): Long {
     }.getOrDefault(0L)
 }
 
-actual fun getScreenSize(): Pair<Int, Int> {
-    val displayMetrics = appContext.resources.displayMetrics
-    return Pair(displayMetrics.widthPixels, displayMetrics.heightPixels)
-}
-
 internal actual fun platformDownloadsDirPath(): String =
     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
 
-actual fun updateContact(id: String, input: ContactInput) =
-    ContactMediaStoreHelper.updateAsync(id, input)
-
-actual fun createContact(input: ContactInput, accountType: String): String =
-    ContactMediaStoreHelper.createAsync(input, accountType)
-
-actual suspend fun deleteContacts(ids: Set<String>) {
-    ContactMediaStoreHelper.deleteByIdsAsync(appContext, ids)
-}
-
-actual fun readSentMmsCandidates(minimumId: Long, launchTimeSec: Long): List<MmsCandidateFacts> {
+fun readSentMmsCandidates(minimumId: Long, launchTimeSec: Long): List<MmsCandidateFacts> {
     val context = appContext
     return context.contentResolver.query(
         Telephony.Mms.CONTENT_URI,
@@ -140,7 +124,7 @@ actual fun readSentMmsCandidates(minimumId: Long, launchTimeSec: Long): List<Mms
     } ?: emptyList()
 }
 
-actual suspend fun searchMedia(dataType: DataType, plan: ProviderPlan, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> {
+suspend fun searchMedia(dataType: DataType, plan: ProviderPlan, limit: Int, offset: Int, sortBy: FileSortBy): List<IData> {
     if (dataType == DataType.CALL && !Permission.READ_CALL_LOG.isGranted()) return emptyList()
     val where = plan.where()
     return when (dataType) {
@@ -153,7 +137,7 @@ actual suspend fun searchMedia(dataType: DataType, plan: ProviderPlan, limit: In
     }
 }
 
-actual suspend fun countMedia(dataType: DataType, plan: ProviderPlan): Int {
+suspend fun countMedia(dataType: DataType, plan: ProviderPlan): Int {
     if (dataType == DataType.CALL && !Permission.READ_CALL_LOG.isGranted()) return 0
     if (dataType == DataType.CONTACT && !Permission.READ_CONTACTS.isGranted()) return 0
     return plan.wheres().sumOf { where ->
@@ -169,7 +153,7 @@ actual suspend fun countMedia(dataType: DataType, plan: ProviderPlan): Int {
     }
 }
 
-actual suspend fun getMediaIds(dataType: DataType, plan: ProviderPlan): Set<String> {
+suspend fun getMediaIds(dataType: DataType, plan: ProviderPlan): Set<String> {
     if (dataType == DataType.CALL && !Permission.READ_CALL_LOG.isGranted()) return emptySet()
     if (dataType == DataType.CONTACT && !Permission.READ_CONTACTS.isGranted()) return emptySet()
     return when (dataType) {

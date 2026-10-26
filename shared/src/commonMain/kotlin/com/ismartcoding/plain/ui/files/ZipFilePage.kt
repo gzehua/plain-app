@@ -23,6 +23,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import org.jetbrains.compose.resources.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.features.files.FilesType
 import com.ismartcoding.plain.features.files.ZipBrowserHelper
 import com.ismartcoding.plain.ui.platform.media.MediaPreviewer
@@ -46,7 +47,6 @@ import com.ismartcoding.plain.ui.components.CheckCircle
 import com.ismartcoding.plain.ui.components.FileSortDialog
 import com.ismartcoding.plain.ui.media.viewer.previewer.rememberPreviewerState
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
-import com.ismartcoding.plain.ui.files.FilesViewModel
 import com.ismartcoding.plain.ui.files.components.BreadcrumbView
 import com.ismartcoding.plain.ui.files.components.FileListContent
 import kotlinx.coroutines.Dispatchers
@@ -108,7 +108,7 @@ fun ZipFilePage(
 
     if (filesVM.showSortDialog.value) {
         FileSortDialog(filesVM.sortBy, onSelected = {
-            scope.launch(Dispatchers.Default) { Prefs.set(PrefKeys.FILE_SORT_BY, it.ordinal); filesVM.sortBy.value = it; filesVM.loadAsync() }
+            scope.launch(Dispatchers.Default) { Prefs.set(PrefKeys.FILE_SORT_BY, it.name); filesVM.sortBy.value = it; filesVM.loadAsync() }
         }, onDismiss = { filesVM.showSortDialog.value = false })
     }
 

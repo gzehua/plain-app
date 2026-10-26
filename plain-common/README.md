@@ -66,7 +66,11 @@ The first eight scenes require the existing project components. Basic layout (`B
 
 Use `AppTheme` as the complete theme entry. Keep the brand palette, soft dark text and AMOLED behavior; dynamic color is excluded. Shapes come from the theme: `medium` for ordinary cards/inputs, `large` for prominent preview/banner containers, smaller roles for nested surfaces, and `CircleShape` for capsules/discs. Exact dynamic geometry belongs to its specialized implementation. Brand sizes are defined in [Shapes](src/commonMain/kotlin/com/ismartcoding/plain/ui/theme/Shapes.kt), not Material default sizes.
 
+`PullToRefresh` headers scroll out with content during an active refresh. Pull distance stops at the header height so long drags cannot push the page out of view. Scrolling preserves the request; `userEnable = false` prevents new gestures from starting a refresh while allowing the active header to retract.
+
 `NoDataColumn` is a static centered empty state with no internal scroll container; it can be placed inside an existing lazy-list item.
+
+Use the `PListItem` content-slot overload for a third description line or custom content. Slots supply text; the component provides the standard title, subtitle and description typography and owns line spacing, leading/trailing layout, dimming, and merged semantics. Optional `minHeight` keeps compact rows; `statusColor` draws a 4dp stripe at the layout start. String and key/value calls retain their existing defaults.
 
 Public layout components accept a root `modifier`. Actions use `onClick`, `enabled` and `onDismissRequest`. Required actions have no default empty callback; optional actions are nullable and create no click target when absent. Each distinct public component has its own file; overloads of the same component may share it. Code comments use English and explain only non-obvious decisions.
 

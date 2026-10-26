@@ -15,7 +15,7 @@ import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.ui.platform.notifications.NotificationHelper
 import com.ismartcoding.plain.notificationManager
-import com.ismartcoding.plain.app.HttpServerManager
+import com.ismartcoding.plain.services.HttpServerForegroundService
 
 class NetworkStateReceiver : BroadcastReceiver() {
     @SuppressLint("MissingPermission")
@@ -24,15 +24,15 @@ class NetworkStateReceiver : BroadcastReceiver() {
 
             if (Permission.POST_NOTIFICATIONS.isGranted()) {
                 try {
-                    val notificationId = HttpServerManager.notificationId
-                    val existingNotification = notificationManager.activeNotifications.find { it.id == notificationId }
+                    val foregroundServiceNotificationId = HttpServerForegroundService.notificationId
+                    val existingNotification = notificationManager.activeNotifications.find { it.id == foregroundServiceNotificationId }
                     if (existingNotification != null) {
                         NotificationManagerCompat.from(context).notify(
-                            notificationId, NotificationHelper.createServiceNotification(
+                            foregroundServiceNotificationId, NotificationHelper.createServiceNotification(
                                 context,
                                 AppIntents.ACTION_DISABLE_BACKGROUND_MODE,
                                 LocaleHelper.getString(Res.string.keep_online_in_background),
-                                HttpServerManager.getNotificationContent()
+                                HttpServerForegroundService.getHttpServerUrls()
                             )
                         )
                     }

@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.app.events.ClipboardReportData
+import com.ismartcoding.plain.events.ClipboardReportData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow

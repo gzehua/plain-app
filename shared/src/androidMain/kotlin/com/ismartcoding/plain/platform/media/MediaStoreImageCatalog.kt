@@ -15,7 +15,7 @@ import kotlinx.serialization.json.*
 import java.util.concurrent.atomic.AtomicLong
 import android.content.ContentResolver
 
-object MediaStoreImageCatalog {
+object MediaStoreImageCatalog : ImageCatalog {
     private val epoch = AtomicLong()
     private var observer: ContentObserver? = null
     private val uri get() = if (isQPlus()) MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL) else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -31,7 +31,7 @@ object MediaStoreImageCatalog {
         appContext.contentResolver.registerContentObserver(uri, true, value)
         observer = value
     }
-    private fun revision(): String {
+    private fun currentRevision(): String {
         requirePermission()
         return if (isRPlus()) {
             checkNotNull(mediaStoreRevision()).joinToString("|") { volume ->
@@ -39,18 +39,18 @@ object MediaStoreImageCatalog {
             } + "|${epoch.get()}"
         } else "${MediaStore.getVersion(appContext)}:${epoch.get()}"
     }
-    fun snapshot(): JsonObject {
+    override fun snapshot(): JsonObject {
         requirePermission()
         observe()
-        val revision = revision()
+        val revision = currentRevision()
         val total = checkNotNull(appContext.contentResolver.query(uri,arrayOf(MediaStore.Images.Media._ID),null,null,null)) { "Image catalog query failed" }.use { it.count }
         verify(revision)
         return JsonHelper.jsonEncodeToElement(ImageCatalogSnapshot(revision,total)).jsonObject
     }
-    fun verify(expected: String) { check(revision() == expected) { "Image catalog changed during indexing" } }
-    fun page(expected: String, cursor: String, limit: Int): JsonObject {
+    override fun verify(revision: String) { check(currentRevision() == revision) { "Image catalog changed during indexing" } }
+    override fun page(revision: String, cursor: String, limit: Int): JsonObject {
         require(limit in 1..128)
-        verify(expected)
+        verify(revision)
         val after = if (cursor.isEmpty()) -1L else cursor.toLong()
         val columns = arrayOf(MediaStore.Images.Media._ID,MediaStore.Images.Media.DATA)
         val selection = "${MediaStore.Images.Media._ID} > ?"
@@ -77,12 +77,12 @@ object MediaStoreImageCatalog {
                 }
             }
         }
-        verify(expected)
-        return JsonHelper.jsonEncodeToElement(ImageCatalogPage(expected,items,last,items.size < limit)).jsonObject
+        verify(revision)
+        return JsonHelper.jsonEncodeToElement(ImageCatalogPage(revision,items,last,items.size < limit)).jsonObject
     }
-    fun resolve(expected: String, ids: List<String>): JsonArray {
+    override fun resolve(revision: String, ids: List<String>): JsonArray {
         require(ids.size <= 100)
-        verify(expected)
+        verify(revision)
         if (ids.isEmpty()) return JsonArray(emptyList())
         val selection = "${MediaStore.Images.Media._ID} IN (${ids.joinToString(",") { "?" }})"
         val rows = checkNotNull(appContext.contentResolver.query(uri,arrayOf(MediaStore.Images.Media._ID,MediaStore.Images.Media.DATA),selection,ids.toTypedArray(),null)) { "Image selection query failed" }
@@ -97,7 +97,7 @@ object MediaStoreImageCatalog {
                 }
             }
         }
-        verify(expected)
+        verify(revision)
         return JsonHelper.jsonEncodeToElement(items).jsonArray
     }
     @Synchronized

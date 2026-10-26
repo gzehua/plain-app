@@ -19,7 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.ismartcoding.plain.lib.extensions.getFilenameExtension
-import com.ismartcoding.plain.ui.platform.media.TransformImageView
+import com.ismartcoding.plain.ui.media.viewer.previewer.TransformImageViewWithUri
 import com.ismartcoding.plain.ui.media.fileIconData
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.media.viewer.previewer.TransformItemState
@@ -51,7 +51,7 @@ fun FileEntryThumb(
     Box(modifier = modifier.size(40.dp), contentAlignment = Alignment.Center) {
         val localMedia = isMedia && path.isNotEmpty() && itemState != null && previewerState != null
         when {
-            localMedia -> TransformImageView(
+            localMedia -> TransformImageViewWithUri(
                 modifier = Modifier.size(40.dp).clip(RoundedCornerShape(4.dp)),
                 path = path,
                 fileName = name,

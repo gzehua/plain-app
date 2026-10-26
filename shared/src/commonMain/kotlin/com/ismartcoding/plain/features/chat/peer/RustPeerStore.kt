@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.chat.peer
 
-import com.ismartcoding.plain.api.graphql.Mutation
-import com.ismartcoding.plain.api.graphql.Query
+import com.ismartcoding.plain.graphql.Mutation
+import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.models.PeerRecordInput

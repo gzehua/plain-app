@@ -9,14 +9,12 @@ import androidx.media3.session.SessionToken
 import androidx.core.content.ContextCompat
 import com.google.common.util.concurrent.ListenableFuture
 import com.ismartcoding.plain.platform.system.awaitPlatformFuture
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.audio.AudioAction
-import com.ismartcoding.plain.app.events.AudioActionEvent
-import com.ismartcoding.plain.features.audio.AudioQueueClient
+import com.ismartcoding.plain.events.AudioActionEvent
 import com.ismartcoding.plain.models.AudioItem
-import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent
+import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
 import com.ismartcoding.plain.services.AudioPlayerService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,6 +46,7 @@ internal object AndroidAudioPlayer {
     }
 
     private var activeRevision = -1L
+    private var lastPositionMs = 0L
     private var playerListener: Player.Listener = listener(activeRevision)
 
     fun bindRevision(revision: Long) {
@@ -55,6 +54,11 @@ internal object AndroidAudioPlayer {
         activeRevision = revision
         playerListener = listener(revision)
         player?.addListener(playerListener)
+    }
+
+    fun restorePlayback(revision: Long, positionMs: Long) {
+        lastPositionMs = positionMs
+        bindRevision(revision)
     }
 
     private fun listener(revision: Long) = object : Player.Listener {
@@ -75,11 +79,15 @@ internal object AndroidAudioPlayer {
                 val audio = pendingStart?.takeIf { it.first.path == currentPath }
                 if (audio != null) {
                     pendingStart = null
-                    coIO { AudioQueueClient.onStarted(audio.first, audio.second) }
+                    AudioEngineHost.reportStarted(audio.first.path, audio.second)
                 }
-            }
-            if (!isPlaying && player != null) {
-                TempData.audioPlayPosition = player?.currentPosition ?: 0
+                AudioEngineHost.startProgressReporting()
+            } else {
+                val currentPlayer = player ?: return
+                lastPositionMs = currentPlayer.currentPosition
+                if (currentPlayer.playbackState != Player.STATE_ENDED) {
+                    AudioEngineHost.stopProgressReporting(currentPath, revision, lastPositionMs)
+                }
             }
         }
 
@@ -91,9 +99,11 @@ internal object AndroidAudioPlayer {
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (revision != activeRevision) return
             refreshPlayingState()
-            if (playbackState == Player.STATE_ENDED && player?.playbackState == Player.STATE_ENDED) {
+            val currentPlayer = player
+            if (playbackState == Player.STATE_ENDED && currentPlayer != null && currentPlayer.playbackState == Player.STATE_ENDED) {
                 val path = currentPath
-                if (path.isNotEmpty()) coIO { AudioQueueClient.onCompleted(path, revision) }
+                lastPositionMs = currentPlayer.currentPosition
+                if (path.isNotEmpty()) AudioEngineHost.reportCompleted(path, revision, lastPositionMs)
             }
         }
     }
@@ -106,13 +116,13 @@ internal object AndroidAudioPlayer {
         get() {
             val currentPlayer = player
             if (currentPlayer == null) {
-                return TempData.audioPlayPosition
+                return lastPositionMs
             }
 
             val currentPositionMs = currentPlayer.currentPosition
             // Keep UI stable right after seek when player may briefly report 0.
-            if (currentPositionMs == 0L && TempData.audioPlayPosition > 0L) {
-                return TempData.audioPlayPosition
+            if (currentPositionMs == 0L && lastPositionMs > 0L) {
+                return lastPositionMs
             }
             return currentPositionMs
         }
@@ -143,30 +153,32 @@ internal object AndroidAudioPlayer {
     }
 
     suspend fun load(context: Context, audio: AudioItem, positionMs: Long, speed: Float, revision: Long) = withContext(Dispatchers.Main) {
+        AudioEngineHost.stopProgressReporting()
         withTimeout(15_000) { ensurePlayer(context) }
-        TempData.audioPlayPosition = positionMs
-        doPlay(audio, speed, revision)
+        lastPositionMs = positionMs
+        doPlay(audio, positionMs, speed, revision)
     }
 
     suspend fun play() = withContext(Dispatchers.Main) { player?.play(); Unit }
 
     suspend fun seekTo(positionMs: Long) = withContext(Dispatchers.Main) {
-        TempData.audioPlayPosition = positionMs
+        lastPositionMs = positionMs
         player?.seekTo(positionMs)
         Unit
     }
 
     suspend fun pause() = withContext(Dispatchers.Main) {
-        TempData.audioPlayPosition = player?.currentPosition ?: 0
+        lastPositionMs = player?.currentPosition ?: 0
         player?.pause()
         Unit
     }
 
     suspend fun clear() = withContext(Dispatchers.Main) {
+        AudioEngineHost.stopProgressReporting(currentPath, activeRevision, player?.currentPosition ?: lastPositionMs)
         player?.pause()
         pendingStart = null
         player?.clearMediaItems()
-        TempData.audioPlayPosition = 0
+        lastPositionMs = 0
     }
 
     suspend fun setPlaybackSpeed(speed: Float) = withContext(Dispatchers.Main) {
@@ -175,6 +187,7 @@ internal object AndroidAudioPlayer {
     }
 
     fun release() {
+        AudioEngineHost.stopProgressReporting(currentPath, activeRevision, player?.currentPosition ?: lastPositionMs)
         initialization?.cancel(false)
         player?.removeListener(playerListener)
         pendingStart = null
@@ -182,18 +195,19 @@ internal object AndroidAudioPlayer {
         controller?.release()
         controller = null
         _isPlayingFlow.value = false
-        TempData.audioPlayPosition = 0
+        lastPositionMs = 0
     }
 
     private fun doPlay(
         audio: AudioItem,
+        positionMs: Long,
         speed: Float,
         revision: Long,
     ) {
         pendingStart = audio to revision
         player?.setMediaItem(audio.toMediaItem())
         player?.prepare()
-        player?.seekTo(TempData.audioPlayPosition)
+        player?.seekTo(positionMs)
         player?.setPlaybackSpeed(speed)
         player?.play()
     }

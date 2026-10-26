@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.platform.system.DataType
-import com.ismartcoding.plain.app.events.MediaStoreChangedEvent
+import com.ismartcoding.plain.events.MediaStoreChangedEvent
 import com.ismartcoding.plain.features.tags.TagsClient
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.models.Tag

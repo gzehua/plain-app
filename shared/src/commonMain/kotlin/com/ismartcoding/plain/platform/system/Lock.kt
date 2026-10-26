@@ -1,11 +1,10 @@
 package com.ismartcoding.plain.platform.system
 
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
+
 class PlatformLock {
-    private val delegate = newPlatformLock()
+    private val lock = SynchronizedObject()
 
-    fun <T> withLock(block: () -> T): T = runPlatformLocked(delegate, block)
+    fun <T> withLock(block: () -> T): T = synchronized(lock, block)
 }
-
-expect fun newPlatformLock(): Any
-
-expect fun <T> runPlatformLocked(lock: Any, block: () -> T): T

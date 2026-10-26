@@ -48,14 +48,7 @@ fun isBluetoothAdvertiseReady(): Boolean = bleAvailability() == BleAvailability.
  * On iOS this creates the central manager, which shows the one-time system
  * Bluetooth prompt; it never re-prompts after a denial.
  */
-expect suspend fun ensureBlePermissionAsync(): Boolean
-
-/**
- * Sets the `canContinue` flag used by the Android BLE permission flow. When
- * the user grants BLE permission, this is set to true so pending BLE
- * operations can resume. No-op on iOS.
- */
-expect fun setBluetoothCanContinue(value: Boolean)
+suspend fun ensureBlePermissionAsync(): Boolean = bleTransport().createScanner().ensurePermission()
 
 interface BleTransport {
     fun createScanner(): BleScanner

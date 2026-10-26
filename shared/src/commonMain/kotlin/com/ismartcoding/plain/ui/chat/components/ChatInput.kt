@@ -26,7 +26,7 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.features.files.PickFileType
-import com.ismartcoding.plain.app.events.PickFileEvent
+import com.ismartcoding.plain.events.PickFileEvent
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.components.PIconButton
 import com.ismartcoding.plain.ui.resources.Res as UiRes
@@ -34,9 +34,6 @@ import com.ismartcoding.plain.ui.resources.folder as ui_drawable_folder
 import com.ismartcoding.plain.ui.resources.folders as ui_drawable_folders
 import com.ismartcoding.plain.ui.resources.image as ui_drawable_image
 import com.ismartcoding.plain.ui.resources.send as ui_drawable_send
-import com.ismartcoding.plain.i18n.folders
-import com.ismartcoding.plain.i18n.image
-import com.ismartcoding.plain.i18n.folder
 
 @Composable
 fun ChatInput(

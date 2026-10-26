@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.features.telephony.sms
 
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.MmsSendResultData
-import com.ismartcoding.plain.app.events.SendResultCodes
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.MmsSendResultData
+import com.ismartcoding.plain.events.SendResultCodes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals

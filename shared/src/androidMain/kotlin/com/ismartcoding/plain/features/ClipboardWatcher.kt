@@ -8,8 +8,8 @@ import android.content.Intent
 import android.os.Build
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.clipboardManager
-import com.ismartcoding.plain.app.events.ClipboardReportData
-import com.ismartcoding.plain.app.events.WindowFocusChangedEvent
+import com.ismartcoding.plain.events.ClipboardReportData
+import com.ismartcoding.plain.events.WindowFocusChangedEvent
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.permissions.Permission

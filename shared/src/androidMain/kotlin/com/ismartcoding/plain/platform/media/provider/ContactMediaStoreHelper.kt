@@ -18,7 +18,6 @@ import com.ismartcoding.plain.lib.extensions.getStringValue
 import com.ismartcoding.plain.lib.extensions.getTimeValue
 import com.ismartcoding.plain.lib.extensions.map
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.helpers.StringHelper
 import com.ismartcoding.plain.rust.host.provider.*
 import com.ismartcoding.plain.platform.contacts.ContactDataHelper
 import com.ismartcoding.plain.features.contacts.ContactInput
@@ -49,17 +48,6 @@ object ContactMediaStoreHelper {
 
     suspend fun countAsync(context: Context, where: ContentWhere): Int = withIO {
         context.contentResolver.count(uriExternal, where)
-    }
-
-    fun deleteByIdsAsync(
-        context: Context,
-        ids: Set<String>,
-    ) {
-        ids.chunked(30).forEach { chunk ->
-            val selection = "${ContactsContract.Data.RAW_CONTACT_ID} IN (${StringHelper.getQuestionMarks(chunk.size)})"
-            val selectionArgs = chunk.map { it }.toTypedArray()
-            context.contentResolver.delete(uriExternal, selection, selectionArgs)
-        }
     }
 
     suspend fun getIdsAsync(context: Context, where: ContentWhere): Set<String> = withIO {

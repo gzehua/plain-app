@@ -1,9 +1,9 @@
 package com.ismartcoding.plain.rust.graphql
 
-import com.ismartcoding.plain.api.graphql.Mutation
-import com.ismartcoding.plain.api.graphql.Query
+import com.ismartcoding.plain.graphql.Mutation
+import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.rust.native.RustNativeBindings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -34,7 +34,7 @@ object RustGraphqlApi {
     suspend fun graphql(request: GraphqlRequest): JsonObject =
         withContext(Dispatchers.IO) {
             val response = JsonHelper.jsonDecode<JsonObject>(
-                RustNativeApi.graphql(JsonHelper.jsonEncode(request)),
+                RustNativeBindings.graphql(JsonHelper.jsonEncode(request)),
             )
             response["errors"]?.let { errors ->
                 error(errors.jsonArray.joinToString { it.jsonObject.getValue("message").jsonPrimitive.content })

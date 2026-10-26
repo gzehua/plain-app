@@ -72,10 +72,7 @@ expect suspend fun decodeThumbnailBytes(
     fileName: String,
 ): ByteArray?
 
-/**
- * Whether [path] points to an Android content:// URI. Always false on iOS.
- */
-expect fun isContentUri(path: String): Boolean
+fun isContentUri(path: String): Boolean = path.startsWith("content://")
 
 /**
  * Read the contents of a text file at [path] as a UTF-8 string.

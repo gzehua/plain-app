@@ -1,12 +1,12 @@
 package com.ismartcoding.plain.features.files.upload
 
 import com.ismartcoding.plain.rust.graphql.GraphqlRequest
-import com.ismartcoding.plain.api.graphql.Mutation
-import com.ismartcoding.plain.api.graphql.Query
+import com.ismartcoding.plain.graphql.Mutation
+import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
-import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.rust.native.RustNativeBindings
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
@@ -15,7 +15,7 @@ import kotlin.uuid.ExperimentalUuidApi
 
 internal object RustUploadChunks {
     private val client = UploadChunksClient(
-        sendChunk = { id, index, bytes -> withContext(Dispatchers.IO) { RustNativeApi.uploadChunk(id, index, bytes) } },
+        sendChunk = { id, index, bytes -> withContext(Dispatchers.IO) { RustNativeBindings.uploadChunk(id, index, bytes) } },
         mutate = { RustGraphqlApi.graphql(it) },
         query = { RustGraphqlApi.graphql(it) },
     )

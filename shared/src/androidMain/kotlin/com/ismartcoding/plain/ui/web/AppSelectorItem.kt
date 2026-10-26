@@ -1,0 +1,75 @@
+package com.ismartcoding.plain.ui.web
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.ismartcoding.plain.models.Package as AppPackage
+import com.ismartcoding.plain.platform.system.getApplicationIcon
+import com.ismartcoding.plain.ui.base.HorizontalSpace
+import com.ismartcoding.plain.ui.base.VerticalSpace
+import com.ismartcoding.plain.ui.components.CheckCircle
+import androidx.compose.ui.text.font.FontWeight
+
+@Composable
+internal fun AppSelectorItem(
+    app: AppPackage,
+    isSelected: Boolean,
+    onToggleSelection: () -> Unit
+) {
+    val appIcon = remember(app.id) {
+        getApplicationIcon(app.id)
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onToggleSelection() }
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AsyncImage(
+            model = appIcon,
+            contentDescription = app.name,
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(12.dp))
+        )
+
+        HorizontalSpace(dp = 16.dp)
+
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = app.name,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            VerticalSpace(dp = 2.dp)
+            Text(
+                text = app.id,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        HorizontalSpace(dp = 12.dp)
+
+        CheckCircle(selected = isSelected, onClick = { onToggleSelection() })
+    }
+}

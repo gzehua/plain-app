@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.ismartcoding.plain.app.AppIntents
-import com.ismartcoding.plain.app.HttpServerManager
-import com.ismartcoding.plain.services.HttpServerService
+import com.ismartcoding.plain.HttpServerManager
+import com.ismartcoding.plain.services.HttpServerForegroundService
 import com.ismartcoding.plain.services.ScreenMirrorService
 
 class ServiceStopBroadcastReceiver : BroadcastReceiver() {
@@ -17,7 +17,7 @@ class ServiceStopBroadcastReceiver : BroadcastReceiver() {
         when (intent.action) {
             AppIntents.ACTION_DISABLE_BACKGROUND_MODE -> {
                 val pending = goAsync()
-                HttpServerManager.setBackgroundEnabled(false, fromUi = false)
+                HttpServerManager.setBackgroundServiceEnabled(false)
                     .invokeOnCompletion { pending.finish() }
             }
 
@@ -27,8 +27,8 @@ class ServiceStopBroadcastReceiver : BroadcastReceiver() {
             }
             // Android 14+ allows FGS notifications to be swiped. Re-post via onStartCommand.
             AppIntents.ACTION_REPOST_BACKGROUND_NOTIFICATION -> {
-                if (HttpServerService.isRunning()) {
-                    ContextCompat.startForegroundService(context, Intent(context, HttpServerService::class.java))
+                if (HttpServerForegroundService.isRunning()) {
+                    ContextCompat.startForegroundService(context, Intent(context, HttpServerForegroundService::class.java))
                 }
             }
         }

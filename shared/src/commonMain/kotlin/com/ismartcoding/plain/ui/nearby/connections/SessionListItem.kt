@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.nearby.connections
 
-import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.ui.theme.PlainTheme
 
 import com.ismartcoding.plain.i18n.*
@@ -28,7 +27,7 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.lib.extensions.capitalize
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.platform.system.formatDateTime

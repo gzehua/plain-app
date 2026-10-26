@@ -8,8 +8,8 @@ import android.media.projection.MediaProjection
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper.jsonEncode
 import com.ismartcoding.plain.platform.isUPlus
 import com.ismartcoding.plain.lib.logcat.LogCat

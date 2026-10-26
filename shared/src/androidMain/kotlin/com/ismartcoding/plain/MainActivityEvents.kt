@@ -12,27 +12,33 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.features.chat.peer.PeerStatusClient
-import com.ismartcoding.plain.app.events.HChannelInviteCanceledEvent
-import com.ismartcoding.plain.app.events.HChannelInviteReceivedEvent
-import com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent
+import com.ismartcoding.plain.events.HChannelInviteCanceledEvent
+import com.ismartcoding.plain.events.HChannelInviteReceivedEvent
+import com.ismartcoding.plain.events.HConfirmToAcceptLoginEvent
 import com.ismartcoding.plain.ui.permissions.Permissions
 import com.ismartcoding.plain.features.dlna.HDlnaCastRequestEvent
-import com.ismartcoding.plain.app.events.ExportFileEvent
+import com.ismartcoding.plain.events.ExportFileEvent
 import com.ismartcoding.plain.app.events.IgnoreBatteryOptimizationEvent
-import com.ismartcoding.plain.app.events.OpenNotificationSettingsEvent
-import com.ismartcoding.plain.app.events.HPairingCanceledEvent
-import com.ismartcoding.plain.app.events.HPairingRequestReceivedEvent
-import com.ismartcoding.plain.app.events.HPairingSuccessEvent
-import com.ismartcoding.plain.app.events.PermissionsResultEvent
-import com.ismartcoding.plain.app.events.PickFileEvent
-import com.ismartcoding.plain.app.events.RequestNotificationPermissionEvent
+import com.ismartcoding.plain.events.InstallAppUpdateEvent
+import com.ismartcoding.plain.events.AddMediaShortcutEvent
+import com.ismartcoding.plain.events.OpenNotificationSettingsEvent
+import com.ismartcoding.plain.events.HPairingCanceledEvent
+import com.ismartcoding.plain.events.HPairingRequestReceivedEvent
+import com.ismartcoding.plain.events.HPairingSuccessEvent
+import com.ismartcoding.plain.events.PermissionsResultEvent
+import com.ismartcoding.plain.events.PickFileEvent
+import com.ismartcoding.plain.events.RequestNotificationPermissionEvent
 import com.ismartcoding.plain.app.events.HRequestScreenMirrorAudioEvent
-import com.ismartcoding.plain.app.events.RestartAppEvent
+import com.ismartcoding.plain.events.RestartAppEvent
 import com.ismartcoding.plain.app.events.HStartScreenMirrorEvent
 import com.ismartcoding.plain.app.events.HOpenAccessibilitySettingsEvent
-import com.ismartcoding.plain.app.events.HOpenWebSettingsEvent
+import com.ismartcoding.plain.events.HOpenWebSettingsEvent
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
+import com.ismartcoding.plain.platform.system.installApk
+import com.ismartcoding.plain.platform.system.exitApp
+import com.ismartcoding.plain.ui.platform.media.addMediaShortcut
+import com.ismartcoding.plain.ui.components.DialogHelper
 import com.ismartcoding.plain.app.AppHelper
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.web.AccessFeatureHighlight
@@ -45,6 +51,18 @@ internal fun MainActivity.initEvents() {
             if (isDestroyed || isFinishing) return@collect
 
             when (event) {
+                is InstallAppUpdateEvent -> {
+                    try {
+                        installApk(event.path)
+                        exitApp()
+                    } catch (error: Exception) {
+                        DialogHelper.showMessage(error)
+                    }
+                }
+                is AddMediaShortcutEvent -> {
+                    try { addMediaShortcut(event.path, event.label) }
+                    catch (error: Exception) { DialogHelper.showMessage(error) }
+                }
                 is PermissionsResultEvent -> {
                     // handled by individual feature flows
                 }

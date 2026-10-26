@@ -30,7 +30,7 @@ import com.ismartcoding.plain.i18n.sort
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.platform.media.audioIsPlayingFlow
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.components.ActionButtonSearch
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.components.NavigationBackIcon
@@ -40,8 +40,6 @@ import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.media.MediaTopBar
-import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
-import com.ismartcoding.plain.ui.audio.AudioViewModel
 import com.ismartcoding.plain.ui.casting.CastViewModel
 import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
@@ -130,7 +128,7 @@ fun AudioAllPage(
                 scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
                 onSortSelected = { sortBy ->
                     scope.launch(Dispatchers.Default) {
-                        Prefs.set(PrefKeys.AUDIO_SORT_BY, sortBy.ordinal)
+                        Prefs.set(PrefKeys.AUDIO_SORT_BY, sortBy.name)
                         audioVM.sortBy.value = sortBy
                         audioVM.loadAsync(tagsVM)
                     }

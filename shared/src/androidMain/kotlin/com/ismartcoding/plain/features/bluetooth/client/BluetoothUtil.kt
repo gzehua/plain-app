@@ -20,7 +20,13 @@ import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
 object BluetoothUtil {
-    var canContinue = false
+    @Volatile
+    private var canContinue = false
+
+    fun onPermissionResult() {
+        canContinue = true
+        sendEvent(BluetoothPermissionResultEvent())
+    }
 
     fun isBluetoothReadyToUseWithPermissionRequest(): Boolean {
         if (isSPlus()) {
@@ -70,9 +76,9 @@ object BluetoothUtil {
     }
 
     suspend fun ensurePermissionAsync(): Boolean {
+        canContinue = false
         val ready = isBluetoothReadyToUseWithPermissionRequest()
         if (!ready) {
-            canContinue = false
             while (true) {
                 LogCat.d("waiting for bluetooth permission accepted or denied")
                 if (canContinue) {
@@ -82,7 +88,7 @@ object BluetoothUtil {
             }
         }
 
-        sendEvent(BluetoothPermissionResultEvent())
+        onPermissionResult()
         return true
     }
 

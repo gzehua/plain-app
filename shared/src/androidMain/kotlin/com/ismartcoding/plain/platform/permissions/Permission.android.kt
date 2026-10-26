@@ -4,14 +4,11 @@ import com.ismartcoding.plain.platform.isTPlus
 import com.ismartcoding.plain.platform.system.ShizukuHelper
 
 import android.content.ComponentName
-import android.content.pm.PackageManager
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.mainActivity
-import com.ismartcoding.plain.appContextValue
 import com.ismartcoding.plain.ui.permissions.Permissions
 import com.ismartcoding.plain.lib.extensions.hasPermission
 import android.Manifest
@@ -20,11 +17,6 @@ import com.ismartcoding.plain.platform.isRPlus
 
 private val pNotificationListenerServiceClass: Class<*> by lazy {
     Class.forName("com.ismartcoding.plain.services.PNotificationListenerService")
-}
-
-actual fun isPermissionGranted(perm: String): Boolean {
-    val ctx = appContextValue ?: return false
-    return ContextCompat.checkSelfPermission(ctx, perm) == PackageManager.PERMISSION_GRANTED
 }
 
 actual fun Permission.isGranted(): Boolean = when {

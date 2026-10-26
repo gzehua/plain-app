@@ -46,6 +46,7 @@ import kotlinx.coroutines.sync.withLock
  * event projections so per-message updates land on the in-memory list in order.
  */
 object ChatViewModel : ISelectableViewModel<VChat> {
+    val visibleConversationId = MutableStateFlow<String?>(null)
     internal val _itemsFlow = MutableStateFlow<List<VChat>>(emptyList())
     override val itemsFlow: StateFlow<List<VChat>> = _itemsFlow
     val selectedItem = mutableStateOf<VChat?>(null)

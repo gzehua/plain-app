@@ -2,7 +2,7 @@ package com.ismartcoding.plain.ui.feeds
 
 import androidx.compose.runtime.mutableStateMapOf
 import com.ismartcoding.plain.models.FeedSyncState
-import com.ismartcoding.plain.app.events.HFeedStatusEvent
+import com.ismartcoding.plain.events.HFeedStatusEvent
 import com.ismartcoding.plain.features.feeds.FeedsClient
 import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
 import com.ismartcoding.plain.lib.sendEvent

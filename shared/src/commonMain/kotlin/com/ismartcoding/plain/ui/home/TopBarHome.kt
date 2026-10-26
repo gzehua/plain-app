@@ -23,7 +23,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.device_name
 import com.ismartcoding.plain.ui.resources.pen as ui_drawable_pen

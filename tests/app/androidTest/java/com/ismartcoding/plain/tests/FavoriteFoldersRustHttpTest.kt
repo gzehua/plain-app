@@ -6,7 +6,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import com.ismartcoding.plain.features.files.FavoriteFoldersClient
-import com.ismartcoding.plain.preferences.Prefs
 import kotlinx.coroutines.*
 import org.junit.Assert.*
 import org.junit.Test

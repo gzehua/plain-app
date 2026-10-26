@@ -1,9 +1,9 @@
 package com.ismartcoding.plain.ui.media
 
 import com.ismartcoding.plain.platform.system.PlatformLock
-import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.rust.native.RustNativeBindings
 
-private val icons = FileIconCache(96, RustNativeApi::fileIcon)
+private val icons = FileIconCache(96, RustNativeBindings::fileIcon)
 
 fun fileIconData(extension: String): ByteArray = icons.get(extension)
 

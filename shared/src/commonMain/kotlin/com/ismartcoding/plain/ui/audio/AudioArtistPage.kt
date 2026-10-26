@@ -34,6 +34,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.audio.AudioQueueClient
 import com.ismartcoding.plain.i18n.*
@@ -52,8 +53,6 @@ import com.ismartcoding.plain.ui.base.POutlinedButton
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.base.dragselect.listDragSelect
 import com.ismartcoding.plain.ui.base.dragselect.rememberListDragSelectState
-import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
-import com.ismartcoding.plain.ui.audio.AudioViewModel
 import com.ismartcoding.plain.ui.casting.CastViewModel
 import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
@@ -77,8 +76,6 @@ import com.ismartcoding.plain.ui.resources.play_arrow as ui_drawable_play_arrow
 import com.ismartcoding.plain.ui.resources.shuffle as ui_drawable_shuffle
 import com.ismartcoding.plain.ui.resources.sort as ui_drawable_sort
 import com.ismartcoding.plain.i18n.sort
-import com.ismartcoding.plain.i18n.pause
-import com.ismartcoding.plain.i18n.cast
 
 /** Artist detail: hero header plus the artist's tracks, play-all / shuffle. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -168,7 +165,7 @@ fun AudioArtistPage(
         scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
         onSortSelected = { sortBy ->
             scope.launch {
-                Prefs.set(PrefKeys.AUDIO_SORT_BY, sortBy.ordinal)
+                Prefs.set(PrefKeys.AUDIO_SORT_BY, sortBy.name)
                 audioVM.sortBy.value = sortBy
             }
         },

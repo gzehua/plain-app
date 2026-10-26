@@ -4,47 +4,11 @@ import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.rust.RustRuntime
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.app.*
-import com.ismartcoding.plain.ui.app.*
-import com.ismartcoding.plain.features.chat.*
-import com.ismartcoding.plain.ui.chat.*
-import com.ismartcoding.plain.features.feeds.*
-import com.ismartcoding.plain.ui.feeds.*
-import com.ismartcoding.plain.features.images.search.*
-import com.ismartcoding.plain.features.sessions.*
-import com.ismartcoding.plain.ui.sessions.*
-import com.ismartcoding.plain.features.shares.*
-import com.ismartcoding.plain.ui.shares.*
-import com.ismartcoding.plain.platform.*
-import com.ismartcoding.plain.platform.contacts.*
-import com.ismartcoding.plain.platform.files.*
-import com.ismartcoding.plain.ui.platform.files.*
-import com.ismartcoding.plain.platform.media.*
-import com.ismartcoding.plain.ui.platform.media.*
-import com.ismartcoding.plain.platform.network.*
-import com.ismartcoding.plain.platform.permissions.*
-import com.ismartcoding.plain.app.*
-import com.ismartcoding.plain.ui.app.*
-import com.ismartcoding.plain.ui.navigation.*
-import com.ismartcoding.plain.features.sessions.*
-import com.ismartcoding.plain.ui.sessions.*
-import com.ismartcoding.plain.features.settings.*
-import com.ismartcoding.plain.ui.settings.*
-import com.ismartcoding.plain.platform.files.*
-import com.ismartcoding.plain.ui.platform.files.*
-import com.ismartcoding.plain.platform.media.*
-import com.ismartcoding.plain.ui.platform.media.*
-import com.ismartcoding.plain.platform.notifications.*
-import com.ismartcoding.plain.ui.platform.notifications.*
-import com.ismartcoding.plain.platform.system.*
-import com.ismartcoding.plain.ui.platform.system.*
-import com.ismartcoding.plain.ui.state.*
-import com.ismartcoding.plain.platform.telephony.*
 import com.ismartcoding.plain.network.*
 import com.ismartcoding.plain.testing.CryptoFixtures.chaCha20Encrypt
 import com.ismartcoding.plain.testing.CryptoFixtures.chaCha20Decrypt
-import com.ismartcoding.plain.preferences.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
@@ -52,7 +16,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 import java.util.UUID
-import com.ismartcoding.plain.app.checkHttpServerAsync
+import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.features.sessions.RustSessionStore
 import com.ismartcoding.plain.helpers.Base64Lenient
 import java.net.URLEncoder
@@ -78,7 +42,7 @@ class PublicRustHttpTest {
             Prefs.backgroundServiceEnabled.value = true
             Prefs.desktopAccess.value = true
             withIO { RustRuntime.start() }
-            assertTrue(checkHttpServerAsync())
+            assertTrue(RustNativeApi.checkHttp())
             val port = Prefs.httpPort.value
             val tlsPort = Prefs.httpsPort.value
             val trust = object : X509TrustManager {
@@ -90,7 +54,7 @@ class PublicRustHttpTest {
             (tls.socketFactory.createSocket("127.0.0.1", tlsPort) as SSLSocket).use {
                 it.startHandshake()
                 val certificate = it.session.peerCertificates.first() as X509Certificate
-                assertArrayEquals(getSSLSignature(), certificate.signature)
+                assertArrayEquals(RustNativeApi.tlsCertificateSignature(), certificate.signature)
             }
             createTestHttpClient(TestHttpClientSpec.Local()).use { client ->
                 client.get("http://127.0.0.1:$port/health").use { assertEquals(200, it.status.value); assertEquals("OK", it.bodyAsText()) }

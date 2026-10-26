@@ -71,8 +71,6 @@ object IosBleScanner : BleScanner {
 
     override fun isAdvertiseReady(): Boolean = isReadyToUse()
 
-    fun isBlePermissionGranted(): Boolean = isReadyToUse()
-
     override suspend fun ensurePermission(): Boolean {
         val manager = ensureCentralManager()
         if (manager.state == CBManagerStatePoweredOn) return true

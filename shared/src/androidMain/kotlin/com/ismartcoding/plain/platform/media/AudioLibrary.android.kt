@@ -12,7 +12,7 @@ import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.lib.withIO
 
 private val audioUri get() = if (isQPlus()) MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL) else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-actual suspend fun audioLibraryResolve(ids: List<String>, paths: List<String>): List<AudioMedia> = withIO {
+suspend fun audioLibraryResolve(ids: List<String>, paths: List<String>): List<AudioMedia> = withIO {
     val systemIds = (ids + paths.mapNotNull { systemAudioMediaId(Uri.parse(it)) }).distinct()
     val filePaths = paths.mapNotNull { path -> val uri = Uri.parse(path); when (uri.scheme) { "content" -> null; "file" -> uri.path; else -> path } }.distinct()
     if (systemIds.isEmpty() && filePaths.isEmpty()) return@withIO emptyList()

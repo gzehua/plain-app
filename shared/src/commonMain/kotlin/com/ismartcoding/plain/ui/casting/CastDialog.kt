@@ -20,31 +20,23 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.features.dlna.sender.RustDlnaSender
-import com.ismartcoding.plain.app.events.StartHttpServerEvent
-import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.media.audioPause
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PBottomSheetTopAppBar
 import com.ismartcoding.plain.ui.base.PModalBottomSheet
 import com.ismartcoding.plain.ui.base.Tips
 import com.ismartcoding.plain.ui.casting.CastViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import com.ismartcoding.plain.app.isHttpServerRunning
-import com.ismartcoding.plain.app.startHttpServerAsync
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CastDialog(castVM: CastViewModel, onDeviceSelected: (() -> Unit)? = null) {
     if (!castVM.showCastDialog.value) return
     val devices by RustDlnaSender.devices.collectAsState()
-    val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val hasDevices = devices.isNotEmpty()
     val onDismiss = { castVM.showCastDialog.value = false }
@@ -90,11 +82,6 @@ fun CastDialog(castVM: CastViewModel, onDeviceSelected: (() -> Unit)? = null) {
                             onClick = {
                                 castVM.selectDevice(device.hostAddress)
                                 audioPause()
-                                scope.launch(Dispatchers.Default) {
-                                    if (!isHttpServerRunning()) {
-                                        startHttpServerAsync()
-                                    }
-                                }
                                 if (onDeviceSelected != null) {
                                     onDeviceSelected()
                                 } else {

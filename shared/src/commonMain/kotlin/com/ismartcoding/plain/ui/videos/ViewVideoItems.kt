@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.ui.videos
 
+import com.ismartcoding.plain.lib.sendEvent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import coil3.compose.AsyncImage
 
 import com.ismartcoding.plain.models.Video as MediaVideo
 import androidx.compose.foundation.layout.padding
@@ -22,7 +22,9 @@ import com.ismartcoding.plain.lib.extensions.getFilenameWithoutExtensionFromPath
 import com.ismartcoding.plain.lib.extensions.isUrl
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.ui.platform.media.addMediaShortcut
+import com.ismartcoding.plain.events.AddMediaShortcutEvent
+import com.ismartcoding.plain.platform.system.Capability
+import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.media.getMediaItemUriString
 import com.ismartcoding.plain.platform.system.openFileExternal
 import com.ismartcoding.plain.platform.system.shareFiles
@@ -42,8 +44,6 @@ import com.ismartcoding.plain.ui.components.AddToHomeDialog
 import com.ismartcoding.plain.ui.components.AddToHomeHelpAction
 import com.ismartcoding.plain.ui.components.confirmActionAsync
 import com.ismartcoding.plain.ui.tags.TagsViewModel
-import com.ismartcoding.plain.ui.videos.VideosViewModel
-import androidx.compose.foundation.layout.size
 import androidx.compose.ui.layout.ContentScale
 import com.ismartcoding.plain.lib.extensions.formatBytes
 import com.ismartcoding.plain.lib.extensions.getFilenameFromPath
@@ -68,6 +68,7 @@ internal fun VideoActionButtons(
 ) {
     val scope = rememberCoroutineScope()
     var showAddToHomeDialog by remember { mutableStateOf(false) }
+    val canAddToHome = Capability.LAUNCHER_SHORTCUTS in getDeviceCapabilities()
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
         PSheetHeader(
             thumbnail = {
@@ -133,8 +134,10 @@ internal fun VideoActionButtons(
         PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
             Column {
                 if (!m.path.isUrl() && !videosVM.trash.value) {
-                    PSheetActionRow(UiRes.drawable.ui_drawable_smartphone, stringResource(Res.string.add_to_home), trailing = { AddToHomeHelpAction() }) {
-                        showAddToHomeDialog = true
+                    if (canAddToHome) {
+                        PSheetActionRow(UiRes.drawable.ui_drawable_smartphone, stringResource(Res.string.add_to_home), trailing = { AddToHomeHelpAction() }) {
+                            showAddToHomeDialog = true
+                        }
                     }
                     PSheetActionRow(UiRes.drawable.ui_drawable_square_arrow_out_up_right, stringResource(Res.string.open_with)) {
                         openFileExternal(m.path)
@@ -148,10 +151,10 @@ internal fun VideoActionButtons(
             }
         }
     }
-    if (showAddToHomeDialog) {
+    if (showAddToHomeDialog && canAddToHome) {
         AddToHomeDialog(
             defaultLabel = remember(m.path) { m.path.getFilenameWithoutExtensionFromPath() },
-            onAddToHome = { label -> addMediaShortcut(m.path, label) },
+            onAddToHome = { label -> sendEvent(AddMediaShortcutEvent(m.path, label)) },
             onDismiss = {
                 showAddToHomeDialog = false
                 onDismiss()

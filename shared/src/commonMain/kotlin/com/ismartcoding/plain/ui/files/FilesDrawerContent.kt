@@ -26,13 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.features.files.FilesType
-import com.ismartcoding.plain.app.events.FolderKanbanSelectEvent
+import com.ismartcoding.plain.events.FolderKanbanSelectEvent
 import com.ismartcoding.plain.features.files.FavoriteFoldersClient
 import com.ismartcoding.plain.features.shares.SharesClient
 import com.ismartcoding.plain.models.ShareRecord
 import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.i18n.folder
-import com.ismartcoding.plain.i18n.link
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.base.PDropdownMenu
 import com.ismartcoding.plain.ui.base.PDropdownMenuItem
@@ -43,7 +41,6 @@ import com.ismartcoding.plain.ui.components.SidebarItem
 import com.ismartcoding.plain.ui.components.SidebarSectionHeader
 import com.ismartcoding.plain.ui.components.buildFolderOptions
 import com.ismartcoding.plain.ui.components.confirmActionAsync
-import com.ismartcoding.plain.ui.files.FilesViewModel
 import com.ismartcoding.plain.features.files.FolderOption
 import com.ismartcoding.plain.ui.state.launchSafe
 import com.ismartcoding.plain.ui.navigation.Routing

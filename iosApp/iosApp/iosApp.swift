@@ -17,6 +17,8 @@ struct PlainApp: SwiftUI.App {
     private let filePicker = FilePickerController()
     private let shareController = ShareController()
     private let soundMeter = SoundMeter()
+    private let videoFrameObserver = VideoFrameObserver()
+    private let notificationDelegate = NotificationDelegate()
 
     init() {
         IosPlatformRegistry.shared.setBackgroundScheduler(scheduler: backgroundScheduler)
@@ -25,7 +27,10 @@ struct PlainApp: SwiftUI.App {
         IosPlatformRegistry.shared.setFilePicker(picker: filePicker)
         IosPlatformRegistry.shared.setShareController(controller: shareController)
         IosPlatformRegistry.shared.setSoundMeter(meter: soundMeter)
+        IosPlatformRegistry.shared.setVideoFrameObserver(observer: videoFrameObserver)
+        UNUserNotificationCenter.current().delegate = notificationDelegate
         backgroundScheduler.register()
+        AppInitializerKt.initializeApp(audioCatalogObserver: nil)
     }
 
     var body: some Scene {
@@ -40,6 +45,16 @@ struct PlainApp: SwiftUI.App {
         }
     }
 }
+final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .list, .sound])
+    }
+}
+
 final class BackgroundScheduler: NSObject, IosBackgroundScheduler {
     private static let identifier = "com.ismartcoding.plain.background.refresh"
 

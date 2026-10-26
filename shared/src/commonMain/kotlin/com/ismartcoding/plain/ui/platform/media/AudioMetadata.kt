@@ -14,5 +14,3 @@ suspend fun loadAudioCoverBitmap(path: String): ImageBitmap? = try {
     LogCat.e("Audio cover load failed: ${error.message}")
     null
 }
-
-expect fun audioAlbumArtUri(albumId: String): String

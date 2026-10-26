@@ -15,24 +15,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.features.nearby.PairingInitiator
 import com.ismartcoding.plain.features.nearby.RustPairingCode
 import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.features.files.PickFileType
-import com.ismartcoding.plain.app.events.PermissionsResultEvent
-import com.ismartcoding.plain.app.events.PickFileEvent
-import com.ismartcoding.plain.app.events.PickFileResultEvent
-import com.ismartcoding.plain.app.events.RequestPermissionsEvent
+import com.ismartcoding.plain.events.PermissionsResultEvent
+import com.ismartcoding.plain.events.PickFileEvent
+import com.ismartcoding.plain.events.PickFileResultEvent
+import com.ismartcoding.plain.events.RequestPermissionsEvent
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
-import com.ismartcoding.plain.preferences.Prefs
 import com.ismartcoding.plain.ui.base.PScaffold
 import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.components.QrScanResultBottomSheet
@@ -45,7 +43,6 @@ import com.ismartcoding.plain.i18n.*
 import org.jetbrains.compose.resources.painterResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.history as ui_drawable_history
-import com.ismartcoding.plain.ui.resources.image as ui_drawable_image
 import com.ismartcoding.plain.ui.resources.close as ui_drawable_close
 import kotlinx.coroutines.CancellationException
 

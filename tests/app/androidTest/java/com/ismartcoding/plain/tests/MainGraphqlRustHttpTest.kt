@@ -5,7 +5,7 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.sessions.RustSessionStore
 import com.ismartcoding.plain.platform.system.getDeviceCapabilities
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.network.TestHttpClientSpec
 import com.ismartcoding.plain.network.createTestHttpClient

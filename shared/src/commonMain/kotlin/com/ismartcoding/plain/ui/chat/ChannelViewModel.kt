@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.features.chat.channel.ChannelManager
 import com.ismartcoding.plain.features.chat.channel.snapshotChannelsGraphql
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -17,7 +17,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

@@ -1,42 +1,20 @@
 package com.ismartcoding.plain.platform.notifications
 
-import com.ismartcoding.plain.features.packages.PackagesClient
 import com.ismartcoding.plain.models.Notification as AppNotification
 import android.app.RemoteInput
 import android.content.Intent
 import android.os.Bundle
-import com.ismartcoding.plain.AndroidTempData
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.packageManager
-import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.ui.platform.notifications.NotificationHelper
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.services.PNotificationListenerService
 import kotlinx.coroutines.delay
 
-actual fun toggleNotificationListener(enabled: Boolean) {
-    PNotificationListenerService.toggle(appContext, enabled)
+internal suspend fun notificationFacts(): List<AppNotification> = withIO {
+    PNotificationListenerService.notifications.toList()
 }
 
-actual suspend fun getNotificationApp(packageName: String): DNotificationApp? = withIO {
-    runCatching {
-        val info = packageManager.getApplicationInfo(packageName, 0)
-        DNotificationApp(id = info.packageName, name = packageManager.getApplicationLabel(info).toString())
-    }.getOrNull()
-}
-
-actual suspend fun getAllNotificationApps(): List<DNotificationApp> = withIO {
-    val ownPackage = appContext.packageName
-    PackagesClient.search("", Int.MAX_VALUE, 0, FileSortBy.NAME_ASC)
-        .filter { it.id != ownPackage }
-        .map { DNotificationApp(id = it.id, name = it.name) }
-}
-
-actual suspend fun notificationFacts(): List<AppNotification> = withIO {
-    AndroidTempData.notifications.toList()
-}
-
-actual suspend fun cancelNotificationFacts(ids: Set<String>): Set<String> = withIO {
+internal suspend fun cancelNotificationFacts(ids: Set<String>): Set<String> = withIO {
     val service = PNotificationListenerService.connectedService ?: return@withIO emptySet()
     if (!service.isConnected) return@withIO emptySet()
     val active = service.activeNotifications.associateBy { it.key }
@@ -52,8 +30,8 @@ actual suspend fun cancelNotificationFacts(ids: Set<String>): Set<String> = with
     submitted - remaining
 }
 
-actual fun replyNotification(id: String, actionIndex: Int, text: String): Boolean {
-    val actions = AndroidTempData.notificationActions[id] ?: return false
+internal fun replyNotification(id: String, actionIndex: Int, text: String): Boolean {
+    val actions = PNotificationListenerService.notificationActions[id] ?: return false
     // Only consider reply-capable actions (those with remoteInputs)
     val replyActions = actions.filter { it.remoteInputs != null && it.remoteInputs.isNotEmpty() }
     val action = replyActions.getOrNull(actionIndex) ?: return false
@@ -67,24 +45,9 @@ actual fun replyNotification(id: String, actionIndex: Int, text: String): Boolea
     return true
 }
 
-actual fun sendWebLoginNotification(
-    browserName: String,
-    browserVersion: String,
-    osName: String,
-    osVersion: String,
-    clientIp: String,
-) {
-    NotificationHelper.sendWebLoginNotification(
-        appContext,
-        browserName,
-        browserVersion,
-        osName,
-        osVersion,
-        clientIp,
-    )
+internal actual fun postWebLoginNotification(title: String, description: String) {
+    NotificationHelper.postWebLoginNotification(appContext, title, description)
 }
-
-actual fun generateNotificationId(): Int = NotificationHelper.generateId()
 
 actual fun sendChatMessageNotification(targetId: String, targetName: String, messageText: String) {
     NotificationHelper.sendChatMessageNotification(

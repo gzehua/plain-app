@@ -9,13 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.ismartcoding.plain.features.files.ExportFileType
 import com.ismartcoding.plain.features.files.PickFileTag
-import com.ismartcoding.plain.app.events.ExportFileResultEvent
-import com.ismartcoding.plain.app.events.PickFileResultEvent
+import com.ismartcoding.plain.events.ExportFileResultEvent
+import com.ismartcoding.plain.events.PickFileResultEvent
 import com.ismartcoding.plain.features.feeds.FeedsClient
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.ui.components.DialogHelper
-import com.ismartcoding.plain.ui.feeds.FeedsViewModel
 import kotlinx.coroutines.CancellationException
 
 @Composable

@@ -8,7 +8,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import com.ismartcoding.plain.ui.base.PFilledButton
 import com.ismartcoding.plain.ui.base.PTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -17,8 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ismartcoding.plain.ui.components.ButtonSize
-import com.ismartcoding.plain.app.events.ConfirmDialogEvent
-import com.ismartcoding.plain.app.events.LoadingDialogEvent
+import com.ismartcoding.plain.events.ConfirmDialogEvent
+import com.ismartcoding.plain.events.LoadingDialogEvent
 import com.ismartcoding.plain.ui.components.PToast
 import com.ismartcoding.plain.ui.components.ToastEvent
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground

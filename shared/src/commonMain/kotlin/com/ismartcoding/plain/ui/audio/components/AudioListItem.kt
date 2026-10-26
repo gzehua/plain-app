@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.dlna.sender.RustDlnaSender
 import com.ismartcoding.plain.models.Audio
 import com.ismartcoding.plain.models.Tag
@@ -62,7 +61,7 @@ fun AudioListItem(
                 onClick = {
                     if (dragSelectState.selectMode) { dragSelectState.select(item.id) }
                     else if (castVM.castMode.value) { castVM.cast(item) }
-                    else if (isCurrentlyPlaying) { TempData.audioPlayerVisible.value = true }
+                    else if (isCurrentlyPlaying) { audioQueueVM.audioPlayerVisible.value = true }
                     else {
                         checkNotificationPermission(Res.string.audio_notification_prompt) {
                             scope.launch(Dispatchers.Default) { audioQueueVM.enqueueAndPlayAsync(item) }

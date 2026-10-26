@@ -1,56 +1,40 @@
 package com.ismartcoding.plain.ui.platform.media
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
 import com.ismartcoding.plain.ui.platform.system.exitImmersiveFullscreen
 import com.ismartcoding.plain.ui.platform.system.setSystemBarsVisible
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.models.TagRelation
-import com.ismartcoding.plain.i18n.Res
-import com.ismartcoding.plain.i18n.close
-import com.ismartcoding.plain.ui.components.ControlChipIconButton
 import com.ismartcoding.plain.ui.media.viewer.GestureScope
 import com.ismartcoding.plain.ui.media.viewer.ImagePreviewActions
 import com.ismartcoding.plain.ui.media.viewer.PreviewItem
-import com.ismartcoding.plain.ui.media.viewer.PreviewerSoftWhite
 import com.ismartcoding.plain.ui.media.viewer.ViewMediaBottomSheet
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.media.viewer.previewer.TransformContentView
@@ -61,14 +45,8 @@ import com.ismartcoding.plain.ui.media.viewer.video.VideoPreviewActions
 import com.ismartcoding.plain.ui.casting.CastViewModel
 import com.ismartcoding.plain.ui.media.MediaPreviewData
 import com.ismartcoding.plain.ui.tags.TagsViewModel
-import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.ui.resources.close as ui_drawable_close
-import com.ismartcoding.plain.ui.resources.double_arrow_right as ui_drawable_double_arrow_right
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
-import androidx.compose.foundation.shape.RoundedCornerShape
 
 // Grace period before showing a loading icon: media that becomes ready within
 // this window switches without any visible loading state (Douyin-like).
@@ -190,7 +168,7 @@ fun MediaPreviewer(
                                         pagerState = state.pagerState,
                                         videoState = state.videoState,
                                         page = page,
-                                        model = getModel(item),
+                                        model = item,
                                         state = viewerState,
                                         boundClip = false,
                                         gesture = GestureScope(
@@ -262,53 +240,4 @@ fun MediaPreviewer(
         }
     }
     state.ticket.Next()
-}
-
-// WeChat-like close button in the top-left corner. Follows the actions
-// overlay: toggled by tap, fades with uiAlpha; PiP hides it like the
-// video control bar.
-@Composable
-private fun PreviewerCloseButton(state: MediaPreviewerState) {
-    if (state.videoState.enablePip) return
-    val scope = rememberCoroutineScope()
-    Box(
-        modifier = Modifier
-            .padding(start = 16.dp, top = 32.dp)
-            .alpha(state.uiAlpha.value),
-    ) {
-        if (state.showActions) {
-            ControlChipIconButton(
-                icon = UiRes.drawable.ui_drawable_close,
-                contentDescription = stringResource(Res.string.close),
-            ) {
-                scope.launch { state.closeTransform() }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SpeedBoostIndicator(state: MediaPreviewerState) {
-    AnimatedVisibility(
-        visible = state.videoState.isSpeedBoostActive,
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(top = 16.dp), enter = fadeIn(tween(150)), exit = fadeOut(tween(150))
-    ) {
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Row(
-                modifier = Modifier
-                    .background(
-                        color = Color.Black.copy(alpha = 0.6f),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(painter = painterResource(UiRes.drawable.ui_drawable_double_arrow_right), contentDescription = null, tint = PreviewerSoftWhite, modifier = Modifier.size(20.dp))
-                Text(text = " 2x", color = PreviewerSoftWhite, fontSize = 16.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-            }
-        }
-    }
 }

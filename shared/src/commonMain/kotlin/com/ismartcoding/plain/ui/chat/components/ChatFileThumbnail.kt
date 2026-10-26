@@ -15,7 +15,7 @@ import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.lib.extensions.getFilenameExtension
 import com.ismartcoding.plain.lib.extensions.isImageFast
 import com.ismartcoding.plain.lib.extensions.isVideoFast
-import com.ismartcoding.plain.ui.platform.media.TransformImageView
+import com.ismartcoding.plain.ui.media.viewer.previewer.TransformImageViewWithUri
 import com.ismartcoding.plain.ui.media.fileIconData
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
 import com.ismartcoding.plain.ui.media.viewer.previewer.TransformItemState
@@ -34,7 +34,7 @@ fun ChatFileThumbnail(
     val widthPx = with(LocalDensity.current) { 48.dp.toPx() }.toInt()
     Box {
         if (fileName.isImageFast() || fileName.isVideoFast()) {
-            TransformImageView(
+            TransformImageViewWithUri(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(4.dp)),

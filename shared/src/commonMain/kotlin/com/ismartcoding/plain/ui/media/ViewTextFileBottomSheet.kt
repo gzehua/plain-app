@@ -2,8 +2,6 @@ package com.ismartcoding.plain.ui.media
 
 import com.ismartcoding.plain.features.files.FilesClient
 
-import com.ismartcoding.plain.features.files.extension
-
 import com.ismartcoding.plain.models.File as FileEntry
 
 import com.ismartcoding.plain.preferences.*
@@ -53,7 +51,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.PSheetActionRow
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException

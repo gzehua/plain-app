@@ -13,7 +13,6 @@ import platform.UIKit.UIUserInterfaceIdiomPhone
 import platform.UIKit.UIUserInterfaceIdiomTV
 
 
-actual fun getPlatformName(): String = "ios"
 
 actual fun getDeviceType(): DeviceType {
     val idiom = UIDevice.currentDevice.userInterfaceIdiom

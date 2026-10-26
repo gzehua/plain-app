@@ -40,7 +40,17 @@ import com.ismartcoding.plain.ui.components.DialogHelper
         }
     }
 
-expect fun checkNotificationPermission(stringResource: StringResource, onGranted: () -> Unit)
+fun checkNotificationPermission(stringResource: StringResource, onGranted: () -> Unit) {
+    if (Permission.POST_NOTIFICATIONS.isGranted()) {
+        onGranted()
+    } else {
+        showNotificationConfirmDialog(stringResource) {
+            coIO {
+                if (ensureNotificationPermissionAsync()) onGranted()
+            }
+        }
+    }
+}
 
 fun showPermissionDeniedDialog(onOpenSettings: () -> Unit) {
     coIO {

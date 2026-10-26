@@ -12,7 +12,7 @@ import platform.Photos.*
 import platform.darwin.NSObject
 import kotlinx.cinterop.ExperimentalForeignApi
 
-internal object IosPhotoLibrary {
+internal object IosPhotoLibrary : ImageCatalog {
     private val lock = NSRecursiveLock()
     private var epoch = 0L
     private var observing = false
@@ -32,7 +32,7 @@ internal object IosPhotoLibrary {
         } finally { lock.unlock() }
     }
     private fun requirePermission() { check(Permission.READ_MEDIA_IMAGES.isGranted()) { "Image catalog permission denied" } }
-    fun snapshot(): JsonElement {
+    override fun snapshot(): JsonElement {
         requirePermission()
         observe(true)
         lock.lock()
@@ -42,13 +42,13 @@ internal object IosPhotoLibrary {
             return JsonHelper.jsonEncodeToElement(ImageCatalogSnapshot(epoch.toString(), fetched.count.toInt()))
         } finally { lock.unlock() }
     }
-    fun verify(revision: String) {
+    override fun verify(revision: String) {
         requirePermission()
         lock.lock()
         try { check(revision == epoch.toString() && assets != null) { "Image catalog changed during indexing" } }
         finally { lock.unlock() }
     }
-    fun page(revision: String, cursor: String, limit: Int): JsonElement {
+    override fun page(revision: String, cursor: String, limit: Int): JsonElement {
         require(limit in 1..128)
         verify(revision)
         lock.lock()
@@ -64,7 +64,7 @@ internal object IosPhotoLibrary {
             return JsonHelper.jsonEncodeToElement(ImageCatalogPage(revision, items, end.toString(), end == fetched.count.toInt()))
         } finally { lock.unlock() }
     }
-    fun resolve(revision: String, ids: List<String>): JsonElement {
+    override fun resolve(revision: String, ids: List<String>): JsonElement {
         require(ids.size <= 100)
         verify(revision)
         val fetched = PHAsset.fetchAssetsWithLocalIdentifiers(ids, null)

@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.ismartcoding.plain.ui.media.viewer.PreviewItem
 
 val DEFAULT_PREVIEWER_ENTER_TRANSITION: EnterTransition = scaleIn(tween(180)) + fadeIn(tween(240))
 val DEFAULT_PREVIEWER_EXIT_TRANSITION: ExitTransition = scaleOut(tween(320)) + fadeOut(tween(240))
@@ -32,11 +31,3 @@ class PreviewerPlaceholder(
     var exitTransition: ExitTransition = DEFAULT_PLACEHOLDER_EXIT_TRANSITION,
     var content: @Composable () -> Unit = DEFAULT_PREVIEWER_PLACEHOLDER_CONTENT,
 )
-
-/**
- * Resolve the model used by [MediaViewer]. On Android, large local images are
- * wrapped in an [ImageDecoder] for tiled huge-image rendering; on iOS, the
- * [PreviewItem] is returned as-is so Coil3 handles loading cross-platform.
- */
-@Composable
-expect fun getModel(item: PreviewItem): Any

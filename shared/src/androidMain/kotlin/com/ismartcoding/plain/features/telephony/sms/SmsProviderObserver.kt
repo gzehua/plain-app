@@ -4,9 +4,9 @@ import android.content.Context
 import android.database.ContentObserver
 import android.net.Uri
 import android.provider.Telephony
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.SmsProviderChangedData
-import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.SmsProviderChangedData
+import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent

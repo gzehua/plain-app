@@ -3,6 +3,7 @@
 package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.platform.isQPlus
+import com.ismartcoding.plain.ui.apps.PackageIconMapper
 
 import android.graphics.Bitmap
 import android.graphics.Paint
@@ -21,15 +22,12 @@ import coil3.decode.DecodeResult
 import coil3.decode.DecodeUtils
 import coil3.decode.Decoder
 import coil3.decode.ImageSource
-import coil3.disk.DiskCache
-import coil3.disk.directory
 import coil3.fetch.SourceFetchResult
 import coil3.gif.AnimatedImageDecoder
 import coil3.memory.MemoryCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.Options
 import coil3.request.bitmapConfig
-import coil3.request.crossfade
 import coil3.size.Size
 import coil3.size.pxOrElse
 import coil3.svg.SvgDecoder
@@ -41,7 +39,6 @@ import com.ismartcoding.plain.activityManager
 import com.ismartcoding.plain.network.OkHttpClientFactory
 import kotlin.math.roundToInt
 import android.util.Size as AndroidSize
-import java.io.File
 import kotlinx.io.IOException
 
 /**
@@ -101,7 +98,7 @@ class ForceVideoDecoder(
     }
 }
 
-fun newImageLoader(context: PlatformContext): ImageLoader {
+internal actual fun platformImageLoaderBuilder(context: PlatformContext): ImageLoader.Builder {
     // Always use applicationContext to avoid leaking Activity instances through
     // the lazy diskCache / memoryCache initializer lambdas held by RealImageLoader.
     val appContext = context.applicationContext
@@ -113,6 +110,7 @@ fun newImageLoader(context: PlatformContext): ImageLoader {
 
     return ImageLoader.Builder(appContext)
         .components {
+            add(PackageIconMapper())
             add(SvgDecoder.Factory(true))
             add(AnimatedImageDecoder.Factory())
             // ThumbnailDecoder must be before VideoFrameDecoder: for content:// video URIs,
@@ -129,14 +127,6 @@ fun newImageLoader(context: PlatformContext): ImageLoader {
                 .maxSizePercent(appContext, percent = memoryPercent)
                 .build()
         }
-        .diskCache {
-            DiskCache.Builder()
-                .directory(File(appContext.cacheDir, "image_cache"))
-                .maxSizePercent(1.0)
-                .build()
-        }
-        .crossfade(100)
-        .build()
 }
 
 /** Return [inBitmap] or a copy of [inBitmap] that is valid for [options] and [Options.size]. */

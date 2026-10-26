@@ -28,32 +28,29 @@ import androidx.navigation.NavHostController
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.features.files.PickFileType
-import com.ismartcoding.plain.app.events.PickFileEvent
-import com.ismartcoding.plain.app.events.PickFileResultEvent
-import com.ismartcoding.plain.app.events.RestartAppEvent
+import com.ismartcoding.plain.events.PickFileEvent
+import com.ismartcoding.plain.events.PickFileResultEvent
+import com.ismartcoding.plain.events.RestartAppEvent
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.app.SslCertImportMode
 import com.ismartcoding.plain.platform.files.queryPickedFileInfo
-import com.ismartcoding.plain.app.replaceSSLKeyStoreAsync
+import com.ismartcoding.plain.platform.files.readPickedFileBytes
+import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.ui.base.*
-import com.ismartcoding.plain.ui.apps.components.*
-import com.ismartcoding.plain.ui.audio.components.*
-import com.ismartcoding.plain.ui.notes.components.*
-import com.ismartcoding.plain.ui.web.components.*
 import com.ismartcoding.plain.ui.components.*
-import com.ismartcoding.plain.ui.media.*
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
+private enum class TlsCertificateFormat { PKCS12, PEM }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReplaceSslCertificatePage(navController: NavHostController) {
-    var mode by remember { mutableStateOf(SslCertImportMode.PKCS12) }
+    var mode by remember { mutableStateOf(TlsCertificateFormat.PKCS12) }
     var certUri by remember { mutableStateOf("") }
     var certName by remember { mutableStateOf("") }
     var keyUri by remember { mutableStateOf("") }
@@ -85,8 +82,8 @@ fun ReplaceSslCertificatePage(navController: NavHostController) {
     }
 
     val ready = when (mode) {
-        SslCertImportMode.PKCS12 -> certUri.isNotEmpty()
-        SslCertImportMode.PEM -> certUri.isNotEmpty() && keyUri.isNotEmpty()
+        TlsCertificateFormat.PKCS12 -> certUri.isNotEmpty()
+        TlsCertificateFormat.PEM -> certUri.isNotEmpty() && keyUri.isNotEmpty()
     }
 
     val onImport = {
@@ -94,12 +91,15 @@ fun ReplaceSslCertificatePage(navController: NavHostController) {
             importing = true
             DialogHelper.showLoading()
             try {
-                replaceSSLKeyStoreAsync(
-                    mode = mode,
-                    firstUri = certUri,
-                    secondUri = if (mode == SslCertImportMode.PEM) keyUri else "",
-                    password = password,
-                )
+                when (mode) {
+                    TlsCertificateFormat.PKCS12 -> RustNativeApi.importTlsCertificatePkcs12(
+                        readPickedFileBytes(certUri), password,
+                    )
+                    TlsCertificateFormat.PEM -> RustNativeApi.importTlsCertificatePem(
+                        readPickedFileBytes(certUri).decodeToString(throwOnInvalidSequence = true),
+                        readPickedFileBytes(keyUri).decodeToString(throwOnInvalidSequence = true),
+                    )
+                }
                 DialogHelper.hideLoading()
                 DialogHelper.showConfirmDialog("", LocaleHelper.getStringAsync(Res.string.ssl_certificate_replaced)) {
                     sendEvent(RestartAppEvent())
@@ -124,26 +124,26 @@ fun ReplaceSslCertificatePage(navController: NavHostController) {
                         VerticalSpace(dp = 16.dp)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                             PSelectionChip(
-                                selected = mode == SslCertImportMode.PKCS12,
-                                onClick = { mode = SslCertImportMode.PKCS12 },
+                                selected = mode == TlsCertificateFormat.PKCS12,
+                                onClick = { mode = TlsCertificateFormat.PKCS12 },
                                 text = stringResource(Res.string.pkcs12),
                                 modifier = Modifier.weight(1f),
                             )
                             PSelectionChip(
-                                selected = mode == SslCertImportMode.PEM,
-                                onClick = { mode = SslCertImportMode.PEM },
+                                selected = mode == TlsCertificateFormat.PEM,
+                                onClick = { mode = TlsCertificateFormat.PEM },
                                 text = stringResource(Res.string.pem),
                                 modifier = Modifier.weight(1f),
                             )
                         }
                         Tips(
                             text = stringResource(
-                                if (mode == SslCertImportMode.PKCS12) Res.string.pkcs12_mode_desc
+                                if (mode == TlsCertificateFormat.PKCS12) Res.string.pkcs12_mode_desc
                                 else Res.string.pem_mode_desc
                             )
                         )
                         VerticalSpace(dp = 8.dp)
-                        if (mode == SslCertImportMode.PKCS12) {
+                        if (mode == TlsCertificateFormat.PKCS12) {
                             FilePickerRow(
                                 label = stringResource(Res.string.certificate_file),
                                 fileName = certName,

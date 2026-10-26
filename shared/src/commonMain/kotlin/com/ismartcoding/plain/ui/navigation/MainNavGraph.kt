@@ -1,144 +1,96 @@
 package com.ismartcoding.plain.ui.navigation
 
-import com.ismartcoding.plain.ui.chat.ChannelInvitePage
-import com.ismartcoding.plain.ui.nearby.PairingRequestPage
-import com.ismartcoding.plain.ui.sessions.LoginRequestPage
-import com.ismartcoding.plain.ui.media.OtherFilePage
-import com.ismartcoding.plain.ui.media.PdfPage
-import com.ismartcoding.plain.ui.media.TextFilePage
-import com.ismartcoding.plain.ui.media.TextPage
-
-import com.ismartcoding.plain.preferences.*
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.remember
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.toRoute
+import com.ismartcoding.plain.events.HChannelInviteReceivedEvent
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
-import com.ismartcoding.plain.features.chat.ChatQueries
-import com.ismartcoding.plain.app.events.HChannelInviteReceivedEvent
-import com.ismartcoding.plain.ui.audio.AudioHomeViewModel
-import com.ismartcoding.plain.ui.casting.CastViewModel
-import com.ismartcoding.plain.ui.audio.AudioViewModel
-import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
-import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
-import com.ismartcoding.plain.ui.chat.ChannelViewModel
-import com.ismartcoding.plain.ui.chat.ChatViewModel
-import com.ismartcoding.plain.ui.feeds.FeedEntryPagerViewModel
-import com.ismartcoding.plain.ui.search.GlobalSearchViewModel
+import com.ismartcoding.plain.features.downloads.DownloadCenter
+import com.ismartcoding.plain.features.downloads.isTerminalDownloadStatus
+import com.ismartcoding.plain.features.shares.SharedFolderBatchTask
+import com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine
+import com.ismartcoding.plain.i18n.Res
+import com.ismartcoding.plain.i18n.pomodoro_notification_prompt
 import com.ismartcoding.plain.ui.app.MainViewModel
+import com.ismartcoding.plain.ui.apps.AppsPage
+import com.ismartcoding.plain.ui.audio.ArtistsPage
+import com.ismartcoding.plain.ui.audio.AudioAllPage
+import com.ismartcoding.plain.ui.audio.AudioArtistPage
+import com.ismartcoding.plain.ui.audio.AudioHomePage
+import com.ismartcoding.plain.ui.audio.AudioHomeViewModel
+import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
+import com.ismartcoding.plain.ui.audio.AudioViewModel
+import com.ismartcoding.plain.ui.audio.playlists.PlaylistAddItemsPage
+import com.ismartcoding.plain.ui.audio.playlists.PlaylistDetailPage
+import com.ismartcoding.plain.ui.casting.CastSessionPage
+import com.ismartcoding.plain.ui.casting.CastViewModel
+import com.ismartcoding.plain.ui.chat.ChannelInfoPage
+import com.ismartcoding.plain.ui.chat.ChannelInvitePage
+import com.ismartcoding.plain.ui.chat.ChannelViewModel
+import com.ismartcoding.plain.ui.chat.ChatListPage
+import com.ismartcoding.plain.ui.chat.ChatPage
+import com.ismartcoding.plain.ui.chat.ChatViewModel
+import com.ismartcoding.plain.ui.chat.PeerInfoPage
 import com.ismartcoding.plain.ui.chat.PeerViewModel
-import com.ismartcoding.plain.ui.pomodoro.PomodoroViewModel
-import com.ismartcoding.plain.ui.tags.TagsViewModel
-import com.ismartcoding.plain.ui.settings.UpdateViewModel
-import com.ismartcoding.plain.ui.settings.DesktopAccessSettingsViewModel
-import com.ismartcoding.plain.ui.navigation.Routing
-import com.ismartcoding.plain.ui.navigation.PRESENTED_ROUTES
+import com.ismartcoding.plain.ui.dlna.DlnaCastHistoryPage
+import com.ismartcoding.plain.ui.dlna.DlnaReceiverPage
+import com.ismartcoding.plain.ui.downloads.components.DownloadFloatingWidget
+import com.ismartcoding.plain.ui.downloads.components.DownloadListSheet
+import com.ismartcoding.plain.ui.feeds.FeedCatalogPage
+import com.ismartcoding.plain.ui.feeds.FeedEntriesPage
+import com.ismartcoding.plain.ui.feeds.FeedEntryPage
+import com.ismartcoding.plain.ui.feeds.FeedEntryPagerViewModel
+import com.ismartcoding.plain.ui.feeds.FeedSettingsPage
+import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
+import com.ismartcoding.plain.ui.home.HomePage
+import com.ismartcoding.plain.ui.images.ImagesPage
+import com.ismartcoding.plain.ui.images.editor.ImageEditorListPage
+import com.ismartcoding.plain.ui.images.editor.ImageEditorPage
 import com.ismartcoding.plain.ui.nav.navEnterTransition
 import com.ismartcoding.plain.ui.nav.navExitTransition
 import com.ismartcoding.plain.ui.nav.navPopEnterTransition
 import com.ismartcoding.plain.ui.nav.navPopExitTransition
-import com.ismartcoding.plain.ui.navigation.rememberNavLoadGate
-import com.ismartcoding.plain.ui.files.stored.AppFilesPage
-import com.ismartcoding.plain.ui.apps.AppPage
-import com.ismartcoding.plain.ui.apps.AppsPage
-import com.ismartcoding.plain.ui.audio.AudioAllPage
-import com.ismartcoding.plain.ui.audio.ArtistsPage
-import com.ismartcoding.plain.ui.audio.AudioHomePage
-import com.ismartcoding.plain.ui.audio.AudioArtistPage
-import com.ismartcoding.plain.ui.audio.playlists.PlaylistDetailPage
-import com.ismartcoding.plain.ui.audio.playlists.PlaylistAddItemsPage
-import com.ismartcoding.plain.ui.casting.CastSessionPage
-import com.ismartcoding.plain.ui.chat.ChannelInfoPage
-import com.ismartcoding.plain.ui.chat.ChatEditTextPage
-import com.ismartcoding.plain.ui.chat.ChatListPage
-import com.ismartcoding.plain.ui.chat.ChatPage
-import com.ismartcoding.plain.ui.chat.ChatTextPage
 import com.ismartcoding.plain.ui.nearby.NearbyPage
-import com.ismartcoding.plain.ui.settings.BleDebugPage
-import com.ismartcoding.plain.ui.settings.MdnsDebugPage
-import com.ismartcoding.plain.ui.settings.ServiceDebugPage
-import com.ismartcoding.plain.ui.settings.WifiAwareDebugPage
-import com.ismartcoding.plain.ui.chat.PeerInfoPage
-import com.ismartcoding.plain.ui.nearby.connections.ApiTokenTipsPage
-import com.ismartcoding.plain.ui.nearby.connections.ConnectionsPage
-import com.ismartcoding.plain.ui.settings.developer.WebDevPage
-import com.ismartcoding.plain.ui.dlna.DlnaCastHistoryPage
-import com.ismartcoding.plain.ui.dlna.DlnaReceiverPage
-import com.ismartcoding.plain.ui.tools.ToolsPage
-import com.ismartcoding.plain.ui.files.documents.DocsPage
-import com.ismartcoding.plain.ui.feeds.FeedCatalogPage
-import com.ismartcoding.plain.ui.feeds.FeedEntriesPage
-import com.ismartcoding.plain.ui.feeds.FeedEntryPage
-import com.ismartcoding.plain.ui.feeds.FeedSettingsPage
-import com.ismartcoding.plain.ui.files.FilesPage
-import com.ismartcoding.plain.ui.files.ZipFilePage
-import com.ismartcoding.plain.ui.tools.HomeFeaturesSelectionPage
-import com.ismartcoding.plain.ui.home.HomePage
-import com.ismartcoding.plain.ui.images.editor.ImageEditorListPage
-import com.ismartcoding.plain.ui.shares.send.ShareImagePage
-import com.ismartcoding.plain.features.downloads.DownloadCenter
-import com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine
-import com.ismartcoding.plain.ui.state.launchSafe
-import com.ismartcoding.plain.features.downloads.isTerminalDownloadStatus
-import com.ismartcoding.plain.features.shares.SharedFolderBatchTask
-import com.ismartcoding.plain.ui.downloads.components.DownloadFloatingWidget
-import com.ismartcoding.plain.ui.downloads.components.DownloadListSheet
-import com.ismartcoding.plain.ui.shares.browser.SharedFolderPage
-import com.ismartcoding.plain.ui.images.editor.ImageEditorPage
-import com.ismartcoding.plain.ui.images.ImagesPage
-import com.ismartcoding.plain.ui.media.PlayMediaPage
+import com.ismartcoding.plain.ui.nearby.PairingRequestPage
 import com.ismartcoding.plain.ui.notes.NotePage
 import com.ismartcoding.plain.ui.notes.NotesPage
-import com.ismartcoding.plain.ui.onboarding.OnboardingPage
+import com.ismartcoding.plain.ui.permissions.checkNotificationPermission
 import com.ismartcoding.plain.ui.pomodoro.PomodoroPage
 import com.ismartcoding.plain.ui.pomodoro.PomodoroSettingsDialog
-import com.ismartcoding.plain.ui.permissions.checkNotificationPermission
-import com.ismartcoding.plain.platform.system.getOwnPackageName
-import com.ismartcoding.plain.ui.platform.files.printText
-import com.ismartcoding.plain.ui.chat.updateChatMessageTextAsync
-import com.ismartcoding.plain.lib.coIO
-import com.ismartcoding.plain.i18n.*
+import com.ismartcoding.plain.ui.pomodoro.PomodoroViewModel
 import com.ismartcoding.plain.ui.scan.ScanHistoryPage
 import com.ismartcoding.plain.ui.scan.ScanPage
 import com.ismartcoding.plain.ui.search.GlobalSearchPage
-import com.ismartcoding.plain.ui.settings.AutoCheckUpdatePage
-import com.ismartcoding.plain.ui.settings.BackupRestorePage
-import com.ismartcoding.plain.ui.settings.ComponentShowcasePage
-import com.ismartcoding.plain.ui.settings.DarkThemePage
-import com.ismartcoding.plain.ui.settings.LanguagePage
-import com.ismartcoding.plain.ui.settings.MarkdownThemePreviewPage
-import com.ismartcoding.plain.ui.settings.SettingsPage
-import com.ismartcoding.plain.ui.tools.LauncherShortcutsPage
-import com.ismartcoding.plain.ui.shares.EditSharePage
+import com.ismartcoding.plain.ui.search.GlobalSearchViewModel
+import com.ismartcoding.plain.ui.sessions.LoginRequestPage
+import com.ismartcoding.plain.ui.settings.UpdateViewModel
+import com.ismartcoding.plain.ui.state.launchSafe
+import com.ismartcoding.plain.ui.tags.TagsViewModel
 import com.ismartcoding.plain.ui.tools.SoundMeterPage
+import com.ismartcoding.plain.ui.tools.ToolsPage
 import com.ismartcoding.plain.ui.videos.VideosPage
-import com.ismartcoding.plain.ui.web.HowToUsePage
-import com.ismartcoding.plain.ui.web.ClipboardHistoryPage
-import com.ismartcoding.plain.ui.web.NotificationSettingsPage
-import com.ismartcoding.plain.ui.web.ReplaceSslCertificatePage
-import com.ismartcoding.plain.ui.web.WebSecurityPage
-import com.ismartcoding.plain.ui.web.DesktopAccessSettingsPage
 
 @Composable
 fun MainNavGraph(
@@ -151,19 +103,16 @@ fun MainNavGraph(
     feedEntryPagerVM: FeedEntryPagerViewModel,
     noteTagsVM: TagsViewModel,
     pomodoroVM: PomodoroViewModel,
+    platformPages: (NavGraphBuilder.(NavHostController) -> Unit)?,
+    batterySettings: (@Composable () -> Unit)?,
 ) {
     val updateVM: UpdateViewModel = viewModel { UpdateViewModel() }
-    // Activity-scoped audio VMs shared by every audio destination (home,
-    // all-items, artists, artist detail): one library load, one queue mirror.
     val audioVM = viewModel(key = "audioVM") { AudioViewModel() }
     val audioTagsVM = viewModel(key = "audioTagsVM") { TagsViewModel() }
     val audioFoldersVM = viewModel(key = "audioFoldersVM") { MediaFoldersViewModel() }
     val audioCastVM = viewModel(key = "audioCastVM") { CastViewModel() }
     val audioHomeVM = viewModel(key = "audioHomeVM") { AudioHomeViewModel() }
-    // Activity-scoped so query/results survive bottom-tab switches.
     val globalSearchVM = viewModel(key = "globalSearchVM") { GlobalSearchViewModel() }
-    // App-level overlay host: the download widget and its list sheet sit
-    // above every page so background share batches stay reachable.
     val backStackEntry by navController.currentBackStackEntryAsState()
     var showDownloads by remember { mutableStateOf(false) }
     val tasksMap = DownloadCenter.progress.collectAsState().value
@@ -182,259 +131,149 @@ fun MainNavGraph(
             popEnterTransition = { navPopEnterTransition(PRESENTED_ROUTES) },
             popExitTransition = { navPopExitTransition(PRESENTED_ROUTES) },
         ) {
-        composable<Routing.Home> {
-            val selectedTab by mainVM.currentRootTab
-            val onTabSelected: (Int) -> Unit = { mainVM.currentRootTab.value = it }
-            when (selectedTab) {
-                0 -> HomePage(navController, mainVM, updateVM, onTabSelected = onTabSelected)
-                1 -> ChatListPage(navController, peerVM = peerVM, channelVM = channelVM, onTabSelected = onTabSelected)
-                2 -> ToolsPage(navController, onTabSelected = onTabSelected)
-                3 -> GlobalSearchPage(navController, audioQueueVM, globalSearchVM, onTabSelected = onTabSelected)
-            }
-        }
-        composable<Routing.Images> { ImagesPage(navController, initialLoadGate = rememberNavLoadGate()) }
-        composable<Routing.Videos> { VideosPage(navController, initialLoadGate = rememberNavLoadGate()) }
-        composable<Routing.Audio> {
-            AudioHomePage(navController, audioQueueVM, audioVM, audioTagsVM, audioFoldersVM, audioCastVM, audioHomeVM)
-        }
-        composable<Routing.AudioAll> {
-            AudioAllPage(navController, audioQueueVM, audioVM, audioTagsVM, audioFoldersVM, audioCastVM)
-        }
-        composable<Routing.Artists> { ArtistsPage(navController, audioVM, audioHomeVM) }
-        composable<Routing.ArtistDetail> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.ArtistDetail>()
-            AudioArtistPage(navController, r.name, audioQueueVM, audioVM, audioTagsVM, audioFoldersVM, audioCastVM)
-        }
-        composable<Routing.PlaylistDetail> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.PlaylistDetail>()
-            PlaylistDetailPage(navController, r.id, audioQueueVM, audioVM, audioTagsVM, audioFoldersVM, audioCastVM)
-        }
-        composable<Routing.PlaylistAddItems> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.PlaylistAddItems>()
-            PlaylistAddItemsPage(navController, r.id)
-        }
-        composable<Routing.Apps> { AppsPage(navController) }
-        composable<Routing.Docs> { DocsPage(navController, initialLoadGate = rememberNavLoadGate()) }
-        composable<Routing.Notes> { NotesPage(navController, tagsVM = noteTagsVM) }
-        composable<Routing.SoundMeter> { SoundMeterPage(navController) }
-
-        composable<Routing.PomodoroTimer> {
-            PomodoroPage(
-                navController = navController,
-                pomodoroVM = pomodoroVM,
-                settingsDialog = { settings, onSettingsChange, onDismiss ->
-                    PomodoroSettingsDialog(settings = settings, onSettingsChange = onSettingsChange, onDismiss = onDismiss)
-                },
-                onCheckNotificationPermission = { onGranted ->
-                    checkNotificationPermission(Res.string.pomodoro_notification_prompt) { onGranted() }
-                },
-            )
-        }
-        composable<Routing.Settings> { SettingsPage(navController, updateVM, peerVM) }
-        composable<Routing.DarkTheme> { DarkThemePage(navController) }
-        composable<Routing.AutoCheckUpdate> { AutoCheckUpdatePage(navController, updateVM) }
-        composable<Routing.MarkdownThemePreview> {
-            MarkdownThemePreviewPage(navController)
-        }
-        composable<Routing.Language> { LanguagePage(navController) }
-        composable<Routing.BackupRestore> { BackupRestorePage(navController) }
-        composable<Routing.DesktopAccessSettings> { DesktopAccessSettingsPage(navController) }
-        composable<Routing.CustomFeatures> { HomeFeaturesSelectionPage(navController) }
-        composable<Routing.LauncherShortcuts> { LauncherShortcutsPage(navController) }
-        composable<Routing.NotificationSettings> { NotificationSettingsPage(navController) }
-        composable<Routing.ClipboardHistory> { ClipboardHistoryPage(navController) }
-        composable<Routing.Connections> { ConnectionsPage(navController) }
-        composable<Routing.ApiTokenTips> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.ApiTokenTips>()
-            ApiTokenTipsPage(navController, r.clientId, r.token)
-        }
-        composable<Routing.WebDev> {
-            WebDevPage(navController, packageId = getOwnPackageName(), onResetToken = {
-                coIO { Prefs.resetAdbToken() }
-            })
-        }
-        composable<Routing.WebSecurity> { WebSecurityPage(navController) }
-        composable<Routing.ReplaceSslCertificate> { ReplaceSslCertificatePage(navController) }
-        composable<Routing.Chat> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.Chat>()
-            ChatPage(navController, audioQueueVM = audioQueueVM, chatVM = ChatViewModel, peerVM = peerVM, channelVM = channelVM, r.id)
-        }
-        composable<Routing.ChatInfo> {
-            val chatVM = ChatViewModel
-            val chatTarget = chatVM.target.collectAsState()
-            if (chatTarget.value.type == ChatTargetType.PEER) {
-                PeerInfoPage(navController, chatVM.target, { chatVM.clearAllMessages() }, peerVM)
-            } else {
-                ChannelInfoPage(navController, chatVM, peerVM, channelVM)
-            }
-        }
-        composable<Routing.ScanHistory> { ScanHistoryPage(navController) }
-        composable<Routing.Scan> { ScanPage(navController) }
-        composable<Routing.FeedSettings> { FeedSettingsPage(navController) }
-        composable<Routing.FeedCatalog> { FeedCatalogPage(navController) }
-        composable<Routing.HowToUse> {
-            val webVM: DesktopAccessSettingsViewModel = viewModel { DesktopAccessSettingsViewModel() }
-            HowToUsePage(navController, webVM)
-        }
-        composable<Routing.Onboarding> { OnboardingPage(navController) }
-        composable<Routing.AppDetails> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.AppDetails>()
-            AppPage(navController, r.id)
-        }
-        composable<Routing.FeedEntries> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.FeedEntries>()
-            FeedEntriesPage(navController, r.feedId, tagsVM = feedTagsVM, pagerVM = feedEntryPagerVM)
-        }
-        composable<Routing.FeedEntry> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.FeedEntry>()
-            FeedEntryPage(navController, r.id, tagsVM = feedTagsVM, pagerVM = feedEntryPagerVM)
-        }
-        composable<Routing.NotesCreate> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.NotesCreate>()
-            NotePage(navController, "", r.tagId, tagsVM = noteTagsVM)
-        }
-        composable<Routing.NoteDetail> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.NoteDetail>()
-            NotePage(navController, r.id, "", tagsVM = noteTagsVM)
-        }
-        composable<Routing.ImageEditor> {
-            ImageEditorListPage(navController)
-        }
-        composable<Routing.ImageEditorDetail> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.ImageEditorDetail>()
-            ImageEditorPage(navController, r.id)
-        }
-        composable<Routing.Text> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.Text>()
-            TextPage(navController, r.title, r.content, r.language)
-        }
-        composable<Routing.TextFile> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.TextFile>()
-            TextFilePage(navController, r.path, r.title, r.mediaId, r.type)
-        }
-        composable<Routing.ChatText> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.ChatText>()
-            ChatTextPage(navController, r.content, onPrint = { tm, jobName, content ->
-                printText(tm, jobName, content)
-            })
-        }
-        composable<Routing.ChatEditText> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.ChatEditText>()
-            ChatEditTextPage(navController, r.content, onSave = { text ->
-                coIO {
-                    val originalChat = ChatQueries.getChatItem(r.id) ?: return@coIO
-                    updateChatMessageTextAsync(originalChat, text)
-                    ChatViewModel.update(originalChat)
+            platformPages?.invoke(this, navController)
+            addMainFilePages(navController, audioQueueVM)
+            addMainSettingsPages(navController, updateVM, peerVM, batterySettings)
+            composable<Routing.Home> {
+                val selectedTab by mainVM.currentRootTab
+                val onTabSelected: (Int) -> Unit = { mainVM.currentRootTab.value = it }
+                when (selectedTab) {
+                    0 -> HomePage(navController, mainVM, updateVM, onTabSelected = onTabSelected)
+                    1 -> ChatListPage(navController, peerVM = peerVM, channelVM = channelVM, onTabSelected = onTabSelected)
+                    2 -> ToolsPage(navController, onTabSelected = onTabSelected)
+                    3 -> GlobalSearchPage(navController, audioQueueVM, globalSearchVM, onTabSelected = onTabSelected)
                 }
-            })
-        }
-        composable<Routing.OtherFile> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.OtherFile>()
-            OtherFilePage(navController, r.path, r.title)
-        }
-        composable<Routing.ZipFile> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.ZipFile>()
-            ZipFilePage(navController, audioQueueVM, r.path, r.title)
-        }
-        composable<Routing.PdfViewer> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.PdfViewer>()
-            PdfPage(navController, r.uri, r.fileName)
-        }
-        composable<Routing.Files> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.Files>()
-            FilesPage(navController, audioQueueVM, r.folderPath)
-        }
-        composable<Routing.AppFiles> {
-            AppFilesPage(navController, audioQueueVM)
-        }
-        composable<Routing.EditShare> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.EditShare>()
-            EditSharePage(navController, r.id)
-        }
-        composable<Routing.SharedFolder> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.SharedFolder>()
-            SharedFolderPage(navController, r.messageId)
-        }
-        composable<Routing.Nearby> {
-            NearbyPage(navController, peerVM = peerVM)
-        }
-        composable<Routing.WifiAwareDebug> {
-            WifiAwareDebugPage(navController)
-        }
-        composable<Routing.BleDebug> {
-            BleDebugPage(navController)
-        }
-        composable<Routing.ServiceDebug> {
-            ServiceDebugPage(navController)
-        }
-        composable<Routing.MdnsDebug> {
-            MdnsDebugPage(navController)
-        }
-        composable<Routing.ComponentShowcase> { ComponentShowcasePage(navController) }
-        composable<Routing.DlnaReceiver> { DlnaReceiverPage(navController) }
-        composable<Routing.DlnaCastHistory> { DlnaCastHistoryPage(navController) }
-        composable<Routing.CastSession> { CastSessionPage(navController) }
-        composable<Routing.PlayMedia> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.PlayMedia>()
-            PlayMediaPage(navController, r.path, audioQueueVM)
-        }
-        composable<Routing.ShareImage> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.ShareImage>()
-            ShareImagePage(navController, r.path, r.name)
-        }
-        composableNoAnim<Routing.PairingRequest> {
-            val request = mainVM.pendingPairingRequest.value
-            if (request != null) {
-                PairingRequestPage(
-                    request = request,
-                    navController = navController,
-                )
-            } else {
-                navController.popBackStack<Routing.PairingRequest>(inclusive = true)
             }
-        }
-        composableNoAnim<Routing.LoginRequest> {
-            val event = mainVM.pendingLoginEvent.value
-            if (event != null) {
-                val clientIp = event.clientIp
-                LoginRequestPage(
-                    event = event,
-                    clientIp = clientIp,
-                    navController = navController,
-                )
-            } else {
-                navController.popBackStack<Routing.LoginRequest>(inclusive = true)
+            composable<Routing.Images> { ImagesPage(navController, initialLoadGate = rememberNavLoadGate()) }
+            composable<Routing.Videos> { VideosPage(navController, initialLoadGate = rememberNavLoadGate()) }
+            composable<Routing.Audio> {
+                AudioHomePage(navController, audioQueueVM, audioVM, audioTagsVM, audioFoldersVM, audioCastVM, audioHomeVM)
             }
-        }
-        composableNoAnim<Routing.ChannelInviteRequest> { backStackEntry ->
-            val r = backStackEntry.toRoute<Routing.ChannelInviteRequest>()
+            composable<Routing.AudioAll> {
+                AudioAllPage(navController, audioQueueVM, audioVM, audioTagsVM, audioFoldersVM, audioCastVM)
+            }
+            composable<Routing.Artists> { ArtistsPage(navController, audioVM, audioHomeVM) }
+            composable<Routing.ArtistDetail> { backStackEntry ->
+                val r = backStackEntry.toRoute<Routing.ArtistDetail>()
+                AudioArtistPage(navController, r.name, audioQueueVM, audioVM, audioTagsVM, audioFoldersVM, audioCastVM)
+            }
+            composable<Routing.PlaylistDetail> { backStackEntry ->
+                val r = backStackEntry.toRoute<Routing.PlaylistDetail>()
+                PlaylistDetailPage(navController, r.id, audioQueueVM, audioVM, audioTagsVM, audioFoldersVM, audioCastVM)
+            }
+            composable<Routing.PlaylistAddItems> { backStackEntry ->
+                val r = backStackEntry.toRoute<Routing.PlaylistAddItems>()
+                PlaylistAddItemsPage(navController, r.id)
+            }
+            composable<Routing.Apps> { AppsPage(navController) }
+            composable<Routing.Notes> { NotesPage(navController, tagsVM = noteTagsVM) }
+            composable<Routing.SoundMeter> { SoundMeterPage(navController) }
 
-            DisposableEffect(r.channelId) {
-                mainVM.pendingChannelInvite.value = HChannelInviteReceivedEvent(
-                    channelId = r.channelId,
-                    channelName = r.channelName,
-                    ownerPeerId = r.ownerPeerId,
-                    ownerPeerName = r.ownerPeerName,
+            composable<Routing.PomodoroTimer> {
+                PomodoroPage(
+                    navController = navController,
+                    pomodoroVM = pomodoroVM,
+                    settingsDialog = { settings, onSettingsChange, onDismiss ->
+                        PomodoroSettingsDialog(settings = settings, onSettingsChange = onSettingsChange, onDismiss = onDismiss)
+                    },
+                    onCheckNotificationPermission = { onGranted ->
+                        checkNotificationPermission(Res.string.pomodoro_notification_prompt) { onGranted() }
+                    },
                 )
-                onDispose {
-                    if (mainVM.pendingChannelInvite.value?.channelId == r.channelId) {
-                        mainVM.pendingChannelInvite.value = null
+            }
+            composable<Routing.Chat> { backStackEntry ->
+                val r = backStackEntry.toRoute<Routing.Chat>()
+                ChatPage(navController, audioQueueVM = audioQueueVM, chatVM = ChatViewModel, peerVM = peerVM, channelVM = channelVM, r.id)
+            }
+            composable<Routing.ChatInfo> {
+                val chatVM = ChatViewModel
+                val chatTarget = chatVM.target.collectAsState()
+                if (chatTarget.value.type == ChatTargetType.PEER) {
+                    PeerInfoPage(navController, chatVM.target, { chatVM.clearAllMessages() }, peerVM)
+                } else {
+                    ChannelInfoPage(navController, chatVM, peerVM, channelVM)
+                }
+            }
+            composable<Routing.ScanHistory> { ScanHistoryPage(navController) }
+            composable<Routing.Scan> { ScanPage(navController) }
+            composable<Routing.FeedSettings> { FeedSettingsPage(navController) }
+            composable<Routing.FeedCatalog> { FeedCatalogPage(navController) }
+            composable<Routing.FeedEntries> { backStackEntry ->
+                val r = backStackEntry.toRoute<Routing.FeedEntries>()
+                FeedEntriesPage(navController, r.feedId, tagsVM = feedTagsVM, pagerVM = feedEntryPagerVM)
+            }
+            composable<Routing.FeedEntry> { backStackEntry ->
+                val r = backStackEntry.toRoute<Routing.FeedEntry>()
+                FeedEntryPage(navController, r.id, tagsVM = feedTagsVM, pagerVM = feedEntryPagerVM)
+            }
+            composable<Routing.NotesCreate> { backStackEntry ->
+                val r = backStackEntry.toRoute<Routing.NotesCreate>()
+                NotePage(navController, "", r.tagId, tagsVM = noteTagsVM)
+            }
+            composable<Routing.NoteDetail> { backStackEntry ->
+                val r = backStackEntry.toRoute<Routing.NoteDetail>()
+                NotePage(navController, r.id, "", tagsVM = noteTagsVM)
+            }
+            composable<Routing.ImageEditor> { ImageEditorListPage(navController) }
+            composable<Routing.ImageEditorDetail> { backStackEntry ->
+                val r = backStackEntry.toRoute<Routing.ImageEditorDetail>()
+                ImageEditorPage(navController, r.id)
+            }
+            composable<Routing.Nearby> { NearbyPage(navController, peerVM = peerVM) }
+            composable<Routing.DlnaReceiver> { DlnaReceiverPage(navController) }
+            composable<Routing.DlnaCastHistory> { DlnaCastHistoryPage(navController) }
+            composable<Routing.CastSession> { CastSessionPage(navController) }
+            composableNoAnim<Routing.PairingRequest> {
+                val request = mainVM.pendingPairingRequest.value
+                if (request != null) {
+                    PairingRequestPage(
+                        request = request,
+                        navController = navController,
+                    )
+                } else {
+                    navController.popBackStack<Routing.PairingRequest>(inclusive = true)
+                }
+            }
+            composableNoAnim<Routing.LoginRequest> {
+                val event = mainVM.pendingLoginEvent.value
+                if (event != null) {
+                    val clientIp = event.clientIp
+                    LoginRequestPage(
+                        event = event,
+                        clientIp = clientIp,
+                        navController = navController,
+                    )
+                } else {
+                    navController.popBackStack<Routing.LoginRequest>(inclusive = true)
+                }
+            }
+            composableNoAnim<Routing.ChannelInviteRequest> { backStackEntry ->
+                val r = backStackEntry.toRoute<Routing.ChannelInviteRequest>()
+
+                DisposableEffect(r.channelId) {
+                    mainVM.pendingChannelInvite.value = HChannelInviteReceivedEvent(
+                        channelId = r.channelId,
+                        channelName = r.channelName,
+                        ownerPeerId = r.ownerPeerId,
+                        ownerPeerName = r.ownerPeerName,
+                    )
+                    onDispose {
+                        if (mainVM.pendingChannelInvite.value?.channelId == r.channelId) {
+                            mainVM.pendingChannelInvite.value = null
+                        }
                     }
                 }
+
+                ChannelInvitePage(
+                    channelId = r.channelId,
+                    channelName = r.channelName,
+                    ownerPeerName = r.ownerPeerName,
+                    channelVM = channelVM,
+                    navController = navController,
+                )
             }
-
-            ChannelInvitePage(
-                channelId = r.channelId,
-                channelName = r.channelName,
-                ownerPeerName = r.ownerPeerName,
-                channelVM = channelVM,
-                navController = navController,
-            )
-        }
         }
 
-        // Hidden while the share page itself is open (it has its own mini
-        // bar); shown as soon as batches run in the background elsewhere.
         if (!onShareFolderPage && shareTasks.any { !it.status.isTerminalDownloadStatus() }) {
             DownloadFloatingWidget(
                 tasks = shareTasks,

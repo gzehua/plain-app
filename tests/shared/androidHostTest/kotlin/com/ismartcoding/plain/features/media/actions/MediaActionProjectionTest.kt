@@ -4,7 +4,6 @@ import com.ismartcoding.plain.ui.media.actions.MediaActionProjection
 
 import com.ismartcoding.plain.ui.app.AppUiState
 
-import com.ismartcoding.plain.app.TempData
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

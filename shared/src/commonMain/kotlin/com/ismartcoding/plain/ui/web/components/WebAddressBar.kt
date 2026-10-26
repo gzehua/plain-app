@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.web.components
 
+import com.ismartcoding.plain.HttpServerManager
 import com.ismartcoding.plain.preferences.PrefKeys
 
 import kotlinx.coroutines.launch
@@ -26,15 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.lib.UrlHelper
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.collapse_backup_addresses
 import com.ismartcoding.plain.i18n.collapsed
 import com.ismartcoding.plain.i18n.expanded
 import com.ismartcoding.plain.i18n.try_more_addresses
-import com.ismartcoding.plain.app.restartServer
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
 import org.jetbrains.compose.resources.painterResource
@@ -54,7 +53,7 @@ fun WebAddressBar(
     var portDialogVisible by remember { mutableStateOf(false) }
     var qrCodeDialogVisible by remember { mutableStateOf(false) }
     var mdnsEditDialogVisible by remember { mutableStateOf(false) }
-    var hostname by remember { mutableStateOf(TempData.mdnsHostname) }
+    val hostname by Prefs.mdnsHostname.collectAsState()
     var qrCodeUrl by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val scheme = if (isHttps) "https" else "http"
@@ -140,15 +139,12 @@ fun WebAddressBar(
                 val portChanged = newPort != port.value
                 mdnsEditDialogVisible = false
                 scope.launch {
-                    if (hostnameChanged) {
-                        Prefs.setMdnsHostname(newHostname)
-                        hostname = newHostname
-                    }
+                    if (hostnameChanged) Prefs.setMdnsHostname(newHostname)
                     if (portChanged) {
                         if (isHttps) Prefs.set(PrefKeys.HTTPS_PORT, newPort)
                         else Prefs.set(PrefKeys.HTTP_PORT, newPort)
                     }
-                    if (hostnameChanged || portChanged) restartServer()
+                    if (hostnameChanged || portChanged) HttpServerManager.restartHttpServer()
                 }
             },
         )
@@ -162,7 +158,7 @@ fun WebAddressBar(
             onSelect = {
                 persistPort(scope, isHttps, it)
                 portDialogVisible = false
-                restartServer()
+                HttpServerManager.restartHttpServer()
             },
         )
     }

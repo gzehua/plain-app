@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.web
 
-import com.ismartcoding.plain.preferences.*
-
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -34,6 +32,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.lib.UrlHelper
 import com.ismartcoding.plain.i18n.*
 import org.jetbrains.compose.resources.painterResource

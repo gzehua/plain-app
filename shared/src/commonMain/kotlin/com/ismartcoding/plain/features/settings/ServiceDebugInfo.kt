@@ -1,16 +1,15 @@
 package com.ismartcoding.plain.features.settings
 
-import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.platform.network.wifiAwareAttached
 import com.ismartcoding.plain.platform.network.ble.BleUuids
 import com.ismartcoding.plain.platform.network.ble.PairingTransport
 import com.ismartcoding.plain.features.dlna.DlnaRendererState
-import com.ismartcoding.plain.app.HttpServerManager
+import com.ismartcoding.plain.HttpServerManager
 import com.ismartcoding.plain.features.sessions.onlineClientIds
-import com.ismartcoding.plain.app.getAwareAttachStatus
-import com.ismartcoding.plain.app.getAwareDiscoveredPeerCount
-import com.ismartcoding.plain.app.isHttpServerRunning
-import com.ismartcoding.plain.app.isMdnsRunning
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
+import com.ismartcoding.plain.features.nearby.RustMdnsRuntime
+import com.ismartcoding.plain.platform.network.isWifiAwareSupported
+import com.ismartcoding.plain.platform.network.wifiAwareDiscoveredPeerCount
 
 data class ServiceDebugInfo(
     val httpServerRunning: Boolean = false,
@@ -37,32 +36,36 @@ data class ServiceDebugInfo(
 )
 
 fun getServiceDebugInfo(): ServiceDebugInfo {
-    val httpRunning = isHttpServerRunning()
+    val httpState = HttpServerManager.httpServerState.value
     val dlnaRunning = DlnaRendererState.isRunning.value
     val bleRunning = PairingTransport.isAdvertising()
-    val awareRunning = TempData.awareRunning.value
+    val awareRunning = wifiAwareAttached.value
 
     return ServiceDebugInfo(
-        httpServerRunning = httpRunning,
-        httpServerState = if (httpRunning) "ON" else "OFF",
+        httpServerRunning = httpState == ServiceState.ON,
+        httpServerState = httpState.name,
         httpPort = Prefs.httpPort.value,
         httpsPort = Prefs.httpsPort.value,
         wsSessionCount = onlineClientIds.value.size,
-        httpServerError = HttpServerManager.httpServerError.value,
+        httpServerError = HttpServerManager.httpServerError.value.ifEmpty { HttpServerManager.httpServerResourcesError.value },
 
-        mdnsRunning = isMdnsRunning(),
-        mdnsHostname = TempData.mdnsHostname,
+        mdnsRunning = RustMdnsRuntime.running,
+        mdnsHostname = Prefs.mdnsHostname.value,
 
         dlnaRunning = dlnaRunning,
         dlnaPlaybackState = DlnaRendererState.playbackState.value.name,
         dlnaStartError = DlnaRendererState.startError.value,
 
         bleRunning = bleRunning,
-        bleClientId = TempData.clientId,
+        bleClientId = Prefs.clientId.value,
         bleServiceUuid = BleUuids.SERVICE_UUID,
 
         awareRunning = awareRunning,
-        awareAttachStatus = getAwareAttachStatus(),
-        awareDiscoveredPeerCount = getAwareDiscoveredPeerCount(),
+        awareAttachStatus = when {
+            !isWifiAwareSupported -> "not available"
+            awareRunning -> "attached"
+            else -> "not attached"
+        },
+        awareDiscoveredPeerCount = wifiAwareDiscoveredPeerCount,
     )
 }

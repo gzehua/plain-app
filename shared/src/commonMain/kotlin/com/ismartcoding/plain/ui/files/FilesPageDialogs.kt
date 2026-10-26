@@ -8,12 +8,12 @@ import com.ismartcoding.plain.i18n.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.ismartcoding.plain.Prefs
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.components.TextFieldDialog
 import com.ismartcoding.plain.ui.components.FileSortDialog
 import com.ismartcoding.plain.ui.components.DialogHelper
 import com.ismartcoding.plain.lib.withIO
-import com.ismartcoding.plain.ui.files.FilesViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,7 +24,7 @@ internal fun FilesPageDialogs(
 ) {
     if (filesVM.showSortDialog.value) {
         FileSortDialog(filesVM.sortBy, onSelected = {
-            scope.launch(Dispatchers.Default) { Prefs.set(PrefKeys.FILE_SORT_BY, it.ordinal); filesVM.sortBy.value = it; filesVM.loadAsync() }
+            scope.launch(Dispatchers.Default) { Prefs.set(PrefKeys.FILE_SORT_BY, it.name); filesVM.sortBy.value = it; filesVM.loadAsync() }
         }, onDismiss = { filesVM.showSortDialog.value = false })
     }
 

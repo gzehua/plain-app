@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import com.ismartcoding.plain.ui.platform.system.rememberClickFeedback
 import com.ismartcoding.plain.ui.theme.badgeBorderColor
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,12 +32,9 @@ fun PIconButton(
     tint: Color = LocalContentColor.current,
     contentDescription: String? = null,
     showBadge: Boolean = false,
-    isHaptic: Boolean? = false,
-    isSound: Boolean? = false,
     enabled: Boolean = true,
     click: () -> Unit = {},
 ) {
-    val feedback = rememberClickFeedback()
     IconButton(
         modifier = modifier,
         enabled = enabled,
@@ -46,10 +42,7 @@ fun PIconButton(
             contentColor = tint,
             disabledContentColor = tint.copy(alpha = 0.38f)
         ),
-        onClick = {
-            feedback(isHaptic == true, isSound == true)
-            click()
-        },
+        onClick = click,
     ) {
         if (showBadge) {
             BadgedBox(

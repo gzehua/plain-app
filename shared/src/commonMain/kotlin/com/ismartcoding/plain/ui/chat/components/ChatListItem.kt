@@ -37,7 +37,7 @@ import com.ismartcoding.plain.ui.base.HorizontalSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.CheckCircle
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
-import com.ismartcoding.plain.ui.audio.AudioQueueViewModelBase
+import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.chat.VChat
 import com.ismartcoding.plain.ui.state.enterSelectMode
 import com.ismartcoding.plain.ui.state.select
@@ -50,7 +50,7 @@ fun ChatListItem(
     navController: NavHostController,
     chatVM: ChatViewModel,
     chatTarget: ChatTarget,
-    audioQueueVM: AudioQueueViewModelBase,
+    audioQueueVM: AudioQueueViewModel,
     items: List<VChat>,
     m: VChat,
     peer: Peer?,

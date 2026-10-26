@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.contacts
 
-import com.ismartcoding.plain.api.graphql.Query
+import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.json.*

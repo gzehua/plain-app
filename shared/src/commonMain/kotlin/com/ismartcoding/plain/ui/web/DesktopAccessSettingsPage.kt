@@ -1,11 +1,8 @@
 package com.ismartcoding.plain.ui.web
 
 import com.ismartcoding.plain.ui.permissions.getText
-import com.ismartcoding.plain.ui.permissions.getGrantAccessText
 
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
-
-import com.ismartcoding.plain.preferences.*
 
 import com.ismartcoding.plain.i18n.*
 
@@ -46,24 +43,21 @@ import com.ismartcoding.plain.ui.permissions.PermissionItem
 import com.ismartcoding.plain.features.permissions.getWebList
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
-import com.ismartcoding.plain.platform.system.isIgnoringBatteryOptimizations
-import com.ismartcoding.plain.platform.system.openBatteryOptimizationSettings
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PScaffold
 import androidx.compose.material3.Switch
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.Tips
 import com.ismartcoding.plain.ui.base.TopSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.features.web.WebHelper
 import com.ismartcoding.plain.ui.settings.DesktopAccessSettingsViewModel
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.bell as ui_drawable_bell
 import com.ismartcoding.plain.ui.resources.code as ui_drawable_code
@@ -71,16 +65,18 @@ import com.ismartcoding.plain.ui.resources.content_paste as ui_drawable_content_
 import com.ismartcoding.plain.ui.resources.devices as ui_drawable_devices
 import com.ismartcoding.plain.ui.resources.info as ui_drawable_info
 import com.ismartcoding.plain.ui.resources.lock as ui_drawable_lock
-import com.ismartcoding.plain.i18n.devices
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun DesktopAccessSettingsPage(navController: NavHostController, webVM: DesktopAccessSettingsViewModel = viewModel { DesktopAccessSettingsViewModel() }) {
+fun DesktopAccessSettingsPage(
+    navController: NavHostController,
+    webVM: DesktopAccessSettingsViewModel = viewModel { DesktopAccessSettingsViewModel() },
+    batterySettings: (@Composable () -> Unit)? = null,
+) {
     val keepAwake = Prefs.keepAwake.collectAsStateValue()
     val scope = rememberCoroutineScope()
     val enabledPermissions = Prefs.apiPermissions.collectAsStateValue()
     val permissionList = remember { mutableStateOf(getWebList()) }
-    val shouldIgnoreOptimize = remember { mutableStateOf(!isIgnoringBatteryOptimizations()) }
     val systemAlertWindow = remember { mutableStateOf(Permission.SYSTEM_ALERT_WINDOW.isGranted()) }
     val notificationListenerGranted = remember { mutableStateOf(Permission.NOTIFICATION_LISTENER.isGranted()) }
     val notificationsCard = AppFeatureType.NOTIFICATIONS.has()
@@ -118,7 +114,7 @@ fun DesktopAccessSettingsPage(navController: NavHostController, webVM: DesktopAc
     }
     }
 
-    WebSettingsEffects(permissionList, shouldIgnoreOptimize, systemAlertWindow, notificationListenerGranted)
+    WebSettingsEffects(permissionList, systemAlertWindow, notificationListenerGranted)
 
     PScaffold(topBar = {
     PTopAppBar(onNavigateBack = { navController.navigateUp() }, title = stringResource(Res.string.access_settings))
@@ -241,14 +237,7 @@ fun DesktopAccessSettingsPage(navController: NavHostController, webVM: DesktopAc
                     }
                 }
                 Tips(stringResource(Res.string.keep_awake_tips))
-                VerticalSpace(dp = 16.dp)
-                PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
-                    PListItem(modifier = Modifier.clickable {
-                            if (shouldIgnoreOptimize.value) webVM.requestIgnoreBatteryOptimization()
-                            else openBatteryOptimizationSettings()
-                        }, title = stringResource(if (shouldIgnoreOptimize.value) Res.string.disable_battery_optimization else Res.string.battery_optimization_disabled), showMore = true)
-                }
-                Tips(stringResource(Res.string.battery_optimization_tips))
+                batterySettings?.invoke()
             }
             item {
                 VerticalSpace(dp = 16.dp)
@@ -276,39 +265,4 @@ fun DesktopAccessSettingsPage(navController: NavHostController, webVM: DesktopAc
     }
     })
 
-}
-
-private fun Permission.accessFeatureOf(): WebSettingsFeature? = when (this) {
-    Permission.WRITE_EXTERNAL_STORAGE -> WebSettingsFeature.FILES
-    Permission.WRITE_CONTACTS -> WebSettingsFeature.CONTACTS
-    Permission.READ_SMS -> WebSettingsFeature.SMS
-    Permission.WRITE_CALL_LOG -> WebSettingsFeature.CALL_LOGS
-    Permission.CALL_PHONE -> WebSettingsFeature.CALL_PHONE
-    Permission.READ_PHONE_NUMBERS -> WebSettingsFeature.PHONE_NUMBER
-    Permission.QUERY_ALL_PACKAGES -> WebSettingsFeature.APPS
-    Permission.NOTIFICATION_LISTENER -> WebSettingsFeature.NOTIFICATIONS
-    else -> null
-}
-
-/** LazyColumn item index of the row a feature maps to; null when the row does not exist. */
-private fun itemIndexFor(feature: WebSettingsFeature, rows: List<PermissionItem>, notificationsShown: Boolean): Int? {
-    rows.forEachIndexed { i, m -> if (m.permission.accessFeatureOf() == feature) return 2 + i }
-    var index = 2 + rows.size
-    if (feature == WebSettingsFeature.NOTIFICATIONS) return if (notificationsShown) index else null
-    if (notificationsShown) index++
-    if (feature == WebSettingsFeature.CLIPBOARD) return index
-    return null
-}
-
-@Composable
-private fun bubbleLabel(feature: WebSettingsFeature): String = when (feature) {
-    WebSettingsFeature.FILES -> Permission.WRITE_EXTERNAL_STORAGE.getText()
-    WebSettingsFeature.CONTACTS -> Permission.WRITE_CONTACTS.getText()
-    WebSettingsFeature.SMS -> Permission.READ_SMS.getText()
-    WebSettingsFeature.CALL_LOGS -> Permission.WRITE_CALL_LOG.getText()
-    WebSettingsFeature.CALL_PHONE -> Permission.CALL_PHONE.getText()
-    WebSettingsFeature.PHONE_NUMBER -> Permission.READ_PHONE_NUMBERS.getText()
-    WebSettingsFeature.APPS -> Permission.QUERY_ALL_PACKAGES.getText()
-    WebSettingsFeature.NOTIFICATIONS -> Permission.NOTIFICATION_LISTENER.getText()
-    WebSettingsFeature.CLIPBOARD -> stringResource(Res.string.clipboard_sync)
 }

@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.components.FaqItem
@@ -120,7 +119,7 @@ fun HowToUsePage(
                             question = stringResource(Res.string.faq_cannot_open_q),
                             answer = stringResource(Res.string.faq_cannot_open_a),
                         ) {
-                            RunDiagnosticsChip(onClick = webVM::dig)
+                            RunDiagnosticsChip(onClick = webVM::checkHttpServerHealth)
                         }
                         FaqItem(
                             icon = UiRes.drawable.ui_drawable_lock,

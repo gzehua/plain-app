@@ -6,134 +6,188 @@ import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runCurrent
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * 刷新期间**内容必须还能滚**。
- *
- * 2026-10-06 用户报：首页下拉刷新后「一直卡在正在刷新，只能等刷新结束后
- * 才能正常上下滚动」。真机复现坐实：`Refreshing` 状态下 `onPreScroll` 返回整个
- * `available`、`onPreFling` 返回整个 `available`，子列表一个像素都收不到，整页变成
- * 一块石头。刷新请求常常要好几秒（超时/重试），用户就被钉住干等。
- *
- * 正确语义：**刷新的只是刷新头，不是整页手势**。刷新中内容照常滚，刷新头钉在
- * threshold 上不动。所以这里断言的是「消费量」而不是「刷新头被移到哪」——后者由真机看。
- *
- * 这几条都不触发 `Animatable.animateTo`（刷新中 `offset()` 根本不会被调用），
- * 所以能留在 commonTest 让 iOS 目标也编一遍。需要真跑动画的状态机兜底测试在
- * `RefreshRecoveryTest`（androidHostTest，只有 JVM 版 coroutines-test 才有帧时钟）。
- */
 class RefreshScrollLockTest {
-
-    /**
-     * `RefreshLayoutState.coroutineScope` 是 `lateinit`，真机上绑的是
-     * `rememberCoroutineScope()`。这里给一个 `Dispatchers.Unconfined` 的替身：
-     * 消费手势的两条路径会 `launch` 到它上面去跑 `snapTo`，而 `snapTo`
-     * 只做一次赋值、不碰帧时钟，所以不需要 `runTest` 的调度器。
-     */
-    private suspend fun stateIn(state: RefreshContentState) =
-        RefreshLayoutState {}.also {
-            it.coroutineScope = CoroutineScope(Dispatchers.Unconfined)
-            it.refreshContentState.value = state
-            it.refreshContentOffsetState.snapTo(THRESHOLD)
-        }
+    private suspend fun stateIn(
+        position: ComposePosition = ComposePosition.Top,
+        state: RefreshContentState = RefreshContentState.Refreshing,
+        onRefresh: RefreshLayoutState.() -> Unit = {},
+    ) = RefreshLayoutState(onRefresh).also {
+        it.coroutineScope = CoroutineScope(Dispatchers.Unconfined)
+        it.composePositionState.value = position
+        it.refreshContentThresholdState.floatValue = THRESHOLD
+        it.refreshContentState.value = state
+        it.refreshContentOffsetState.snapTo(sign(position) * THRESHOLD)
+    }
 
     private fun connection(state: RefreshLayoutState, refreshingCanScroll: Boolean = false) =
         RefreshLayoutNestedScrollConnection(
-            composePosition = ComposePosition.Top,
-            refreshLayoutState = state,
-            dragEfficiency = 0.5f,
-            orientationIsHorizontal = false,
-            refreshingCanScroll = refreshingCanScroll,
+            state.composePositionState.value, state, 0.5f,
+            state.composePositionState.value.isHorizontal(), refreshingCanScroll,
         )
 
-    /** 刷新中：预滚**不得**消费，滚动要能到达子列表。 */
     @Test
-    fun pre_scroll_is_not_swallowed_while_refreshing() = runTest {
-        val conn = connection(stateIn(RefreshContentState.Refreshing))
-
-        assertEquals(
-            Offset.Zero,
-            conn.onPreScroll(Offset(0f, -320f), NestedScrollSource.UserInput),
-            "刷新中把 onPreScroll 的手势全消费了，整页滚不动",
-        )
-        assertEquals(
-            Offset.Zero,
-            conn.onPreScroll(Offset(0f, 320f), NestedScrollSource.UserInput),
-            "刷新中把反向手势也消费了",
-        )
+    fun refreshing_header_scrolls_away_before_the_list_in_every_direction() = runTest {
+        ComposePosition.entries.forEach { position ->
+            val state = stateIn(position)
+            val conn = connection(state)
+            val available = axis(position, -sign(position) * 320f)
+            assertEquals(axis(position, -sign(position) * THRESHOLD),
+                conn.onPreScroll(available, NestedScrollSource.UserInput), position.name)
+            assertEquals(0f, state.getRefreshContentOffset(), position.name)
+            assertEquals(RefreshContentState.Refreshing, state.refreshContentState.value)
+            assertEquals(Offset.Zero, conn.onPreScroll(available, NestedScrollSource.UserInput))
+        }
     }
 
-    /**
-     * 刷新中：`onPostScroll` **不得**消费余量，也**不得**再去动 offset。
-     *
-     * 动了 offset 有第二个后果：[RefreshLayoutState.offset] 会把状态从 `Refreshing`
-     * 打回 `Dragging`，刷新头于是被手指越拽越长，「正在刷新」直接消失。
-     */
     @Test
-    fun post_scroll_leaves_the_header_pinned_while_refreshing() = runTest {
-        val state = stateIn(RefreshContentState.Refreshing)
-        val conn = connection(state)
-
-        assertEquals(
-            Offset.Zero,
-            conn.onPostScroll(Offset.Zero, Offset(0f, 260f), NestedScrollSource.UserInput),
-            "刷新中把余量也消费了，列表滑到边界后手指就没反应",
-        )
-        assertEquals(THRESHOLD, state.refreshContentOffsetState.value)
-        assertEquals(
-            RefreshContentState.Refreshing,
-            state.refreshContentState.value,
-            "刷新中被 offset() 打回 Dragging 了，刷新头会越拽越长",
-        )
+    fun short_scroll_moves_refreshing_header_at_the_same_speed_as_content() = runTest {
+        ComposePosition.entries.forEach { position ->
+            val state = stateIn(position)
+            val delta = axis(position, -sign(position) * 40f)
+            assertEquals(delta, connection(state).onPreScroll(delta, NestedScrollSource.UserInput))
+            assertEquals(sign(position) * 80f, state.getRefreshContentOffset())
+            assertEquals(RefreshContentState.Refreshing, state.refreshContentState.value)
+        }
     }
 
-    /** 刷新中：惯性速度**不得**被吞，子列表自己该滑多远滑多远。 */
     @Test
-    fun pre_fling_does_not_swallow_the_velocity_while_refreshing() = runTest {
-        val state = stateIn(RefreshContentState.Refreshing)
+    fun fling_scroll_can_finish_hiding_the_header_without_eating_list_velocity() = runTest {
+        val state = stateIn()
         val conn = connection(state)
-
-        assertEquals(
-            Velocity.Zero,
-            conn.onPreFling(Velocity(0f, -2400f)),
-            "刷新中把整段惯性速度吞了，松手后列表不滑",
-        )
-        // 也不能走到 offsetHoming()：刷新头停在 threshold 是刷新流程的地盘。
+        assertEquals(Velocity.Zero, conn.onPreFling(Velocity(0f, -2400f)))
+        assertEquals(Offset(0f, -THRESHOLD),
+            conn.onPreScroll(Offset(0f, -320f), NestedScrollSource.SideEffect))
+        assertEquals(0f, state.getRefreshContentOffset())
         assertEquals(RefreshContentState.Refreshing, state.refreshContentState.value)
     }
 
-    /**
-     * 反面对照：**不在刷新中**时该拦还是要拦。
-     *
-     * 没有这条，上面三条就可能退化成「永远不消费」——那下拉刷新本身就不工作了。
-     */
     @Test
-    fun dragging_still_consumes_so_pull_to_refresh_keeps_working() = runTest {
-        val conn = connection(stateIn(RefreshContentState.Dragging))
-
-        assertEquals(
-            -40f,
-            conn.onPreScroll(Offset(0f, -40f), NestedScrollSource.UserInput).y,
-            "拖拽中把刷新头拉回去的那段手势没被消费，下拉刷新会失效",
-        )
+    fun scrolling_back_at_the_edge_reveals_only_the_existing_refresh_header() = runTest {
+        ComposePosition.entries.forEach { position ->
+            val state = stateIn(position)
+            state.refreshContentOffsetState.snapTo(0f)
+            val conn = connection(state)
+            val delta = axis(position, sign(position) * 320f)
+            assertEquals(axis(position, sign(position) * THRESHOLD),
+                conn.onPostScroll(Offset.Zero, delta, NestedScrollSource.UserInput))
+            assertEquals(sign(position) * THRESHOLD, state.getRefreshContentOffset())
+            assertEquals(Offset.Zero, conn.onPostScroll(Offset.Zero, delta, NestedScrollSource.UserInput))
+            assertEquals(RefreshContentState.Refreshing, state.refreshContentState.value)
+        }
     }
 
-    /**
-     * `refreshingCanScroll = true` 时连刷新头也照常跟手——`VerticalRefreshableLayout`
-     * 的加载更多那条链路就是它，这个开关不能被上面的改动顺手废掉。
-     */
     @Test
-    fun opting_out_of_the_pin_restores_the_old_drag_behaviour() = runTest {
-        val conn = connection(stateIn(RefreshContentState.Refreshing), refreshingCanScroll = true)
-
-        assertEquals(
-            -40f,
-            conn.onPreScroll(Offset(0f, -40f), NestedScrollSource.UserInput).y,
-            "refreshingCanScroll = true 时不该再钉住刷新头",
-        )
+    fun list_scroll_and_outward_fling_do_not_pull_the_header() = runTest {
+        val state = stateIn()
+        state.refreshContentOffsetState.snapTo(0f)
+        val conn = connection(state)
+        assertEquals(Offset.Zero, conn.onPreScroll(Offset(0f, 320f), NestedScrollSource.UserInput))
+        assertEquals(Offset.Zero, conn.onPostScroll(Offset.Zero, Offset(0f, 320f), NestedScrollSource.SideEffect))
+        assertEquals(0f, state.getRefreshContentOffset())
     }
+
+    @Test
+    fun scrolling_during_refresh_does_not_restart_the_request_or_finish_it() = runTest {
+        var calls = 0
+        val state = stateIn(onRefresh = { calls++ })
+        state.runRefreshListener()
+        val conn = connection(state)
+        repeat(3) {
+            conn.onPreScroll(Offset(0f, -320f), NestedScrollSource.UserInput)
+            conn.onPreFling(Velocity(0f, -2400f))
+            conn.onPostScroll(Offset.Zero, Offset(0f, 320f), NestedScrollSource.UserInput)
+            conn.onPreFling(Velocity(0f, 2400f))
+        }
+        assertEquals(1, calls)
+        assertEquals(RefreshContentState.Refreshing, state.refreshContentState.value)
+    }
+
+    @Test
+    fun drag_retraction_never_consumes_more_than_the_visible_header() = runTest {
+        ComposePosition.entries.forEach { position ->
+            val state = stateIn(position, RefreshContentState.Dragging)
+            val available = axis(position, -sign(position) * 320f)
+            assertEquals(axis(position, -sign(position) * THRESHOLD / 0.5f),
+                connection(state).onPreScroll(available, NestedScrollSource.UserInput))
+            assertEquals(0f, state.getRefreshContentOffset())
+        }
+    }
+
+    @Test
+    fun a_long_edge_pull_never_moves_the_content_beyond_the_header() = runTest {
+        ComposePosition.entries.forEach { position ->
+            val state = stateIn(position, RefreshContentState.Finished)
+            state.refreshContentOffsetState.snapTo(0f)
+            val available = axis(position, sign(position) * 5000f)
+            assertEquals(axis(position, sign(position) * THRESHOLD / 0.5f),
+                connection(state).onPostScroll(Offset.Zero, available, NestedScrollSource.UserInput))
+            assertEquals(sign(position) * THRESHOLD, state.getRefreshContentOffset())
+            assertEquals(RefreshContentState.Dragging, state.refreshContentState.value)
+        }
+    }
+
+    @Test
+    fun dragging_past_the_header_repeatedly_does_not_accumulate_blank_space() = runTest {
+        val state = stateIn(state = RefreshContentState.Dragging)
+        val conn = connection(state)
+        repeat(100) {
+            assertEquals(Offset.Zero,
+                conn.onPostScroll(Offset.Zero, Offset(0f, 80f), NestedScrollSource.UserInput))
+            assertEquals(THRESHOLD, state.getRefreshContentOffset())
+        }
+    }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    @Test
+    fun queued_touch_events_cannot_push_the_header_offscreen_or_past_its_own_edge() = runTest {
+        ComposePosition.entries.forEach { position ->
+            val state = stateIn(position, RefreshContentState.Finished)
+            state.refreshContentOffsetState.snapTo(0f)
+            state.coroutineScope = CoroutineScope(StandardTestDispatcher(testScheduler))
+            val conn = connection(state)
+            repeat(100) {
+                conn.onPostScroll(Offset.Zero, axis(position, sign(position) * 80f), NestedScrollSource.UserInput)
+            }
+            runCurrent()
+            assertEquals(sign(position) * THRESHOLD, state.getRefreshContentOffset())
+            repeat(100) {
+                conn.onPreScroll(axis(position, -sign(position) * 80f), NestedScrollSource.UserInput)
+            }
+            runCurrent()
+            assertEquals(0f, state.getRefreshContentOffset())
+        }
+    }
+
+    @Test
+    fun normal_pull_still_uses_drag_resistance() = runTest {
+        val state = stateIn(state = RefreshContentState.Finished)
+        state.refreshContentOffsetState.snapTo(0f)
+        val available = Offset(0f, 80f)
+        assertEquals(available, connection(state).onPostScroll(Offset.Zero, available, NestedScrollSource.UserInput))
+        assertEquals(40f, state.getRefreshContentOffset())
+        assertEquals(RefreshContentState.Dragging, state.refreshContentState.value)
+    }
+
+    @Test
+    fun load_more_can_still_move_past_threshold_without_changing_request_state() = runTest {
+        val state = stateIn(ComposePosition.Bottom)
+        val available = Offset(0f, -40f)
+        assertEquals(available, connection(state, refreshingCanScroll = true)
+            .onPostScroll(Offset.Zero, available, NestedScrollSource.UserInput))
+        assertEquals(-140f, state.getRefreshContentOffset())
+        assertEquals(RefreshContentState.Refreshing, state.refreshContentState.value)
+    }
+
+    private fun sign(position: ComposePosition) =
+        if (position == ComposePosition.Top || position == ComposePosition.Start) 1f else -1f
+
+    private fun axis(position: ComposePosition, value: Float) =
+        if (position.isHorizontal()) Offset(value, 0f) else Offset(0f, value)
 
     private companion object {
         const val THRESHOLD = 120f

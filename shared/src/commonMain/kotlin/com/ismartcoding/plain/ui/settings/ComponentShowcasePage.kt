@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -102,6 +103,13 @@ private fun ShowcaseCards() {
             val checked = remember { mutableStateOf(true) }
             Switch(checked = checked.value, onCheckedChange = { checked.value = it })
         }
+        PListItem(
+            title = { Text("List title") },
+            subtitle = { Text("Supporting text") },
+            description = { Text("Optional description") },
+            icon = UiRes.drawable.ui_drawable_settings,
+            statusColor = MaterialTheme.colorScheme.primary,
+        )
     }
     VerticalSpace(16.dp)
 }

@@ -35,7 +35,7 @@ import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.platform.system.isGestureInteractionMode
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.components.NeedPermissionColumn
@@ -60,7 +60,6 @@ import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 import com.ismartcoding.plain.ui.media.extensions.reset
 import com.ismartcoding.plain.ui.media.groupMediaByDate
 import com.ismartcoding.plain.ui.casting.CastViewModel
-import com.ismartcoding.plain.ui.images.ImagesViewModel
 import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
 import com.ismartcoding.plain.ui.state.exitSearchMode
@@ -181,7 +180,7 @@ fun ImagesPage(
                 },
                 onSortSelected = { sortBy ->
                     scope.launch {
-                        Prefs.set(PrefKeys.IMAGE_SORT_BY, sortBy.ordinal)
+                        Prefs.set(PrefKeys.IMAGE_SORT_BY, sortBy.name)
                         imagesVM.sortBy.value = sortBy
                         imagesVM.loadAsync(tagsVM)
                     }

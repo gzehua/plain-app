@@ -191,7 +191,7 @@
         </activity>
 
         <service
-            android:name=".services.HttpServerService"
+            android:name=".services.HttpServerForegroundService"
             android:exported="false"
             android:foregroundServiceType="specialUse"
             android:stopWithTask="false">

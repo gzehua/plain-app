@@ -2,9 +2,6 @@ package com.ismartcoding.plain.services
 
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
-import com.ismartcoding.plain.platform.permissions.isEnabledAsync
-import com.ismartcoding.plain.lib.receiveEventHandler
-import com.ismartcoding.plain.preferences.*
 import com.ismartcoding.plain.isDebugBuild
 import android.app.Notification
 import android.content.ComponentName
@@ -16,22 +13,21 @@ import androidx.core.app.NotificationCompat
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.AndroidTempData
-import com.ismartcoding.plain.activityManager
+import com.ismartcoding.plain.models.Notification as AppNotification
 import com.ismartcoding.plain.platform.system.AppFeatureType
+import com.ismartcoding.plain.platform.system.HttpServerResources
 import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.extensions.toAppNotification
 import com.ismartcoding.plain.features.permissions.getGrantedWebPermissionsAsync
-import com.ismartcoding.plain.packageManager
 import com.ismartcoding.plain.features.notifications.RustNotificationEvents
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.sendEvent
-import kotlinx.coroutines.Job
-import android.os.Process
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 
 class PNotificationListenerService : NotificationListenerService() {
-    private val events = mutableListOf<Job>()
+    @Volatile
     var isConnected = false
         private set
 
@@ -62,19 +58,20 @@ class PNotificationListenerService : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(statusBarNotification: StatusBarNotification) {
+        if (!isConnected || !HttpServerResources.shouldEnableNotificationListener) return
         if (isValidNotification(statusBarNotification)) {
             val n = statusBarNotification.toAppNotification()
-            val old = AndroidTempData.notifications.find { it.id == n.id }
+            val old = notifications.find { it.id == n.id }
             if (old != null) {
-                AndroidTempData.notifications.remove(old)
+                notifications.remove(old)
             }
-            AndroidTempData.notifications.add(n)
+            notifications.add(n)
             // Store raw actions for reply support
             val rawActions = statusBarNotification.notification.actions
             if (rawActions != null) {
-                AndroidTempData.notificationActions[n.id] = rawActions
+                notificationActions[n.id] = rawActions
             } else {
-                AndroidTempData.notificationActions.remove(n.id)
+                notificationActions.remove(n.id)
             }
             coIO { RustNotificationEvents.publish(if (old == null) EventType.NOTIFICATION_CREATED else EventType.NOTIFICATION_UPDATED, n) }
 
@@ -82,11 +79,12 @@ class PNotificationListenerService : NotificationListenerService() {
     }
 
     override fun onNotificationRemoved(statusBarNotification: StatusBarNotification) {
+        if (!isConnected || !HttpServerResources.shouldEnableNotificationListener) return
         if (isValidNotification(statusBarNotification)) {
-            val old = AndroidTempData.notifications.find { it.id == statusBarNotification.key }
+            val old = notifications.find { it.id == statusBarNotification.key }
             if (old != null) {
-                AndroidTempData.notifications.remove(old)
-                AndroidTempData.notificationActions.remove(old.id)
+                notifications.remove(old)
+                notificationActions.remove(old.id)
                 coIO { RustNotificationEvents.publish(EventType.NOTIFICATION_DELETED, old) }
             }
         }
@@ -94,21 +92,25 @@ class PNotificationListenerService : NotificationListenerService() {
 
     override fun onListenerConnected() {
         super.onListenerConnected()
+        if (!HttpServerResources.shouldEnableNotificationListener) {
+            stopListening()
+            return
+        }
         isConnected = true
         connectedService = this
         LogCat.d("PNotificationListenerService: onListenerConnected")
         try {
-            val notifications = activeNotifications
-            if (notifications != null) {
-                AndroidTempData.notifications.clear()
-                AndroidTempData.notificationActions.clear()
-                for (notification in notifications) {
+            val active = activeNotifications
+            if (active != null) {
+                notifications.clear()
+                notificationActions.clear()
+                for (notification in active) {
                     if (isValidNotification(notification)) {
                         val n = notification.toAppNotification()
-                        AndroidTempData.notifications.add(n)
+                        notifications.add(n)
                         val rawActions = notification.notification.actions
                         if (rawActions != null) {
-                            AndroidTempData.notificationActions[n.id] = rawActions
+                            notificationActions[n.id] = rawActions
                         }
                     }
                 }
@@ -139,12 +141,6 @@ class PNotificationListenerService : NotificationListenerService() {
         super.onDestroy()
         isConnected = false
         if (connectedService === this) connectedService = null
-        try {
-            events.forEach { it.cancel() }
-            events.clear()
-        } catch (ex: Exception) {
-            LogCat.e("Error cleaning up events in onDestroy: ${ex.message}")
-        }
     }
 
     override fun onListenerDisconnected() {
@@ -152,12 +148,7 @@ class PNotificationListenerService : NotificationListenerService() {
         isConnected = false
         if (connectedService === this) connectedService = null
         LogCat.d("PNotificationListenerService: onListenerDisconnected")
-        try {
-            events.forEach { it.cancel() }
-            events.clear()
-        } catch (ex: Exception) {
-            LogCat.e("Error cleaning up events: ${ex.message}")
-        }
+        if (!HttpServerResources.shouldEnableNotificationListener || !Permission.NOTIFICATION_LISTENER.isGranted()) return
         try {
             requestRebind(ComponentName(applicationContext, PNotificationListenerService::class.java))
         } catch (ex: Exception) {
@@ -165,41 +156,38 @@ class PNotificationListenerService : NotificationListenerService() {
         }
     }
 
+    private fun stopListening() {
+        requestUnbind()
+        isConnected = false
+        if (connectedService === this) connectedService = null
+    }
+
     companion object {
+        internal val notifications = CopyOnWriteArrayList<AppNotification>()
+        internal val notificationActions = ConcurrentHashMap<String, Array<out Notification.Action>>()
+
         @Volatile
         internal var connectedService: PNotificationListenerService? = null
+
+        fun preparePermissionRequest(context: Context) {
+            context.packageManager.setComponentEnabledSetting(
+                ComponentName(context, PNotificationListenerService::class.java),
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP,
+            )
+        }
 
         fun toggle(context: Context, enable: Boolean) {
             if (!AppFeatureType.NOTIFICATIONS.has()) {
                 return
             }
             if (enable) {
-                val collectorComponent = ComponentName(context, PNotificationListenerService::class.java)
-                LogCat.d("ensureCollectorRunning collectorComponent: $collectorComponent")
-                var collectorRunning = false
-                val runningServices = activityManager.getRunningServices(Int.MAX_VALUE)
-                if (runningServices == null) {
-                    LogCat.d("ensureCollectorRunning() runningServices is NULL")
-                    return
+                preparePermissionRequest(context)
+                if (connectedService?.isConnected != true && Permission.NOTIFICATION_LISTENER.isGranted()) {
+                    NotificationListenerService.requestRebind(ComponentName(context, PNotificationListenerService::class.java))
                 }
-                for (service in runningServices) {
-                    if (service.service == collectorComponent) {
-                        if (service.pid == Process.myPid()) {
-                            collectorRunning = true
-                        }
-                    }
-                }
-                if (collectorRunning) {
-                    LogCat.d("ensureCollectorRunning: collector is running")
-                    return
-                }
-                LogCat.d("ensureCollectorRunning: collector not running, reviving...")
-                val thisComponent = ComponentName(context, PNotificationListenerService::class.java)
-                packageManager.setComponentEnabledSetting(thisComponent, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
-                packageManager.setComponentEnabledSetting(thisComponent, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP)
             } else {
-                val thisComponent = ComponentName(context, PNotificationListenerService::class.java)
-                packageManager.setComponentEnabledSetting(thisComponent, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
+                connectedService?.stopListening()
             }
         }
     }

@@ -36,7 +36,7 @@ import com.ismartcoding.plain.ui.components.ButtonType
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.ui.platform.media.SoundMeterRecorder
-import com.ismartcoding.plain.app.events.RequestPermissionsEvent
+import com.ismartcoding.plain.events.RequestPermissionsEvent
 import com.ismartcoding.plain.helpers.FormatHelper
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.ui.base.*

@@ -2,17 +2,15 @@ package com.ismartcoding.plain.platform.permissions
 
 import com.ismartcoding.plain.platform.system.IosPlatformRegistry
 
-import com.ismartcoding.plain.app.events.PermissionsResultEvent
-import com.ismartcoding.plain.lib.coIO
+import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration.Companion.seconds
-
-actual fun isPermissionGranted(perm: String): Boolean = true
 
 actual fun Permission.isGranted(): Boolean = when (this) {
     Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEOS, Permission.READ_MEDIA_AUDIO,
@@ -30,9 +28,9 @@ actual suspend fun ensureNotificationPermissionAsync(): Boolean {
     if (IosPlatformRegistry.isPermissionGranted(Permission.POST_NOTIFICATIONS.name)) {
         return true
     }
-    IosPlatformRegistry.requestPermission(Permission.POST_NOTIFICATIONS.name)
     val event = withTimeoutOrNull(60.seconds) {
         Channel.sharedFlow
+            .onSubscription { IosPlatformRegistry.requestPermission(Permission.POST_NOTIFICATIONS.name) }
             .filterIsInstance<PermissionsResultEvent>()
             .filter { it.has(Permission.POST_NOTIFICATIONS) }
             .first()

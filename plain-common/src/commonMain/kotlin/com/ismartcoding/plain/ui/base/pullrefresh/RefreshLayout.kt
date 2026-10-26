@@ -54,7 +54,7 @@ fun RefreshLayout(
         },
         modifier = modifier
             .let {
-                if (userEnable) {
+                if (userEnable || refreshLayoutState.refreshContentState.value == RefreshContentState.Refreshing) {
                     it.nestedScroll(nestedScrollState)
                 } else {
                     it

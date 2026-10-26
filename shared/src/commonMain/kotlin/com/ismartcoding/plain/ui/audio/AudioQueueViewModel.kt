@@ -4,15 +4,15 @@ import com.ismartcoding.plain.features.audio.toPlaylistAudio
 import com.ismartcoding.plain.models.Audio as AudioTrack
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.ismartcoding.plain.app.events.ClearAudioQueueEvent
+import com.ismartcoding.plain.events.ClearAudioQueueEvent
 import com.ismartcoding.plain.features.audio.AudioQueueClient
-import com.ismartcoding.plain.models.Audio
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.platform.media.audioJustPlay
-import com.ismartcoding.plain.preferences.*
+import kotlinx.coroutines.flow.MutableStateFlow
 
-class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
+class AudioQueueViewModel : ViewModel() {
+    val audioPlayerVisible = MutableStateFlow(false)
     val queueItems = mutableStateOf<List<AudioItem>>(listOf())
     val queueCount = mutableStateOf(0)
     val noMore = mutableStateOf(false)
@@ -22,7 +22,7 @@ class AudioQueueViewModel : ViewModel(), AudioQueueViewModelBase {
     val queuedMediaIds = mutableStateOf<Set<String>>(emptySet())
 
     val selectedMediaId = mutableStateOf<String?>(null)
-    override val selectedPath = mutableStateOf("")
+    val selectedPath = mutableStateOf("")
 
     private val pageLimit = 200
 

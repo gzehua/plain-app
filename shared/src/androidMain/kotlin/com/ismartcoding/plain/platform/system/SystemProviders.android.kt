@@ -21,7 +21,7 @@ import com.ismartcoding.plain.rust.host.provider.ProviderPlan
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
-actual suspend fun deleteSystemProviderFacts(provider: DataType, ids: Set<String>): Set<String> = withIO {
+suspend fun deleteSystemProviderFacts(provider: DataType, ids: Set<String>): Set<String> = withIO {
     val uri = when (provider) {
         DataType.CALL -> CallLog.Calls.CONTENT_URI
         DataType.CONTACT -> ContactsContract.RawContacts.CONTENT_URI
@@ -36,10 +36,10 @@ actual suspend fun deleteSystemProviderFacts(provider: DataType, ids: Set<String
     }.toSet()
 }
 
-actual suspend fun systemSmsFacts(method: String, params: JsonObject): JsonElement =
+suspend fun systemSmsFacts(method: String, params: JsonObject): JsonElement =
     SmsHelper.facts(appContext, method, params)
 
-actual suspend fun mediaBucketItemFacts(dataType: DataType, plan: ProviderPlan): List<MediaBucketItemFacts> = when (dataType) {
+suspend fun mediaBucketItemFacts(dataType: DataType, plan: ProviderPlan): List<MediaBucketItemFacts> = when (dataType) {
     DataType.IMAGE -> ImageMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where())
     DataType.VIDEO -> VideoMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where())
     DataType.AUDIO -> if (isQPlus()) AudioMediaStoreHelper.getBucketItemFactsAsync(appContext, plan.where()) else emptyList()
@@ -47,8 +47,8 @@ actual suspend fun mediaBucketItemFacts(dataType: DataType, plan: ProviderPlan):
     else -> emptyList()
 }
 
-actual suspend fun fileIndexId(path: String): String? = withIO { FileMediaStoreHelper.getIdByPathAsync(appContext, path) }
-actual suspend fun fileIndexRows(plan: ProviderPlan, limit: Int, offset: Int, sortBy: FileSortBy): List<FileEntry> = FileMediaStoreHelper.searchAsync(appContext, plan.where(), limit, offset, sortBy)
-actual suspend fun fileIndexCount(plan: ProviderPlan): Int = withIO {
+suspend fun fileIndexId(path: String): String? = withIO { FileMediaStoreHelper.getIdByPathAsync(appContext, path) }
+suspend fun fileIndexRows(plan: ProviderPlan, limit: Int, offset: Int, sortBy: FileSortBy): List<FileEntry> = FileMediaStoreHelper.searchAsync(appContext, plan.where(), limit, offset, sortBy)
+suspend fun fileIndexCount(plan: ProviderPlan): Int = withIO {
     plan.wheres().sumOf { FileMediaStoreHelper.countAsync(appContext, it) }
 }

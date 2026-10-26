@@ -5,40 +5,21 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
     let mut guard = crate::ffi::server::CORE.lock().map_err(|e| e.to_string())?;
     let config: plain_server::host::startup::StartupConfig =
         serde_json::from_str(config).map_err(|error| error.to_string())?;
-    let cache_directory = config.cache_dir.clone().ok_or("Startup cache directory required")?;
-    let debug = config.debug;
+    let cache_directory = config
+        .cache_dir
+        .clone()
+        .ok_or("Startup cache directory required")?;
     let directory = std::path::Path::new(data_dir);
     if !directory.is_absolute() {
         return Err("Absolute data directory required".into());
     }
     let paths = plain_rs::data_paths::DataPaths::new(directory);
-    let mut started_listener = false;
-    if let Some(core) = guard.as_mut() {
+    if let Some(core) = guard.as_ref() {
         if core.server.data_directory() != directory
             || core.token != token
             || core.server.cache_paths().root() != std::path::Path::new(&cache_directory)
         {
             return Err("Rust core already initialized with another session".into());
-        }
-        if core
-            .runtime
-            .block_on(core.server.http_ports())
-            .is_none()
-        {
-            let settings = plain_rs::prefs::settings::snapshot(core.server.preferences()?)
-                .map_err(|e| e.to_string())?;
-            let (cert, key) = plain_server::services::tls_identity::identity(&paths.tls_identity())?;
-            core.server.set_build_debug(debug);
-            let (http, _) = core.runtime.block_on(
-                core.server.start_public(
-                    settings.http_port as u16,
-                    settings.https_port as u16,
-                    cert,
-                    key,
-                ),
-            )?;
-            core.server.port = http;
-            started_listener = true;
         }
     } else {
         // Apply a pending restore and acquire the directory lock before loading preferences.
@@ -47,27 +28,20 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             std::path::Path::new(&cache_directory),
         )?;
         let prefs = Arc::new(
-            plain_rs::prefs::Prefs::load(&paths.prefs())
-                .map_err(|e| e.to_string())?,
+            plain_rs::prefs::Prefs::load(&paths.prefs()).map_err(|e| e.to_string())?,
         );
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(2)
             .enable_all()
             .build()
             .map_err(|e| e.to_string())?;
-        let settings = plain_rs::prefs::settings::snapshot(&prefs).map_err(|e| e.to_string())?;
-        let (cert, key) = plain_server::services::tls_identity::identity(&paths.tls_identity())?;
-        let server = runtime.block_on(ContentServer::start_http(
-            directory,
-            token,
-            prefs,
-            config,
-            settings.http_port as u16,
-            settings.https_port as u16,
-            cert,
-            key,
-        ))?;
-        started_listener = true;
+        let mut server = runtime.block_on(async {
+            ContentServer::start_core_with_config(directory, token, prefs, config)
+        })?;
+        match runtime.block_on(server.start_configured_public()) {
+            Ok((http, _)) => server.port = http,
+            Err(error) => eprintln!("HTTP server startup failed: {error}"),
+        }
         crate::ffi::events::install(&runtime, &server)?;
         *guard = Some(crate::ffi::server::Core {
             token: token.into(),
@@ -76,26 +50,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
         });
     }
     let core = guard.as_ref().unwrap();
-    let result: Result<String, String> = (|| {
-        let (http, https) = core
-            .runtime
-            .block_on(core.server.http_ports())
-            .ok_or("HTTP server stopped during startup")?;
-        plain_rs::prefs::settings::patch(
-            core.server.preferences()?,
-            plain_rs::prefs::settings::SettingsPatch {
-                http_port: Some(http as i32),
-                https_port: Some(https as i32),
-                ..Default::default()
-            },
-        )
-        .map_err(|e| e.to_string())?;
-        Ok(serde_json::json!({
-            "logFile":core.server.log_file()?,
-            "sharedPreviewDir":core.server.cache_paths().shared_previews()}).to_string())
-    })();
-    if result.is_err() && started_listener {
-        core.runtime.block_on(core.server.stop_public());
-    }
-    result
+    Ok(serde_json::json!({
+        "logFile":core.server.log_file()?,
+        "sharedPreviewDir":core.server.cache_paths().shared_previews()}).to_string())
 }

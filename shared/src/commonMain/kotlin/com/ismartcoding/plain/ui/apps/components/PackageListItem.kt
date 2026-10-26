@@ -13,7 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +32,6 @@ import com.ismartcoding.plain.ui.theme.listItemTitle
 @Composable
 fun PackageListItem(
     item: AppPackage,
-    iconProvider: (String) -> Any?,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = { },
     onLongClick: (() -> Unit)? = null,
@@ -53,19 +51,12 @@ fun PackageListItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val icon = remember(item.id) {
-                try {
-                    iconProvider(item.id)
-                } catch (e: Exception) {
-                    null
-                }
-            }
             AsyncImage(
                 modifier =
                 Modifier
                     .padding(end = 16.dp)
                     .size(48.dp),
-                model = icon,
+                model = item,
                 contentDescription = item.name,
             )
             Column(

@@ -4,10 +4,10 @@ package com.ismartcoding.plain.lib
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.readBytes
 import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
 import platform.Foundation.dataWithBytes
-import platform.posix.memcpy
 
 fun ByteArray.toNSData(): NSData {
     return if (isEmpty()) {
@@ -19,10 +19,9 @@ fun ByteArray.toNSData(): NSData {
     }
 }
 
-fun NSData.toByteArray(): ByteArray = ByteArray(length.toInt()).apply {
-    if (isNotEmpty()) {
-        usePinned { pinned ->
-            memcpy(pinned.addressOf(0), this@toByteArray.bytes, this@toByteArray.length)
-        }
-    }
+fun NSData.toByteArray(): ByteArray {
+    val size = length
+    check(size <= Int.MAX_VALUE.toULong()) { "NSData exceeds ByteArray size limit" }
+    if (size == 0UL) return ByteArray(0)
+    return checkNotNull(bytes) { "NSData has no bytes" }.readBytes(size.toInt())
 }

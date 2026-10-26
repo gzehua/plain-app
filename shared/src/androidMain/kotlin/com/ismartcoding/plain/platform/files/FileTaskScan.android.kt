@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-actual suspend fun scanFileTaskPaths(paths: List<String>) {
+suspend fun scanFileTaskPaths(paths: List<String>) {
     val unique = paths.distinct()
     if (unique.isEmpty()) return
     check(Permission.WRITE_EXTERNAL_STORAGE.isGranted()) { "File scan permission denied" }

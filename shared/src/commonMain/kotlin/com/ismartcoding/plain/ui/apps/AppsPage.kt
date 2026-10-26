@@ -22,22 +22,17 @@ import androidx.lifecycle.Lifecycle
 import org.jetbrains.compose.resources.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.base.*
-import com.ismartcoding.plain.ui.apps.components.*
-import com.ismartcoding.plain.ui.audio.components.*
-import com.ismartcoding.plain.ui.notes.components.*
-import com.ismartcoding.plain.ui.web.components.*
 import com.ismartcoding.plain.ui.components.*
-import com.ismartcoding.plain.ui.media.*
 import com.ismartcoding.plain.ui.components.rememberLifecycleEvent
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.components.ListSearchBar
 import com.ismartcoding.plain.ui.media.extensions.reset
-import com.ismartcoding.plain.ui.apps.AppsViewModel
 import com.ismartcoding.plain.ui.state.VTabData
 import com.ismartcoding.plain.ui.state.enterSearchMode
 import com.ismartcoding.plain.ui.state.exitSearchMode
@@ -74,7 +69,7 @@ fun AppsPage(navController: NavHostController, appsVM: AppsViewModel = viewModel
     if (appsVM.showSortDialog.value) {
         RadioDialog(title = stringResource(Res.string.sort), options = FileSortBy.entries.map {
             RadioDialogOption(text = stringResource(it.getTextId()), selected = it == appsVM.sortBy.value) {
-                scope.launch(Dispatchers.Default) { Prefs.set(PrefKeys.PACKAGE_SORT_BY, it.ordinal); appsVM.sortBy.value = it; appsVM.loadAsync() }
+                scope.launch(Dispatchers.Default) { Prefs.set(PrefKeys.PACKAGE_SORT_BY, it.name); appsVM.sortBy.value = it; appsVM.loadAsync() }
             }
         }) { appsVM.showSortDialog.value = false }
     }

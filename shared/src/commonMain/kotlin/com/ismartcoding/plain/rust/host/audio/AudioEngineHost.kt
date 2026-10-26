@@ -1,8 +1,7 @@
 package com.ismartcoding.plain.rust.host.audio
 
-import com.ismartcoding.plain.app.TempData
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.models.AudioItem
@@ -10,7 +9,6 @@ import com.ismartcoding.plain.platform.media.AudioPlayer
 import com.ismartcoding.plain.platform.media.audioPlayer
 import com.ismartcoding.plain.rust.host.*
 import com.ismartcoding.plain.rust.sendEventToRust
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -33,11 +31,12 @@ private data class AudioEnginePlayback(
 )
 
 object AudioEngineHost {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val mutex = Mutex()
     private var overridePlayer: AudioPlayer? = null
     private var revision = -1L
     private var reporter: Job? = null
+    private var pendingReport: Job? = null
 
     suspend fun install(player: AudioPlayer?): AudioPlayer? = withContext(Dispatchers.Main) {
         mutex.withLock {
@@ -48,21 +47,62 @@ object AudioEngineHost {
     }
     private fun engine(): AudioPlayer = overridePlayer ?: audioPlayer
 
-    suspend fun start() {
-        check(reporter == null) { "Audio progress reporter already started" }
+    internal fun startProgressReporting() {
+        if (reporter != null) return
         reporter = scope.launch {
             while (isActive) {
-                delay(1_000.milliseconds)
+                delay(1_000)
                 try {
-                    val report = withContext(Dispatchers.Main) { mutex.withLock { report(engine()) } }
-                    if (report.path.isNotEmpty() && report.revision >= 0) {
-                        sendEventToRust(HostEvent(EventType.AUDIO_PROGRESS_REPORTED, JsonHelper.jsonEncode(report)))
-                    }
-                } catch (cancelled: CancellationException) { throw cancelled }
-                catch (e: Exception) { LogCat.e("Audio progress: ${e.message}") }
+                    val progress = mutex.withLock { sampleProgress(engine()) }
+                    reportProgress(progress.path, progress.revision, progress.positionMs)?.join()
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    LogCat.e("Audio progress: ${error.message}")
+                }
             }
         }
     }
+
+    internal fun stopProgressReporting() {
+        reporter?.cancel()
+        reporter = null
+    }
+
+    internal fun stopProgressReporting(path: String, revision: Long, positionMs: Long) {
+        stopProgressReporting()
+        reportProgress(path, revision, positionMs)
+    }
+
+    internal fun reportStarted(path: String, revision: Long) {
+        enqueueReport(HostEvent(EventType.AUDIO_STARTED_REPORTED, JsonHelper.jsonEncode(AudioPlaybackReport(path, revision))))
+    }
+
+    internal fun reportCompleted(path: String, revision: Long, positionMs: Long) {
+        stopProgressReporting(path, revision, positionMs)
+        enqueueReport(HostEvent(EventType.AUDIO_COMPLETED_REPORTED, JsonHelper.jsonEncode(AudioPlaybackReport(path, revision))))
+    }
+
+    internal fun reportProgress(path: String, revision: Long, positionMs: Long): Job? {
+        if (path.isEmpty() || revision < 0) return null
+        val progress = AudioProgressReport(path, positionMs.coerceAtLeast(0), revision)
+        return enqueueReport(HostEvent(EventType.AUDIO_PROGRESS_REPORTED, JsonHelper.jsonEncode(progress)))
+    }
+
+    private fun enqueueReport(event: HostEvent): Job {
+        val previous = pendingReport
+        return scope.launch {
+            previous?.join()
+            try {
+                sendEventToRust(event)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                LogCat.e("Audio report ${event.type}: ${error.message}")
+            }
+        }.also { pendingReport = it }
+    }
+
     suspend fun restore(value: JsonObject) {
         val restored = JsonHelper.jsonDecodeFromElement<AudioRestoreReport>(value)
         restored.error?.let { error(it) }
@@ -73,8 +113,7 @@ object AudioEngineHost {
             mutex.withLock {
                 if (restoredRevision <= revision) return@withLock
                 revision = restoredRevision
-                TempData.audioPlayPosition = position
-                engine().bindRevision(restoredRevision)
+                engine().restorePlayback(restoredRevision, position)
             }
         }
     }
@@ -108,13 +147,13 @@ object AudioEngineHost {
                 else -> error("Unknown audio engine command: $action")
             }
             revision = requestedRevision
-            val reported = report(player)
+            val reported = sampleProgress(player)
             hostResult(AudioEngineReport(
                 reported.path, if (action == "PLAY" || action == "SEEK") position else reported.positionMs, reported.revision, loaded,
             ))
         }
     }
-    private fun report(player: AudioPlayer) = AudioProgressReport(player.currentPath, player.progress.coerceAtLeast(0), revision)
+    private fun sampleProgress(player: AudioPlayer) = AudioProgressReport(player.currentPath, player.progress.coerceAtLeast(0), revision)
 }
 
 @Serializable
@@ -125,3 +164,6 @@ private data class AudioProgressReport(val path: String, val positionMs: Long, v
 
 @Serializable
 private data class AudioEngineReport(val path: String, val positionMs: Long, val revision: Long, val loaded: Boolean)
+
+@Serializable
+private data class AudioPlaybackReport(val path: String, val revision: Long)

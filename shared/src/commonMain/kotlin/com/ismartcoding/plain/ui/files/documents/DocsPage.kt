@@ -15,7 +15,7 @@ import androidx.navigation.NavHostController
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.navigation.PBackHandler
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.AnimatedBottomAction
 import com.ismartcoding.plain.ui.components.NeedPermissionColumn
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
@@ -23,7 +23,6 @@ import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
 import com.ismartcoding.plain.ui.media.MediaTopBar
 import com.ismartcoding.plain.ui.casting.CastViewModel
-import com.ismartcoding.plain.ui.files.documents.DocsViewModel
 import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
 import com.ismartcoding.plain.ui.state.exitSearchMode
@@ -98,7 +97,7 @@ fun DocsPage(
                 scrollToTop = { scope.launch { scrollState.scrollToItem(0) } },
                 onSortSelected = { sortBy ->
                     scope.launch(Dispatchers.Default) {
-                        Prefs.set(PrefKeys.DOC_SORT_BY, sortBy.ordinal)
+                        Prefs.set(PrefKeys.DOC_SORT_BY, sortBy.name)
                         docsVM.sortBy.value = sortBy
                         docsVM.loadAsync(tagsVM)
                     }

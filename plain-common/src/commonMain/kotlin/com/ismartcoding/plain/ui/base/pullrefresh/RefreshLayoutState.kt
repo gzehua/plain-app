@@ -106,10 +106,15 @@ class RefreshLayoutState(
         lastRefreshTimeState.value = nowMillis()
     }
 
-    internal fun offset(refreshContentOffset: Float) {
+    internal fun offset(refreshContentOffset: Float, maxOffset: Float = Float.POSITIVE_INFINITY) {
         coroutineScope.launch {
-            val targetValue = refreshContentOffsetState.value + refreshContentOffset
-            if (refreshContentState.value != RefreshContentState.Dragging && targetValue != 0f) {
+            // Clamp when queued gestures execute, not only when they read the previous frame's offset.
+            val requested = refreshContentOffsetState.value + refreshContentOffset
+            val targetValue = when (composePositionState.value) {
+                ComposePosition.Top, ComposePosition.Start -> requested.coerceIn(0f, maxOffset)
+                ComposePosition.Bottom, ComposePosition.End -> requested.coerceIn(-maxOffset, 0f)
+            }
+            if (refreshContentState.value != RefreshContentState.Refreshing && targetValue != 0f) {
                 refreshContentState.value = RefreshContentState.Dragging
             }
             refreshContentOffsetState.snapTo(targetValue)

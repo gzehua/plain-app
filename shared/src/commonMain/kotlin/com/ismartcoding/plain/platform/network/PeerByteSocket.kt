@@ -5,5 +5,3 @@ interface PeerByteSocket {
     suspend fun write(bytes: ByteArray)
     fun close()
 }
-
-expect suspend fun openAwareByteSocket(peerId: String): PeerByteSocket

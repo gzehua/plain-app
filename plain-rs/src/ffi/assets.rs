@@ -17,7 +17,7 @@ mod android {
         sys::jstring,
     };
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_fileIconNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_fileIcon(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         extension: JString<'_>,

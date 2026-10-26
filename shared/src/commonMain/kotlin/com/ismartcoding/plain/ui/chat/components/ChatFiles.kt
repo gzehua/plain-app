@@ -6,19 +6,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.chat.download.DownloadQueue
 import com.ismartcoding.plain.features.chat.models.MessageFiles
 import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.ui.media.viewer.previewer.MediaPreviewerState
-import com.ismartcoding.plain.ui.audio.AudioQueueViewModelBase
+import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.chat.VChat
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
 
@@ -28,18 +26,11 @@ fun ChatFiles(
     navController: NavHostController,
     m: VChat,
     peer: Peer?,
-    audioQueueVM: AudioQueueViewModelBase,
+    audioQueueVM: AudioQueueViewModel,
     previewerState: MediaPreviewerState,
 ) {
     val fileItems = (m.value as MessageFiles).items
-    val currentPlayingPath = audioQueueVM.selectedPath
     val downloadProgressMap by DownloadQueue.downloadProgress.collectAsState(mapOf())
-
-    LaunchedEffect(currentPlayingPath.value) {
-        if (TempData.audioPlayerVisible.value) {
-            TempData.audioPlayerVisible.value = currentPlayingPath.value.isNotEmpty()
-        }
-    }
 
     Column(
         Modifier
@@ -57,7 +48,7 @@ fun ChatFiles(
                 item = item,
                 index = index,
                 downloadProgressMap = downloadProgressMap,
-                onShowAudioPlayer = { TempData.audioPlayerVisible.value = true },
+                onShowAudioPlayer = { audioQueueVM.audioPlayerVisible.value = true },
             )
         }
     }

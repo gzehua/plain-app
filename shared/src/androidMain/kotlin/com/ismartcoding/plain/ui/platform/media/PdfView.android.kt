@@ -4,12 +4,11 @@ import com.ismartcoding.plain.platform.system.MinimalScrollHandle
 
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 
-import com.ismartcoding.plain.preferences.*
-
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.pdfviewer.PDFView
 import com.ismartcoding.plain.lib.pdfviewer.listener.OnPageErrorListener

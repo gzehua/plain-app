@@ -8,7 +8,6 @@ import com.ismartcoding.plain.rust.RustRuntime
 /**
  * Platform name for protocol headers: "android" or "ios".
  */
-expect fun getPlatformName(): String
 
 /**
  * Device type for discovery/pairing protocol.

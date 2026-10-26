@@ -8,15 +8,15 @@ import android.net.wifi.aware.PublishConfig
 import android.net.wifi.aware.PublishDiscoverySession
 import android.net.wifi.aware.SubscribeConfig
 import android.net.wifi.aware.SubscribeDiscoverySession
-import android.net.wifi.aware.WifiAwareManager
 import android.net.wifi.aware.WifiAwareSession
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
-import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.wifiAwareManager
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withTimeout
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
@@ -24,6 +24,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 @RequiresApi(Build.VERSION_CODES.S)
 class AwareSession {
+
+    val attached = MutableStateFlow(false)
 
     @Volatile var session: WifiAwareSession? = null
         private set
@@ -147,7 +149,7 @@ class AwareSession {
             publish?.sendMessage(
                 peerHandle,
                 MSG_READY,
-                TempData.clientId.toByteArray(Charsets.UTF_8),
+                Prefs.clientId.value.toByteArray(Charsets.UTF_8),
             )
             LogCat.d("[AWARE] ready sent")
         }.onFailure { LogCat.w("[AWARE] sendReadyMessage fail: ${it.message}") }
@@ -160,7 +162,7 @@ class AwareSession {
             subscribe?.sendMessage(
                 peerHandle,
                 MSG_HELLO,
-                TempData.clientId.toByteArray(Charsets.UTF_8),
+                Prefs.clientId.value.toByteArray(Charsets.UTF_8),
             )
             LogCat.d("[AWARE] hello sent (explicit)")
         }.onFailure { LogCat.w("[AWARE] sendHelloMessage fail: ${it.message}") }
@@ -192,7 +194,7 @@ class AwareSession {
         runCatching { session?.close() }
         session = null
         attaching.set(false)
-        TempData.awareRunning.value = false
+        attached.value = false
         clearPeerHandles()
         if (!ready.isCompleted) {
             ready.cancel()
@@ -236,7 +238,7 @@ class AwareSession {
             LogCat.d("[AWARE] attach onAttached")
             session = s
             attaching.set(false)
-            TempData.awareRunning.value = true
+            attached.value = true
             if (!ready.isCompleted) ready.complete(s)
             publishOwnService(s)
             subscribeOwnService(s)
@@ -253,7 +255,7 @@ class AwareSession {
             subscribe = null
             publish = null
             session = null
-            TempData.awareRunning.value = false
+            attached.value = false
             clearPeerHandles()
             if (!ready.isCompleted) {
                 ready.completeExceptionally(IllegalStateException("session terminated"))
@@ -266,12 +268,12 @@ class AwareSession {
             s.publish(
                 PublishConfig.Builder()
                     .setServiceName(SERVICE_NAME)
-                    .setServiceSpecificInfo(TempData.clientId.toByteArray(Charsets.UTF_8))
+                    .setServiceSpecificInfo(Prefs.clientId.value.toByteArray(Charsets.UTF_8))
                     .build(),
                 publishCallback,
                 null,
             )
-            LogCat.d("[AWARE] publish requested cid=${TempData.clientId}")
+            LogCat.d("[AWARE] publish requested cid=${Prefs.clientId.value}")
         } catch (e: Throwable) {
             LogCat.e("[AWARE] publish error: ${e.message}")
         }
@@ -336,7 +338,7 @@ class AwareSession {
                 subscribe?.sendMessage(
                     peerHandle,
                     MSG_HELLO,
-                    TempData.clientId.toByteArray(Charsets.UTF_8),
+                    Prefs.clientId.value.toByteArray(Charsets.UTF_8),
                 )
                 LogCat.d("[AWARE] hello sent to=$fromCid")
             }

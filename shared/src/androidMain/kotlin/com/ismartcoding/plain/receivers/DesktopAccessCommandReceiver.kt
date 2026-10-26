@@ -8,7 +8,7 @@ import com.ismartcoding.plain.platform.system.setDesktopAccessEnabled
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.CancellationException
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 
 class DesktopAccessCommandReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {

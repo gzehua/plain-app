@@ -2,8 +2,6 @@ package com.ismartcoding.plain.ui.pomodoro
 
 import com.ismartcoding.plain.rust.native.RustNativeApi
 
-import com.ismartcoding.plain.ui.base.HorizontalSpace
-
 import com.ismartcoding.plain.models.PomodoroSettings
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +15,7 @@ import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.features.files.PickFileTag
-import com.ismartcoding.plain.app.events.PickFileResultEvent
+import com.ismartcoding.plain.events.PickFileResultEvent
 import com.ismartcoding.plain.platform.files.queryPickedFileInfo
 import kotlinx.coroutines.CancellationException
 import com.ismartcoding.plain.ui.base.PFilledButton

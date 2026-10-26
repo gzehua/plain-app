@@ -56,7 +56,7 @@ mod android {
         sys::jstring,
     };
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_lanIpv4AddressesNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_lanIpv4Addresses(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -68,7 +68,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_acquireMdnsDebugSessionNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_acquireMdnsDebugSession(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         token: JString<'_>,
@@ -81,7 +81,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_releaseMdnsDebugSessionNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_releaseMdnsDebugSession(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         token: JString<'_>,

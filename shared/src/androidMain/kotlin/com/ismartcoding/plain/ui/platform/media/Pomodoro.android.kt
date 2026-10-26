@@ -1,15 +1,8 @@
 package com.ismartcoding.plain.ui.platform.media
 
-import com.ismartcoding.plain.features.media.MediaClient
-
-import com.ismartcoding.plain.platform.media.audioJustPlay
-
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
-import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.system.appResourceDrawable
-
-import com.ismartcoding.plain.lib.withIO
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
@@ -17,54 +10,34 @@ import android.content.Intent
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.media.MediaPlayer
+import android.net.Uri
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.ismartcoding.plain.app.Constants
 import com.ismartcoding.plain.MainActivity
 import com.ismartcoding.plain.appContext
-import com.ismartcoding.plain.ui.extensions.getFinalPath
-import com.ismartcoding.plain.models.PomodoroSettings
 import com.ismartcoding.plain.ui.platform.notifications.NotificationHelper
-import com.ismartcoding.plain.i18n.*
-import com.ismartcoding.plain.lib.coIO
-import com.ismartcoding.plain.lib.extensions.isAudioFast
+import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.preferences.*
-import com.ismartcoding.plain.models.PomodoroState
 import com.ismartcoding.plain.ui.theme.BrandPrimary
-import java.io.File
-import kotlin.math.PI
-import kotlin.math.exp
-import kotlin.math.ln
-import kotlin.math.sin
+import com.ismartcoding.plain.ui.pomodoro.POMODORO_SAMPLE_RATE
+import com.ismartcoding.plain.ui.pomodoro.pomodoroCompletionSamples
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+
+private var customSoundPlayer: MediaPlayer? = null
+private var customSoundPreparation: CancellableContinuation<Unit>? = null
 
 @SuppressLint("MissingPermission")
-actual suspend fun showPomodoroNotification(state: PomodoroState, nextState: PomodoroState) {
+internal actual suspend fun postPomodoroNotification(title: String, message: String) {
     val context = appContext
-    val settings = Prefs.pomodoroSettings.value
-    if (!settings.showNotification) {
-        return
-    }
-
     NotificationHelper.ensureDefaultChannel()
-    val (title, message) = when (state) {
-        PomodoroState.WORK -> {
-            val messageRes = if (nextState == PomodoroState.LONG_BREAK) Res.string.great_job_long_break else Res.string.great_job_short_break
-            Pair(
-                LocaleHelper.getStringAsync(Res.string.work_session_complete),
-                LocaleHelper.getStringAsync(messageRes)
-            )
-        }
-
-        PomodoroState.SHORT_BREAK -> {
-            Pair(LocaleHelper.getStringAsync(Res.string.break_complete), LocaleHelper.getStringAsync(Res.string.time_to_work))
-        }
-
-        PomodoroState.LONG_BREAK -> {
-            Pair(LocaleHelper.getStringAsync(Res.string.long_break_complete), LocaleHelper.getStringAsync(Res.string.ready_for_work))
-        }
-    }
 
     val intent = Intent(context, MainActivity::class.java).apply {
         `package` = context.packageName
@@ -84,6 +57,7 @@ actual suspend fun showPomodoroNotification(state: PomodoroState, nextState: Pom
         .setContentTitle(title)
         .setContentText(message)
         .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setSilent(true)
         .setAutoCancel(true)
         .setContentIntent(pendingIntent)
         .build()
@@ -97,73 +71,77 @@ actual suspend fun showPomodoroNotification(state: PomodoroState, nextState: Pom
     }
 }
 
-actual suspend fun playPomodoroCompletionSound(settings: PomodoroSettings) {
-    if (!settings.playSoundOnComplete) {
-        return
-    }
-
-    if (settings.soundPath.isNotEmpty()) {
-        try {
-            val actualPath = settings.soundPath.getFinalPath()
-            val file = File(actualPath)
-
-            if (file.exists() && actualPath.isAudioFast()) {
-                playCustomSong(actualPath)
-                return
-            } else if (settings.soundPath.startsWith("content://")) {
-                playCustomSong(settings.soundPath)
-                return
-            }
-        } catch (e: Exception) {
-            LogCat.e("Failed to play custom song, falling back to default sound: ${e.message}")
+internal actual suspend fun playPomodoroSound(path: String?) {
+    withContext(Dispatchers.Main) {
+        customSoundPlayer?.let { releaseCustomSoundPlayer(it) }
+        if (path == null) {
+            withContext(Dispatchers.IO) { playNotificationSound() }
+        } else {
+            playCustomSound(path)
         }
-    }
-
-    coIO {
-        playNotificationSound()
     }
 }
 
-private suspend fun playCustomSong(songPath: String) {
-    try {
-        val audio = MediaClient.audioInfo(songPath)
-        coIO {
-            audioJustPlay(audio)
+private suspend fun playCustomSound(path: String): Unit = suspendCancellableCoroutine { continuation ->
+    val player = MediaPlayer()
+    customSoundPlayer = player
+    customSoundPreparation = continuation
+    continuation.invokeOnCancellation {
+        coMain { releaseCustomSoundPlayer(player) }
+    }
+    player.setOnPreparedListener { prepared ->
+        if (customSoundPlayer !== prepared) return@setOnPreparedListener
+        if (!continuation.isActive) {
+            releaseCustomSoundPlayer(prepared)
+            return@setOnPreparedListener
         }
-    } catch (e: Exception) {
-        LogCat.e("Failed to play custom song: ${e.message}")
+        try {
+            prepared.start()
+        } catch (error: Exception) {
+            releaseCustomSoundPlayer(prepared, error)
+            return@setOnPreparedListener
+        }
+        prepared.setOnPreparedListener(null)
+        customSoundPreparation = null
+        continuation.resume(Unit)
+    }
+    player.setOnCompletionListener { releaseCustomSoundPlayer(it) }
+    player.setOnErrorListener { failed, what, extra ->
+        releaseCustomSoundPlayer(failed, IllegalStateException("Pomodoro completion sound failed ($what, $extra)"))
+        true
+    }
+    try {
+        player.setAudioAttributes(
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+        )
+        if (path.startsWith("content://")) player.setDataSource(appContext, Uri.parse(path))
+        else player.setDataSource(path)
+        player.prepareAsync()
+    } catch (error: Exception) {
+        releaseCustomSoundPlayer(player, error)
+    }
+}
+
+private fun releaseCustomSoundPlayer(player: MediaPlayer, error: Exception? = null) {
+    if (customSoundPlayer !== player) return
+    val preparation = customSoundPreparation
+    customSoundPlayer = null
+    customSoundPreparation = null
+    player.release()
+    if (error != null) {
+        if (preparation?.isActive == true) preparation.resumeWithException(error)
+        else LogCat.e("Pomodoro completion sound", error)
+    } else if (preparation?.isActive == true) {
+        preparation.resume(Unit)
     }
 }
 
 private fun playNotificationSound() {
-    val sampleRate = 44100
-    val durationMs = 300
-    val samples = (sampleRate * durationMs / 1000.0).toInt()
-
-    val audioBuffer = ShortArray(samples)
-
-    for (i in 0 until samples) {
-        val time = i.toDouble() / sampleRate
-
-        val startFreq = 800.0
-        val endFreq = 600.0
-        val modulationTime = 0.1
-
-        val frequency = if (time <= modulationTime) {
-            val ratio = endFreq / startFreq
-            startFreq * exp(ln(ratio) * (time / modulationTime))
-        } else {
-            endFreq
-        }
-
-        val startGain = 0.3
-        val endGain = 0.01
-        val gainRatio = endGain / startGain
-        val gain = startGain * exp(ln(gainRatio) * (time / (durationMs / 1000.0)))
-
-        val sample = (sin(2 * PI * frequency * time) * gain * Short.MAX_VALUE).toInt()
-        audioBuffer[i] = sample.coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
-    }
+    val sampleRate = POMODORO_SAMPLE_RATE
+    val audioBuffer = pomodoroCompletionSamples()
 
     val audioAttributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_NOTIFICATION)

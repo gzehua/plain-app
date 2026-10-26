@@ -172,7 +172,7 @@ kotlin {
             implementation(libs.media3.dash)
             implementation(libs.media3.hls)
 
-            // LifecycleService (HttpServerService)
+            // LifecycleService (HttpServerForegroundService)
             implementation(libs.androidx.lifecycle.service)
 
             // WorkManager (FeedFetchWorker, ImageEmbedWorker)

@@ -5,7 +5,7 @@ import com.ismartcoding.plain.rust.RustRuntime
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test

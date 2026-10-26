@@ -8,23 +8,22 @@ import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.features.audio.AudioAction
 import androidx.navigation.NavHostController
 import androidx.navigation.NavDestination.Companion.hasRoute
-import com.ismartcoding.plain.app.events.AudioActionEvent
-import com.ismartcoding.plain.app.events.ConfirmDialogEvent
-import com.ismartcoding.plain.app.events.HConfirmToAcceptLoginEvent
-import com.ismartcoding.plain.app.events.LoadingDialogEvent
+import com.ismartcoding.plain.events.AudioActionEvent
+import com.ismartcoding.plain.events.ConfirmDialogEvent
+import com.ismartcoding.plain.events.HConfirmToAcceptLoginEvent
+import com.ismartcoding.plain.events.LoadingDialogEvent
 import com.ismartcoding.plain.ui.components.ToastEvent
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.ui.chat.PeerViewModel
 import com.ismartcoding.plain.ui.pomodoro.PomodoroViewModel
-import com.ismartcoding.plain.ui.navigation.Routing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import com.ismartcoding.plain.app.events.HPomodoroChangedEvent
-import com.ismartcoding.plain.app.events.HWebLoginClosedEvent
+import com.ismartcoding.plain.events.HPomodoroChangedEvent
+import com.ismartcoding.plain.events.HWebLoginClosedEvent
 
 @Composable
 fun MainEventCollector(

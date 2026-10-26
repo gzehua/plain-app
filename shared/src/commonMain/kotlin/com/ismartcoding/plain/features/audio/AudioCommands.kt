@@ -1,10 +1,9 @@
 package com.ismartcoding.plain.features.audio
 
-import com.ismartcoding.plain.api.graphql.Mutation
+import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.rust.graphql.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 

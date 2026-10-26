@@ -15,7 +15,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.permissions.Permission
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.delay

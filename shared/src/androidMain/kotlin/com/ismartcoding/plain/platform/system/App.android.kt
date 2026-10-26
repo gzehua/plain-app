@@ -15,8 +15,8 @@ import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.powerManager
 
 actual fun isAppForegrounded(): Boolean = AppHelper.foregrounded()
-actual fun installApk(path: String) = PackageHelper.install(appContext, File(path))
-actual fun exitApp() {
+fun installApk(path: String) = PackageHelper.install(appContext, File(path))
+fun exitApp() {
     exitProcess(0)
 }
 
@@ -28,14 +28,10 @@ internal actual suspend fun clearMediaCache(): Unit = withIO {
     VideoPlayerCacheManager.getCache()?.let { cache -> cache.keys.toList().forEach(cache::removeResource) }
 }
 
-actual fun getAppIcon(packageName: String): Any? = runCatching {
-    appContext.packageManager.getApplicationIcon(packageName)
-}.getOrNull()
-
-actual fun isIgnoringBatteryOptimizations(): Boolean =
+fun isIgnoringBatteryOptimizations(): Boolean =
     powerManager.isIgnoringBatteryOptimizations(appContext.packageName)
 
-actual fun openBatteryOptimizationSettings() {
+fun openBatteryOptimizationSettings() {
     val intent = Intent().apply {
         action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

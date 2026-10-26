@@ -126,7 +126,7 @@ mod android {
         sys::jstring,
     };
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_resetPasswordNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_resetPassword(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -136,7 +136,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_resetUrlTokenNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_resetUrlToken(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -146,7 +146,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_resetAdbTokenNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_resetAdbToken(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -156,7 +156,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_setNotificationFilterModeNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_setNotificationFilterMode(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         mode: JString<'_>,
@@ -169,7 +169,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_clearNotificationFilterAppsNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_clearNotificationFilterApps(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -181,7 +181,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_scanHistoryNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_scanHistory(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -191,7 +191,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_addScanHistoryNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_addScanHistory(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         text: JString<'_>,
@@ -204,7 +204,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_removeScanHistoryNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_removeScanHistory(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         text: JString<'_>,

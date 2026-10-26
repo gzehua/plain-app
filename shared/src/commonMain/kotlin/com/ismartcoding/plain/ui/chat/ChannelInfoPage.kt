@@ -15,8 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.app.TempData
-import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.features.chat.models.getBestIp
 import com.ismartcoding.plain.features.chat.models.getName
@@ -48,8 +46,6 @@ import com.ismartcoding.plain.ui.base.PTopAppBar
 import com.ismartcoding.plain.ui.base.PSectionTitle
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.components.DialogHelper
-import com.ismartcoding.plain.ui.chat.ChannelViewModel
-import com.ismartcoding.plain.ui.chat.PeerViewModel
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.chat.components.ChannelMemberListItem
 import com.ismartcoding.plain.ui.chat.components.PeerIconWithStatus
@@ -57,7 +53,7 @@ import com.ismartcoding.plain.ui.chat.components.PeerMember
 import com.ismartcoding.plain.ui.chat.components.RenameChannelDialog
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import org.jetbrains.compose.resources.stringResource
-import com.ismartcoding.plain.preferences.Prefs
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.platform.system.rustStartupConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,7 +72,7 @@ fun ChannelInfoPage(
 
     val ownerPeerId: String? = remember(liveChannel?.ownerId) {
         if (liveChannel?.ownerId.isNullOrEmpty()) null
-        else if (liveChannel.actions.isOwner) TempData.clientId
+        else if (liveChannel.actions.isOwner) Prefs.clientId.value
         else liveChannel.ownerId
     }
     val deviceName by Prefs.deviceName.collectAsState()

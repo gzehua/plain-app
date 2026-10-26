@@ -1,8 +1,6 @@
 package com.ismartcoding.plain.platform.network
 
-import com.ismartcoding.plain.platform.permissions.Permission
-
-import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.platform.network.ble.BleUuids
 import com.ismartcoding.plain.platform.network.ble.PairingTransport
 
@@ -17,7 +15,7 @@ actual fun getBleDebugInfo(): BleDebugInfo {
         bluetoothSupported = isBluetoothSupported(),
         bluetoothEnabled = isBluetoothEnabled(),
         advertisingRunning = PairingTransport.isAdvertising(),
-        clientId = TempData.clientId,
+        clientId = Prefs.clientId.value,
         serviceUuid = BleUuids.SERVICE_UUID,
     )
 }

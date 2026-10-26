@@ -2,11 +2,9 @@ package com.ismartcoding.plain.ui.home
 
 import com.ismartcoding.plain.platform.network.vpnActive
 import com.ismartcoding.plain.rust.RustEventHandler
-import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.ApplyBackgroundServiceSettingEvent
 
-import com.ismartcoding.plain.preferences.*
-
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,15 +18,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.chat.peer.PeerStatusClient
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.ui.components.ButtonSize
-import com.ismartcoding.plain.features.settings.HttpServerState
+import com.ismartcoding.plain.features.settings.ServiceState
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.app.events.PermissionsResultEvent
-import com.ismartcoding.plain.app.events.RequestPermissionsEvent
-import com.ismartcoding.plain.app.events.WindowFocusChangedEvent
+import com.ismartcoding.plain.events.PermissionsResultEvent
+import com.ismartcoding.plain.events.RequestPermissionsEvent
+import com.ismartcoding.plain.events.WindowFocusChangedEvent
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.grant_permission
 import com.ismartcoding.plain.i18n.system_alert_window_warning
@@ -52,7 +49,8 @@ import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.ui.settings.UpdateViewModel
 import com.ismartcoding.plain.ui.navigation.MainNavScaffold
 import com.ismartcoding.plain.ui.settings.UpdateDialog
-import com.ismartcoding.plain.app.HttpServerManager
+import com.ismartcoding.plain.HttpServerManager
+import com.ismartcoding.plain.Prefs
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,36 +67,29 @@ fun HomePage(
             if (event.type == EventType.NETWORK_CHANGED) isVpnActive = vpnActive()
         }
     }
-    val serviceEnabled = Prefs.backgroundServiceEnabled.collectAsStateValue()
+    val backgroundServiceEnabled = Prefs.backgroundServiceEnabled.collectAsStateValue()
     var systemAlertWindow by remember { mutableStateOf(Permission.SYSTEM_ALERT_WINDOW.isGranted()) }
     val refreshState = rememberRefreshLayoutState {
         PeerStatusClient.reconnectNow("home_pull_refresh")
         setRefreshState(RefreshContentState.Finished)
     }
-    val serverError = HttpServerManager.httpServerError.collectAsStateValue()
+    val httpServerError = HttpServerManager.httpServerError.collectAsStateValue()
+    val httpServerResourcesError = HttpServerManager.httpServerResourcesError.collectAsStateValue()
     var showStayOnlineOverlay by remember { mutableStateOf(false) }
 
-    val backgroundState = HttpServerManager.backgroundState.collectAsStateValue()
-    val backgroundError = HttpServerManager.backgroundError.collectAsStateValue()
-    LaunchedEffect(Unit) { HttpServerManager.ensureStarted() }
+    val foregroundServiceState = HttpServerManager.foregroundServiceState.collectAsStateValue()
+    val foregroundServiceError = HttpServerManager.foregroundServiceError.collectAsStateValue()
 
     LaunchedEffect(Channel.sharedFlow) {
         Channel.sharedFlow.collect { event ->
             when (event) {
                 is PermissionsResultEvent -> {
                     systemAlertWindow = Permission.SYSTEM_ALERT_WINDOW.isGranted()
-                    if (event.map.containsKey(Permission.POST_NOTIFICATIONS.toSysPermission())) {
-                        if (Permission.POST_NOTIFICATIONS.isGranted()) HttpServerManager.ensureStarted()
-                        else HttpServerManager.setBackgroundEnabled(false)
-                    }
                 }
 
                 is WindowFocusChangedEvent -> {
                     isVpnActive = vpnActive()
                     systemAlertWindow = Permission.SYSTEM_ALERT_WINDOW.isGranted()
-                    if (event.hasFocus) {
-                        HttpServerManager.ensureStarted()
-                    }
                 }
             }
         }
@@ -124,7 +115,7 @@ fun HomePage(
             LazyColumn(Modifier.fillMaxSize()) {
                 item {
                     TopSpace()
-                    if (serviceEnabled) {
+                    if (backgroundServiceEnabled) {
                         if (isVpnActive) {
                             PAlert(
                                 description = stringResource(Res.string.vpn_web_conflict_warning),
@@ -154,12 +145,12 @@ fun HomePage(
                 }
                 item {
                     PlainAppServiceSection(
-                        backgroundEnabled = backgroundState == HttpServerState.ON || backgroundState == HttpServerState.STARTING,
-                        backgroundState = backgroundState,
-                        errorMessage = serverError.ifEmpty { backgroundError },
+                        foregroundServiceActive = foregroundServiceState == ServiceState.ON || foregroundServiceState == ServiceState.STARTING,
+                        foregroundServiceState = foregroundServiceState,
+                        errorMessage = httpServerError.ifEmpty { httpServerResourcesError }.ifEmpty { foregroundServiceError },
                         onRetry = {
-                            if (backgroundState == HttpServerState.ERROR) HttpServerManager.setBackgroundEnabled(true)
-                            else HttpServerManager.ensureStarted()
+                            if (httpServerError.isNotEmpty() || httpServerResourcesError.isNotEmpty()) HttpServerManager.restartHttpServer()
+                            else sendEvent(ApplyBackgroundServiceSettingEvent())
                         },
                         onStayOnline = { showStayOnlineOverlay = true },
                     )

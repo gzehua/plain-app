@@ -15,9 +15,8 @@ import com.ismartcoding.plain.platform.network.ble.client.AndroidBleScanner
 import com.ismartcoding.plain.platform.network.ble.client.BleScanner
 import com.ismartcoding.plain.platform.network.ble.server.AndroidBleGattServer
 import com.ismartcoding.plain.platform.network.ble.server.BleGattServer
-import com.ismartcoding.plain.app.events.PermissionsResultEvent
+import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.features.bluetooth.BluetoothPermissionResultEvent
-import com.ismartcoding.plain.features.bluetooth.client.BluetoothUtil
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.extensions.hasPermission
@@ -71,12 +70,6 @@ actual val bleAvailabilityFlow: StateFlow<BleAvailability> by lazy {
             }
         }
     }
-}
-
-actual suspend fun ensureBlePermissionAsync(): Boolean = BluetoothUtil.ensurePermissionAsync()
-
-actual fun setBluetoothCanContinue(value: Boolean) {
-    BluetoothUtil.canContinue = value
 }
 
 actual fun bleTransport(): BleTransport = AndroidBleTransport

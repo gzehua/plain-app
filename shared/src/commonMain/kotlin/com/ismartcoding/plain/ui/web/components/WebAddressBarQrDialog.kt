@@ -10,11 +10,13 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.ismartcoding.plain.ui.platform.media.generateQrCode
+import com.ismartcoding.plain.ui.qrcode.generateQrCode
+import androidx.compose.ui.graphics.FilterQuality
 import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.lib.extensions.toBreakableUrl
@@ -25,6 +27,7 @@ fun WebAddressBarQrDialog(
     url: String,
     onClose: () -> Unit,
 ) {
+    val qrCode = remember(url) { generateQrCode(url, 300, 300) }
     AlertDialog(
         containerColor = MaterialTheme.colorScheme.dialogSheetBackground,
         onDismissRequest = onClose,
@@ -43,7 +46,8 @@ fun WebAddressBarQrDialog(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Image(
-                    bitmap = generateQrCode(url, 300, 300),
+                    bitmap = qrCode,
+                    filterQuality = FilterQuality.None,
                     contentDescription = stringResource(Res.string.qrcode),
                     modifier = Modifier.size(300.dp),
                 )

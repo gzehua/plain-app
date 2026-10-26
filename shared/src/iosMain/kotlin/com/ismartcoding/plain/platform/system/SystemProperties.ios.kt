@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.platform.network.wifiAwareAttached
 import com.ismartcoding.plain.buildChannel
 import com.ismartcoding.plain.platform.media.getDownloadsDirPath
 import com.ismartcoding.plain.platform.network.isWifiAwareSupported
@@ -44,7 +44,7 @@ internal actual fun readSystemProperties(names: List<String>): Map<String, JsonE
     }
     return names.associateWith { name ->
         when (name) {
-            "wifiAwareRunning" -> JsonPrimitive(TempData.awareRunning.value)
+            "wifiAwareRunning" -> JsonPrimitive(wifiAwareAttached.value)
             "language" -> JsonPrimitive(NSLocale.currentLocale.languageCode ?: "")
             "display.width" -> JsonPrimitive(display.first)
             "display.height" -> JsonPrimitive(display.second)

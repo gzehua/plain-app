@@ -1,11 +1,13 @@
 package com.ismartcoding.plain.ui.base
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -15,21 +17,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.theme.listItemTitle
+import com.ismartcoding.plain.ui.theme.listItemSubtitle
+import com.ismartcoding.plain.ui.theme.listItemDescription
 
 @Composable
 internal fun RowScope.PListTextContent(
-    title: String,
-    subtitle: String,
-    titleTrailing: (@Composable () -> Unit)?,
-    titleSuffix: (@Composable () -> Unit)?,
-    separatedActions: Boolean,
-    showMore: Boolean,
-    action: (@Composable () -> Unit)?,
-    contentColor: Color?,
+    title: @Composable () -> Unit,
+    subtitle: (@Composable () -> Unit)? = null,
+    description: (@Composable () -> Unit)? = null,
+    separatedActions: Boolean = false,
+    showMore: Boolean = false,
+    action: (@Composable () -> Unit)? = null,
+    contentColor: Color? = null,
 ) {
-    Column(Modifier.weight(1f)) {
-        PListItemTitle(title, titleTrailing, titleSuffix, contentColor)
-        if (subtitle.isNotEmpty()) PListItemSubtitle(subtitle, contentColor)
+    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        ProvideTextStyle(MaterialTheme.typography.listItemTitle().contentColored(contentColor), content = title)
+        subtitle?.let {
+            ProvideTextStyle(MaterialTheme.typography.listItemSubtitle().contentColored(contentColor), content = it)
+        }
+        description?.let {
+            ProvideTextStyle(MaterialTheme.typography.listItemDescription().contentColored(contentColor), content = it)
+        }
     }
     if (action != null || separatedActions || showMore) {
         HorizontalSpace(16.dp)
@@ -48,7 +56,7 @@ internal fun RowScope.PListTextContent(
 }
 
 @Composable
-private fun PListItemTitle(
+internal fun PListItemTitle(
     title: String,
     titleTrailing: (@Composable () -> Unit)?,
     titleSuffix: (@Composable () -> Unit)?,

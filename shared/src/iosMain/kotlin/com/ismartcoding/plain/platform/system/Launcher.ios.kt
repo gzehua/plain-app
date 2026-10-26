@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.app.restartServer
 
 import com.ismartcoding.plain.lib.extensions.getMimeType
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -67,17 +66,4 @@ actual fun openFileExternal(path: String) {
         return
     }
     controller.openFileExternal(path)
-}
-
-actual fun isFileShareable(path: String): Boolean {
-    if (path.startsWith("http://", true) || path.startsWith("https://", true)) return true
-    if (path.startsWith("file://", true)) return true
-    if (path.startsWith("/")) return true
-    return false
-}
-
-actual fun relaunchApp() {
-    // iOS apps cannot restart their own process, so instead restart the embedded HTTP
-    // server. This picks up newly chosen ports after a conflict fix and retries startup.
-    restartServer()
 }

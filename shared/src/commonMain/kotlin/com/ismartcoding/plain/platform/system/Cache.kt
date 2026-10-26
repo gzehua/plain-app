@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.api.graphql.Mutation
-import com.ismartcoding.plain.api.graphql.Query
+import com.ismartcoding.plain.graphql.Mutation
+import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonPrimitive

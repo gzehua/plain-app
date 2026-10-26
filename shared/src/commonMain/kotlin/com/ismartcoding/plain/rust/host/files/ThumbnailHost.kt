@@ -3,7 +3,7 @@ package com.ismartcoding.plain.rust.host.files
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.files.decodeThumbnailBytes
 import com.ismartcoding.plain.rust.host.*
-import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.rust.native.RustNativeBindings
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
@@ -18,7 +18,7 @@ internal object ThumbnailHost {
             request.fileName,
         ) ?: return hostResult()
         val token = request.outputToken
-        val error = RustNativeApi.send("thumbnail", token, bytes)
+        val error = RustNativeBindings.send("thumbnail", token, bytes)
         check(error.isEmpty()) { error }
         return hostResult(true)
     }

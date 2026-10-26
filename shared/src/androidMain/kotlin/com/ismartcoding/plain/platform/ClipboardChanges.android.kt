@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.platform
 
-import com.ismartcoding.plain.app.events.ClipboardReportData
+import com.ismartcoding.plain.events.ClipboardReportData
 import com.ismartcoding.plain.features.ClipboardWatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope

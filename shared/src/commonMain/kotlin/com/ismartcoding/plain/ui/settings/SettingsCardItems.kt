@@ -1,8 +1,5 @@
 package com.ismartcoding.plain.ui.settings
 
-import com.ismartcoding.plain.ui.permissions.getText
-import com.ismartcoding.plain.ui.permissions.getGrantAccessText
-
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 import androidx.compose.foundation.layout.padding
 import com.ismartcoding.plain.ui.theme.PlainTheme
@@ -22,6 +19,7 @@ import androidx.compose.material3.Switch
 import com.ismartcoding.plain.ui.base.VerticalSpace
 import com.ismartcoding.plain.ui.navigation.Routing
 import androidx.navigation.NavHostController
+import com.ismartcoding.plain.Prefs
 import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.database_backup as ui_drawable_database_backup
@@ -47,7 +45,7 @@ internal fun SettingsCardItems(navController: NavHostController) {
                 checked = DarkTheme.isDarkTheme(darkTheme),
                 onCheckedChange = {
                     scope.launch {
-                        Prefs.set(PrefKeys.DARK_THEME, (if (it) DarkTheme.ON else DarkTheme.OFF).value)
+                        Prefs.set(PrefKeys.DARK_THEME, (if (it) DarkTheme.ON else DarkTheme.OFF).name)
                     }
                 },
             )

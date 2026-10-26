@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.ui.navigation
 
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
-import com.ismartcoding.plain.preferences.*
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -20,33 +19,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.rememberNavController
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.platform.system.applySystemBarAppearanceForDarkTheme
 import com.ismartcoding.plain.platform.system.isDebugBuild
 import com.ismartcoding.plain.ui.platform.system.keepScreenOn
 import com.ismartcoding.plain.ui.theme.DarkTheme
-import com.ismartcoding.plain.app.events.ConfirmDialogEvent
-import com.ismartcoding.plain.app.events.LoadingDialogEvent
-import com.ismartcoding.plain.app.events.ShowPermissionWizardEvent
-import com.ismartcoding.plain.app.HttpServerManager
-import com.ismartcoding.plain.lib.Channel
-import com.ismartcoding.plain.app.TempData
+import com.ismartcoding.plain.events.ConfirmDialogEvent
+import com.ismartcoding.plain.events.LoadingDialogEvent
 import com.ismartcoding.plain.ui.base.DebugCornerBadge
 import com.ismartcoding.plain.ui.components.ToastEvent
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.chat.ChannelViewModel
-import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.ui.feeds.FeedEntryPagerViewModel
 import com.ismartcoding.plain.ui.app.MainViewModel
-import com.ismartcoding.plain.ui.notes.NotesViewModel
 import com.ismartcoding.plain.ui.chat.PeerViewModel
 import com.ismartcoding.plain.ui.pomodoro.PomodoroViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
-import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.ui.dlna.DlnaReceiverOverlay
 import com.ismartcoding.plain.ui.audio.player.AudioPlayerPage
 import com.ismartcoding.plain.ui.media.ShortcutMediaPreviewer
-import com.ismartcoding.plain.ui.home.ServiceOnboardingWizard
 import com.ismartcoding.plain.ui.theme.backgroundNormal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -63,6 +56,8 @@ fun Main(
     feedTagsVM: TagsViewModel = viewModel(key = "feedTagsVM") { TagsViewModel() },
     feedEntryPagerVM: FeedEntryPagerViewModel = viewModel(key = "feedEntryPagerVM") { FeedEntryPagerViewModel() },
     noteTagsVM: TagsViewModel = viewModel(key = "noteTagsVM") { TagsViewModel() },
+    platformPages: (NavGraphBuilder.(NavHostController) -> Unit)? = null,
+    batterySettings: (@Composable () -> Unit)? = null,
 ) {
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
@@ -72,18 +67,13 @@ fun Main(
     var confirmDialogEvent by remember { mutableStateOf<ConfirmDialogEvent?>(null) }
     var loadingDialogEvent by remember { mutableStateOf<LoadingDialogEvent?>(null) }
     var toastState by remember { mutableStateOf<ToastEvent?>(null) }
-    var showPermissionWizard by remember { mutableStateOf(false) }
+
+    LaunchedEffect(audioQueueVM.selectedPath.value) {
+        if (audioQueueVM.selectedPath.value.isEmpty()) audioQueueVM.audioPlayerVisible.value = false
+    }
 
     LaunchedEffect(loadingDialogEvent) {
         keepScreenOn(loadingDialogEvent != null)
-    }
-
-    LaunchedEffect(Channel.sharedFlow) {
-        Channel.sharedFlow.collect { event ->
-            if (event is ShowPermissionWizardEvent) {
-                showPermissionWizard = true
-            }
-        }
     }
 
     LaunchedEffect(Unit) {
@@ -119,36 +109,25 @@ fun Main(
     }
 
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.backgroundNormal)) {
-        MainNavGraph(navController, mainVM, audioQueueVM, peerVM, channelVM, feedTagsVM, feedEntryPagerVM, noteTagsVM, pomodoroVM)
+        MainNavGraph(navController, mainVM, audioQueueVM, peerVM, channelVM, feedTagsVM, feedEntryPagerVM, noteTagsVM, pomodoroVM, platformPages, batterySettings)
 
         // Global fullscreen audio player: hosted above all pages so playback
         // keeps working across tabs, with the page beneath visible during the
         // slide-up transition.
-        val audioPlayerVisible by TempData.audioPlayerVisible.collectAsState()
+        val audioPlayerVisible by audioQueueVM.audioPlayerVisible.collectAsState()
         if (audioPlayerVisible) {
-            AudioPlayerPage(audioQueueVM) { TempData.audioPlayerVisible.value = false }
+            AudioPlayerPage(audioQueueVM) { audioQueueVM.audioPlayerVisible.value = false }
         }
 
         // Home-screen shortcut media preview: overlay instead of a route so the
         // app UI stays composed beneath and closing the preview reveals it.
-        val shortcutMediaPath by TempData.shortcutMediaPath.collectAsState()
+        val shortcutMediaPath by mainVM.shortcutMediaPath
         if (shortcutMediaPath != null) {
-            ShortcutMediaPreviewer(shortcutMediaPath!!) { TempData.shortcutMediaPath.value = null }
+            ShortcutMediaPreviewer(shortcutMediaPath!!) { mainVM.shortcutMediaPath.value = null }
         }
 
         DlnaReceiverOverlay()
         MainDialogs(loadingDialogEvent, confirmDialogEvent, { confirmDialogEvent = null }, toastState, { toastState = null })
-        if (showPermissionWizard) {
-            ServiceOnboardingWizard(
-                // Permissions are resolved (or explicitly skipped) at the
-                // final step — dispatch the start unconditionally.
-                onStartService = {
-                    showPermissionWizard = false
-                    HttpServerManager.dispatchStart()
-                },
-                onClose = { showPermissionWizard = false },
-            )
-        }
         if (isDebugBuild()) {
             DebugCornerBadge(Modifier.align(Alignment.TopStart))
         }

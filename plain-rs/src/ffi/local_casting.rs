@@ -76,7 +76,7 @@ mod android {
         sys::{jboolean, jstring},
     };
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_dlnaReceiverNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_dlnaReceiver(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -86,7 +86,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_retryDlnaReceiverNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_retryDlnaReceiver(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
     ) -> jstring {
@@ -96,7 +96,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_removeDlnaRuleNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_removeDlnaRule(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         ip: JString<'_>,
@@ -110,7 +110,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_acceptDlnaCastNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_acceptDlnaCast(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         remember: jboolean,
@@ -121,7 +121,7 @@ mod android {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_rejectDlnaCastNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_rejectDlnaCast(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         remember: jboolean,

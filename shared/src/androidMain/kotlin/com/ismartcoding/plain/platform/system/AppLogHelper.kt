@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.platform.files.ShareHelper
-import com.ismartcoding.plain.platform.system.getAppVersion
 
 import com.ismartcoding.plain.i18n.*
 

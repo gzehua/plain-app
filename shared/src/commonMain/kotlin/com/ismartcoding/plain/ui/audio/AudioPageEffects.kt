@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.audio
 
-import com.ismartcoding.plain.preferences.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
@@ -8,13 +7,12 @@ import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.ui.platform.system.isGestureInteractionMode
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.hasPermission
-import com.ismartcoding.plain.app.events.PermissionsResultEvent
+import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.ui.components.StoragePermissionResumeEffect
 import com.ismartcoding.plain.ui.components.refreshStoragePermission
 import com.ismartcoding.plain.ui.media.extensions.reset
-import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import androidx.compose.material3.ExperimentalMaterial3Api
-import com.ismartcoding.plain.ui.audio.AudioViewModel
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.files.MediaFoldersViewModel
 import com.ismartcoding.plain.ui.tags.TagsViewModel
 import kotlinx.coroutines.Dispatchers

@@ -25,7 +25,7 @@ import com.ismartcoding.plain.IData
 import com.ismartcoding.plain.platform.system.AppFeatureType
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.platform.system.has
-import com.ismartcoding.plain.app.events.MediaStoreChangedEvent
+import com.ismartcoding.plain.events.MediaStoreChangedEvent
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.ui.base.BottomSpace
 import com.ismartcoding.plain.ui.base.VerticalSpace

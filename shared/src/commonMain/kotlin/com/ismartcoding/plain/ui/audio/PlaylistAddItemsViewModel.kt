@@ -3,12 +3,10 @@ package com.ismartcoding.plain.ui.audio
 import com.ismartcoding.plain.features.media.MediaCatalogClient
 import com.ismartcoding.plain.ui.state.ISearchableViewModel
 
-import com.ismartcoding.plain.features.audio.AudioQueueClient
-
 import com.ismartcoding.plain.models.Audio as AudioTrack
-import com.ismartcoding.plain.preferences.*
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.audio.AudioPlaylistsClient
 import com.ismartcoding.plain.helpers.SearchHelper

@@ -11,7 +11,6 @@ import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.components.DialogHelper
 import java.io.File
 import android.provider.Settings
-import com.ismartcoding.plain.app.AppHelper
 
 actual fun launchUrl(url: String) {
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
@@ -72,7 +71,7 @@ actual fun openFileExternal(path: String) {
     ctx.startActivity(intent)
 }
 
-actual fun isFileShareable(path: String): Boolean {
+fun isFileShareable(path: String): Boolean {
     val file = File(path)
     if (!file.exists() || !file.canRead()) return false
     if (path.startsWith("/apex/")) return false
@@ -80,9 +79,4 @@ actual fun isFileShareable(path: String): Boolean {
         return try { file.inputStream().use { it.read() }; true } catch (e: Exception) { false }
     }
     return true
-}
-
-actual fun relaunchApp() {
-    val ctx = appContextValue ?: return
-    AppHelper.relaunch(ctx)
 }

@@ -35,13 +35,12 @@ import com.ismartcoding.plain.ui.base.pullrefresh.PullToRefresh
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.rememberRefreshLayoutState
 import com.ismartcoding.plain.ui.base.pullrefresh.setRefreshState
-import com.ismartcoding.plain.ui.images.editor.ImageEditorViewModel
 import com.ismartcoding.plain.ui.navigation.Routing
 import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.plus as ui_drawable_plus
-import com.ismartcoding.plain.app.events.EventType
+import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.rust.RustEventHandler
 
 @OptIn(ExperimentalMaterial3Api::class)

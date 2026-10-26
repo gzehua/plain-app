@@ -1,9 +1,22 @@
 package com.ismartcoding.plain.platform.system
 
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format
+import kotlinx.datetime.format.char
+import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Instant
 
-internal object InstantFormats {
-    const val FILE_NAME_DATE_FORMAT = "yyyyMMdd_HHmmss_SSS"
+private val fileNameDateFormat = LocalDateTime.Format {
+    year()
+    monthNumber()
+    day()
+    char('_')
+    hour()
+    minute()
+    second()
+    char('_')
+    secondFraction(3)
 }
 
 expect fun Instant.formatDateTime(): String
@@ -12,4 +25,4 @@ expect fun Instant.formatDate(): String
 
 expect fun Instant.formatTime(): String
 
-expect fun Instant.formatName(): String
+fun Instant.formatName(): String = toLocalDateTime(TimeZone.currentSystemDefault()).format(fileNameDateFormat)

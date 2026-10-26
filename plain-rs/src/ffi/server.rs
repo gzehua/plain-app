@@ -70,7 +70,7 @@ mod android {
         sys::jstring,
     };
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeApi_startCoreNative(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_startCore(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
         path: JString<'_>,

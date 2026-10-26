@@ -5,14 +5,13 @@ import com.ismartcoding.plain.rust.sendEventToRust
 
 import kotlinx.serialization.Serializable
 
-import com.ismartcoding.plain.app.events.EventType
-import com.ismartcoding.plain.app.events.HostEvent
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.rust.RustRuntime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import kotlinx.serialization.json.*
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

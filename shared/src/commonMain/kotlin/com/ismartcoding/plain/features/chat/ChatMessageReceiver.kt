@@ -2,20 +2,18 @@ package com.ismartcoding.plain.features.chat
 
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 
-import com.ismartcoding.plain.app.TempData
 import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.models.ChatChannel
 import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.features.chat.models.getMessagePreview
-import com.ismartcoding.plain.app.events.HChatMessageNotificationEvent
+import com.ismartcoding.plain.events.HChatMessageNotificationEvent
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.peer_chat
 import com.ismartcoding.plain.lib.sendEvent
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
-import com.ismartcoding.plain.platform.network.canShowNotifications
 
 object ChatMessageReceiver {
 
@@ -38,7 +36,6 @@ object ChatMessageReceiver {
         fromPeer: Peer,
         fromChannel: ChatChannel?,
     ) {
-        if (!canShowNotifications()) return
         val preview = item.getMessagePreview()
         val (targetId, targetName, messageText) = if (fromChannel == null) {
             NotificationPayload(
@@ -53,7 +50,7 @@ object ChatMessageReceiver {
                 messageText = "${fromPeer.name}: $preview",
             )
         }
-        if (TempData.activeToId == targetId) return
+        if (ChatViewModel.visibleConversationId.value == targetId) return
         sendEvent(HChatMessageNotificationEvent(
             targetId = targetId,
             targetName = targetName,

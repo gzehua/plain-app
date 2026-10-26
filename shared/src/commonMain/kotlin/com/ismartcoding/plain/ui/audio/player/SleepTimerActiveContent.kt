@@ -23,16 +23,15 @@ import com.ismartcoding.plain.ui.base.VerticalSpace
 @Composable
 internal fun SleepTimerActiveContent(
     remainingTimeMs: Long,
-    selectedTimeMinutes: Int,
+    durationMs: Long,
 ) {
     Spacer(modifier = Modifier.height(16.dp))
     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(250.dp)) {
         val hours = remainingTimeMs / (1000L * 60 * 60)
         val minutes = (remainingTimeMs / (1000L * 60)) % 60
         val seconds = (remainingTimeMs / 1000L) % 60
-        val totalDurationMs = selectedTimeMinutes * 60f * 1000f
-        val elapsedTimeMs = totalDurationMs - remainingTimeMs
-        val progress = (elapsedTimeMs / totalDurationMs).coerceIn(0f, 1f)
+        val elapsedTimeMs = durationMs - remainingTimeMs
+        val progress = (elapsedTimeMs.toFloat() / durationMs).coerceIn(0f, 1f)
 
         CircularTimer(progress = progress)
 

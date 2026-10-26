@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.settings
 
+import com.ismartcoding.plain.HttpServerManager
+
 import com.ismartcoding.plain.ui.state.launchSafe
 
 import com.ismartcoding.plain.preferences.*
@@ -9,21 +11,16 @@ import com.ismartcoding.plain.i18n.*
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.app.events.IgnoreBatteryOptimizationEvent
-import com.ismartcoding.plain.app.events.KeepAwakeChangedEvent
+import com.ismartcoding.plain.Prefs
+import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.events.KeepAwakeChangedEvent
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.app.checkHttpServerAsync
-import com.ismartcoding.plain.platform.system.isIgnoringBatteryOptimizations
-import com.ismartcoding.plain.platform.system.relaunchApp
-import com.ismartcoding.plain.ui.components.DialogHelper
-import kotlinx.coroutines.launch
-import com.ismartcoding.plain.app.events.EventType
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.rust.native.RustNativeApi
+import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onSubscription
 
 class DesktopAccessSettingsViewModel : ViewModel() {
@@ -45,28 +42,24 @@ class DesktopAccessSettingsViewModel : ViewModel() {
         }
     }
 
-    fun dig() {
-        viewModelScope.launch {
+    fun checkHttpServerHealth() {
+        viewModelScope.launchSafe {
             DialogHelper.showLoading()
-            val errorMessage = LocaleHelper.getStringAsync(Res.string.http_server_error)
-            val serverUp = checkHttpServerAsync()
-            DialogHelper.hideLoading()
+            val serverUp = try {
+                RustNativeApi.checkHttp()
+            } finally {
+                DialogHelper.hideLoading()
+            }
             if (!serverUp) {
                 DialogHelper.showConfirmDialog(
                     LocaleHelper.getStringAsync(Res.string.error),
-                    errorMessage,
+                    LocaleHelper.getStringAsync(Res.string.http_server_error),
                     confirmButton = Pair(LocaleHelper.getStringAsync(Res.string.ok)) {},
-                    dismissButton = Pair(LocaleHelper.getStringAsync(Res.string.relaunch_app)) { relaunchApp() },
+                    dismissButton = Pair(LocaleHelper.getStringAsync(Res.string.retry)) { HttpServerManager.restartHttpServer() },
                 )
             } else {
                 DialogHelper.showConfirmDialog(LocaleHelper.getStringAsync(Res.string.confirm), LocaleHelper.getStringAsync(Res.string.http_server_ok))
             }
-        }
-    }
-
-    fun requestIgnoreBatteryOptimization() {
-        if (!isIgnoringBatteryOptimizations()) {
-            sendEvent(IgnoreBatteryOptimizationEvent())
         }
     }
 

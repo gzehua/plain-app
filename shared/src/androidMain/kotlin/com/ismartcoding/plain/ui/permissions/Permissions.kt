@@ -2,8 +2,6 @@ package com.ismartcoding.plain.ui.permissions
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.platform.permissions.Permission
 
-import org.jetbrains.compose.resources.StringResource
-import com.ismartcoding.plain.i18n.*
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -13,19 +11,18 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.platform.isRPlus
 import com.ismartcoding.plain.platform.isSPlus
 import com.ismartcoding.plain.platform.isTPlus
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.mainActivity
-import com.ismartcoding.plain.app.events.PermissionsResultEvent
-import com.ismartcoding.plain.app.events.RequestPermissionsEvent
+import com.ismartcoding.plain.events.PermissionsResultEvent
+import com.ismartcoding.plain.events.RequestPermissionsEvent
 import com.ismartcoding.plain.lib.receiveEventHandler
 import com.ismartcoding.plain.lib.sendEvent
-import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.packageManager
+import com.ismartcoding.plain.services.PNotificationListenerService
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -62,6 +59,7 @@ fun Permission.request(
         val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         if (intent.resolveActivity(packageManager) != null) {
+            PNotificationListenerService.preparePermissionRequest(context)
             intentLauncher?.launch(intent)
         } else {
             DialogHelper.showMessage(
@@ -206,29 +204,6 @@ object Permissions {
         }
 
         return true
-    }
-
-    fun checkNotification(
-        context: Context,
-        stringResource: StringResource,
-        callback: () -> Unit,
-    ) {
-        val permission = Permission.POST_NOTIFICATIONS
-        if (permission.isGranted()) {
-            callback()
-        } else {
-            coIO {
-                val message = LocaleHelper.getStringAsync(stringResource)
-                val okText = LocaleHelper.getStringAsync(Res.string.ok)
-                val confirmText = LocaleHelper.getStringAsync(Res.string.confirm)
-                DialogHelper.showConfirmDialog(confirmText, message, confirmButton = Pair(okText) {
-                    coIO {
-                        ensureNotificationAsync(context)
-                        callback()
-                    }
-                })
-            }
-        }
     }
 
     // Jumps straight to the app's notification settings screen through the

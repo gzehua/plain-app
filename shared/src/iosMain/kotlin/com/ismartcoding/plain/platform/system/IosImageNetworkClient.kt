@@ -6,7 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
 import com.ismartcoding.plain.lib.logcat.LogCat
-import kotlinx.cinterop.readBytes
+import com.ismartcoding.plain.lib.toByteArray
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -82,7 +82,14 @@ internal class IosImageNetworkClient : NetworkClient {
                 dataTask: NSURLSessionDataTask,
                 didReceiveData: NSData,
             ) {
-                chunks.trySendBlocking(didReceiveData.toByteArray())
+                try {
+                    chunks.trySendBlocking(didReceiveData.toByteArray())
+                } catch (error: Exception) {
+                    failure = error
+                    chunks.close(error)
+                    dataTask.cancel()
+                    headerContinuation?.invoke()
+                }
             }
 
             override fun URLSession(
@@ -93,8 +100,8 @@ internal class IosImageNetworkClient : NetworkClient {
                 val error = didCompleteWithError
                 if (error != null) {
                     val ex = Exception("${error.domain} ${error.code} ${error.localizedDescription}")
-                    failure = ex
-                    chunks.close(ex)
+                    failure = failure ?: ex
+                    chunks.close(failure)
                 } else {
                     chunks.close()
                 }
@@ -164,12 +171,6 @@ private fun headerMap(response: NSHTTPURLResponse?): Map<String, List<String>> {
         out[name] = listOf(value as? String ?: value.toString())
     }
     return out
-}
-
-private fun NSData.toByteArray(): ByteArray {
-    val size = length.toInt()
-    if (size <= 0) return ByteArray(0)
-    return bytes?.readBytes(size) ?: ByteArray(0)
 }
 
 private fun NetworkRequest.toImageRequest(): NSMutableURLRequest {

@@ -1,10 +1,11 @@
 package com.ismartcoding.plain.features.settings
 
-import com.ismartcoding.plain.preferences.*
-import com.ismartcoding.plain.lib.coMain
+import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.platform.system.Locale
 import com.ismartcoding.plain.platform.system.setSystemLocale
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object Language {
     val locales =
@@ -32,7 +33,7 @@ object Language {
         setSystemLocale(Prefs.localeValue())
     }
 
-    fun observeLocale() = coMain {
+    fun observeLocale() = CoroutineScope(Dispatchers.Main.immediate).launch {
         Prefs.locale.collect { applyLocale() }
     }
 }
