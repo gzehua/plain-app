@@ -1,14 +1,11 @@
 package com.ismartcoding.plain.rust.host.audio
 
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.platform.media.AudioPlayer
 import com.ismartcoding.plain.platform.media.audioPlayer
 import com.ismartcoding.plain.rust.host.*
-import com.ismartcoding.plain.rust.sendEventToRust
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -75,30 +72,29 @@ object AudioEngineHost {
     }
 
     internal fun reportStarted(path: String, revision: Long) {
-        enqueueReport(HostEvent(EventType.AUDIO_STARTED_REPORTED, JsonHelper.jsonEncode(AudioPlaybackReport(path, revision))))
+        enqueueReport(AudioHostReport.Started(path, revision))
     }
 
     internal fun reportCompleted(path: String, revision: Long, positionMs: Long) {
         stopProgressReporting(path, revision, positionMs)
-        enqueueReport(HostEvent(EventType.AUDIO_COMPLETED_REPORTED, JsonHelper.jsonEncode(AudioPlaybackReport(path, revision))))
+        enqueueReport(AudioHostReport.Completed(path, revision))
     }
 
     internal fun reportProgress(path: String, revision: Long, positionMs: Long): Job? {
         if (path.isEmpty() || revision < 0) return null
-        val progress = AudioProgressReport(path, positionMs.coerceAtLeast(0), revision)
-        return enqueueReport(HostEvent(EventType.AUDIO_PROGRESS_REPORTED, JsonHelper.jsonEncode(progress)))
+        return enqueueReport(AudioHostReport.Progress(path, positionMs.coerceAtLeast(0), revision))
     }
 
-    private fun enqueueReport(event: HostEvent): Job {
+    private fun enqueueReport(report: AudioHostReport): Job {
         val previous = pendingReport
         return scope.launch {
             previous?.join()
             try {
-                sendEventToRust(event)
+                report.sendToRust()
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
-                LogCat.e("Audio report ${event.type}: ${error.message}")
+                LogCat.e("Audio report ${report::class.simpleName}: ${error.message}")
             }
         }.also { pendingReport = it }
     }
@@ -153,17 +149,11 @@ object AudioEngineHost {
             ))
         }
     }
-    private fun sampleProgress(player: AudioPlayer) = AudioProgressReport(player.currentPath, player.progress.coerceAtLeast(0), revision)
+    private fun sampleProgress(player: AudioPlayer) = AudioHostReport.Progress(player.currentPath, player.progress.coerceAtLeast(0), revision)
 }
 
 @Serializable
 private data class AudioRestoreReport(val revision: Long? = null, val positionMs: Long? = null, val error: String? = null)
 
 @Serializable
-private data class AudioProgressReport(val path: String, val positionMs: Long, val revision: Long)
-
-@Serializable
 private data class AudioEngineReport(val path: String, val positionMs: Long, val revision: Long, val loaded: Boolean)
-
-@Serializable
-private data class AudioPlaybackReport(val path: String, val revision: Long)

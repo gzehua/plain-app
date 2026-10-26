@@ -44,11 +44,22 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.*
 
 suspend fun sendEventToRust(event: HostEvent) {
+    when (val data = event.data) {
+        is HostEventData.Text -> sendHostTextToRust(event.type.name, data.value)
+        is HostEventData.Binary -> sendRustPacket("binary", event.type.name, data.value)
+    }
+}
+
+internal suspend fun sendHostTextToRust(type: String, payload: String) {
+    sendRustPacket("text", JsonHelper.jsonEncode(HostTextPacket(type, payload)), byteArrayOf())
+}
+
+@Serializable
+private data class HostTextPacket(val type: String, val payload: String)
+
+private suspend fun sendRustPacket(action: String, message: String, bytes: ByteArray) {
     val error = withContext(Dispatchers.IO) {
-        when (val data = event.data) {
-            is HostEventData.Text -> RustNativeBindings.send("text", JsonHelper.jsonEncode(mapOf("type" to event.type.name, "payload" to data.value)), byteArrayOf())
-            is HostEventData.Binary -> RustNativeBindings.send("binary", event.type.name, data.value)
-        }
+        RustNativeBindings.send(action, message, bytes)
     }
     require(error.isEmpty()) { error }
 }
