@@ -42,7 +42,7 @@ class ApiContractTest {
 
     // Bulk destructive/modify mutations that must return ActionResult.
     private val actionResultMutations = setOf(
-        "deleteNotifications", "deleteClipboardItems", "deleteBookmarks", "deleteFiles",
+        "deleteNotifications", "deleteClipboardItems", "deleteFiles",
         "deleteSms", "trashSms", "restoreSms", "deleteCalls", "deleteContacts",
         "deleteChatItems", "trashNotes", "restoreNotes", "deleteNotes",
         "deleteFeedEntries", "markFeedEntriesRead", "deleteMediaItems", "trashMediaItems",

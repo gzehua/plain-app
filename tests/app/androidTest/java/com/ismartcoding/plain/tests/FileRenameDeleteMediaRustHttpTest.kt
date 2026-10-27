@@ -13,7 +13,6 @@ import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.features.*
 import com.ismartcoding.plain.ui.permissions.*
-import com.ismartcoding.plain.features.bookmarks.*
 import com.ismartcoding.plain.features.chat.*
 import com.ismartcoding.plain.ui.chat.*
 import com.ismartcoding.plain.features.clipboard.*

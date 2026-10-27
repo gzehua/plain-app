@@ -14,9 +14,6 @@ import com.ismartcoding.plain.models.AudioFileInfo
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.models.AudioPlayback
 import com.ismartcoding.plain.models.AudioPlaylist
-import com.ismartcoding.plain.models.Bookmark
-import com.ismartcoding.plain.models.BookmarkGroup
-import com.ismartcoding.plain.models.BookmarkInput
 import com.ismartcoding.plain.models.Call
 import com.ismartcoding.plain.models.Certificate
 import com.ismartcoding.plain.models.ChatChannel
@@ -109,9 +106,6 @@ class GraphqlModelContractTest {
             "AudioItem" to AudioItem.serializer().descriptor,
             "AudioPlayback" to AudioPlayback.serializer().descriptor,
             "AudioPlaylist" to AudioPlaylist.serializer().descriptor,
-            "Bookmark" to Bookmark.serializer().descriptor,
-            "BookmarkGroup" to BookmarkGroup.serializer().descriptor,
-            "BookmarkInput" to BookmarkInput.serializer().descriptor,
             "Call" to Call.serializer().descriptor,
             "Certificate" to Certificate.serializer().descriptor,
             "ChatChannel" to ChatChannel.serializer().descriptor,
