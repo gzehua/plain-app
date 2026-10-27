@@ -2,8 +2,10 @@ package com.ismartcoding.plain.rust
 
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.Prefs
+import com.ismartcoding.plain.app.SubscriptionObservers
 
 import com.ismartcoding.plain.platform.system.*
+import com.ismartcoding.plain.rust.graphql.RustGraphqlSubscriptions
 import com.ismartcoding.plain.rust.native.RustNativeBindings
 import com.ismartcoding.plain.rust.host.RustHostApiHandler
 import kotlinx.coroutines.CoroutineScope
@@ -41,8 +43,8 @@ object RustRuntime {
             Prefs.load()
             isCoreInitialized = true
             RustHostApiHandler.start(scope)
-            com.ismartcoding.plain.rust.graphql.RustGraphqlSubscriptions.start(scope)
-            com.ismartcoding.plain.app.SubscriptionObservers.start(scope)
+            RustGraphqlSubscriptions.start(scope)
+            SubscriptionObservers.start(scope)
             collectorsStarted = true
         }
     }

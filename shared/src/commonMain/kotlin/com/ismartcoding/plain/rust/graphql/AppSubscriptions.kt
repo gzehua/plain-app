@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.rust.graphql
 
-import com.ismartcoding.plain.api.graphql.models.ChatItemId
-import com.ismartcoding.plain.api.graphql.models.MediaLibraryChange
-import com.ismartcoding.plain.api.graphql.models.MediaScanProgress
+import com.ismartcoding.plain.models.ChatItemId
+import com.ismartcoding.plain.models.MediaLibraryChange
+import com.ismartcoding.plain.models.MediaScanProgress
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.permissions.Permission
@@ -13,10 +13,10 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonPrimitive
 
-import com.ismartcoding.plain.api.graphql.models.*
 import com.ismartcoding.plain.features.chat.channel.ChannelRuntimeEvent
 import com.ismartcoding.plain.features.images.search.ImageModelsSnapshot
 import com.ismartcoding.plain.models.PairingRequestInput
+import com.ismartcoding.plain.models.PomodoroAction
 
 @OptIn(ExperimentalCoroutinesApi::class)
 object AppSubscriptions {

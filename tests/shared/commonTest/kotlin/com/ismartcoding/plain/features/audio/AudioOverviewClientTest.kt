@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.audio
 
-import com.ismartcoding.plain.api.graphql.models.MediaLibraryChange
-import com.ismartcoding.plain.api.graphql.models.MediaScanProgress
+import com.ismartcoding.plain.models.MediaLibraryChange
+import com.ismartcoding.plain.models.MediaScanProgress
 import com.ismartcoding.plain.rust.graphql.SubscriptionUpdate
 import kotlin.test.*
 

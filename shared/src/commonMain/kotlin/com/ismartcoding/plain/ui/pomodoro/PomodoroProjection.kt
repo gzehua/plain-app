@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.ui.pomodoro
 
 import androidx.compose.runtime.mutableStateOf
-import com.ismartcoding.plain.api.graphql.models.PomodoroAction
+import com.ismartcoding.plain.models.PomodoroAction
 import com.ismartcoding.plain.models.PomodoroToday
 
 import com.ismartcoding.plain.models.PomodoroState
