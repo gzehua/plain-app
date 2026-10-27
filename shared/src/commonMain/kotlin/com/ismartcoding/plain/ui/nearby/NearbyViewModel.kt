@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.nearby
 
+import com.ismartcoding.plain.features.nearby.PairingState
 import com.ismartcoding.plain.features.nearby.RustNearbyDevices
 
 import com.ismartcoding.plain.ui.state.launchSafe
@@ -18,14 +19,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.serialization.json.JsonObject
 
 object NearbyViewModel {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     val nearbyDevices = MutableStateFlow<List<NearbyDevice>>(emptyList())
     var isDiscovering = mutableStateOf(false)
-    val pairingStates = mutableStateMapOf<String, JsonObject>()
+    val pairingStates = mutableStateMapOf<String, PairingState>()
     val itemStatus = mutableStateMapOf<String, NearbyItemStatus>()
 
 

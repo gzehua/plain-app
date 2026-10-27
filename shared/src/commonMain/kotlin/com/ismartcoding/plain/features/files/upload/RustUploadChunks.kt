@@ -1,17 +1,17 @@
 package com.ismartcoding.plain.features.files.upload
 
-import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.graphql.Query
-import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-import com.ismartcoding.plain.lib.JsonHelper
-import kotlinx.serialization.Serializable
-import com.ismartcoding.plain.rust.native.RustNativeBindings
 import com.ismartcoding.plain.lib.logcat.LogCat
-import kotlinx.coroutines.*
-import kotlinx.serialization.json.*
-import kotlin.uuid.Uuid
+import com.ismartcoding.plain.models.MergeTaskStatus
+import com.ismartcoding.plain.rust.graphql.GraphqlRequest
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+import com.ismartcoding.plain.rust.native.RustNativeBindings
 import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
+import kotlinx.coroutines.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 internal object RustUploadChunks {
     private val client = UploadChunksClient(
@@ -19,17 +19,17 @@ internal object RustUploadChunks {
         mutate = { RustGraphqlApi.graphql(it) },
         query = { RustGraphqlApi.graphql(it) },
     )
+
     suspend fun replace(path: String, chunks: Iterator<ByteArray>): Boolean = client.replace(path, chunks)
 }
-
 internal class UploadChunksClient(
     private val sendChunk: suspend (String, Long, ByteArray) -> String,
     private val mutate: suspend (GraphqlRequest) -> JsonObject,
     private val query: suspend (GraphqlRequest) -> JsonObject,
 ) {
     private val maxChunkBytes = 1024 * 1024
-
     @OptIn(ExperimentalUuidApi::class)
+
     suspend fun replace(path: String, chunks: Iterator<ByteArray>): Boolean {
         val id = Uuid.random().toString()
         var index = 0L
@@ -58,13 +58,12 @@ internal class UploadChunksClient(
             }
             if (buffered > 0) upload(buffer.copyOf(buffered))
             if (index == 0L) upload(ByteArray(0))
-            var status = mutate(Mutation.mergeChunks(id, index, path, size))
-                .getValue("mergeChunks").let { JsonHelper.jsonDecodeFromElement<MergeResult>(it) }
-            while (status.status in setOf("STARTED", "MERGING")) {
+            var status = RustGraphqlApi.read<MergeResult>(Mutation.mergeChunks(id, index, path, size), mutate)
+            while (status.status in setOf(MergeTaskStatus.STARTED, MergeTaskStatus.MERGING)) {
                 delay(100)
-                status = query(Query.mergeStatus(id)).getValue("mergeStatus").let { JsonHelper.jsonDecodeFromElement<MergeResult>(it) }
+                status = RustGraphqlApi.read(Query.mergeStatus(id), query)
             }
-            check(status.status == "DONE") {
+            check(status.status == MergeTaskStatus.DONE) {
                 status.error ?: "Upload merge did not complete"
             }
             return true
@@ -78,4 +77,7 @@ internal class UploadChunksClient(
 }
 
 @Serializable
-private data class MergeResult(val status: String, val error: String? = null)
+private data class MergeResult(
+    val status: MergeTaskStatus,
+    val error: String? = null,
+)

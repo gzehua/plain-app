@@ -84,9 +84,9 @@ fun MdnsDebugPage(navController: NavHostController) {
             while (true) {
                 if (!paused) {
                     val current = RustMdnsRuntime.snapshot()
-                    snapshots = RustMdnsRuntime.services(current)
-                    packetsIn = RustMdnsRuntime.packets(current, true)
-                    packetsOut = RustMdnsRuntime.packets(current, false)
+                    snapshots = current.services
+                    packetsIn = current.packetsIn
+                    packetsOut = current.packetsOut
                 }
                 delay(2000)
             }
@@ -247,7 +247,7 @@ private fun MdnsDeviceCard(snapshot: MdnsServiceSnapshot) {
             )
             PListItem(
                 title = stringResource(Res.string.mdns_ips),
-                value = snapshot.ips.joinToString(", ").ifEmpty { null }
+                value = (snapshot.ips + snapshot.ipv6).joinToString(", ").ifEmpty { null }
                     ?: stringResource(Res.string.not_available),
             )
             PListItem(

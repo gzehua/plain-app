@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.settings
 
+import com.ismartcoding.plain.features.notifications.NotificationFilterMode
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
@@ -65,7 +66,11 @@ class NotificationSettingsViewModel : ViewModel() {
     }
 
     suspend fun toggleModeAsync() {
-        val newMode = if (filterData.value.mode == "allowlist") "blacklist" else "allowlist"
+        val newMode = if (filterData.value.mode == NotificationFilterMode.ALLOWLIST) {
+            NotificationFilterMode.BLACKLIST
+        } else {
+            NotificationFilterMode.ALLOWLIST
+        }
         Prefs.setNotificationMode(newMode)
     }
 

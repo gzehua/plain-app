@@ -4,7 +4,6 @@ import com.ismartcoding.plain.ui.pomodoro.PomodoroProjection
 import com.ismartcoding.plain.models.PomodoroState
 import com.ismartcoding.plain.models.PomodoroToday
 import com.ismartcoding.plain.models.PomodoroAction
-import com.ismartcoding.plain.features.pomodoro.PomodoroClient.today
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonElement
@@ -30,7 +29,7 @@ class PomodoroEventsTest {
 
     @Test fun api_and_event_snapshots_share_the_canonical_model() {
         val element = JsonHelper.jsonDecode<JsonElement>(snapshot)
-        val today: PomodoroToday = element.today()
+        val today: PomodoroToday = JsonHelper.jsonDecodeFromElement(element)
         assertEquals(2, today.completedCount)
         assertEquals(3, today.currentRound)
         assertEquals(120, today.timeLeftSec)

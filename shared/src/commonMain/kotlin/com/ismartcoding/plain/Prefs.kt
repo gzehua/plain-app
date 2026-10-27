@@ -3,6 +3,7 @@ package com.ismartcoding.plain
 import com.ismartcoding.plain.features.audio.MediaPlayMode
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.features.notifications.NotificationFilterData
+import com.ismartcoding.plain.features.notifications.NotificationFilterMode
 import com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode
 import com.ismartcoding.plain.features.settings.PasswordType
 import com.ismartcoding.plain.lib.JsonHelper
@@ -24,7 +25,6 @@ import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.float
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
-import kotlin.collections.iterator
 
 object Prefs {
     val password = MutableStateFlow("")
@@ -74,7 +74,7 @@ object Prefs {
     val editorFontSize = MutableStateFlow(0)
     val editorStatusBar = MutableStateFlow(false)
     val nearbyDiscoverable = MutableStateFlow(false)
-    val notificationFilter = MutableStateFlow(NotificationFilterData("", emptySet()))
+    val notificationFilter = MutableStateFlow(NotificationFilterData(NotificationFilterMode.BLACKLIST, emptySet()))
     val pomodoroSettings = MutableStateFlow(
         PomodoroSettings(
             workDurationMin = 0,
@@ -177,7 +177,7 @@ object Prefs {
     suspend fun toggleNotificationApp(packageName: String) =
         RustNativeApi.toggleNotificationApp(packageName)
 
-    suspend fun setNotificationMode(mode: String) = RustNativeApi.setNotificationFilterMode(mode)
+    suspend fun setNotificationMode(mode: NotificationFilterMode) = RustNativeApi.setNotificationFilterMode(mode)
 
     suspend fun clearNotificationApps() = RustNativeApi.clearNotificationFilterApps()
 
@@ -192,17 +192,33 @@ object Prefs {
         value.joinToString("|") { it.name }
 
     suspend fun setPassword(password: String) = set(PrefKeys.PASSWORD, password)
+
     suspend fun setPasswordType(value: PasswordType) = set(PrefKeys.PASSWORD_TYPE, value.name)
+
     suspend fun setLoginRequireApproval(enabled: Boolean) = set(PrefKeys.LOGIN_REQUIRE_APPROVAL, enabled)
+
     suspend fun setRotateUrlToken(enabled: Boolean) = set(PrefKeys.ROTATE_URL_TOKEN_ON_RESTART, enabled)
+
     suspend fun resetPassword() = RustNativeApi.resetPassword()
+
     suspend fun resetUrlToken() = RustNativeApi.resetUrlToken()
+
     suspend fun resetAdbToken() = RustNativeApi.resetAdbToken()
-    suspend fun setApiPermission(permission: Permission, enabled: Boolean) = set(PrefKeys.API_PERMISSIONS, mapOf(permission.name to enabled))
+
+    suspend fun setApiPermission(
+        permission: Permission,
+        enabled: Boolean,
+    ) = set(PrefKeys.API_PERMISSIONS, mapOf(permission.name to enabled))
+
     suspend fun setApiPermissions(permissions: Set<String>) = set(PrefKeys.API_PERMISSIONS, permissions)
+
     suspend fun completeOnboarding() = RustNativeApi.completeOnboarding()
+
     suspend fun setMdnsHostname(hostname: String) = set(PrefKeys.MDNS_HOSTNAME, hostname)
+
     suspend fun setAutoCheckUpdate(value: Boolean) = set(PrefKeys.AUTO_CHECK_UPDATE, value)
+
     suspend fun setSkipVersion(value: String) = set(PrefKeys.SKIP_VERSION, value)
+
     suspend fun verifyAdbToken(token: String): Boolean = RustNativeApi.verifyAdbToken(token)
 }

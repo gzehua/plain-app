@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.features.media.actions
 
+import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.graphql.Mutation
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -8,10 +9,10 @@ import kotlin.test.assertFailsWith
 class MediaActionRequestTest {
     @Test
     fun usesExistingMediaOperations() {
-        assertEquals("trashMediaItems", Mutation.mediaAction(MediaAction.TRASH, "IMAGE", "ids:=1", "").field)
-        assertEquals("restoreMediaItems", Mutation.mediaAction(MediaAction.RESTORE, "IMAGE", "ids:=1", "").field)
-        assertEquals("deleteMediaItems", Mutation.mediaAction(MediaAction.DELETE, "IMAGE", "ids:=1", "").field)
-        assertEquals("moveMediaItems", Mutation.mediaAction(MediaAction.MOVE, "IMAGE", "ids:=1", "").field)
+        assertEquals("trashMediaItems", Mutation.mediaAction(MediaAction.TRASH, DataType.IMAGE, "ids:=1", "").field)
+        assertEquals("restoreMediaItems", Mutation.mediaAction(MediaAction.RESTORE, DataType.IMAGE, "ids:=1", "").field)
+        assertEquals("deleteMediaItems", Mutation.mediaAction(MediaAction.DELETE, DataType.IMAGE, "ids:=1", "").field)
+        assertEquals("moveMediaItems", Mutation.mediaAction(MediaAction.MOVE, DataType.IMAGE, "ids:=1", "").field)
     }
 
     @Test

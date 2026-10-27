@@ -1,13 +1,13 @@
 package com.ismartcoding.plain.features.sessions
 
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class SessionFacts(
     val clientId: String,
     @SerialName("clientName") val name: String,
-    val type: String,
+    val type: SessionType,
     val token: String,
     val clientIp: String,
     val osName: String,

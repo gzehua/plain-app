@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.api.graphql
 
+import com.ismartcoding.plain.features.files.FileSortBy
+import com.ismartcoding.plain.features.audio.AudioSelectionAction
 import com.ismartcoding.plain.features.dlna.sender.CastCommand
 import com.ismartcoding.plain.features.dlna.sender.CastItem
 import com.ismartcoding.plain.features.files.FileTaskOp
@@ -16,7 +18,7 @@ import kotlin.test.*
 
 class GraphqlArgumentsTest {
     @Test
-    fun audioRequestsOwnTheirResponseFieldsWithoutChangingTheEnvelope() {
+    fun typedRequestsOwnTheirResponseFieldsWithoutChangingTheEnvelope() {
         val requests = listOf(
             Query.audioPlaylistCovers(listOf("playlist")) to "audioPlaylistCovers",
             Query.audioPlaylists() to "audioPlaylists",
@@ -27,7 +29,25 @@ class GraphqlArgumentsTest {
             Query.audioQueueItems(0, 10, "") to "audioQueueItems",
             Query.audioOverview() to "audioOverview",
             Mutation.createAudioPlaylist("Playlist") to "createAudioPlaylist",
-            Mutation.advanceAudioSelection("NEXT", "", 0L, false) to "advanceAudioSelection",
+            Mutation.advanceAudioSelection(AudioSelectionAction.NEXT, "", 0L, false) to "advanceAudioSelection",
+            Query.contacts("", 10, 0) to "contacts",
+            Query.calls("", 10, 0) to "calls",
+            Query.sms("", 0, 10) to "sms",
+            Query.packages("", 0, 10, FileSortBy.NAME_ASC) to "packages",
+            Query.appFileName("file") to "appFiles",
+            Query.feed("feed") to "feed",
+            Query.feeds(false) to "feeds",
+            Query.notes("", 10, 0) to "notes",
+            Query.clipboardItems(10, 0, "") to "clipboardItems",
+            Query.favoriteFolders() to "favoriteFolders",
+            Query.shareRecords() to "shareRecords",
+            Query.mediaRows(DataType.IMAGE, "", 10, 0, FileSortBy.NAME_ASC) to "images",
+            Query.mediaCount(DataType.IMAGE, "") to "imageCount",
+            Query.selectedMediaPaths("videos", "ids:=video", 1) to "videos",
+            Query.mdnsState() to "mdnsState",
+            Query.pairingStates() to "pairingStates",
+            Mutation.saveNote("", "Title", "Content") to "createNote",
+            Mutation.saveNote("note", "Title", "Content") to "updateNote",
         )
 
         for ((request, expected) in requests) {
@@ -36,6 +56,20 @@ class GraphqlArgumentsTest {
             assertEquals(expected, root)
             assertFalse("field" in JsonHelper.jsonDecode<JsonObject>(JsonHelper.jsonEncode(request)))
         }
+    }
+
+    @Test
+    fun typed_data_types_and_sort_orders_keep_graphql_enum_names() {
+        assertEquals(JsonPrimitive("IMAGE"), Query.tags(DataType.IMAGE).variables["type"])
+        assertEquals(JsonPrimitive("IMAGE"), Mutation.createTag(DataType.IMAGE, "Tag").variables["type"])
+        assertEquals(
+            JsonPrimitive("IMAGE"),
+            Mutation.mediaAction(MediaAction.TRASH, DataType.IMAGE, "ids:=image", "").variables["type"],
+        )
+        assertEquals(
+            JsonPrimitive("NAME_ASC"),
+            Query.mediaRows(DataType.IMAGE, "", 10, 0, FileSortBy.NAME_ASC).variables["sortBy"],
+        )
     }
 
     @Test
@@ -79,7 +113,7 @@ class GraphqlArgumentsTest {
     @Test
     fun onlyMoveIncludesDestination() {
         for (action in MediaAction.entries) {
-            val request = Mutation.mediaAction(action, "IMAGE", "ids:=1", "a\"b")
+            val request = Mutation.mediaAction(action, DataType.IMAGE, "ids:=1", "a\"b")
             assertEquals(action == MediaAction.MOVE, "destDir" in request.variables)
             if (action == MediaAction.MOVE) assertEquals(JsonPrimitive("a\"b"), request.variables["destDir"])
         }
@@ -118,9 +152,9 @@ class GraphqlArgumentsTest {
 
     @Test
     fun mediaSelectionsKeepTypeSpecificFields() {
-        assertTrue(Query.mediaRows(DataType.AUDIO, "", 10, 0, "NAME_ASC").query.contains("albumFileId"))
-        assertTrue(Query.mediaRows(DataType.IMAGE, "", 10, 0, "NAME_ASC").query.contains("takenAt"))
-        assertFalse(Query.mediaRows(DataType.DOC, "", 10, 0, "NAME_ASC").query.contains("isFavorite"))
+        assertTrue(Query.mediaRows(DataType.AUDIO, "", 10, 0, FileSortBy.NAME_ASC).query.contains("albumFileId"))
+        assertTrue(Query.mediaRows(DataType.IMAGE, "", 10, 0, FileSortBy.NAME_ASC).query.contains("takenAt"))
+        assertFalse(Query.mediaRows(DataType.DOC, "", 10, 0, FileSortBy.NAME_ASC).query.contains("isFavorite"))
         assertTrue(Query.mediaCount(DataType.VIDEO, "").query.contains("videoCount(query: \$query)"))
     }
 

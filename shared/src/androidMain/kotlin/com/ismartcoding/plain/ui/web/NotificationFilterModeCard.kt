@@ -1,6 +1,7 @@
 package com.ismartcoding.plain.ui.web
 import com.ismartcoding.plain.ui.theme.PlainTheme
 
+import com.ismartcoding.plain.features.notifications.NotificationFilterMode
 import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +21,7 @@ import com.ismartcoding.plain.ui.base.VerticalSpace
 
 @Composable
 fun NotificationFilterModeCard(
-    mode: String,
+    mode: NotificationFilterMode,
     onToggleMode: () -> Unit,
 ) {
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
@@ -39,14 +40,14 @@ fun NotificationFilterModeCard(
                     labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 FilterChip(
-                    selected = mode == "allowlist",
-                    onClick = { if (mode != "allowlist") onToggleMode() },
+                    selected = mode == NotificationFilterMode.ALLOWLIST,
+                    onClick = { if (mode != NotificationFilterMode.ALLOWLIST) onToggleMode() },
                     label = { Text(stringResource(Res.string.allowlist_mode)) },
                     colors = chipColors
                 )
                 FilterChip(
-                    selected = mode == "blacklist",
-                    onClick = { if (mode != "blacklist") onToggleMode() },
+                    selected = mode == NotificationFilterMode.BLACKLIST,
+                    onClick = { if (mode != NotificationFilterMode.BLACKLIST) onToggleMode() },
                     label = { Text(stringResource(Res.string.blacklist_mode)) },
                     colors = chipColors
                 )

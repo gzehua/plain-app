@@ -19,7 +19,7 @@ import com.ismartcoding.plain.rust.host.network.MdnsMulticastHost
 @RunWith(AndroidJUnit4::class)
 class MdnsRuntimeRustHttpTest {
     private suspend fun awaitReceiver() = withTimeout(10_000) {
-        while (!RustMdnsRuntime.snapshot().getValue("receiver").jsonPrimitive.boolean) delay(50)
+        while (!RustMdnsRuntime.snapshot().receiver) delay(50)
     }
     @OptIn(ExperimentalUuidApi::class)
     @Test
@@ -32,7 +32,7 @@ class MdnsRuntimeRustHttpTest {
         assertTrue(physical(false, closed))
         assertFalse(physical(true, closed))
         assertFalse(physical(true, Uuid.random().toString()))
-        assertTrue(RustMdnsRuntime.snapshot().getValue("receiver").jsonPrimitive.boolean)
+        assertTrue(RustMdnsRuntime.snapshot().receiver)
     }
 
     @OptIn(ExperimentalUuidApi::class)
@@ -48,35 +48,35 @@ class MdnsRuntimeRustHttpTest {
             assertEquals(true, RustGraphqlApi.mutate("startDiscovery").getValue("startDiscovery").jsonPrimitive.boolean)
             assertTrue(discovering())
             val started = snapshot()
-            assertTrue(started.getValue("receiver").jsonPrimitive.boolean)
-            assertTrue(started.getValue("scanning").jsonPrimitive.boolean)
-            assertTrue(started.getValue("revision").jsonPrimitive.long > before.getValue("revision").jsonPrimitive.long)
+            assertTrue(started.receiver)
+            assertTrue(started.scanning)
+            assertTrue(started.revision > before.revision)
             assertEquals(true, RustGraphqlApi.mutate("stopDiscovery").getValue("stopDiscovery").jsonPrimitive.boolean)
             assertFalse(discovering())
             val stopped = snapshot()
-            assertFalse(stopped.getValue("scanning").jsonPrimitive.boolean)
-            assertTrue(stopped.getValue("receiver").jsonPrimitive.boolean)
-            assertTrue(stopped.getValue("revision").jsonPrimitive.long > started.getValue("revision").jsonPrimitive.long)
-            assertTrue(snapshot().getValue("revision").jsonPrimitive.long >= stopped.getValue("revision").jsonPrimitive.long)
+            assertFalse(stopped.scanning)
+            assertTrue(stopped.receiver)
+            assertTrue(stopped.revision > started.revision)
+            assertTrue(snapshot().revision >= stopped.revision)
             RustMdnsRuntime.debugStart(debugToken)
-            assertTrue(snapshot().getValue("capturing").jsonPrimitive.boolean)
+            assertTrue(snapshot().capturing)
             val captured = RustMdnsRuntime.snapshot()
-            val packets = RustMdnsRuntime.packets(captured, false)
-            assertEquals(captured.getValue("running").jsonPrimitive.boolean, RustMdnsRuntime.running)
+            val packets = captured.packetsOut
+            assertEquals(captured.running, RustMdnsRuntime.running)
             if (RustNativeApi.lanIpv4Addresses().isEmpty()) {
                 assertTrue(packets.all { it.srcPort > 0 && it.size > 0 })
             } else assertTrue(packets.any { it.summary.contains("PTR") && it.detail.contains("_plainapp._tcp.local") && it.srcPort > 0 && it.size > 0 })
-            assertTrue(RustMdnsRuntime.services(captured).all { it.serviceType == "_plainapp._tcp.local" })
+            assertTrue(captured.services.all { it.serviceType == "_plainapp._tcp.local" })
             RustGraphqlApi.mutate("stopDiscovery")
             assertTrue(discovering())
             RustMdnsRuntime.debugStop(debugToken).await()
             val cleaned = snapshot()
-            assertFalse(cleaned.getValue("scanning").jsonPrimitive.boolean)
-            assertFalse(cleaned.getValue("capturing").jsonPrimitive.boolean)
-            assertTrue(RustMdnsRuntime.packets(cleaned, false).isEmpty())
+            assertFalse(cleaned.scanning)
+            assertFalse(cleaned.capturing)
+            assertTrue(cleaned.packetsOut.isEmpty())
         } finally {
             RustMdnsRuntime.debugStop(debugToken).await()
-            RustGraphqlApi.mutate(if (before.getValue("manualScanning").jsonPrimitive.boolean) "startDiscovery" else "stopDiscovery")
+            RustGraphqlApi.mutate(if (before.manualScanning) "startDiscovery" else "stopDiscovery")
         }
     }
 }

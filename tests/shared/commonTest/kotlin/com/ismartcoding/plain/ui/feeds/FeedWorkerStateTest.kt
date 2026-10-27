@@ -19,10 +19,10 @@ class FeedWorkerStateTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         try {
             val id = "feed-projection-order"
-            FeedWorkerState.apply(FeedSyncUpdate(listOf(FeedSyncState(id, "new-task", 20, "QUEUED", "")), emptyList(), replace = false))
-            FeedWorkerState.apply(FeedSyncUpdate(listOf(FeedSyncState(id, "old-task", 19, "COMPLETED", "")), emptyList(), replace = false))
+            FeedWorkerState.apply(FeedSyncUpdate(listOf(FeedSyncState(id, "new-task", 20, FeedWorkerStatus.QUEUED, "")), emptyList(), replace = false))
+            FeedWorkerState.apply(FeedSyncUpdate(listOf(FeedSyncState(id, "old-task", 19, FeedWorkerStatus.COMPLETED, "")), emptyList(), replace = false))
             assertEquals(FeedWorkerStatus.QUEUED, FeedWorkerState.status(id))
-            FeedWorkerState.apply(FeedSyncUpdate(listOf(FeedSyncState(id, "new-task", 21, "RUNNING", "")), emptyList(), replace = false))
+            FeedWorkerState.apply(FeedSyncUpdate(listOf(FeedSyncState(id, "new-task", 21, FeedWorkerStatus.RUNNING, "")), emptyList(), replace = false))
             assertEquals(FeedWorkerStatus.RUNNING, FeedWorkerState.status(id))
             FeedWorkerState.apply(FeedSyncUpdate(emptyList(), listOf(id), replace = false))
             assertNull(FeedWorkerState.status(id))
@@ -34,8 +34,8 @@ class FeedWorkerStateTest {
     fun host_snapshot_replaces_states_left_over_from_a_disconnected_host() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         try {
-            FeedWorkerState.apply(FeedSyncUpdate(listOf(FeedSyncState("retired", "old", 1, "RUNNING", "")), emptyList(), replace = true))
-            FeedWorkerState.apply(FeedSyncUpdate(listOf(FeedSyncState("current", "new", 2, "COMPLETED", "")), emptyList(), replace = true))
+            FeedWorkerState.apply(FeedSyncUpdate(listOf(FeedSyncState("retired", "old", 1, FeedWorkerStatus.RUNNING, "")), emptyList(), replace = true))
+            FeedWorkerState.apply(FeedSyncUpdate(listOf(FeedSyncState("current", "new", 2, FeedWorkerStatus.COMPLETED, "")), emptyList(), replace = true))
             assertNull(FeedWorkerState.status("retired"))
             assertEquals(FeedWorkerStatus.COMPLETED, FeedWorkerState.status("current"))
             assertEquals(2L, FeedWorkerState.completed().getValue("current").revision)

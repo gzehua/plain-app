@@ -22,9 +22,7 @@ object MediaPlayHistoryClient {
     suspend fun find(mediaId: String, type: DataType, since: Instant): MediaPlayHistory? {
         synchronized(lock) { pendingWrite }?.join()
         val query = "type:${type.name} ids:${JsonHelper.jsonEncode(mediaId)} played_at:${JsonHelper.jsonEncode(">=$since")}"
-        return JsonHelper.jsonDecodeFromElement<List<MediaPlayHistory>>(
-            RustGraphqlApi.graphql(Query.mediaPlayHistory(query, 0, 1)).getValue("mediaPlayHistory"),
-        ).singleOrNull()
+        return RustGraphqlApi.read<List<MediaPlayHistory>>(Query.mediaPlayHistory(query, 0, 1)).singleOrNull()
     }
 
     fun recordPlay(mediaId: String, type: DataType, positionMs: Long): Job =

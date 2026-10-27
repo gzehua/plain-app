@@ -1,7 +1,8 @@
 package com.ismartcoding.plain.ui.nearby
 
-import com.ismartcoding.plain.features.nearby.pairingState
 
+import com.ismartcoding.plain.features.nearby.PairingPhase
+import com.ismartcoding.plain.features.nearby.PairingMode
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
@@ -16,21 +17,20 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.*
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.components.TextFieldDialog
 
 @Composable
 fun PairPeerDialog(device: NearbyDevice, onDismiss: () -> Unit) {
     val scope = rememberCoroutineScope()
-    var mode by remember { mutableStateOf("MANAGE") }
+    var mode by remember { mutableStateOf(PairingMode.MANAGE) }
     var generation by remember { mutableStateOf<String?>(null) }
     var submitting by remember { mutableStateOf(false) }
     var disposed by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     val state = generation?.let { NearbyViewModel.pairingStates[it] }
-    val phase = state?.pairingState()?.phase
-    val terminal = phase in setOf("SUCCEEDED", "FAILED", "CANCELLED")
+    val phase = state?.phase
+    val terminal = phase in setOf(PairingPhase.SUCCEEDED, PairingPhase.FAILED, PairingPhase.CANCELLED)
     DisposableEffect(Unit) {
         onDispose {
             disposed = true
@@ -38,9 +38,9 @@ fun PairPeerDialog(device: NearbyDevice, onDismiss: () -> Unit) {
         }
     }
     LaunchedEffect(phase) {
-        if (phase == "SUCCEEDED") onDismiss()
+        if (phase == PairingPhase.SUCCEEDED) onDismiss()
     }
-    if (phase == "PASSWORD_REQUIRED") {
+    if (phase == PairingPhase.PASSWORD_REQUIRED) {
         TextFieldDialog(
             title = stringResource(Res.string.password),
             isPassword = true,
@@ -65,19 +65,19 @@ fun PairPeerDialog(device: NearbyDevice, onDismiss: () -> Unit) {
         text = {
             Column {
                 if (generation == null) {
-                    listOf("MANAGE" to Res.string.pair_manage_device, "CHAT" to Res.string.pair_chat_only).forEach { (value, label) ->
+                    listOf(PairingMode.MANAGE to Res.string.pair_manage_device, PairingMode.CHAT to Res.string.pair_chat_only).forEach { (value, label) ->
                         Row {
                             RadioButton(selected = mode == value, onClick = { mode = value }, enabled = !submitting)
                             Text(stringResource(label))
                         }
                     }
                 }
-                if (generation != null && !terminal && phase != "PASSWORD_REQUIRED") Text(stringResource(Res.string.pending))
-                state?.pairingState()?.verificationCode?.let { code ->
+                if (generation != null && !terminal && phase != PairingPhase.PASSWORD_REQUIRED) Text(stringResource(Res.string.pending))
+                state?.verificationCode?.let { code ->
                     Text(stringResource(Res.string.login_compare_code))
                     Text(code)
                 }
-                (error ?: state?.pairingState()?.error)?.let { Text(it) }
+                (error ?: state?.error)?.let { Text(it) }
             }
         },
         confirmButton = {
@@ -92,7 +92,7 @@ fun PairPeerDialog(device: NearbyDevice, onDismiss: () -> Unit) {
                             withContext(NonCancellable) {
                                 if (generation == null) {
                                     val result = RustPairingRuntime.start(device, mode)
-                                    val value = result.pairingState().generation
+                                    val value = result.generation
                                     generation = value
                                     if (disposed) RustPairingRuntime.cancelGeneration(value)
                                 }

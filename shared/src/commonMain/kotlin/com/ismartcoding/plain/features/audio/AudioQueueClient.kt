@@ -2,11 +2,11 @@ package com.ismartcoding.plain.features.audio
 
 import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.graphql.Query
-import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-import kotlinx.serialization.Serializable
-import com.ismartcoding.plain.models.AudioPlayback
 import com.ismartcoding.plain.models.AudioItem
+import com.ismartcoding.plain.models.AudioPlayback
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.rust.graphql.selectionQuery
+import kotlinx.serialization.Serializable
 
 object AudioQueueClient {
     suspend fun playback(): AudioPlayback =
@@ -14,7 +14,7 @@ object AudioQueueClient {
 
     suspend fun resolveNext(isNext: Boolean, shuffle: Boolean = false): AudioItem? {
         val current = playback()
-        val action = if (isNext) "NEXT" else "PREVIOUS"
+        val action = if (isNext) AudioSelectionAction.NEXT else AudioSelectionAction.PREVIOUS
         val result = RustGraphqlApi.read<AdvancedAudioSelection?>(
             Mutation.advanceAudioSelection(action, current.path.orEmpty(), current.revision, shuffle),
         )

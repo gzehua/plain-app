@@ -1,15 +1,14 @@
 package com.ismartcoding.plain.features.dlna.sender
 
-import com.ismartcoding.plain.graphql.Mutation
-import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.IMedia
+import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.platform.system.PlatformLock
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 
 internal object RustDlnaSender {
     private val projectionLock = PlatformLock()
@@ -29,12 +28,15 @@ internal object RustDlnaSender {
 
     suspend fun call(command: CastCommand) {
         val request = Mutation.dlna(command)
-        val row = RustGraphqlApi.graphql(request).getValue(request.field)
-        apply(row.jsonObject)
+        apply(RustGraphqlApi.read<CastSnapshot>(request))
     }
+
     fun addItem(item: IMedia) { coIO { call(CastCommand.Add(CastItem.from(item))) } }
+
     fun removeItem(item: IMedia) { coIO { call(CastCommand.Remove(item.path)) } }
+
     fun startScan() { coIO { call(CastCommand.StartScan) } }
+
     fun stopScan() { coIO { call(CastCommand.StopScan) } }
 
     fun apply(row: JsonObject) = apply(JsonHelper.jsonDecodeFromElement<CastSnapshot>(row))

@@ -1,10 +1,9 @@
 package com.ismartcoding.plain.features.chat
 
-import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import com.ismartcoding.plain.graphql.Query
-import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.models.ChatItem
-import kotlinx.serialization.json.JsonNull
+import com.ismartcoding.plain.rust.graphql.GraphqlRequest
+import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import kotlinx.serialization.json.JsonObject
 
 internal suspend fun readChatSnapshot(
@@ -14,10 +13,9 @@ internal suspend fun readChatSnapshot(
     val result = linkedMapOf<String, ChatItem?>()
     for (batch in ids.distinct().chunked(128)) {
         val selection = Query.chatSnapshot(batch)
-        val data = fetch(selection)
+        val data = RustGraphqlApi.readResponse<Map<String, ChatItem?>>(selection, fetch)
         batch.forEachIndexed { index, id ->
-            val value = data.getValue("message$index")
-            result[id] = if (value is JsonNull) null else RustChatStore.decodeGraphql(value).also {
+            result[id] = data.getValue("message$index")?.also {
                 require(it.id == id) { "Mismatched chat snapshot identity" }
             }
         }

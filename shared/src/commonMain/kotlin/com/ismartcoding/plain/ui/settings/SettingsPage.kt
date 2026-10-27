@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.settings
 
+import com.ismartcoding.plain.features.settings.AppUpdateDownloadStatus
 import com.ismartcoding.plain.ui.theme.PlainTheme
 
 import com.ismartcoding.plain.i18n.*
@@ -75,7 +76,7 @@ fun SettingsPage(navController: NavHostController, updateViewModel: UpdateViewMo
 
     val download = AppUpdateDownloads.state.collectAsStateValue()
     LaunchedEffect(download.taskId, download.status) {
-        if (download.status == "DOWNLOADING") listState.animateScrollToItem(0)
+        if (download.status == AppUpdateDownloadStatus.DOWNLOADING) listState.animateScrollToItem(0)
     }
 
     UpdateDialog(updateViewModel)

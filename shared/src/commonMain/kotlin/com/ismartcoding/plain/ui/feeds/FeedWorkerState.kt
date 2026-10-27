@@ -14,10 +14,10 @@ object FeedWorkerState {
     private val lock = Mutex()
     private val states = mutableStateMapOf<String, FeedSyncState>()
 
-    fun status(id: String): FeedWorkerStatus? = states[id]?.let { FeedWorkerStatus.valueOf(it.status) }
+    fun status(id: String): FeedWorkerStatus? = states[id]?.status
 
     internal fun completed(): Map<String, FeedSyncState> = states.filterValues {
-        it.status in setOf("COMPLETED", "ERROR", "CANCELLED")
+        it.status in setOf(FeedWorkerStatus.COMPLETED, FeedWorkerStatus.ERROR, FeedWorkerStatus.CANCELLED)
     }
 
     suspend fun refresh() = lock.withLock { applyLocked(FeedsClient.syncStates(), replace = true) }

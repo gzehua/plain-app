@@ -3,8 +3,7 @@ package com.ismartcoding.plain.features.nearby
 import com.ismartcoding.plain.ui.nearby.NearbyItemStatus
 import com.ismartcoding.plain.ui.nearby.NearbyViewModel
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
+import com.ismartcoding.plain.lib.JsonHelper
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,7 +15,7 @@ class PairingProjectionTest {
         NearbyViewModel.itemStatus.clear()
     }
 
-    private fun state(generation: String, phase: String) = Json.parseToJsonElement("""{"deviceId":"peer","generation":"$generation","mode":"CHAT","phase":"$phase","error":null}""").jsonObject
+    private fun state(generation: String, phase: String) = JsonHelper.jsonDecode<PairingState>("""{"deviceId":"peer","generation":"$generation","mode":"CHAT","phase":"$phase","error":null}""")
 
     @Test
     fun cachedGenerationsProjectWithoutANativeBridgeAndOldEventsCannotClearNewWork() = runBlocking {
@@ -33,8 +32,9 @@ class PairingProjectionTest {
     fun unknownPhasesRemainPendingAndOlderSnapshotsCannotRegressKnownProgress() {
         PairingProjection.applyState(state("first", "COMMITTING"))
         PairingProjection.applyState(state("first", "STARTING"))
-        assertEquals("COMMITTING", NearbyViewModel.pairingStates["first"]?.get("phase")?.toString()?.trim('"'))
+        assertEquals(PairingPhase.COMMITTING, NearbyViewModel.pairingStates["first"]?.phase)
         PairingProjection.applyState(state("other", "FUTURE_PHASE"))
+        assertEquals(PairingPhase.UNKNOWN, NearbyViewModel.pairingStates["other"]?.phase)
         assertEquals(NearbyItemStatus.PAIRING, NearbyViewModel.itemStatus["peer"])
     }
     @Test
@@ -44,7 +44,7 @@ class PairingProjectionTest {
         PairingProjection.applyState(state("first", "CANCELLED"))
         PairingProjection.applyState(state("second", "PASSWORD_REQUIRED"))
         PairingProjection.applySnapshot(before, listOf(state("first", "STARTING")))
-        assertEquals("PASSWORD_REQUIRED", NearbyViewModel.pairingStates["second"]?.get("phase")?.toString()?.trim('"'))
+        assertEquals(PairingPhase.PASSWORD_REQUIRED, NearbyViewModel.pairingStates["second"]?.phase)
         assertEquals(NearbyItemStatus.PAIRING, NearbyViewModel.itemStatus["peer"])
         PairingProjection.applySnapshot(NearbyViewModel.pairingStates.toMap(), emptyList())
         assertEquals(null, NearbyViewModel.itemStatus["peer"])

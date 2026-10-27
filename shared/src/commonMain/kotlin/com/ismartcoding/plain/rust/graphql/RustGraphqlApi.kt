@@ -6,6 +6,8 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.rust.native.RustNativeBindings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -14,12 +16,20 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-
 object RustGraphqlApi {
+
     suspend inline fun <reified T> read(request: GraphqlRequest): T =
-        JsonHelper.jsonDecodeFromElement(graphql(request).getValue(request.field))
+        read(request) { graphql(it) }
+
+    suspend inline fun <reified T> read(
+        request: GraphqlRequest,
+        execute: suspend (GraphqlRequest) -> JsonObject,
+    ): T = JsonHelper.jsonDecodeFromElement(execute(request).getValue(request.field))
+
+    suspend inline fun <reified T> readResponse(
+        request: GraphqlRequest,
+        execute: suspend (GraphqlRequest) -> JsonObject,
+    ): T = JsonHelper.jsonDecodeFromElement(execute(request))
 
     inline fun <reified T> subscribe(request: GraphqlRequest): Flow<GraphqlResult<T>> =
         RustGraphqlSubscriptions.subscribe(request).map { response ->

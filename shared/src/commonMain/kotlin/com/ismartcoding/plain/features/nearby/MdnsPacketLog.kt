@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.features.nearby
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class MdnsPacketLog(
     val time: Long,
     val direction: MdnsPacketDirection,

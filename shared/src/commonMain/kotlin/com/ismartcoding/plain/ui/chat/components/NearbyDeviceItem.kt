@@ -30,7 +30,6 @@ import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.bluetooth as ui_drawable_bluetooth
 import com.ismartcoding.plain.ui.resources.wifi as ui_drawable_wifi
 import com.ismartcoding.plain.i18n.bluetooth
-import com.ismartcoding.plain.platform.system.DeviceType
 import com.ismartcoding.plain.ui.nearby.PairPeerDialog
 
 @Composable
@@ -48,7 +47,7 @@ fun NearbyDeviceItem(
         PListItem(
             title = item.name,
             titleSuffix = {
-                if (DiscoveryMethod.BLE.name in item.discoveryMethods) {
+                if (DiscoveryMethod.BLE in item.discoveryMethods) {
                     Icon(
                         painter = painterResource(UiRes.drawable.ui_drawable_bluetooth),
                         contentDescription = "Bluetooth",
@@ -56,8 +55,8 @@ fun NearbyDeviceItem(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                if (DiscoveryMethod.LAN.name in item.discoveryMethods) {
-                    if (DiscoveryMethod.BLE.name in item.discoveryMethods) HorizontalSpace(4.dp)
+                if (DiscoveryMethod.LAN in item.discoveryMethods) {
+                    if (DiscoveryMethod.BLE in item.discoveryMethods) HorizontalSpace(4.dp)
                     Icon(
                         painter = painterResource(UiRes.drawable.ui_drawable_wifi),
                         contentDescription = "Wi-Fi",
@@ -71,7 +70,7 @@ fun NearbyDeviceItem(
                 }
             },
             subtitle = bestIp,
-            icon = runCatching { DeviceType.valueOf(item.deviceType) }.getOrDefault(DeviceType.OTHER).getIcon(),
+            icon = item.deviceType.getIcon(),
             action = {
                 when (status) {
                     NearbyItemStatus.PAIRING -> {

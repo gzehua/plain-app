@@ -1,9 +1,8 @@
 package com.ismartcoding.plain.features.chat.peer
 
-import com.ismartcoding.plain.rust.native.RustNativeApi
-
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
+import com.ismartcoding.plain.rust.native.RustNativeApi
 import kotlinx.coroutines.CancellationException
 
 object PeerStatusClient {

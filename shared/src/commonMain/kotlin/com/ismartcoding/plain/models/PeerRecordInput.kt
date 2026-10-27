@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.models
 
+import com.ismartcoding.plain.features.nearby.PeerStatus
+import com.ismartcoding.plain.platform.system.DeviceType
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 
@@ -10,9 +12,9 @@ internal data class PeerRecordInput(
     val ip: String,
     val key: String,
     val publicKey: String,
-    val status: String,
+    val status: PeerStatus,
     val port: Int?,
-    val deviceType: String,
+    val deviceType: DeviceType,
     val token: String,
     val createdAt: Instant,
     val updatedAt: Instant,
@@ -24,9 +26,9 @@ internal data class PeerRecordInput(
             ip = peer.ip,
             key = peer.key,
             publicKey = peer.publicKey,
-            status = peer.status.name,
+            status = peer.status,
             port = peer.port,
-            deviceType = peer.deviceType.name,
+            deviceType = peer.deviceType,
             token = peer.token,
             createdAt = peer.createdAt,
             updatedAt = peer.updatedAt,

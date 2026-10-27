@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.settings
 
+import com.ismartcoding.plain.features.settings.AppUpdateDownloadStatus
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -18,10 +19,10 @@ class UpdateViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             AppUpdateDownloads.state.collect { snapshot ->
-                isDownloading.value = snapshot.status == "DOWNLOADING"
+                isDownloading.value = snapshot.status == AppUpdateDownloadStatus.DOWNLOADING
                 downloadProgress.intValue = snapshot.progress
-                downloadFailed.value = snapshot.status == "FAILED"
-                isDownloadComplete.value = snapshot.status == "COMPLETED"
+                downloadFailed.value = snapshot.status == AppUpdateDownloadStatus.FAILED
+                isDownloadComplete.value = snapshot.status == AppUpdateDownloadStatus.COMPLETED
                 downloadedFilePath.value = snapshot.filePath
             }
         }

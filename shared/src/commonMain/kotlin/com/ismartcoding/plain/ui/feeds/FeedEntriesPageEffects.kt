@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.feeds
 
+import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
 import com.ismartcoding.plain.rust.graphql.AppSubscriptions
 import com.ismartcoding.plain.rust.graphql.changes
 import kotlinx.coroutines.launch
@@ -55,7 +56,7 @@ internal fun FeedEntriesPageEffects(
             completed.forEach { (id, state) -> observed[id] = state.revision }
             if (latest != null) {
                 topRefreshLayoutState.setRefreshState(
-                    if (latest.status == "ERROR") RefreshContentState.Failed else RefreshContentState.Finished,
+                    if (latest.status == FeedWorkerStatus.ERROR) RefreshContentState.Failed else RefreshContentState.Finished,
                 )
                 refreshEntries()
             }
