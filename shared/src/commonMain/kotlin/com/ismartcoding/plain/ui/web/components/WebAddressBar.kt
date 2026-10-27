@@ -37,6 +37,7 @@ import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.chevron_down as ui_drawable_chevron_down
@@ -46,6 +47,18 @@ import com.ismartcoding.plain.ui.resources.chevron_up as ui_drawable_chevron_up
 fun WebAddressBar(
     isHttps: Boolean,
     lanIpv4Addresses: List<String>,
+    modifier: Modifier = Modifier.fillMaxWidth().background(
+        color = MaterialTheme.colorScheme.cardBackgroundNormal,
+        shape = RoundedCornerShape(12.dp),
+    ).padding(top = 8.dp),
+    moreAddressesText: String = stringResource(Res.string.try_more_addresses),
+    backupAddressesBelowToggle: Boolean = false,
+    backupToggleModifier: Modifier = Modifier.padding(horizontal = 8.dp),
+    expandIcon: DrawableResource = UiRes.drawable.ui_drawable_chevron_down,
+    collapseIcon: DrawableResource = UiRes.drawable.ui_drawable_chevron_up,
+    addressRow: @Composable (String, Boolean, () -> Unit, () -> Unit) -> Unit = { url, hostname, edit, qr ->
+        AddressRow(url, hostname, edit, qr)
+    },
 ) {
     val port = if (isHttps) Prefs.httpsPort.collectAsState() else Prefs.httpPort.collectAsState()
     // Shared persisted state so the HTTP/HTTPS pager pages stay in sync.
@@ -60,28 +73,42 @@ fun WebAddressBar(
     val primaryAddress = lanIpv4Addresses.firstOrNull() ?: hostname
     val backupAddresses = (listOf(hostname) + lanIpv4Addresses.drop(1)).filter { it != primaryAddress }
 
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.cardBackgroundNormal,
-                shape = RoundedCornerShape(12.dp),
+    val backupAddressesToggle: @Composable () -> Unit = {
+        if (backupAddresses.isNotEmpty()) {
+            val expansion = stringResource(if (expanded.value) Res.string.expanded else Res.string.collapsed)
+            PTextButton(
+                modifier = backupToggleModifier.semantics {
+                    stateDescription = expansion
+                },
+                text = if (expanded.value) stringResource(Res.string.collapse_backup_addresses) else moreAddressesText,
+                icon = painterResource(
+                    if (expanded.value)
+                        collapseIcon
+                    else
+                        expandIcon
+                ),
+                onClick = {
+                    scope.launch { Prefs.set(PrefKeys.WEB_ADDRESS_BAR_EXPANDED, !expanded.value)}
+                },
             )
-            .padding(top = 8.dp),
-    ) {
+        }
+    }
+
+    Column(modifier) {
         val primaryUrl = UrlHelper.buildUrl(scheme, primaryAddress, port.value)
-        AddressRow(
-            url = primaryUrl,
-            isHostnameRow = primaryAddress == hostname,
-            onEditClick = {
+        addressRow(
+            primaryUrl,
+            primaryAddress == hostname,
+            {
                 if (primaryAddress == hostname) mdnsEditDialogVisible = true
                 else portDialogVisible = true
             },
-            onQrClick = {
+            {
                 qrCodeUrl = primaryUrl
                 qrCodeDialogVisible = true
             },
         )
+        if (backupAddressesBelowToggle) backupAddressesToggle()
         AnimatedVisibility(
             visible = expanded.value && backupAddresses.isNotEmpty(),
             enter = expandVertically(),
@@ -90,17 +117,17 @@ fun WebAddressBar(
             Column {
                 backupAddresses.forEach { address ->
                     val url = UrlHelper.buildUrl(scheme, address, port.value)
-                    AddressRow(
-                        url = url,
-                        isHostnameRow = address == hostname,
-                        onEditClick = {
+                    addressRow(
+                        url,
+                        address == hostname,
+                        {
                             if (address == hostname) {
                                 mdnsEditDialogVisible = true
                             } else {
                                 portDialogVisible = true
                             }
                         },
-                        onQrClick = {
+                        {
                             qrCodeUrl = url
                             qrCodeDialogVisible = true
                         },
@@ -108,24 +135,7 @@ fun WebAddressBar(
                 }
             }
         }
-        if (backupAddresses.isNotEmpty()) {
-            val expansion = stringResource(if (expanded.value) Res.string.expanded else Res.string.collapsed)
-            PTextButton(
-                modifier = Modifier.padding(horizontal = 8.dp).semantics {
-                    stateDescription = expansion
-                },
-                text = stringResource(if (expanded.value) Res.string.collapse_backup_addresses else Res.string.try_more_addresses),
-                icon = painterResource(
-                    if (expanded.value)
-                        UiRes.drawable.ui_drawable_chevron_up
-                    else
-                        UiRes.drawable.ui_drawable_chevron_down
-                ),
-                onClick = {
-                    scope.launch { Prefs.set(PrefKeys.WEB_ADDRESS_BAR_EXPANDED, !expanded.value)}
-                },
-            )
-        }
+        if (!backupAddressesBelowToggle) backupAddressesToggle()
     }
 
     if (mdnsEditDialogVisible) {

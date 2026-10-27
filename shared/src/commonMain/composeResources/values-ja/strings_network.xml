@@ -30,7 +30,6 @@
     <string name="http_server_error">HTTPサーバーが起動していません。PlainAppを再起動して、もう一度試してみてください。HTTPまたはHTTPSポートを占有している他のアプリケーションがないことを確認してください。問題が解決しない場合は、support@plainapp.app に連絡して問題の詳細を提供してください。</string>
     <string name="relaunch_app">アプリを再起動</string>
     <string name="require_confirmation">確認が必要</string>
-    <string name="plainapp_service_required_for_chat">チャットを使用するには、PlainApp サービスを開始してください。</string>
     <string name="desktop_access">デスクトップアクセス</string>
     <string name="http_port">HTTPポート</string>
     <string name="https_port">HTTPSポート</string>
@@ -52,7 +51,6 @@
     <string name="web_url">Web URL</string>
     <string name="auth_dev_token_tips">クライアントはリクエストヘッダーに c-id: &lt;client_id&gt; と Authorization: Bearer &lt;token&gt; の両方を含めるか、同じペアを使用して API ペイロードを暗号化する必要があります。トークンがリクエストヘッダーで提供された場合、レスポンスはプレーンテキストで返されます。</string>
     <string name="browser_https_error_tips">"Your connection is not private"エラーが表示された場合は、「詳細」ボタンをクリックし、「...に進む」ボタンをクリックするだけで、ChromeがこのURLをブラウザセッションの残りの期間信頼します。</string>
-    <string name="plainapp_service_is_running">PlainApp サービスを実行中</string>
     <string name="screen_mirror_service_is_running">スクリーンミラーサービスが実行されています</string>
     <string name="screen_mirror_audio_permission_settings_message">マイクの権限が無効です。システムオーディオをミラーリングするには、設定で有効にしてください。</string>
     <string name="mdns_hostname">mDNSホスト名</string>
@@ -63,9 +61,6 @@
     <string name="restart_app_message">ほとんど完了！効果を確認するには、「アプリを再起動」をタップしてください。</string>
     <string name="access_phone_web">コンピュータのブラウザから携帯電話にアクセスします。</string>
     <string name="scan_qrcode_to_access_web">WebアドレスにアクセスするためにQRコードをスキャンします</string>
-    <string name="plainapp_service_off">PlainApp サービス オフ</string>
-    <string name="plainapp_service_on">PlainApp サービス オン</string>
-    <string name="plainapp_service_off_desc">デスクトップアクセス、チャット、ワイヤレスキャストを使用するには、PlainApp サービスを開始してください。</string>
     <string name="collapse_section">折りたたむ</string>
     <string name="expand_section">展開する</string>
     <string name="more_settings">その他の設定</string>
@@ -73,9 +68,6 @@
     <string name="ready">準備完了</string>
     <string name="permission_settings">権限設定</string>
     <string name="desktop_access_desc">同じネットワーク上でコンピューターからスマートフォンを管理します。</string>
-    <string name="home_web_easy_hint">タップして開始</string>
-    <string name="home_web_easy_loading">しばらくお待ちください…</string>
-    <string name="plainapp_service_failed">開始できませんでした</string>
     <string name="last_active">最終アクティブ：%1$s</string>
     <string name="revoke_session">このセッションを取り消す</string>
     <string name="how_to_use">使い方</string>
@@ -132,4 +124,17 @@
     <string name="select_private_key_file">秘密鍵ファイルを選択</string>
     <string name="ssl_certificate_replaced">SSL 証明書が置き換えられました</string>
     <string name="try_more_addresses">接続できない場合は他のアドレスをお試しください</string>
+    <string name="desktop_access_instructions">両方の端末を同じ Wi-Fi に接続し、パソコンのブラウザでこのアドレスを開いてください。</string>
+    <string name="home_remote_access">リモートアクセス</string>
+    <string name="home_try_other_addresses">ほかのアドレスを試す</string>
+    <string name="keep_online_in_background">バックグラウンドで接続を維持</string>
+    <string name="keep_online_in_background_desc">アプリを離れても接続を維持します。</string>
+    <string name="connection_keeps_dropping">接続が頻繁に切れますか？</string>
+    <string name="connection_keeps_dropping_help">端末によってはバックグラウンドのアプリが一時停止されます。画面を暗くして PlainApp を開いたままにしてみてください。</string>
+    <string name="expanded">展開済み</string>
+    <string name="collapsed">折りたたみ済み</string>
+    <string name="background_online_failed">バックグラウンドでの実行を継続できませんでした。下の「オンライン状態を維持」をお試しください。</string>
+    <string name="turn_off_keep_online_in_background">バックグラウンドモードをオフにする</string>
+    <string name="enable_desktop_access">パソコンからのアクセスを有効にする</string>
+    <string name="disable_desktop_access">パソコンからのアクセスを無効にする</string>
 </resources>

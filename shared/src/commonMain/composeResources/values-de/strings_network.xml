@@ -30,7 +30,6 @@
     <string name="http_server_error">Der HTTP-Server ist nicht gestartet. Starten Sie die PlainApp erneut und versuchen Sie es erneut. Stellen Sie sicher, dass keine anderen Apps die HTTP- oder HTTPS-Ports belegen. Wenn das Problem weiterhin besteht, geben Sie bitte weitere Details zum Problem an, indem Sie support@plainapp.app kontaktieren.</string>
     <string name="relaunch_app">App neu starten</string>
     <string name="require_confirmation">Bestätigung erforderlich</string>
-    <string name="plainapp_service_required_for_chat">Bitte starten Sie den PlainApp Dienst, um Chat zu nutzen.</string>
     <string name="desktop_access">Desktop-Zugriff</string>
     <string name="http_port">HTTP-Port</string>
     <string name="https_port">HTTPS-Port</string>
@@ -52,7 +51,6 @@
     <string name="web_url">Web-URL</string>
     <string name="auth_dev_token_tips">Clients müssen sowohl c-id: &lt;client_id&gt; als auch Authorization: Bearer &lt;token&gt; in den Anfrage-Headern angeben oder dasselbe Paar zur Verschlüsselung des API-Payloads verwenden. Wenn das Token in den Anfrage-Headern angegeben wird, wird die Antwort im Klartext zurückgegeben.</string>
     <string name="browser_https_error_tips">Wenn du den Fehler "Deine Verbindung ist nicht privat" siehst, klicke einfach auf die Schaltfläche "Erweitert" und dann auf die Schaltfläche "Zu … fortsetzen", dann vertraut Chrome dieser URL für den Rest der Browsersitzung.</string>
-    <string name="plainapp_service_is_running">PlainApp Dienst läuft</string>
     <string name="screen_mirror_service_is_running">Der Bildschirmspiegelungsdienst läuft</string>
     <string name="screen_mirror_audio_permission_settings_message">Die Mikrofonberechtigung ist deaktiviert. Bitte aktivieren Sie sie in den Einstellungen, um Systemaudio zu spiegeln.</string>
     <string name="mdns_hostname">mDNS-Hostname</string>
@@ -63,9 +61,6 @@
     <string name="restart_app_message">Fast geschafft! Tippen Sie einfach auf "APP neu starten", um die Änderungen zu übernehmen.</string>
     <string name="access_phone_web">Greifen Sie über einen Computerbrowser auf Ihr Telefon zu.</string>
     <string name="scan_qrcode_to_access_web">Scannen Sie den QR-Code, um auf die Webadresse zuzugreifen</string>
-    <string name="plainapp_service_off">PlainApp Dienst AUS</string>
-    <string name="plainapp_service_on">PlainApp Dienst EIN</string>
-    <string name="plainapp_service_off_desc">Starten Sie den PlainApp Dienst, um Desktop-Zugriff, Chat und Kabelloses Streaming zu nutzen.</string>
     <string name="collapse_section">Reduzieren</string>
     <string name="expand_section">Erweitern</string>
     <string name="more_settings">Weitere Einstellungen</string>
@@ -73,9 +68,6 @@
     <string name="ready">Bereit</string>
     <string name="permission_settings">Berechtigungseinstellungen</string>
     <string name="desktop_access_desc">Verwalten Sie Ihr Telefon von Ihrem Computer im selben Netzwerk.</string>
-    <string name="home_web_easy_hint">Zum Starten tippen</string>
-    <string name="home_web_easy_loading">Bitte warten…</string>
-    <string name="plainapp_service_failed">Konnte nicht gestartet werden</string>
     <string name="last_active">Zuletzt aktiv: %1$s</string>
     <string name="revoke_session">Diese Sitzung widerrufen</string>
     <string name="how_to_use">Verwendung</string>
@@ -132,4 +124,17 @@
     <string name="select_private_key_file">Datei mit privatem Schlüssel auswählen</string>
     <string name="ssl_certificate_replaced">SSL-Zertifikat wurde ersetzt</string>
     <string name="try_more_addresses">Keine Verbindung? Weitere Adressen versuchen</string>
+    <string name="desktop_access_instructions">Verbinde beide Geräte mit demselben WLAN und öffne diese Adresse im Browser deines Computers.</string>
+    <string name="home_remote_access">Fernzugriff</string>
+    <string name="home_try_other_addresses">Andere Adressen versuchen</string>
+    <string name="keep_online_in_background">Im Hintergrund online bleiben</string>
+    <string name="keep_online_in_background_desc">Bleib verbunden, wenn du die App verlässt.</string>
+    <string name="connection_keeps_dropping">Verbindung bricht immer wieder ab?</string>
+    <string name="connection_keeps_dropping_help">Manche Smartphones pausieren Apps im Hintergrund. Lass PlainApp mit dunklem Bildschirm geöffnet.</string>
+    <string name="expanded">Ausgeklappt</string>
+    <string name="collapsed">Eingeklappt</string>
+    <string name="background_online_failed">Die App konnte nicht im Hintergrund weiterlaufen. Versuche unten „Online bleiben“.</string>
+    <string name="turn_off_keep_online_in_background">Hintergrundmodus ausschalten</string>
+    <string name="enable_desktop_access">Desktop-Zugriff aktivieren</string>
+    <string name="disable_desktop_access">Desktop-Zugriff deaktivieren</string>
 </resources>

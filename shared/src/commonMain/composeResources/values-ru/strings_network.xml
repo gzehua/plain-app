@@ -30,7 +30,6 @@
     <string name="http_server_error">HTTP-сервер не запущен. Перезапустите PlainApp и попробуйте снова. Убедитесь, что нет других приложений, занимающих порты HTTP или HTTPS. Если проблема сохраняется, предоставьте более подробную информацию о проблеме, связавшись с support@plainapp.app.</string>
     <string name="relaunch_app">Перезапустите приложение</string>
     <string name="require_confirmation">Требовать подтверждение</string>
-    <string name="plainapp_service_required_for_chat">Запустите PlainApp Служба, чтобы использовать чат.</string>
     <string name="desktop_access">Доступ с ПК</string>
     <string name="http_port">Порт HTTP</string>
     <string name="https_port">Порт HTTPS</string>
@@ -52,7 +51,6 @@
     <string name="web_url">Web URL</string>
     <string name="auth_dev_token_tips">Клиенты должны включать как c-id: &lt;client_id&gt;, так и Authorization: Bearer &lt;token&gt; в заголовки запроса, или использовать ту же пару для шифрования полезных данных API. Если токен указан в заголовках запроса, ответ будет возвращён в виде открытого текста.</string>
     <string name="browser_https_error_tips">Если вы видите ошибку "Ваше соединение не является частным", просто нажмите кнопку "Дополнительно" и затем кнопку "Перейти на …", и Chrome будет доверять этому URL в течение остатка сессии браузера.</string>
-    <string name="plainapp_service_is_running">PlainApp Служба запущен</string>
     <string name="screen_mirror_service_is_running">Служба зеркального отображения экрана запущена</string>
     <string name="screen_mirror_audio_permission_settings_message">Разрешение на микрофон отключено. Включите его в настройках, чтобы зеркалировать системный звук.</string>
     <string name="mdns_hostname">Имя хоста mDNS</string>
@@ -63,9 +61,6 @@
     <string name="restart_app_message">Почти готово! Просто нажмите "Перезапустить приложение", чтобы изменения вступили в силу.</string>
     <string name="access_phone_web">Получите доступ к телефону через браузер на компьютере.</string>
     <string name="scan_qrcode_to_access_web">Сканируйте QR-код, чтобы получить доступ к веб-адресу</string>
-    <string name="plainapp_service_off">PlainApp Служба ВЫКЛ</string>
-    <string name="plainapp_service_on">PlainApp Служба ВКЛ</string>
-    <string name="plainapp_service_off_desc">Запустите PlainApp Служба, чтобы использовать доступ с ПК, чат и беспроводную трансляцию.</string>
     <string name="collapse_section">Свернуть</string>
     <string name="expand_section">Развернуть</string>
     <string name="more_settings">Дополнительные настройки</string>
@@ -73,9 +68,6 @@
     <string name="ready">Готово</string>
     <string name="permission_settings">Настройки разрешений</string>
     <string name="desktop_access_desc">Управляйте телефоном с компьютера в одной сети.</string>
-    <string name="home_web_easy_hint">Нажмите, чтобы начать</string>
-    <string name="home_web_easy_loading">Пожалуйста, подождите…</string>
-    <string name="plainapp_service_failed">Не удалось запустить</string>
     <string name="last_active">Последняя активность: %1$s</string>
     <string name="revoke_session">Отозвать этот сеанс</string>
     <string name="how_to_use">Как пользоваться</string>
@@ -132,4 +124,17 @@
     <string name="select_private_key_file">Выберите файл приватного ключа</string>
     <string name="ssl_certificate_replaced">SSL-сертификат заменён</string>
     <string name="try_more_addresses">Не подключается? Попробуйте другие адреса</string>
+    <string name="desktop_access_instructions">Подключите оба устройства к одной сети Wi-Fi и откройте этот адрес в браузере на компьютере.</string>
+    <string name="home_remote_access">Удалённый доступ</string>
+    <string name="home_try_other_addresses">Попробовать другие адреса</string>
+    <string name="keep_online_in_background">Оставаться в сети в фоне</string>
+    <string name="keep_online_in_background_desc">Сохраняйте соединение после выхода из приложения.</string>
+    <string name="connection_keeps_dropping">Соединение постоянно обрывается?</string>
+    <string name="connection_keeps_dropping_help">Некоторые телефоны приостанавливают приложения в фоне. Попробуйте оставить PlainApp открытым с тёмным экраном.</string>
+    <string name="expanded">Развёрнуто</string>
+    <string name="collapsed">Свёрнуто</string>
+    <string name="background_online_failed">Не удалось продолжить работу в фоне. Попробуйте «Оставаться онлайн» ниже.</string>
+    <string name="turn_off_keep_online_in_background">Выключить фоновый режим</string>
+    <string name="enable_desktop_access">Включить доступ с компьютера</string>
+    <string name="disable_desktop_access">Выключить доступ с компьютера</string>
 </resources>

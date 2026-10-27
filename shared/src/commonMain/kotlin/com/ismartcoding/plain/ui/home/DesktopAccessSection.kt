@@ -2,7 +2,9 @@ package com.ismartcoding.plain.ui.home
 
 import com.ismartcoding.plain.ui.theme.PlainTheme
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -11,23 +13,22 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.access_settings
-import com.ismartcoding.plain.i18n.desktop_access
+import com.ismartcoding.plain.i18n.home_remote_access
 import com.ismartcoding.plain.i18n.desktop_access_desc
 import com.ismartcoding.plain.ui.resources.devices as ui_drawable_devices
-import com.ismartcoding.plain.i18n.open_web_address
+import com.ismartcoding.plain.i18n.desktop_access_instructions
 import com.ismartcoding.plain.ui.base.PCard
-import com.ismartcoding.plain.ui.base.PDivider
 import com.ismartcoding.plain.ui.base.PListItem
+import com.ismartcoding.plain.ui.base.PTextButton
 import androidx.compose.material3.Switch
 import com.ismartcoding.plain.Prefs
-import com.ismartcoding.plain.ui.base.VerticalSpace
-import com.ismartcoding.plain.ui.web.components.WebAddressPager
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
 import com.ismartcoding.plain.ui.state.launchSafe
 import com.ismartcoding.plain.ui.settings.DesktopAccessSettingsViewModel
@@ -46,34 +47,40 @@ fun DesktopAccessSection(navController: NavHostController) {
     val onlineCount by onlineClientIds.map { it.size }.collectAsState(0)
 
     PCard(modifier = Modifier.padding(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN)) {
-        PListItem(icon = UiRes.drawable.ui_drawable_devices, title = stringResource(Res.string.desktop_access)) {
+        PListItem(icon = UiRes.drawable.ui_drawable_devices, title = stringResource(Res.string.home_remote_access)) {
             Switch(checked = desktopAccessEnabled, onCheckedChange = { enable ->
                 scope.launchSafe {
                     setDesktopAccessEnabled(enable)
                 }
             })
         }
-        if (desktopAccessEnabled && onlineCount > 0) {
-            OnlineSessionsIndicator(
-                count = onlineCount,
-                onClick = { navController.navigate(Routing.Connections) })
-        } else {
-            Text(
-                text = stringResource(if (desktopAccessEnabled) Res.string.open_web_address else Res.string.desktop_access_desc),
-                style = MaterialTheme.typography.tipsText(),
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
-        }
+        Text(
+            text = stringResource(if (desktopAccessEnabled) Res.string.desktop_access_instructions else Res.string.desktop_access_desc),
+            style = MaterialTheme.typography.tipsText(),
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
         if (desktopAccessEnabled) {
             val webVM: DesktopAccessSettingsViewModel = viewModel { DesktopAccessSettingsViewModel() }
             val lanIpv4Addresses by webVM.lanIpv4Addresses.collectAsState()
             LaunchedEffect(webVM) { webVM.observeNetworkAddresses() }
-            lanIpv4Addresses?.let { WebAddressPager(lanIpv4Addresses = it) }
+            lanIpv4Addresses?.let { HomeWebAddresses(lanIpv4Addresses = it) }
         }
-        VerticalSpace(8.dp)
-        PDivider(modifier = Modifier.padding(start = 16.dp))
-        PListItem(modifier = Modifier.clickable {
-            navController.navigate(Routing.DesktopAccessSettings)
-        }, title = stringResource(Res.string.access_settings), showMore = true)
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.weight(1f)) {
+                if (desktopAccessEnabled && onlineCount > 0) {
+                    OnlineSessionsIndicator(
+                        count = onlineCount,
+                        onClick = { navController.navigate(Routing.Connections) },
+                    )
+                }
+            }
+            PTextButton(
+                text = stringResource(Res.string.access_settings),
+                onClick = { navController.navigate(Routing.DesktopAccessSettings) },
+            )
+        }
     }
 }

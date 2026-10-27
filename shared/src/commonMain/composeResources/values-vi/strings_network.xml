@@ -30,7 +30,6 @@
     <string name="http_server_error">Máy chủ HTTP không được khởi động. Vui lòng khởi động lại PlainApp và thử lại.</string>
     <string name="relaunch_app">Khởi chạy lại ứng dụng</string>
     <string name="require_confirmation">Yêu cầu xác nhận</string>
-    <string name="plainapp_service_required_for_chat">Vui lòng khởi động PlainApp Dịch vụ để sử dụng Trò chuyện.</string>
     <string name="desktop_access">Truy cập máy tính</string>
     <string name="http_port">Cổng HTTP</string>
     <string name="https_port">Cổng HTTPS</string>
@@ -52,7 +51,6 @@
     <string name="web_url">URL Web</string>
     <string name="auth_dev_token_tips">Clients phải bao gồm cả c-id: &lt;client_id&gt; và Authorization: Bearer &lt;token&gt; trong tiêu đề yêu cầu, hoặc sử dụng cùng một cặp để mã hóa payload API. Nếu token được cung cấp trong tiêu đề yêu cầu, phản hồi sẽ được trả về ở dạng văn bản thuần túy.</string>
     <string name="browser_https_error_tips">Nếu bạn thấy lỗi "Kết nối của bạn không riêng tư", đơn giản là nhấn vào nút "Nâng cao" và nhấn vào nút "Tiếp tục tới …", sau đó Chrome sẽ tin tưởng vào URL này cho phần còn lại của phiên duyệt.</string>
-    <string name="plainapp_service_is_running">PlainApp Dịch vụ đang chạy</string>
     <string name="screen_mirror_service_is_running">Dịch vụ phản chiếu màn hình đang chạy</string>
     <string name="screen_mirror_audio_permission_settings_message">Quyền micro đang bị tắt. Hãy bật trong Cài đặt để phản chiếu âm thanh hệ thống.</string>
     <string name="mdns_hostname">Tên máy chủ mDNS</string>
@@ -63,9 +61,6 @@
     <string name="restart_app_message">Gần xong! Chỉ cần nhấn "Khởi động lại ứng dụng" để thực hiện.</string>
     <string name="access_phone_web">Truy cập điện thoại của bạn từ trình duyệt máy tính.</string>
     <string name="scan_qrcode_to_access_web">Quét mã QR để truy cập địa chỉ web</string>
-    <string name="plainapp_service_off">PlainApp Dịch vụ TẮT</string>
-    <string name="plainapp_service_on">PlainApp Dịch vụ BẬT</string>
-    <string name="plainapp_service_off_desc">Khởi động PlainApp Dịch vụ để sử dụng Truy cập máy tính, Trò chuyện và Phát không dây.</string>
     <string name="collapse_section">Thu gọn</string>
     <string name="expand_section">Mở rộng</string>
     <string name="more_settings">Cài đặt khác</string>
@@ -73,9 +68,6 @@
     <string name="ready">Sẵn sàng</string>
     <string name="permission_settings">Cài đặt quyền</string>
     <string name="desktop_access_desc">Quản lý điện thoại của bạn từ máy tính trên cùng một mạng.</string>
-    <string name="home_web_easy_hint">Nhấn để bắt đầu</string>
-    <string name="home_web_easy_loading">Vui lòng chờ…</string>
-    <string name="plainapp_service_failed">Không thể khởi động</string>
     <string name="last_active">Lần cuối hoạt động: %1$s</string>
     <string name="revoke_session">Thu hồi phiên này</string>
     <string name="how_to_use">Cách sử dụng</string>
@@ -132,4 +124,17 @@
     <string name="select_private_key_file">Chọn tệp khóa riêng</string>
     <string name="ssl_certificate_replaced">Đã thay chứng chỉ SSL</string>
     <string name="try_more_addresses">Không kết nối được? Thử các địa chỉ khác</string>
+    <string name="desktop_access_instructions">Kết nối hai thiết bị với cùng mạng Wi-Fi, rồi mở địa chỉ này trong trình duyệt trên máy tính.</string>
+    <string name="home_remote_access">Truy cập từ xa</string>
+    <string name="home_try_other_addresses">Thử địa chỉ khác</string>
+    <string name="keep_online_in_background">Duy trì trực tuyến trong nền</string>
+    <string name="keep_online_in_background_desc">Giữ kết nối khi bạn rời ứng dụng.</string>
+    <string name="connection_keeps_dropping">Kết nối liên tục bị ngắt?</string>
+    <string name="connection_keeps_dropping_help">Một số điện thoại tạm dừng ứng dụng chạy nền. Hãy thử giữ PlainApp mở với màn hình tối.</string>
+    <string name="expanded">Đã mở rộng</string>
+    <string name="collapsed">Đã thu gọn</string>
+    <string name="background_online_failed">Không thể tiếp tục chạy trong nền. Hãy thử “Giữ trực tuyến” bên dưới.</string>
+    <string name="turn_off_keep_online_in_background">Tắt chế độ chạy nền</string>
+    <string name="enable_desktop_access">Bật truy cập từ máy tính</string>
+    <string name="disable_desktop_access">Tắt truy cập từ máy tính</string>
 </resources>

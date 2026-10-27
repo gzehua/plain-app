@@ -134,6 +134,8 @@ fun HomePage(
                     }
                 }
                 item {
+                    DesktopAccessSection(navController)
+                    VerticalSpace(16.dp)
                     PlainAppServiceSection(
                         backgroundServiceEnabled = backgroundServiceEnabled,
                         foregroundServiceState = foregroundServiceState,
@@ -144,10 +146,8 @@ fun HomePage(
                         onStayOnline = { showStayOnlineOverlay = true },
                     )
                     VerticalSpace(16.dp)
-                    DesktopAccessSection(navController)
-                    VerticalSpace(16.dp)
                     DlnaReceiverSection(navController)
-                    VerticalSpace(dp = 16.dp)
+                    VerticalSpace(16.dp)
                 }
                 item {
                     BottomSpace(paddingValues)

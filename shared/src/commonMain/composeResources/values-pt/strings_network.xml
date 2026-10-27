@@ -30,7 +30,6 @@
     <string name="http_server_error">O servidor HTTP não está iniciado. Reinicie o PlainApp e tente novamente. Certifique-se de que não existem outras aplicações a ocupar as portas HTTP ou HTTPS. Se o problema persistir, forneça mais detalhes sobre o problema ao contactar support@plainapp.app.</string>
     <string name="relaunch_app">Reiniciar aplicativo</string>
     <string name="require_confirmation">Exigir confirmação</string>
-    <string name="plainapp_service_required_for_chat">Inicie o PlainApp Serviço para usar o Bate-papo.</string>
     <string name="desktop_access">Acesso desktop</string>
     <string name="http_port">Porta HTTP</string>
     <string name="https_port">Porta HTTPS</string>
@@ -52,7 +51,6 @@
     <string name="web_url">URL da Web</string>
     <string name="auth_dev_token_tips">Os clientes devem incluir tanto c-id: &lt;client_id&gt; quanto Authorization: Bearer &lt;token&gt; nos cabeçalhos da solicitação, ou usar o mesmo par para criptografar o payload da API. Se o token for fornecido nos cabeçalhos da solicitação, a resposta será retornada em texto simples.</string>
     <string name="browser_https_error_tips">Se você ver o erro "Sua conexão não é particular", clique no botão "Avançado" e clique no botão "Prosseguir para...", então o Chrome confiará nesta URL pelo restante da sessão do navegador.</string>
-    <string name="plainapp_service_is_running">PlainApp Serviço em execução</string>
     <string name="screen_mirror_service_is_running">O serviço de espelhamento de tela está em execução</string>
     <string name="screen_mirror_audio_permission_settings_message">A permissão do microfone está desativada. Ative-a nas Configurações para espelhar o áudio do sistema.</string>
     <string name="mdns_hostname">Nome de host mDNS</string>
@@ -63,9 +61,6 @@
     <string name="restart_app_message">Quase lá! Apenas toque em "Reiniciar APP" para que as alterações tenham efeito.</string>
     <string name="access_phone_web">Acesse seu telefone a partir de um navegador de computador.</string>
     <string name="scan_qrcode_to_access_web">Digitalize o código QR para acessar o endereço da web</string>
-    <string name="plainapp_service_off">PlainApp Serviço DESLIGADO</string>
-    <string name="plainapp_service_on">PlainApp Serviço LIGADO</string>
-    <string name="plainapp_service_off_desc">Inicie o PlainApp Serviço para usar Acesso desktop, Bate-papo e Transmissão sem fio.</string>
     <string name="collapse_section">Recolher</string>
     <string name="expand_section">Expandir</string>
     <string name="more_settings">Mais configurações</string>
@@ -73,9 +68,6 @@
     <string name="ready">Pronto</string>
     <string name="permission_settings">Configurações de permissões</string>
     <string name="desktop_access_desc">Gerencie seu telefone pelo seu computador na mesma rede.</string>
-    <string name="home_web_easy_hint">Toque para iniciar</string>
-    <string name="home_web_easy_loading">Aguarde…</string>
-    <string name="plainapp_service_failed">Não foi possível iniciar</string>
     <string name="last_active">Última atividade: %1$s</string>
     <string name="revoke_session">Revogar esta sessão</string>
     <string name="how_to_use">Como usar</string>
@@ -132,4 +124,17 @@
     <string name="select_private_key_file">Selecionar arquivo de chave privada</string>
     <string name="ssl_certificate_replaced">Certificado SSL substituído</string>
     <string name="try_more_addresses">Não conecta? Tente outros endereços</string>
+    <string name="desktop_access_instructions">Ligue os dois dispositivos à mesma rede Wi-Fi e abra este endereço no navegador do computador.</string>
+    <string name="home_remote_access">Acesso remoto</string>
+    <string name="home_try_other_addresses">Tentar outros endereços</string>
+    <string name="keep_online_in_background">Manter online em segundo plano</string>
+    <string name="keep_online_in_background_desc">Mantenha a ligação ao sair da aplicação.</string>
+    <string name="connection_keeps_dropping">A ligação está sempre a cair?</string>
+    <string name="connection_keeps_dropping_help">Alguns telemóveis suspendem as aplicações em segundo plano. Tente manter o PlainApp aberto com o ecrã escuro.</string>
+    <string name="expanded">Expandido</string>
+    <string name="collapsed">Recolhido</string>
+    <string name="background_online_failed">Não foi possível continuar em segundo plano. Experimente «Manter online» abaixo.</string>
+    <string name="turn_off_keep_online_in_background">Desativar o modo em segundo plano</string>
+    <string name="enable_desktop_access">Ativar acesso pelo computador</string>
+    <string name="disable_desktop_access">Desativar acesso pelo computador</string>
 </resources>

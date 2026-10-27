@@ -30,7 +30,6 @@
     <string name="http_server_error">HTTP सर्वर शुरू नहीं हुआ है। PlainApp को फिर से चालने का प्रयास करें और पुन: प्रयास करें। सुनिश्चित करें कि HTTP या HTTPS पोर्ट पर कोई अन्य एप्लिकेशन नहीं है। यदि समस्या बरकरार रहती है, तो कृपया support@plainapp.app पर समस्या के बारे में अधिक विवरण प्रदान करें।</string>
     <string name="relaunch_app">ऐप फिर से चालू करें</string>
     <string name="require_confirmation">पुष्टिकरण की आवश्यकता है</string>
-    <string name="plainapp_service_required_for_chat">चैट का उपयोग करने के लिए कृपया PlainApp सेवा शुरू करें।</string>
     <string name="desktop_access">डेस्कटॉप एक्सेस</string>
     <string name="http_port">HTTP पोर्ट</string>
     <string name="https_port">HTTPS पोर्ट</string>
@@ -52,7 +51,6 @@
     <string name="web_url">वेब URL</string>
     <string name="auth_dev_token_tips">क्लाइंट को अनुरोध हेडर में c-id: &lt;client_id&gt; और Authorization: Bearer &lt;token&gt; दोनों शामिल करने होंगे, या API पेलोड को एन्क्रिप्ट करने के लिए उसी जोड़े का उपयोग करना होगा। यदि टोकन अनुरोध हेडर में प्रदान किया जाता है, तो प्रतिक्रिया प्लेन टेक्स्ट में लौटाई जाएगी।</string>
     <string name="browser_https_error_tips">अगर आपको "आपका कनेक्शन निजी नहीं है" त्रुटि दिखाई देती है, तो सीधे "उन्नत" बटन पर क्लिक करें और "पर जाएं ..." बटन पर क्लिक करें, तब क्रोम इस URL को ब्राउज़र सत्र के लिए विश्वसनीय बना देगा।</string>
-    <string name="plainapp_service_is_running">PlainApp सेवा चल रहा है</string>
     <string name="screen_mirror_service_is_running">स्क्रीन मिरर सेवा चल रही है</string>
     <string name="screen_mirror_audio_permission_settings_message">माइक्रोफोन अनुमति बंद है। सिस्टम ऑडियो मिरर करने के लिए इसे सेटिंग्स में चालू करें।</string>
     <string name="mdns_hostname">mDNS होस्टनाम</string>
@@ -63,9 +61,6 @@
     <string name="restart_app_message">लगभग हो गया! केवल प्रभावी बनाने के लिए "ऐप फिर से चालना" टैप करें।</string>
     <string name="access_phone_web">कंप्यूटर ब्राउज़र से अपने फ़ोन तक पहुँचें।</string>
     <string name="scan_qrcode_to_access_web">वेब पता तक पहुँचने के लिए QR कोड स्कैन करें</string>
-    <string name="plainapp_service_off">PlainApp सेवा बंद</string>
-    <string name="plainapp_service_on">PlainApp सेवा चालू</string>
-    <string name="plainapp_service_off_desc">डेस्कटॉप एक्सेस, चैट और वायरलेस कास्ट का उपयोग करने के लिए PlainApp सेवा शुरू करें।</string>
     <string name="collapse_section">संकुचित करें</string>
     <string name="expand_section">विस्तार करें</string>
     <string name="more_settings">अधिक सेटिंग्स</string>
@@ -73,9 +68,6 @@
     <string name="ready">तैयार</string>
     <string name="permission_settings">अनुमति सेटिंग्स</string>
     <string name="desktop_access_desc">उसी नेटवर्क पर अपने कंप्यूटर से अपने फ़ोन को प्रबंधित करें।</string>
-    <string name="home_web_easy_hint">शुरू करने के लिए टैप करें</string>
-    <string name="home_web_easy_loading">कृपया प्रतीक्षा करें…</string>
-    <string name="plainapp_service_failed">शुरू नहीं हो सका</string>
     <string name="last_active">अंतिम सक्रिय: %1$s</string>
     <string name="revoke_session">इस सत्र को रद्द करें</string>
     <string name="how_to_use">उपयोग कैसे करें</string>
@@ -132,4 +124,17 @@
     <string name="select_private_key_file">निजी कुंजी फ़ाइल चुनें</string>
     <string name="ssl_certificate_replaced">SSL प्रमाणपत्र बदल दिया गया</string>
     <string name="try_more_addresses">कनेक्ट नहीं हो रहा? अन्य पते आज़माएँ</string>
+    <string name="desktop_access_instructions">दोनों डिवाइस एक ही Wi-Fi से जोड़ें और कंप्यूटर के ब्राउज़र में यह पता खोलें।</string>
+    <string name="home_remote_access">रिमोट एक्सेस</string>
+    <string name="home_try_other_addresses">दूसरे पते आज़माएँ</string>
+    <string name="keep_online_in_background">बैकग्राउंड में ऑनलाइन रहें</string>
+    <string name="keep_online_in_background_desc">ऐप से बाहर जाने पर भी कनेक्शन बनाए रखें।</string>
+    <string name="connection_keeps_dropping">कनेक्शन बार-बार टूट रहा है?</string>
+    <string name="connection_keeps_dropping_help">कुछ फ़ोन बैकग्राउंड में ऐप रोक देते हैं। स्क्रीन अँधेरी करके PlainApp खुला रखने की कोशिश करें।</string>
+    <string name="expanded">विस्तृत</string>
+    <string name="collapsed">संक्षिप्त</string>
+    <string name="background_online_failed">बैकग्राउंड में चलना जारी नहीं रह सका। नीचे “ऑनलाइन रहें” आज़माएँ।</string>
+    <string name="turn_off_keep_online_in_background">बैकग्राउंड मोड बंद करें</string>
+    <string name="enable_desktop_access">कंप्यूटर एक्सेस चालू करें</string>
+    <string name="disable_desktop_access">कंप्यूटर एक्सेस बंद करें</string>
 </resources>
