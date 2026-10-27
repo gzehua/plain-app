@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.events
 
+import com.ismartcoding.plain.rust.native.RustHostReports
 import com.ismartcoding.plain.features.files.ExportFileType
 import com.ismartcoding.plain.features.files.PickFileTag
 import com.ismartcoding.plain.features.files.PickFileType
@@ -11,7 +12,6 @@ import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.platform.media.restartAudioIfPlaying
 import com.ismartcoding.plain.platform.permissions.Permission
-import com.ismartcoding.plain.rust.sendEventToRust
 
 class WindowFocusChangedEvent(val hasFocus: Boolean) : ChannelEvent()
 class ExportFileEvent(val type: ExportFileType, val fileName: String) : ChannelEvent()
@@ -28,7 +28,7 @@ object AppEvents {
                         coMain { restartAudioIfPlaying() }
                     }
                     coIO {
-                        sendEventToRust(HostEvent(EventType.PERMISSIONS_UPDATED, jsonEncode(getGrantedWebPermissionsAsync())))
+                        RustHostReports.permissions(jsonEncode(getGrantedWebPermissionsAsync()))
                     }
                 }
             }

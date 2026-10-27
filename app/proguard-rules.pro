@@ -88,7 +88,6 @@
 -keepclassmembers,allowoptimization enum com.ismartcoding.plain.features.telephony.PhoneType { public static final com.ismartcoding.plain.features.telephony.PhoneType *; }
 -keepclassmembers,allowoptimization enum com.ismartcoding.plain.features.telephony.EmailType { public static final com.ismartcoding.plain.features.telephony.EmailType *; }
 -keepclassmembers,allowoptimization enum com.ismartcoding.plain.features.telephony.PostalType { public static final com.ismartcoding.plain.features.telephony.PostalType *; }
--keepclassmembers,allowoptimization enum com.ismartcoding.plain.events.EventType { public static final com.ismartcoding.plain.events.EventType *; }
 -keepclassmembers,allowoptimization enum com.ismartcoding.plain.features.telephony.WebsiteType { public static final com.ismartcoding.plain.features.telephony.WebsiteType *; }
 -keepclassmembers,allowoptimization enum com.ismartcoding.plain.features.telephony.ImProtocol { public static final com.ismartcoding.plain.features.telephony.ImProtocol *; }
 -keepclassmembers,allowoptimization enum com.ismartcoding.plain.lib.dlna.DlnaMediaType { public static final com.ismartcoding.plain.lib.dlna.DlnaMediaType *; }

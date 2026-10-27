@@ -1,20 +1,16 @@
 package com.ismartcoding.plain.rust
 
-import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.features.images.search.RustImageModels
-import kotlinx.coroutines.test.runTest
+import com.ismartcoding.plain.features.images.search.ImageModelsSnapshot
 import kotlin.test.Test
-import kotlin.test.assertSame
+import kotlin.test.assertEquals
 
 class ImageIndexEventsTest {
-    @Test fun raw_index_progress_does_not_query_a_core_or_replace_the_model_snapshot() = runTest {
-        val before = RustImageModels.snapshot.value
-        repeat(32) { indexed ->
-            RustEventHandler.handleEvent(RustEvent(
-                EventType.IMAGE_INDEX_UPDATED,
-                """{"version":1,"isRunning":true,"totalImages":64,"indexedImages":$indexed,"skippedImages":0,"errorMessage":""}""",
-            ))
-        }
-        assertSame(before, RustImageModels.snapshot.value)
+    @Test fun older_model_snapshots_cannot_replace_newer_state() {
+        val revision = RustImageModels.snapshot.value.version + 2
+        val current = ImageModelsSnapshot(version = revision, indexedImages = 64)
+        RustImageModels.apply(current)
+        RustImageModels.apply(ImageModelsSnapshot(version = revision - 1, indexedImages = 1))
+        assertEquals(current, RustImageModels.snapshot.value)
     }
 }

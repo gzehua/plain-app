@@ -1,13 +1,12 @@
 package com.ismartcoding.plain.ui.pomodoro
 
 import androidx.compose.runtime.mutableStateOf
-import kotlinx.serialization.Serializable
+import com.ismartcoding.plain.api.graphql.models.PomodoroAction
 import com.ismartcoding.plain.models.PomodoroToday
 
 import com.ismartcoding.plain.models.PomodoroState
 
 import com.ismartcoding.plain.features.pomodoro.PomodoroClient
-import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.platform.media.playPomodoroCompletionSound
@@ -20,8 +19,7 @@ internal object PomodoroProjection {
         today.value = PomodoroClient.today()
     }
 
-    suspend fun apply(payload: String) {
-        val event = JsonHelper.jsonDecode<PomodoroAction>(payload)
+    suspend fun apply(event: PomodoroAction) {
         today.value = event.today
         val completed = event.completedState ?: return
         val state = PomodoroState.valueOf(completed)
@@ -41,6 +39,3 @@ internal object PomodoroProjection {
         }
     }
 }
-
-@Serializable
-private data class PomodoroAction(val today: PomodoroToday, val completedState: String? = null)

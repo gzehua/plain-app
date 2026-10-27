@@ -1,5 +1,10 @@
 package com.ismartcoding.plain.ui.audio
 
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.filter
+import com.ismartcoding.plain.rust.graphql.AppSubscriptions
+import com.ismartcoding.plain.rust.graphql.changes
 import com.ismartcoding.plain.features.audio.toPlaylistAudio
 import com.ismartcoding.plain.models.Audio as AudioTrack
 import androidx.compose.runtime.mutableStateOf
@@ -12,8 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.lib.logcat.LogCat
 
 class AudioQueueViewModel : ViewModel() {
@@ -33,16 +36,19 @@ class AudioQueueViewModel : ViewModel() {
 
     init {
         viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
-            RustEventHandler.events.collect { event ->
+            merge(
+                AppSubscriptions.contentChanged.changes().map { false },
+                AppSubscriptions.audioPlaybackChanged.changes().map { true },
+                AppSubscriptions.audioLibraryChanged.changes().map { false },
+            ).collect { playbackChanged ->
                 try {
-                    when (event.type) {
-                        EventType.AUDIO_PLAYBACK_UPDATED -> {
+                    when (playbackChanged) {
+                        true -> {
                             val playback = AudioQueueClient.playback()
                             selectedPath.value = playback.path.orEmpty()
                             selectedMediaId.value = playback.mediaId
                         }
-                        EventType.CONTENT_CHANGED, EventType.AUDIO_LIBRARY_UPDATED -> loadAsync()
-                        else -> Unit
+                        false -> loadAsync()
                     }
                 } catch (cancelled: CancellationException) {
                     throw cancelled

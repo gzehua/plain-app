@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.platform.media
 
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
+import com.ismartcoding.plain.rust.native.RustHostReports
 import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.lib.Channel as AppChannel
 import com.ismartcoding.plain.lib.JsonHelper
@@ -11,7 +10,6 @@ import com.ismartcoding.plain.platform.system.DataType
 import com.ismartcoding.plain.rust.host.audio.AudioCatalogObserver
 import com.ismartcoding.plain.rust.host.audio.MediaCatalogChange
 import com.ismartcoding.plain.rust.host.audio.forwardAudioCatalogChanges
-import com.ismartcoding.plain.rust.sendEventToRust
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,10 +41,7 @@ object MediaStoreAudioCatalogObserver : AudioCatalogObserver {
     override fun observe(scope: CoroutineScope): Job = scope.launch {
         try {
             forwardAudioCatalogChanges(audioCatalogNotifications()) {
-                sendEventToRust(HostEvent(
-                    EventType.MEDIA_CATALOG_CHANGED,
-                    JsonHelper.jsonEncode(MediaCatalogChange(listOf(DataType.AUDIO.value))),
-                ))
+                RustHostReports.mediaCatalogChanged(JsonHelper.jsonEncode(MediaCatalogChange(listOf(DataType.AUDIO.value))))
             }
         } catch (cancelled: CancellationException) {
             throw cancelled

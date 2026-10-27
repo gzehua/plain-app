@@ -3,7 +3,7 @@ use plain_server::native::graphql::NativeGraphqlExecutor;
 use std::ffi::c_char;
 use tokio::runtime::Handle;
 
-fn parts() -> Result<(Handle, NativeGraphqlExecutor), String> {
+pub(super) fn parts() -> Result<(Handle, NativeGraphqlExecutor), String> {
     super::server::with_core(|core| {
         core.server
             .native_graphql()

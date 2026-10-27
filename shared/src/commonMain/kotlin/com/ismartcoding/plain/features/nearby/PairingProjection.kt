@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.features.nearby
 
+import com.ismartcoding.plain.api.graphql.models.PairingSuccessNotice
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
@@ -11,11 +12,13 @@ import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 import com.ismartcoding.plain.features.chat.peer.PeerStatusClient
 
-// Rust broadcasts pairing events to both mobile and web clients; projections must not republish them.
 object PairingProjection {
     suspend fun reconcile() {
         val before = NearbyViewModel.pairingStates.toMap()
         applySnapshot(before, RustPairingRuntime.states().map { it.jsonObject })
+        MainViewModel.pendingPairingRequest.value?.let { request ->
+            if (!RustPairingRuntime.currentRequest(request.fromId, request.signature) && MainViewModel.pendingPairingRequest.value == request) MainViewModel.pendingPairingRequest.value = null
+        }
     }
 
     internal fun applySnapshot(before: Map<String, JsonObject>, states: List<JsonObject>) {
@@ -53,60 +56,16 @@ object PairingProjection {
         }
     }
 
-    suspend fun started(payload: String) {
-        val value = JsonHelper.jsonDecode<PairingStarted>(payload)
-        val id = value.deviceId
-        val generation = value.generation
-        if (!NearbyViewModel.pairingStates.containsKey(generation)) reconcile()
-        val state = NearbyViewModel.pairingStates[generation]?.pairingState() ?: return
-        if (state.deviceId != id || state.phase in terminalPhases) return
-        NearbyViewModel.itemStatus[id] = NearbyItemStatus.PAIRING
-    }
-
-    suspend fun request(payload: String) {
-        val request = JsonHelper.jsonDecode<PairingRequestInput>(payload)
+    suspend fun request(request: PairingRequestInput) {
         if (!RustPairingRuntime.currentRequest(request.fromId, request.signature)) return
         MainViewModel.pendingPairingRequest.value = request
     }
 
     private val terminalPhases = setOf("SUCCEEDED", "FAILED", "CANCELLED")
-    private fun hasActive(id: String): Boolean = NearbyViewModel.pairingStates.values.any {
-        it.pairingState().let { state -> state.deviceId == id && state.phase !in terminalPhases }
-    }
-    private suspend fun reconcileUnknown(id: String) {
-        if (NearbyViewModel.pairingStates.values.none { it.pairingState().deviceId == id }) reconcile()
-    }
-    suspend fun canceled(payload: String) {
-        val id = JsonHelper.jsonDecode<PairingDeviceEvent>(payload).deviceId
-        if (hasActive(id)) return
-        reconcileUnknown(id)
-        if (hasActive(id)) return
-        NearbyViewModel.itemStatus.remove(id)
-        if (MainViewModel.pendingPairingRequest.value?.fromId == id) MainViewModel.pendingPairingRequest.value = null
-    }
-
-    suspend fun success(payload: String) {
-        val value = JsonHelper.jsonDecode<PairingSucceeded>(payload)
+    internal suspend fun success(value: PairingSuccessNotice) {
         val peer = RustPeerStore.getById(value.deviceId) ?: return
         if (!peer.isPaired() || peer.key != value.key) return
         NearbyViewModel.handlePairingSuccess(peer.id)
         PeerStatusClient.reconnectNow("post_pairing")
     }
-
-    suspend fun timeout(payload: String) {
-        val id = JsonHelper.jsonDecode<PairingDeviceEvent>(payload).deviceId
-        if (hasActive(id)) return
-        reconcileUnknown(id)
-        if (hasActive(id)) return
-        NearbyViewModel.itemStatus.remove(id)
-    }
 }
-
-@Serializable
-private data class PairingStarted(val deviceId: String, val generation: String)
-
-@Serializable
-private data class PairingDeviceEvent(val deviceId: String)
-
-@Serializable
-private data class PairingSucceeded(val deviceId: String, val key: String)

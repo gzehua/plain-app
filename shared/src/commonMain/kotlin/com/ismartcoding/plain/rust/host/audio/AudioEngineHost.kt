@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.rust.host.audio
 
+import com.ismartcoding.plain.api.graphql.models.AudioPlaybackChange
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.models.AudioItem
@@ -99,11 +100,9 @@ object AudioEngineHost {
         }.also { pendingReport = it }
     }
 
-    suspend fun restore(value: JsonObject) {
-        val restored = JsonHelper.jsonDecodeFromElement<AudioRestoreReport>(value)
-        restored.error?.let { error(it) }
-        val restoredRevision = requireNotNull(restored.revision)
-        val position = requireNotNull(restored.positionMs)
+    internal suspend fun restore(restored: AudioPlaybackChange) {
+        val restoredRevision = restored.revision
+        val position = restored.positionMs
         require(restoredRevision >= 0 && position >= 0)
         withContext(Dispatchers.Main) {
             mutex.withLock {
@@ -151,9 +150,6 @@ object AudioEngineHost {
     }
     private fun sampleProgress(player: AudioPlayer) = AudioHostReport.Progress(player.currentPath, player.progress.coerceAtLeast(0), revision)
 }
-
-@Serializable
-private data class AudioRestoreReport(val revision: Long? = null, val positionMs: Long? = null, val error: String? = null)
 
 @Serializable
 private data class AudioEngineReport(val path: String, val positionMs: Long, val revision: Long, val loaded: Boolean)

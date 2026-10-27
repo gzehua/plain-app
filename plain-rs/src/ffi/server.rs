@@ -37,7 +37,7 @@ pub extern "C" fn plain_core_start(
 pub extern "C" fn plain_core_stop() {
     if let Ok(mut core) = CORE.lock() {
         if let Some(core) = core.take() {
-            crate::ffi::events::clear();
+            crate::ffi::host::clear();
             crate::ffi::resources::clear();
             core.runtime.block_on(core.server.shutdown());
         }

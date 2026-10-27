@@ -2,7 +2,6 @@ package com.ismartcoding.plain.platform.system
 
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.HttpServerManager
-import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.features.telephony.sms.SmsProviderObserver
 import com.ismartcoding.plain.i18n.Res
@@ -15,7 +14,8 @@ import com.ismartcoding.plain.mdns.MdnsHotspotWatcher
 import com.ismartcoding.plain.platform.network.NetworkEvents
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.Prefs
-import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.rust.graphql.AppSubscriptions
+import com.ismartcoding.plain.rust.graphql.changes
 import com.ismartcoding.plain.rust.RustHttpStatus
 import com.ismartcoding.plain.rust.native.RustNativeBindings
 import com.ismartcoding.plain.services.PNotificationListenerService
@@ -30,8 +30,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onSubscription
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 
 internal object HttpServerResources {
@@ -48,10 +48,11 @@ internal object HttpServerResources {
     fun observe() = scope.launch(start = CoroutineStart.UNDISPATCHED) {
         val httpUpdates = flow<ResourceUpdate> {
             val output = this
-            RustEventHandler.events
+            AppSubscriptions.httpServerChanged
                 .onSubscription { output.emit(HttpStatusUpdate(RustNativeBindings::httpStatus)) }
-                .filter { it.type == EventType.HTTP_SERVER_STATE_CHANGED }
-                .collect { event -> emit(HttpStatusUpdate { event.payload }) }
+                .changes().collect {
+                    emit(HttpStatusUpdate(RustNativeBindings::httpStatus))
+                }
         }
         merge(
             httpUpdates,

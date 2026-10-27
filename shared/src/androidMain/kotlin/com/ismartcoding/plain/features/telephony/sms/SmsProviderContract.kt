@@ -1,9 +1,6 @@
 package com.ismartcoding.plain.features.telephony.sms
 
-import com.ismartcoding.plain.events.SendResultCodes
-
 object SmsProviderContract {
-    const val SEND_RESULT_TIMEOUT = SendResultCodes.TIMEOUT
     const val MMS_PDU_SEND_REQ = 128
     const val MMS_PDU_RETRIEVE_CONF = 132
     const val MMS_CONTENT_FILTER = "m_type IN ($MMS_PDU_SEND_REQ, $MMS_PDU_RETRIEVE_CONF)"

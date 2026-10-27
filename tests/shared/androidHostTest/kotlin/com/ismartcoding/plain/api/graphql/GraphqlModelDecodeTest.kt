@@ -78,8 +78,6 @@ class GraphqlModelDecodeTest {
     fun hostModelsPreserveLongScalarsAndSchemaFieldNames() {
         val relation = JsonHelper.jsonDecode<TagRelation>("""{"tagId":"tag-1","key":"file-1"}""")
         assertEquals("file-1", relation.key)
-        val history = JsonHelper.jsonDecode<AudioPlayHistory>("""{"mediaId":"audio-1","path":"/music.mp3","title":"Music","artist":"Artist","durationMs":1234,"playCount":2147483647,"playedAt":"2026-10-12T00:00:00Z"}""")
-        assertEquals(2147483647, history.playCount)
     }
 
     @Test

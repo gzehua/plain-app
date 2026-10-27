@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.files.stored
 
+import com.ismartcoding.plain.rust.graphql.AppSubscriptions
+import com.ismartcoding.plain.rust.graphql.changes
 import com.ismartcoding.plain.i18n.*
 
 import androidx.compose.foundation.layout.Column
@@ -29,8 +31,6 @@ import com.ismartcoding.plain.ui.media.viewer.previewer.rememberPreviewerState
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.files.stored.components.AppFileListContent
 import com.ismartcoding.plain.ui.state.launchSafe
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.rust.RustEventHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,8 +55,8 @@ fun AppFilesPage(
 
     LaunchedEffect(appFilesVM) {
         launchSafe { appFilesVM.loadAsync() }
-        RustEventHandler.events.collect { event ->
-            if (event.type == EventType.CONTENT_CHANGED) launchSafe { appFilesVM.loadAsync() }.join()
+        AppSubscriptions.contentChanged.changes().collect {
+            launchSafe { appFilesVM.loadAsync() }.join()
         }
     }
 

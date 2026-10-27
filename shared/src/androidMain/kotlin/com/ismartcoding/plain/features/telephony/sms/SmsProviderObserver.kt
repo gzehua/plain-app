@@ -1,15 +1,13 @@
 package com.ismartcoding.plain.features.telephony.sms
 
+import com.ismartcoding.plain.rust.native.RustHostReports
 import android.content.Context
 import android.database.ContentObserver
 import android.net.Uri
 import android.provider.Telephony
-import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.events.SmsProviderChangedData
-import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.rust.sendEventToRust
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -90,12 +88,7 @@ object SmsProviderObserver {
                     flushJob = null
                     changes.drain().ifEmpty { return@launch }
                 }
-                sendEventToRust(
-                    HostEvent(
-                        EventType.SMS_PROVIDER_CHANGED,
-                        JsonHelper.jsonEncode(SmsProviderChangedData(uris)),
-                    ),
-                )
+                RustHostReports.smsProviderChanged(JsonHelper.jsonEncode(SmsProviderChangedData(uris)))
             }
         }
     }

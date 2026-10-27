@@ -16,7 +16,7 @@ object MainViewModel {
 
     val shortcutMediaPath = mutableStateOf<String?>(null)
     val currentRootTab = mutableIntStateOf(0)
-    internal val pendingLoginRequest = mutableStateOf<WebLoginRequestFacts?>(null)
+    val pendingLoginRequest = mutableStateOf<WebLoginRequestFacts?>(null)
     val pendingPairingRequest = mutableStateOf<PairingRequestInput?>(null)
     val pendingChannelInvite = mutableStateOf<Routing.ChannelInviteRequest?>(null)
     val desktopAccessSettingsRequested = mutableStateOf(false)

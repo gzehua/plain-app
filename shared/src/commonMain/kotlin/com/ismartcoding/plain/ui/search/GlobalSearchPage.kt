@@ -1,5 +1,10 @@
 package com.ismartcoding.plain.ui.search
 
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.filter
+import com.ismartcoding.plain.rust.graphql.AppSubscriptions
+import com.ismartcoding.plain.rust.graphql.changes
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,8 +35,6 @@ import com.ismartcoding.plain.ui.base.PAlert
 import com.ismartcoding.plain.ui.audio.AudioQueueViewModel
 import com.ismartcoding.plain.ui.audio.AudioViewModel
 import com.ismartcoding.plain.ui.casting.CastViewModel
-import com.ismartcoding.plain.ui.chat.isPeerUpdate
-import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.ui.files.documents.DocsViewModel
 import com.ismartcoding.plain.ui.feeds.FeedEntriesViewModel
 import com.ismartcoding.plain.ui.search.GlobalSearchAction
@@ -77,9 +80,14 @@ fun GlobalSearchPage(
     // no full reload flash.
     LaunchedEffect(viewModel) {
         viewModel.refreshHits()
-        RustEventHandler.events.collect { event ->
-            if (isPeerUpdate(event.type)) viewModel.refreshHits(GlobalSearchDomain.CHAT)
-        }
+        merge(
+            AppSubscriptions.contentChanged.changes(),
+            AppSubscriptions.messagesCreated.changes(),
+            AppSubscriptions.messagesUpdated.changes(),
+            AppSubscriptions.messagesDeleted.changes(),
+            AppSubscriptions.peersChanged.changes(),
+                AppSubscriptions.channelsChanged.changes(),
+        ).collect { viewModel.refreshHits(GlobalSearchDomain.CHAT) }
     }
 
     // Live suggestions: re-arm the debounce on every keystroke; a submit or a

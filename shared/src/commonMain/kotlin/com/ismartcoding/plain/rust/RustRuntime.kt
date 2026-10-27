@@ -41,8 +41,10 @@ object RustRuntime {
         if (!collectorsStarted) {
             Prefs.load()
             isCoreInitialized = true
-            RustEventHandler.start(scope)
             RustHostApiHandler.start(scope, audioCatalogObserver)
+            com.ismartcoding.plain.rust.graphql.RustGraphqlSubscriptions.start(scope)
+            com.ismartcoding.plain.rust.graphql.AppSubscriptions.start(scope)
+            com.ismartcoding.plain.app.SubscriptionObservers.start(scope)
             collectorsStarted = true
         }
     }

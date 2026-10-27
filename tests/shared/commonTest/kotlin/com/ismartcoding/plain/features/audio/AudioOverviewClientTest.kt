@@ -1,20 +1,18 @@
 package com.ismartcoding.plain.features.audio
 
-import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.api.graphql.models.MediaLibraryChange
+import com.ismartcoding.plain.api.graphql.models.MediaScanProgress
+import com.ismartcoding.plain.rust.graphql.SubscriptionUpdate
 import kotlin.test.*
 
 class AudioOverviewClientTest {
-    @Test
-    fun only_relevant_audio_changes_or_scan_boundaries_refresh_the_summary() {
-        assertTrue(AudioOverviewClient.updatesOverview(EventType.AUDIO_LIBRARY_UPDATED, "{}"))
-        assertTrue(AudioOverviewClient.updatesOverview(EventType.MEDIA_LIBRARY_UPDATED, """{"types":[1]}"""))
-        assertFalse(AudioOverviewClient.updatesOverview(EventType.MEDIA_LIBRARY_UPDATED, """{"types":[3]}"""))
-        assertFalse(AudioOverviewClient.updatesOverview(EventType.MEDIA_SCAN_PROGRESS, """{"state":"RUNNING"}"""))
+    @Test fun only_audio_changes_and_terminal_scan_states_refresh() {
+        assertTrue(audioLibraryChangeRefreshes(SubscriptionUpdate.Attached))
+        assertTrue(audioLibraryChangeRefreshes(SubscriptionUpdate.Data(MediaLibraryChange(listOf(1)))))
+        assertFalse(audioLibraryChangeRefreshes(SubscriptionUpdate.Data(MediaLibraryChange(listOf(3)))))
+        assertFalse(audioScanChangeRefreshes(SubscriptionUpdate.Data(MediaScanProgress(indexed = 0, state = "RUNNING"))))
         for (state in listOf("IDLE", "FAILED", "STOPPED", "PAUSED")) {
-            assertTrue(AudioOverviewClient.updatesOverview(EventType.MEDIA_SCAN_PROGRESS, """{"state":"$state"}"""))
-        }
-        for (type in listOf(EventType.CONTENT_CHANGED, EventType.FEED_SYNC_UPDATED, EventType.PREFS_UPDATED, EventType.MEDIA_ACTION_FINISHED)) {
-            assertFalse(AudioOverviewClient.updatesOverview(type, "must not parse unrelated payloads"))
+            assertTrue(audioScanChangeRefreshes(SubscriptionUpdate.Data(MediaScanProgress(indexed = 0, state = state))))
         }
     }
 }

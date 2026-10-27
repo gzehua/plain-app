@@ -6,8 +6,40 @@ internal actual object RustNativeBindings {
     actual external fun fileIcon(extension: String): String
     actual external fun startCore(dataDir: String, token: String, configJson: String): String
     actual external fun graphql(request: String): String
-    actual external fun next(stream: String): String
-    actual external fun send(action: String, message: String, bytes: ByteArray): String
+    actual external fun graphqlSubscriptionOpen(): Long
+    actual external fun graphqlSubscriptionSend(handle: Long, message: String)
+    actual external fun graphqlSubscriptionRead(handle: Long): String
+    actual external fun graphqlSubscriptionClose(handle: Long)
+    actual external fun reportPairingResponse(payload: String): String
+    actual external fun reportNotification(payload: String): String
+    actual external fun reportImageCatalogChanged(payload: String): String
+    actual external fun reportNetworkInterfacesChanged(payload: String): String
+    actual external fun reportBleAdvertisement(payload: String): String
+    actual external fun reportBleScanState(payload: String): String
+    actual external fun reportBleAdvertisingFacts(payload: String): String
+    actual external fun reportMediaCatalogChanged(payload: String): String
+    actual external fun reportScreenMirrorState(payload: String): String
+    actual external fun reportScreenMirrorCodec(payload: String): String
+    actual external fun reportScreenMirrorAudioGranted(payload: String): String
+    actual external fun reportSmsProviderChanged(payload: String): String
+    actual external fun reportSmsPartSent(payload: String): String
+    actual external fun reportClipboard(payload: String): String
+    actual external fun reportPermissions(payload: String): String
+    actual external fun reportDlnaPosition(payload: String): String
+    actual external fun reportDlnaPlayback(payload: String): String
+    actual external fun reportDlnaSeekConsumed(payload: String): String
+    actual external fun reportDlnaStopped(payload: String): String
+    actual external fun reportAudioStarted(payload: String): String
+    actual external fun reportAudioCompleted(payload: String): String
+    actual external fun reportAudioProgress(payload: String): String
+    actual external fun reportScreenMirrorVideo(payload: ByteArray): String
+    actual external fun reportScreenMirrorAudio(payload: ByteArray): String
+    actual external fun hostNext(): String
+    actual external fun hostReply(message: String): String
+    actual external fun submitThumbnail(token: String, bytes: ByteArray): String
+    actual external fun grantBackgroundExecution(id: String, deadlineMs: Long): String
+    actual external fun revokeBackgroundExecution(id: String): String
+    actual external fun executionStateChanged(): String
     actual external fun uploadChunk(id: String, index: Long, bytes: ByteArray): String
     actual external fun resourceOpen(id: String): String
     actual external fun resourceWrite(id: String, bytes: ByteArray): String

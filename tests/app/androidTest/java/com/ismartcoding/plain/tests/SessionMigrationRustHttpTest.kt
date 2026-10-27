@@ -3,11 +3,11 @@ package com.ismartcoding.plain.tests
 import com.ismartcoding.plain.lib.withIO
 import com.ismartcoding.plain.rust.RustRuntime
 
-import com.ismartcoding.plain.rust.RustEventHandler
+import com.ismartcoding.plain.ui.app.MainViewModel
+import androidx.compose.runtime.snapshotFlow
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.Prefs
-import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.features.sessions.AuthRequest
 import com.ismartcoding.plain.features.sessions.RustSessionStore
 import com.ismartcoding.plain.features.sessions.RustWebLogin
@@ -50,10 +50,7 @@ class SessionMigrationRustHttpTest {
                 Base64Lenient.encode(client.publicKeyEncoded))
             val notification = async(start = CoroutineStart.UNDISPATCHED) {
                 withTimeout(10_000) {
-                    RustEventHandler.events.first {
-                        it.type == EventType.WEB_LOGIN_REQUESTED &&
-                            JsonHelper.jsonDecode<JsonObject>(it.payload)["clientId"]?.jsonPrimitive?.content == id
-                    }
+                    snapshotFlow { MainViewModel.pendingLoginRequest.value }.first { it?.clientId == id }!!
                 }
             }
             http.webSocket("ws://127.0.0.1:${Prefs.httpPort.value}/?cid=$id&auth=1") { socket ->
@@ -61,9 +58,9 @@ class SessionMigrationRustHttpTest {
                 val pending = JsonHelper.jsonDecode<JsonObject>(requireNotNull(chaCha20Decrypt(passwordKey,
                     requireNotNull(withTimeout(10_000) { socket.incoming.receive() }.binary))).decodeToString())
                 assertEquals("PENDING", pending.getValue("status").jsonPrimitive.content)
-                val facts = JsonHelper.jsonDecode<JsonObject>(notification.await().payload)
-                pendingId = facts.getValue("requestId").jsonPrimitive.content
-                val pendingRequest = JsonHelper.jsonDecodeFromElement<AuthRequest>(facts.getValue("request"))
+                val facts = notification.await()
+                pendingId = facts.requestId
+                val pendingRequest = facts.request
                 assertEquals("", pendingRequest.password)
                 RustWebLogin.complete(pendingId)
                 val response = JsonHelper.jsonDecode<JsonObject>(requireNotNull(chaCha20Decrypt(passwordKey,

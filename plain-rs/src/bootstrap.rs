@@ -27,9 +27,8 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             directory,
             std::path::Path::new(&cache_directory),
         )?;
-        let prefs = Arc::new(
-            plain_rs::prefs::Prefs::load(&paths.prefs()).map_err(|e| e.to_string())?,
-        );
+        let prefs =
+            Arc::new(plain_rs::prefs::Prefs::load(&paths.prefs()).map_err(|e| e.to_string())?);
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(2)
             .enable_all()
@@ -42,7 +41,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             Ok((http, _)) => server.port = http,
             Err(error) => eprintln!("HTTP server startup failed: {error}"),
         }
-        crate::ffi::events::install(&runtime, &server)?;
+        crate::ffi::host::install(&runtime, &server)?;
         *guard = Some(crate::ffi::server::Core {
             token: token.into(),
             server,
@@ -52,5 +51,6 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
     let core = guard.as_ref().unwrap();
     Ok(serde_json::json!({
         "logFile":core.server.log_file()?,
-        "sharedPreviewDir":core.server.cache_paths().shared_previews()}).to_string())
+        "sharedPreviewDir":core.server.cache_paths().shared_previews()})
+    .to_string())
 }

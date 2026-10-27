@@ -61,7 +61,7 @@ enum class PostalType(val androidValue: Int) {
     }
 }
 
-enum class EventType(val androidValue: Int) {
+enum class ContactDateType(val androidValue: Int) {
     CUSTOM(0),
     ANNIVERSARY(1),
     BIRTHDAY(2),
@@ -69,7 +69,7 @@ enum class EventType(val androidValue: Int) {
     ;
 
     companion object {
-        fun fromInt(value: Int): EventType = entries.find { it.androidValue == value } ?: CUSTOM
+        fun fromInt(value: Int): ContactDateType = entries.find { it.androidValue == value } ?: CUSTOM
     }
 }
 

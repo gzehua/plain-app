@@ -4,8 +4,40 @@ internal expect object RustNativeBindings {
     fun fileIcon(extension: String): String
     fun startCore(dataDir: String, token: String, configJson: String): String
     fun graphql(request: String): String
-    fun next(stream: String): String
-    fun send(action: String, message: String, bytes: ByteArray): String
+    fun graphqlSubscriptionOpen(): Long
+    fun graphqlSubscriptionSend(handle: Long, message: String)
+    fun graphqlSubscriptionRead(handle: Long): String
+    fun graphqlSubscriptionClose(handle: Long)
+    fun reportPairingResponse(payload: String): String
+    fun reportNotification(payload: String): String
+    fun reportImageCatalogChanged(payload: String): String
+    fun reportNetworkInterfacesChanged(payload: String): String
+    fun reportBleAdvertisement(payload: String): String
+    fun reportBleScanState(payload: String): String
+    fun reportBleAdvertisingFacts(payload: String): String
+    fun reportMediaCatalogChanged(payload: String): String
+    fun reportScreenMirrorState(payload: String): String
+    fun reportScreenMirrorCodec(payload: String): String
+    fun reportScreenMirrorAudioGranted(payload: String): String
+    fun reportSmsProviderChanged(payload: String): String
+    fun reportSmsPartSent(payload: String): String
+    fun reportClipboard(payload: String): String
+    fun reportPermissions(payload: String): String
+    fun reportDlnaPosition(payload: String): String
+    fun reportDlnaPlayback(payload: String): String
+    fun reportDlnaSeekConsumed(payload: String): String
+    fun reportDlnaStopped(payload: String): String
+    fun reportAudioStarted(payload: String): String
+    fun reportAudioCompleted(payload: String): String
+    fun reportAudioProgress(payload: String): String
+    fun reportScreenMirrorVideo(payload: ByteArray): String
+    fun reportScreenMirrorAudio(payload: ByteArray): String
+    fun hostNext(): String
+    fun hostReply(message: String): String
+    fun submitThumbnail(token: String, bytes: ByteArray): String
+    fun grantBackgroundExecution(id: String, deadlineMs: Long): String
+    fun revokeBackgroundExecution(id: String): String
+    fun executionStateChanged(): String
     fun uploadChunk(id: String, index: Long, bytes: ByteArray): String
     fun resourceOpen(id: String): String
     fun resourceWrite(id: String, bytes: ByteArray): String

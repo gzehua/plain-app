@@ -37,8 +37,9 @@ internal object RustDlnaSender {
     fun startScan() { coIO { call(CastCommand.StartScan) } }
     fun stopScan() { coIO { call(CastCommand.StopScan) } }
 
-    fun apply(row: JsonObject) {
-        val state = JsonHelper.jsonDecodeFromElement<CastSnapshot>(row)
+    fun apply(row: JsonObject) = apply(JsonHelper.jsonDecodeFromElement<CastSnapshot>(row))
+
+    internal fun apply(state: CastSnapshot) {
         projectionLock.withLock {
             if (state.version < version) return@withLock
             version = state.version

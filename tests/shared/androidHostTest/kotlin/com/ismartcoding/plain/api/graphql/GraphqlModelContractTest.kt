@@ -12,7 +12,6 @@ import com.ismartcoding.plain.models.AppFile
 import com.ismartcoding.plain.models.Audio
 import com.ismartcoding.plain.models.AudioFileInfo
 import com.ismartcoding.plain.models.AudioItem
-import com.ismartcoding.plain.models.AudioPlayHistory
 import com.ismartcoding.plain.models.AudioPlayback
 import com.ismartcoding.plain.models.AudioPlaylist
 import com.ismartcoding.plain.models.Bookmark
@@ -108,7 +107,6 @@ class GraphqlModelContractTest {
             "Audio" to Audio.serializer().descriptor,
             "AudioFileInfo" to AudioFileInfo.serializer().descriptor,
             "AudioItem" to AudioItem.serializer().descriptor,
-            "AudioPlayHistory" to AudioPlayHistory.serializer().descriptor,
             "AudioPlayback" to AudioPlayback.serializer().descriptor,
             "AudioPlaylist" to AudioPlaylist.serializer().descriptor,
             "Bookmark" to Bookmark.serializer().descriptor,

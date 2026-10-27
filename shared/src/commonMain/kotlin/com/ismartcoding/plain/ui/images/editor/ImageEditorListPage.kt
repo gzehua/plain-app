@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.images.editor
 
+import com.ismartcoding.plain.rust.graphql.AppSubscriptions
+import com.ismartcoding.plain.rust.graphql.changes
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -40,8 +42,6 @@ import com.ismartcoding.plain.lib.withIO
 import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.plus as ui_drawable_plus
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.rust.RustEventHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,8 +58,8 @@ fun ImageEditorListPage(
 
     LaunchedEffect(vm) {
         launch { vm.loadAsync() }
-        RustEventHandler.events.collect { event ->
-            if (event.type == EventType.CONTENT_CHANGED) vm.loadAsync()
+        AppSubscriptions.contentChanged.changes().collect {
+            vm.loadAsync()
         }
     }
 

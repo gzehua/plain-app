@@ -1,5 +1,10 @@
 package com.ismartcoding.plain.ui.web
 
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.filter
+import com.ismartcoding.plain.rust.graphql.AppSubscriptions
+import com.ismartcoding.plain.rust.graphql.changes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -20,7 +25,6 @@ import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.platform.setClipboardText
@@ -42,7 +46,6 @@ import com.ismartcoding.plain.ui.theme.PlainTheme
 import kotlinx.coroutines.launch
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.delete_forever as ui_drawable_delete_forever
-import com.ismartcoding.plain.rust.RustEventHandler
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -55,9 +58,10 @@ fun ClipboardHistoryPage(
 
     LaunchedEffect(vm) {
         launch { vm.loadAsync() }
-        RustEventHandler.events.collect { event ->
-            if (event.type == EventType.H_CLIPBOARD_HISTORY_UPDATED || event.type == EventType.CONTENT_CHANGED) vm.loadAsync()
-        }
+        merge(
+            AppSubscriptions.contentChanged.changes(),
+            AppSubscriptions.clipboardHistoryChanged.changes(),
+        ).collect { vm.loadAsync() }
     }
 
     val refreshLayoutState = rememberRefreshLayoutState {

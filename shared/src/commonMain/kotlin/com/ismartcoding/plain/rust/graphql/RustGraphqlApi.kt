@@ -14,7 +14,15 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+
 object RustGraphqlApi {
+    inline fun <reified T> subscribe(request: GraphqlRequest): Flow<GraphqlResult<T>> =
+        RustGraphqlSubscriptions.subscribe(request).map { response ->
+            GraphqlResult(response.data?.let { JsonHelper.jsonDecodeFromElement<T>(it) }, response.errors)
+        }
+
     suspend inline fun <reified T> readSavedValue(key: String, default: T): T {
         val value = graphql(Query.savedValue(key)).getValue("savedValue")
         return if (value == JsonNull) default else JsonHelper.jsonDecodeFromElement(value)

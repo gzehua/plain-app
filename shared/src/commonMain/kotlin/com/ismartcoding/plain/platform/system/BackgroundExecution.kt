@@ -1,17 +1,9 @@
 package com.ismartcoding.plain.platform.system
 
-import com.ismartcoding.plain.rust.RustEventHandler
-import com.ismartcoding.plain.rust.sendEventToRust
-
-import kotlinx.serialization.Serializable
-
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
-import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.rust.RustRuntime
+import com.ismartcoding.plain.rust.native.RustNativeApi
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.first
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -19,6 +11,7 @@ object BackgroundExecution {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val lock = PlatformLock()
     private val jobs = mutableMapOf<String, Job>()
+    private val completions = mutableMapOf<String, CompletableDeferred<Boolean>>()
 
     @OptIn(ExperimentalUuidApi::class)
     fun begin(deadlineMs: Long, completed: (Boolean) -> Unit): String {
@@ -49,23 +42,26 @@ object BackgroundExecution {
     fun cancel(id: String) { lock.withLock { jobs[id] }?.cancel() }
 
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun run(deadlineMs: Long, id: String = Uuid.random().toString()): Boolean = coroutineScope {
+    suspend fun run(deadlineMs: Long, id: String = Uuid.random().toString()): Boolean {
         RustRuntime.start()
-        val finished = async(start = CoroutineStart.UNDISPATCHED) {
-            val event = RustEventHandler.events.first { event ->
-                event.type == EventType.BACKGROUND_EXECUTION_FINISHED && JsonHelper.jsonDecode<ExecutionResult>(event.payload).id == id
-            }
-            requireNotNull(JsonHelper.jsonDecode<ExecutionResult>(event.payload).success)
+        val finished = CompletableDeferred<Boolean>()
+        lock.withLock {
+            check(id !in completions) { "Background execution ID already active" }
+            completions[id] = finished
         }
-        try {
+        return try {
             withGrant(
-                grant = { sendEventToRust(HostEvent(EventType.BACKGROUND_EXECUTION_GRANTED, JsonHelper.jsonEncode(ExecutionGrant(id, deadlineMs)))) },
+                grant = { RustNativeApi.grantBackgroundExecution(id, deadlineMs) },
                 awaitCompletion = { finished.await() },
-                revoke = { sendEventToRust(HostEvent(EventType.BACKGROUND_EXECUTION_REVOKED, JsonHelper.jsonEncode(ExecutionRevocation(id)))) },
+                revoke = { RustNativeApi.revokeBackgroundExecution(id) },
             )
         } finally {
-            withContext(NonCancellable) { finished.cancelAndJoin() }
+            lock.withLock { completions.remove(id) }
         }
+    }
+
+    internal fun complete(id: String, success: Boolean) {
+        lock.withLock { completions[id] }?.complete(success)
     }
 
     internal suspend fun withGrant(grant: suspend () -> Unit, awaitCompletion: suspend () -> Boolean, revoke: suspend () -> Unit): Boolean {
@@ -84,19 +80,10 @@ object BackgroundExecution {
     fun executionStateChanged() {
         if (!RustRuntime.isCoreInitialized) return
         scope.launch {
-            try { sendEventToRust(HostEvent(EventType.EXECUTION_STATE_CHANGED, "{}")) }
+            try { RustNativeApi.executionStateChanged() }
             catch (error: Exception) { LogCat.e("Execution state report failed", error) }
         }
     }
 }
 
 internal expect suspend fun scheduleBackgroundWake(atMs: Long?)
-
-@Serializable
-private data class ExecutionResult(val id: String? = null, val success: Boolean? = null)
-
-@Serializable
-private data class ExecutionGrant(val id: String, val deadlineMs: Long)
-
-@Serializable
-private data class ExecutionRevocation(val id: String)

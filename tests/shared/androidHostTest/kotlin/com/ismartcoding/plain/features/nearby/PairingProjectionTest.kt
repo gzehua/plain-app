@@ -21,15 +21,11 @@ class PairingProjectionTest {
     @Test
     fun cachedGenerationsProjectWithoutANativeBridgeAndOldEventsCannotClearNewWork() = runBlocking {
         PairingProjection.applyState(state("first", "STARTING"))
-        PairingProjection.started("""{"deviceId":"peer","generation":"first"}""")
-        assertEquals(NearbyItemStatus.PAIRING, NearbyViewModel.itemStatus["peer"])
+        assertEquals(NearbyItemStatus.STARTING, NearbyViewModel.itemStatus["peer"])
         PairingProjection.applyState(state("first", "CANCELLED"))
         PairingProjection.applyState(state("second", "STARTING"))
-        PairingProjection.canceled("""{"deviceId":"peer","generation":"first"}""")
-        PairingProjection.timeout("""{"deviceId":"peer","generation":"first"}""")
         assertEquals(NearbyItemStatus.STARTING, NearbyViewModel.itemStatus["peer"])
         PairingProjection.applyState(state("second", "SUCCEEDED"))
-        PairingProjection.started("""{"deviceId":"peer","generation":"second"}""")
         assertEquals(NearbyItemStatus.PAIRED, NearbyViewModel.itemStatus["peer"])
     }
 

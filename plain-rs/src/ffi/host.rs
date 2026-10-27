@@ -13,6 +13,12 @@ pub(crate) fn install(
 ) -> Result<(), String> {
     let _entered = runtime.enter();
     let host = Arc::new(server.host_events()?);
+    let callbacks = host.clone();
+    runtime.spawn(async move {
+        if let Err(error) = callbacks.observe_session_callbacks().await {
+            eprintln!("Session host callbacks failed: {error}");
+        }
+    });
     let changes = Arc::new(tokio::sync::Notify::new());
     let receiver = changes.clone();
     let weak = Arc::downgrade(&host);
@@ -46,53 +52,30 @@ pub(super) fn bridge() -> Result<(Handle, Arc<HostEvents>), String> {
         .lock()
         .map_err(|e| e.to_string())?
         .clone()
-        .ok_or("Rust event bridge not initialized".into())
+        .ok_or("Rust host bridge not initialized".into())
 }
-fn next(stream: &str) -> Result<String, String> {
-    let (runtime, bridge) = bridge()?;
+fn next() -> Result<String, String> {
+    let (runtime, host) = bridge()?;
     runtime.block_on(async {
-        let result = tokio::time::timeout(std::time::Duration::from_secs(1), async {
-            match stream {
-                "host" => Ok(bridge.next_request().await),
-                "events" => Ok(bridge.next_event().await),
-                _ => Err("Unknown Rust event stream".to_string()),
-            }
-        })
-        .await;
-        match result {
+        match tokio::time::timeout(std::time::Duration::from_secs(1), host.next_request()).await {
             Err(_) => Ok(String::new()),
-            Ok(Ok(Some(value))) => Ok(value.to_string()),
-            Ok(Ok(None)) => Err("Rust event stream closed".into()),
-            Ok(Err(e)) => Err(e),
+            Ok(Some(value)) => Ok(value.to_string()),
+            Ok(None) => Err("Rust host stream closed".into()),
         }
     })
 }
-fn send(action: &str, message: &str, bytes: Vec<u8>) -> Result<(), String> {
-    let (runtime, bridge) = bridge()?;
-    match action {
-        "reply" => bridge.reply(serde_json::from_str(message).map_err(|e| e.to_string())?),
-        "text" => {
-            let value: serde_json::Value =
-                serde_json::from_str(message).map_err(|e| e.to_string())?;
-            runtime.block_on(
-                bridge.publish_text(
-                    value["type"].as_str().ok_or("Missing event type")?,
-                    value["payload"]
-                        .as_str()
-                        .ok_or("Missing event payload")?
-                        .into(),
-                ),
-            )
-        }
-        "binary" => bridge.publish_binary(message, bytes),
-        "thumbnail" => bridge.submit_thumbnail(message, bytes),
-        _ => Err("Unknown Rust event action".into()),
-    }
+fn reply(message: &str) -> Result<(), String> {
+    let (_, host) = bridge()?;
+    host.reply(serde_json::from_str(message).map_err(|error| error.to_string())?)
+}
+fn thumbnail(token: &str, bytes: Vec<u8>) -> Result<(), String> {
+    let (_, host) = bridge()?;
+    host.submit_thumbnail(token, bytes)
 }
 #[unsafe(no_mangle)]
-pub extern "C" fn plain_events_next(stream: *const c_char) -> *mut c_char {
+pub extern "C" fn plain_host_next() -> *mut c_char {
     c_string(
-        match input(stream).and_then(|s| next(&s)) {
+        match next() {
             Ok(value) => serde_json::json!({"value":value}),
             Err(error) => serde_json::json!({"error":error}),
         }
@@ -100,25 +83,28 @@ pub extern "C" fn plain_events_next(stream: *const c_char) -> *mut c_char {
     )
 }
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn plain_events_send(
-    action: *const c_char,
-    message: *const c_char,
+pub extern "C" fn plain_host_reply(message: *const c_char) -> *mut c_char {
+    c_string(
+        input(message)
+            .and_then(|message| reply(&message))
+            .err()
+            .unwrap_or_default(),
+    )
+}
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn plain_submit_thumbnail(
+    token: *const c_char,
     bytes: *const u8,
     len: usize,
 ) -> *mut c_char {
-    let result = input(action).and_then(|action| {
-        input(message).and_then(|message| {
-            let bytes = if len == 0 {
-                Vec::new()
-            } else if bytes.is_null() {
-                return Err("Null event bytes".into());
-            } else {
-                unsafe { std::slice::from_raw_parts(bytes, len) }.to_vec()
-            };
-            send(&action, &message, bytes)
-        })
-    });
-    c_string(result.err().unwrap_or_default())
+    c_string(
+        input(token)
+            .and_then(|token| {
+                super::values::input_bytes(bytes, len).and_then(|bytes| thumbnail(&token, bytes))
+            })
+            .err()
+            .unwrap_or_default(),
+    )
 }
 #[cfg(target_os = "android")]
 mod android {
@@ -130,13 +116,12 @@ mod android {
         sys::jstring,
     };
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_next(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_hostNext(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
-        stream: JString<'_>,
     ) -> jstring {
         env.with_env(|env| -> jni::errors::Result<_> {
-            let value = match next(&stream.to_string()) {
+            let value = match next() {
                 Ok(value) => value,
                 Err(error) => {
                     env.throw_new(
@@ -152,20 +137,31 @@ mod android {
         .into_raw()
     }
     #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_send(
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_hostReply(
         mut env: EnvUnowned<'_>,
         _: JObject<'_>,
-        action: JString<'_>,
         message: JString<'_>,
+    ) -> jstring {
+        env.with_env(|env| -> jni::errors::Result<_> {
+            env.new_string(reply(&message.to_string()).err().unwrap_or_default())
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+        .into_raw()
+    }
+    #[unsafe(no_mangle)]
+    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_submitThumbnail(
+        mut env: EnvUnowned<'_>,
+        _: JObject<'_>,
+        token: JString<'_>,
         bytes: JByteArray<'_>,
     ) -> jstring {
         env.with_env(|env| -> jni::errors::Result<_> {
-            let result = send(
-                &action.to_string(),
-                &message.to_string(),
-                env.convert_byte_array(&bytes)?,
-            );
-            env.new_string(result.err().unwrap_or_default())
+            let bytes = env.convert_byte_array(&bytes)?;
+            env.new_string(
+                thumbnail(&token.to_string(), bytes)
+                    .err()
+                    .unwrap_or_default(),
+            )
         })
         .resolve::<ThrowRuntimeExAndDefault>()
         .into_raw()

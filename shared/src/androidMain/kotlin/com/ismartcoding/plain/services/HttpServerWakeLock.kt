@@ -11,8 +11,7 @@ import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.coMain
 import kotlinx.coroutines.launch
-import com.ismartcoding.plain.rust.RustEventHandler
-import com.ismartcoding.plain.events.EventType
+import com.ismartcoding.plain.platform.system.WebActivity
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.events.WindowFocusChangedEvent
 import com.ismartcoding.plain.powerManager
@@ -72,8 +71,8 @@ internal class HttpServerWakeLock(private val context: Context) {
                 }
             }
             launch {
-                RustEventHandler.events.collect { event ->
-                    if (event.type == EventType.WEB_REQUEST_RECEIVED) lastActivityMs = System.currentTimeMillis()
+                WebActivity.lastRequest.collect { time ->
+                    if (time > 0) lastActivityMs = time
                 }
             }
             Channel.sharedFlow.collect { event ->

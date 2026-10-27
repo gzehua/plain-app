@@ -2,12 +2,9 @@ package com.ismartcoding.plain.features.chat.channel
 
 import com.ismartcoding.plain.ui.app.MainViewModel
 import com.ismartcoding.plain.ui.navigation.Routing
-import com.ismartcoding.plain.lib.JsonHelper
-import kotlinx.serialization.json.JsonObject
 
 object ChannelSystemMessageReceiver {
-    suspend fun applyCommitted(result: JsonObject) {
-        val event = JsonHelper.jsonDecodeFromElement<ChannelRuntimeEvent>(result)
+    internal suspend fun applyCommitted(event: ChannelRuntimeEvent) {
         event.invite?.let { invite ->
             val channel = snapshotChannelsGraphql().firstOrNull { it.id == invite.channelId }
             if (channel != null) {

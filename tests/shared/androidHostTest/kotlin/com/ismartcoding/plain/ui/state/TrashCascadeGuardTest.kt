@@ -52,7 +52,7 @@ class TrashCascadeGuardTest {
         val helper = source("shared/src/commonMain/kotlin/com/ismartcoding/plain/features/media/actions/MediaActionClient.kt")
         assertTrue(helper.contains("Mutation.mediaAction(action, type.name, query, destDir)"))
         assertTrue(helper.contains("RustGraphqlApi.graphql(request)"))
-        val mutations = source("shared/src/commonMain/kotlin/com/ismartcoding/plain/api/graphql/Mutation.kt")
+        val mutations = source("shared/src/commonMain/kotlin/com/ismartcoding/plain/graphql/Mutation.kt")
         for (method in listOf("trashMediaItems", "restoreMediaItems", "deleteMediaItems", "moveMediaItems")) {
             assertTrue(mutations.contains(method))
         }

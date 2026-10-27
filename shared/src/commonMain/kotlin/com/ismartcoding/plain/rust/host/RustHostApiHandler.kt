@@ -61,13 +61,13 @@ internal object RustHostApiHandler {
                     for (text in requests) {
                         val request = JsonHelper.jsonDecode<RustHostRequest>(text)
                         capacity.acquire()
-                        launch {
+                        launch(start = if (SessionHost.handles(request.method)) CoroutineStart.UNDISPATCHED else CoroutineStart.DEFAULT) {
                             try {
                                 val reply = try {
                                     executeHostRequest(request, exchangeScope, bleAdvertising).encodeReply(request.id)
                                 } catch (cancelled: CancellationException) { throw cancelled }
                                 catch (error: Exception) { encodeHostError(request.id, error) }
-                                val error = RustNativeBindings.send("reply", reply, byteArrayOf())
+                                val error = RustNativeBindings.hostReply(reply)
                                 check(error.isEmpty()) { error }
                             } finally { capacity.release() }
                         }
@@ -85,7 +85,7 @@ internal object RustHostApiHandler {
         }
         scope.launch {
             readRustStream(
-                next = { RustNativeBindings.next("host") },
+                next = { RustNativeBindings.hostNext() },
                 consume = { requests.send(it) },
                 closed = { requests.cancel() },
             )
@@ -111,6 +111,8 @@ internal suspend fun executeHostRequest(
     val method = request.method
     val params = request.params
     return when (method) {
+        "systemWebActivity", "systemWebLoginRequested", "systemWebLoginClosed",
+        "systemWebLoginCompleted" -> SessionHost.handle(method, params)
         "prefsChanged" -> {
             for ((key, value) in params.getValue("values").jsonObject) {
                 Prefs.update(key, value)
@@ -145,7 +147,8 @@ internal suspend fun executeHostRequest(
             positionMs = audioPlayerProgressAsync(),
         ))
         "systemSetClipboard", "systemPermissionFacts", "systemOpenWebSettings",
-        "systemNetworkType", "systemScheduleBackgroundWake", "systemProperties", "systemBatterySample",
+        "systemNetworkType", "systemScheduleBackgroundWake", "systemCompleteBackgroundExecution",
+        "systemProperties", "systemBatterySample",
         "systemCapabilities", "systemClearMediaCache",
         "systemRelaunchApp" -> SystemAppHost.handle(method, params)
         "audioEngineCommand" -> AudioEngineHost.command(params)

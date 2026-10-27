@@ -1,5 +1,7 @@
 package com.ismartcoding.plain.ui.settings
 
+import com.ismartcoding.plain.rust.graphql.changes
+import com.ismartcoding.plain.rust.graphql.AppSubscriptions
 import com.ismartcoding.plain.HttpServerManager
 
 import com.ismartcoding.plain.ui.state.launchSafe
@@ -12,9 +14,7 @@ import com.ismartcoding.plain.i18n.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ismartcoding.plain.Prefs
-import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException
@@ -25,8 +25,8 @@ class DesktopAccessSettingsViewModel : ViewModel() {
     val lanIpv4Addresses = MutableStateFlow<List<String>?>(null)
 
     suspend fun observeNetworkAddresses() {
-        RustEventHandler.events.onSubscription { refreshNetworkAddresses() }.collect { event ->
-            if (event.type == EventType.NETWORK_CHANGED) refreshNetworkAddresses()
+        AppSubscriptions.networkChanged.changes().collect {
+            refreshNetworkAddresses()
         }
     }
 

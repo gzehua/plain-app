@@ -105,7 +105,7 @@ class SystemProviderSerializationTest {
             "shared/src/androidMain/kotlin/com/ismartcoding/plain/rust/host/RustHostApi.android.kt",
             "shared/src/androidMain/kotlin/com/ismartcoding/plain/features/telephony/sms/SmsHelper.kt",
             "shared/src/androidMain/kotlin/com/ismartcoding/plain/features/telephony/sms/SmsConversationHelper.kt",
-            "shared/src/iosMain/kotlin/com/ismartcoding/plain/platform/system/SystemProviders.ios.kt",
+            "shared/src/iosMain/kotlin/com/ismartcoding/plain/rust/host/RustHostApi.ios.kt",
         )
         val manualJson = Regex("""\b(buildJsonObject|buildJsonArray|JSONObject|JSONArray|JsonObject|JsonArray|JsonPrimitive|parseToJsonElement)\s*[(\{]""")
         for (path in sources) {

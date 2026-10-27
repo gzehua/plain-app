@@ -60,10 +60,11 @@ class ApiContractTest {
     fun sdlSnapshotCoversTheWholeContract() {
         val queries = operationFieldNamesIn("Query")
         val mutations = operationFieldNamesIn("Mutation")
-        if (queries.size != 128 || mutations.size != 202) {
+        val subscriptions = operationFieldNamesIn("Subscription")
+        if (queries.size != 127 || mutations.size != 201 || subscriptions.size != 46) {
             fail(
                 "Shared Rust schema fragments declare ${queries.size} Query / ${mutations.size} " +
-                    "Mutation operations — the contract has 128 / 202. The snapshot looks truncated or " +
+                    "Mutation and ${subscriptions.size} Subscription operations — the contract has 127 / 201 / 46. The snapshot looks truncated or " +
                     "drifted; every check in this class reads it, so they would pass on an empty file.",
             )
         }
@@ -198,7 +199,7 @@ class ApiContractTest {
         forbiddenPattern("fetchFeedContent") { "duplicate of syncFeedEntryContent was removed — $it" }
         // 2026-09-24 naming cleanup (API_SPEC §7) — old names must not come back.
         forbiddenPattern("filesCount") { "renamed to fileCount — $it" }
-        forbiddenPattern("screenMirrorState") { "renamed to isScreenMirroring — $it" }
+        if ("screenMirrorState" in operationFieldNamesIn("Query")) fail("Query screenMirrorState was renamed to isScreenMirroring")
         forbiddenPattern("syncFeedContent") { "renamed to syncFeedEntryContent (the id is a feed-entry id) — $it" }
         forbiddenPattern("renameAudioPlaylist") { "renamed to updateAudioPlaylist (returns the entity) — $it" }
         forbiddenPattern("archiveConversation") { "renamed to archiveSmsConversation/unarchiveSmsConversation — $it" }

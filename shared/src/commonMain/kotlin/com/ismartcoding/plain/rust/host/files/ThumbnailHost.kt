@@ -18,7 +18,7 @@ internal object ThumbnailHost {
             request.fileName,
         ) ?: return hostResult()
         val token = request.outputToken
-        val error = RustNativeBindings.send("thumbnail", token, bytes)
+        val error = RustNativeBindings.submitThumbnail(token, bytes)
         check(error.isEmpty()) { error }
         return hostResult(true)
     }

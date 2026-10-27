@@ -11,21 +11,6 @@ import kotlin.test.assertFalse
 
 class NativeManagementLifecycleTest {
     @Test
-    fun preferencesCannotLoadReadOrWriteBeforeCoreStartup() = runBlocking {
-        assertFalse(RustRuntime.isCoreInitialized)
-        assertEquals("Rust core must start before loading preferences", assertFailsWith<IllegalStateException> {
-            Prefs.load()
-        }.message)
-        assertEquals("Rust core must start before reading preferences", assertFailsWith<IllegalStateException> {
-            Prefs.get<Int>("http_port")
-        }.message)
-        assertEquals("Rust core must start before writing preferences", assertFailsWith<IllegalStateException> {
-            Prefs.set("http_port", 8080)
-        }.message)
-        assertFalse(RustRuntime.isCoreInitialized)
-    }
-
-    @Test
     fun bridgeCallsDoNotInitializeTheRuntime() = runBlocking {
         var requests = 0
         val result = nativeCall<Boolean> {

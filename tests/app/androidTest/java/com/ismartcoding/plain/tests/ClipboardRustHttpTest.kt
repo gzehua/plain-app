@@ -1,13 +1,11 @@
 package com.ismartcoding.plain.tests
 
-import com.ismartcoding.plain.rust.sendEventToRust
+import com.ismartcoding.plain.rust.native.RustHostReports
+import com.ismartcoding.plain.events.ClipboardReportData
+import com.ismartcoding.plain.lib.JsonHelper
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.features.clipboard.ClipboardClient
-import com.ismartcoding.plain.events.ClipboardReportData
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
-import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isEnabledAsync
 import org.junit.Assume.assumeTrue
@@ -26,16 +24,14 @@ class ClipboardRustHttpTest {
         val text = "$marker 🌍 100%_ \\ \"quoted\""
         val ids = mutableListOf<String>()
         try {
-            sendEventToRust(HostEvent(EventType.CLIPBOARD_REPORTED,
-                JsonHelper.jsonEncode(ClipboardReportData(text, sensitive = true))))
+            RustHostReports.clipboard(JsonHelper.jsonEncode(ClipboardReportData(text, sensitive = true)))
             val entry = ClipboardClient.getPage(50, 0, marker).single()
             ids += entry.id
             assertEquals(text, entry.text)
             assertEquals("", entry.source)
             assertEquals("", entry.label)
             assertTrue(entry.sensitive)
-            sendEventToRust(HostEvent(EventType.CLIPBOARD_REPORTED,
-                JsonHelper.jsonEncode(ClipboardReportData(text, sensitive = false))))
+            RustHostReports.clipboard(JsonHelper.jsonEncode(ClipboardReportData(text, sensitive = false)))
             assertEquals(1, ClipboardClient.count(marker))
             assertEquals(entry, ClipboardClient.getPage(50, 0, marker).single())
             assertTrue(ClipboardClient.getPage(50, 1, marker).isEmpty())

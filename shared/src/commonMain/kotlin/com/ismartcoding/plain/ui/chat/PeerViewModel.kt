@@ -1,10 +1,14 @@
 package com.ismartcoding.plain.ui.chat
 
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.filter
+import com.ismartcoding.plain.rust.graphql.AppSubscriptions
+import com.ismartcoding.plain.rust.graphql.changes
 import com.ismartcoding.plain.preferences.PrefKeys
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.features.chat.RustChatStore
 import com.ismartcoding.plain.features.chat.peer.PeerManager
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
@@ -13,7 +17,6 @@ import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.models.Peer
 import com.ismartcoding.plain.Prefs
-import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.ui.state.launchSafe
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
@@ -43,9 +46,14 @@ class PeerViewModel : ViewModel() {
     // The consuming page owns this coroutine; hidden pages do not reload peers.
     suspend fun observe() = coroutineScope {
         launch(start = CoroutineStart.UNDISPATCHED) {
-            RustEventHandler.events.collect { event ->
-                if (isPeerUpdate(event.type)) refreshSafely()
-            }
+            merge(
+                AppSubscriptions.contentChanged.changes(),
+                AppSubscriptions.messagesCreated.changes(),
+                AppSubscriptions.messagesUpdated.changes(),
+                AppSubscriptions.messagesDeleted.changes(),
+                AppSubscriptions.peersChanged.changes(),
+                AppSubscriptions.channelsChanged.changes(),
+            ).collect { refreshSafely() }
         }
         refreshSafely()
     }
@@ -83,18 +91,4 @@ class PeerViewModel : ViewModel() {
             .thenByDescending { it.createdAt }
             .thenBy { it.name.lowercase() },
     )
-}
-
-internal fun isPeerUpdate(type: EventType): Boolean = when (type) {
-    EventType.PEER_UPDATED,
-    EventType.PEER_STATUS_UPDATED,
-    EventType.PEER_CONNECTIONS_UPDATED,
-    EventType.CHANNELS_UPDATED,
-    EventType.CONTENT_CHANGED,
-    EventType.PAIRING_SUCCESS,
-    EventType.WEB_LOGIN_COMPLETED,
-    EventType.MESSAGE_CREATED,
-    EventType.MESSAGE_UPDATED,
-    EventType.MESSAGE_DELETED -> true
-    else -> false
 }

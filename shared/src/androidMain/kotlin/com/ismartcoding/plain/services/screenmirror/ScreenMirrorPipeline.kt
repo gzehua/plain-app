@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.services.screenmirror
 
+import com.ismartcoding.plain.rust.native.RustHostReports
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.models.ScreenMirrorQuality
 import android.content.Context
@@ -9,12 +10,9 @@ import android.media.projection.MediaProjection
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import com.ismartcoding.plain.features.screenmirror.ScreenMirrorMode
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.JsonHelper.jsonEncode
 import com.ismartcoding.plain.platform.isUPlus
 import com.ismartcoding.plain.lib.logcat.LogCat
-import com.ismartcoding.plain.rust.sendEventToRust
 import com.ismartcoding.plain.services.ScreenMirrorService
 import com.ismartcoding.plain.models.ScreenMirrorVideoCodec
 import com.ismartcoding.plain.lib.screenmirror.ScreenMirrorCaptureSize
@@ -177,7 +175,7 @@ class ScreenMirrorPipeline(
 
     private fun broadcastConfig() {
         val config = jsonEncode(getScreenMirrorVideoCodec())
-        coIO { sendEventToRust(HostEvent(EventType.SCREEN_MIRROR_VIDEO_CODEC, config)) }
+        coIO { RustHostReports.screenMirrorCodec(config) }
     }
 
     fun requestKeyFrame() {
@@ -211,7 +209,7 @@ class ScreenMirrorPipeline(
             val audio = MediaCodecAudioEncoder(context, projection).also {
                 it.onEncoded = { opus, pts ->
                     val packet = VideoPacket.encode(audioFrameId++, pts, VideoPacket.FLAG_AUDIO, opus)
-                    coIO { sendEventToRust(HostEvent(EventType.SCREEN_MIRROR_AUDIO, packet)) }
+                    coIO { RustHostReports.screenMirrorAudio(packet) }
                 }
                 it.start()
             }
@@ -245,7 +243,7 @@ class ScreenMirrorPipeline(
                 }
                 val flags: Byte = if (isKey) VideoPacket.FLAG_KEY_FRAME else 0
                 val packet = VideoPacket.encode(videoFrameId++, pts, flags, nalu)
-                coIO { sendEventToRust(HostEvent(EventType.SCREEN_MIRROR_VIDEO, packet)) }
+                coIO { RustHostReports.screenMirrorVideo(packet) }
             }
             it.onOverloaded = onOverloaded@{
                 if (lowEndPolicy.onEncoderOverloaded()) {

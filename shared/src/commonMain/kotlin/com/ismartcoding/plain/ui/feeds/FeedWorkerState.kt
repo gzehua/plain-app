@@ -4,14 +4,11 @@ import androidx.compose.runtime.mutableStateMapOf
 import com.ismartcoding.plain.models.FeedSyncState
 import com.ismartcoding.plain.features.feeds.FeedsClient
 import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
-import kotlinx.serialization.Serializable
+import com.ismartcoding.plain.api.graphql.models.FeedSyncUpdate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-
-@Serializable
-internal data class FeedSyncUpdate(val states: List<FeedSyncState>, val removed: List<String>)
 
 object FeedWorkerState {
     private val lock = Mutex()

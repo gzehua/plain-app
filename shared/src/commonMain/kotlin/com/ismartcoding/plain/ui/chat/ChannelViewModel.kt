@@ -1,17 +1,20 @@
 package com.ismartcoding.plain.ui.chat
 
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.filter
+import com.ismartcoding.plain.rust.graphql.AppSubscriptions
+import com.ismartcoding.plain.rust.graphql.changes
 import com.ismartcoding.plain.ui.state.launchSafe
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.features.chat.channel.ChannelManager
 import com.ismartcoding.plain.features.chat.channel.snapshotChannelsGraphql
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.models.ChatChannel
-import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.ui.components.ToastManager
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
@@ -32,11 +35,10 @@ class ChannelViewModel : ViewModel() {
 
     suspend fun observe() = coroutineScope {
         launch(start = CoroutineStart.UNDISPATCHED) {
-            RustEventHandler.events.collect { event ->
-                if (event.type == EventType.CHANNELS_UPDATED || event.type == EventType.CONTENT_CHANGED) {
-                    refreshSafely()
-                }
-            }
+            merge(
+                AppSubscriptions.contentChanged.changes(),
+                AppSubscriptions.channelsChanged.changes(),
+            ).collect { refreshSafely() }
         }
         refreshSafely()
     }

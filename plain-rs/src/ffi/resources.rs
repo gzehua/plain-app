@@ -54,7 +54,7 @@ fn open(id: &str) -> Result<String, String> {
     if id.is_empty() {
         return Err("Missing resource stream id".to_string());
     }
-    let (runtime, events) = super::events::bridge()?;
+    let (runtime, events) = super::host::bridge()?;
     let stream = events.attach_resource(id)?;
     let request = runtime
         .block_on(async { tokio::time::timeout(STREAM_TIMEOUT, stream.next_request()).await });

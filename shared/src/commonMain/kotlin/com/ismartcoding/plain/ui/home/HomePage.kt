@@ -1,8 +1,8 @@
 package com.ismartcoding.plain.ui.home
 
+import com.ismartcoding.plain.rust.graphql.changes
+import com.ismartcoding.plain.rust.graphql.AppSubscriptions
 import com.ismartcoding.plain.platform.network.vpnActive
-import com.ismartcoding.plain.rust.RustEventHandler
-import com.ismartcoding.plain.events.EventType
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -59,8 +59,8 @@ fun HomePage(
 ) {
     var isVpnActive by remember { mutableStateOf(vpnActive()) }
     LaunchedEffect(Unit) {
-        RustEventHandler.events.collect { event ->
-            if (event.type == EventType.NETWORK_CHANGED) isVpnActive = vpnActive()
+        AppSubscriptions.networkChanged.changes().collect {
+            isVpnActive = vpnActive()
         }
     }
     val backgroundServiceEnabled = Prefs.backgroundServiceEnabled.collectAsStateValue()

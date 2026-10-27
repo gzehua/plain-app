@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.services
 
+import com.ismartcoding.plain.rust.native.RustHostReports
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.isDebugBuild
@@ -19,10 +20,8 @@ import com.ismartcoding.plain.platform.system.HttpServerResources
 import com.ismartcoding.plain.platform.system.has
 import com.ismartcoding.plain.extensions.toAppNotification
 import com.ismartcoding.plain.features.permissions.getGrantedWebPermissionsAsync
+import com.ismartcoding.plain.features.notifications.NotificationChange
 import com.ismartcoding.plain.features.notifications.RustNotificationEvents
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
-import com.ismartcoding.plain.rust.sendEventToRust
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -73,7 +72,7 @@ class PNotificationListenerService : NotificationListenerService() {
             } else {
                 notificationActions.remove(n.id)
             }
-            coIO { RustNotificationEvents.publish(if (old == null) EventType.NOTIFICATION_CREATED else EventType.NOTIFICATION_UPDATED, n) }
+            coIO { RustNotificationEvents.publish(if (old == null) NotificationChange.CREATED else NotificationChange.UPDATED, n) }
 
         }
     }
@@ -85,7 +84,7 @@ class PNotificationListenerService : NotificationListenerService() {
             if (old != null) {
                 notifications.remove(old)
                 notificationActions.remove(old.id)
-                coIO { RustNotificationEvents.publish(EventType.NOTIFICATION_DELETED, old) }
+                coIO { RustNotificationEvents.publish(NotificationChange.DELETED, old) }
             }
         }
     }
@@ -128,12 +127,7 @@ class PNotificationListenerService : NotificationListenerService() {
         // in-app toggle involved, so no PermissionsResultEvent ever fires. Push
         // the fresh snapshot so web clients drop their no-permission state.
         coIO {
-            sendEventToRust(
-                HostEvent(
-                    EventType.PERMISSIONS_UPDATED,
-                    JsonHelper.jsonEncode(getGrantedWebPermissionsAsync()),
-                ),
-            )
+            RustHostReports.permissions(JsonHelper.jsonEncode(getGrantedWebPermissionsAsync()))
         }
     }
 

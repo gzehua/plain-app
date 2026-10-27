@@ -1,54 +1,24 @@
 package com.ismartcoding.plain.rust
 
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
-import com.ismartcoding.plain.lib.JsonHelper
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 
 class EventDirectionContractTest {
-    @Test
-    fun wirePacketsUseNamesWithoutNumericAliases() {
-        val packet = JsonHelper.jsonEncodeToElement(mapOf("type" to EventType.SCREEN_MIRROR_VIDEO_CODEC.name, "payload" to "{}"))
-        val kind = packet.jsonObject.getValue("type").jsonPrimitive
-        assertTrue(kind.isString)
-        assertEquals("SCREEN_MIRROR_VIDEO_CODEC", kind.content)
-        assertEquals("{}", packet.jsonObject.getValue("payload").jsonPrimitive.content)
-        val greeting = JsonHelper.jsonDecode<RustEvent>("""{"type":"CONTENT_CHANGED","payload":"{}","reconcile":true}""")
-        assertEquals(EventType.CONTENT_CHANGED, greeting.type)
-        assertTrue(greeting.reconcile)
-        assertTrue(EventType.entries.all { it.name.matches(Regex("[A-Z_]+")) })
-        EventType.entries.forEach { type ->
-            val event = RustEvent(type, "{}")
-            val encoded = JsonHelper.jsonEncodeToElement(event).jsonObject
-            assertEquals(type.name, encoded.getValue("type").jsonPrimitive.content)
-            assertEquals(event, JsonHelper.jsonDecodeFromElement<RustEvent>(encoded))
-        }
-    }
-
-    @Test
-    fun incomingRustHandlersDoNotSendHostEvents() {
+    @Test fun nativeReportsAndSubscriptionsUseSeparateTypedEntrypoints() {
         val root = generateSequence(File(System.getProperty("user.dir"))) { it.parentFile }
             .first { File(it, "shared/src/commonMain").isDirectory }
         val sources = File(root, "shared/src/commonMain/kotlin/com/ismartcoding/plain")
-        val handler = File(sources, "rust/RustEventHandler.kt").readText()
-        val stateUpdates = handler.substringAfter("    internal suspend fun handleEvent(", missingDelimiterValue = "")
-            .substringBefore("\n}\n")
-        assertTrue(stateUpdates.isNotBlank())
-        assertFalse(stateUpdates.contains("HostEvent"))
-        assertFalse(stateUpdates.contains("RustNativeBindings.send"))
-        assertFalse(stateUpdates.contains("sendEventToRust"))
-        for (path in listOf("features/chat/ChatMessageReceiver.kt", "features/nearby/PairingProjection.kt",
-            "features/nearby/RustNearbyDevices.kt", "features/nearby/RustMdnsRuntime.kt",
-            "features/chat/channel/ChannelSystemMessageReceiver.kt", "features/images/search/RustImageModels.kt",
-            "features/dlna/DlnaRendererState.kt", "ui/pomodoro/PomodoroProjection.kt")) {
-            val source = File(sources, path).readText()
-            assertTrue("$path must only update HTTP state locally", !source.contains("HostEvent"))
-        }
+        assertFalse(File(sources, "rust/RustEventHandler.kt").exists())
+        assertFalse(File(sources, "events/HostEvents.kt").exists())
+        val reports = File(sources, "rust/native/RustHostReports.kt").readText()
+        assertTrue(reports.contains("reportScreenMirrorVideo"))
+        assertTrue(reports.contains("reportScreenMirrorAudio"))
+        assertTrue(reports.contains("reportPermissions"))
+        val subscriptions = File(sources, "rust/graphql/RustGraphqlSubscriptions.kt").readText()
+        assertTrue(subscriptions.contains("graphqlSubscriptionOpen"))
+        assertFalse(subscriptions.contains("http://"))
+        assertFalse(subscriptions.contains("https://"))
     }
 }

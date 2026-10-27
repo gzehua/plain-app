@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.receivers
 
-import com.ismartcoding.plain.rust.sendEventToRust
+import com.ismartcoding.plain.rust.native.RustHostReports
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -9,8 +9,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.features.telephony.sms.SmsPartSentReport
 import com.ismartcoding.plain.lib.JsonHelper
 
@@ -25,8 +23,7 @@ class SmsSentReceiver : BroadcastReceiver() {
             try {
                 val report = SmsPartSentReport(requestId, partIndex, partCount,
                     broadcastResultCode == Activity.RESULT_OK, broadcastResultCode)
-                sendEventToRust(HostEvent(
-                    EventType.SMS_PART_SENT_REPORTED, JsonHelper.jsonEncode(report)))
+                RustHostReports.smsPartSent(JsonHelper.jsonEncode(report))
             } finally {
                 pendingResult.finish()
             }

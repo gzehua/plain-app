@@ -1,8 +1,5 @@
 package com.ismartcoding.plain.features.telephony.sms
 
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.MmsSendResultData
-import com.ismartcoding.plain.events.SendResultCodes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -10,14 +7,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SmsSyncContractTest {
-    @Test
-    fun `SMS synchronization event names are explicit and unique`() {
-        assertEquals("SMS_PROVIDER_CHANGED", EventType.SMS_PROVIDER_CHANGED.name)
-        assertEquals("SMS_SEND_RESULT", EventType.SMS_SEND_RESULT.name)
-        assertEquals("MMS_SEND_RESULT", EventType.MMS_SEND_RESULT.name)
-        assertEquals(EventType.entries.size, EventType.entries.map { it.name }.toSet().size)
-    }
-
     @Test
     fun `content MMS predicate includes sent and retrieved PDUs`() {
         assertEquals("m_type IN (128, 132)", SmsProviderContract.MMS_CONTENT_FILTER)
@@ -65,26 +54,6 @@ class SmsSyncContractTest {
         assertNotEquals(first, secondRequest)
         assertTrue(first.action.contains("request-a.0"))
         assertTrue(first.data.endsWith("/request-a/0"))
-    }
-
-    @Test
-    fun `MMS send timeout is a terminal correlated failure`() {
-        assertEquals(
-            MmsSendResultData("pending", true, 0),
-            MmsSendResultData.success("pending"),
-        )
-        assertEquals(
-            MmsSendResultData(
-                pendingId = "pending",
-                success = false,
-                resultCode = SmsProviderContract.SEND_RESULT_TIMEOUT,
-            ),
-            MmsSendResultData.timeout("pending"),
-        )
-        assertEquals(
-            MmsSendResultData("pending", false, SendResultCodes.CANCELLED),
-            MmsSendResultData.cancelled("pending"),
-        )
     }
 
     @Test

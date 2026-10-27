@@ -22,3 +22,13 @@ pub(crate) fn input(pointer: *const c_char) -> Result<String, String> {
         .map_err(|e| e.to_string())?
         .to_owned())
 }
+
+pub(crate) fn input_bytes(pointer: *const u8, len: usize) -> Result<Vec<u8>, String> {
+    if len == 0 {
+        return Ok(Vec::new());
+    }
+    if pointer.is_null() {
+        return Err("Null native bytes".into());
+    }
+    Ok(unsafe { std::slice::from_raw_parts(pointer, len) }.to_vec())
+}

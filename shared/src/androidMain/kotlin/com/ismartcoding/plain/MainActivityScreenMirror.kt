@@ -1,5 +1,6 @@
 package com.ismartcoding.plain
 
+import com.ismartcoding.plain.rust.native.RustHostReports
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.i18n.*
 
@@ -8,9 +9,6 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
-import com.ismartcoding.plain.rust.sendEventToRust
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import com.ismartcoding.plain.ui.components.DialogHelper
 import com.ismartcoding.plain.platform.permissions.Permission
@@ -30,7 +28,7 @@ internal fun MainActivity.requestScreenMirrorAudio() {
 }
 
 internal fun MainActivity.sendScreenMirrorAudioStatus(granted: Boolean) {
-    coIO { sendEventToRust(HostEvent(EventType.SCREEN_MIRROR_AUDIO_GRANTED, JsonHelper.jsonEncode(granted))) }
+    coIO { RustHostReports.screenMirrorAudioGranted(JsonHelper.jsonEncode(granted)) }
 }
 
 internal fun MainActivity.openAppDetailsSettingsForAudio() {

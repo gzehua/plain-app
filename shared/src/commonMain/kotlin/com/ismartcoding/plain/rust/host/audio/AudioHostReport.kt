@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.rust.host.audio
 
 import com.ismartcoding.plain.lib.JsonHelper
-import com.ismartcoding.plain.rust.sendHostTextToRust
+import com.ismartcoding.plain.rust.native.RustHostReports
 import kotlinx.serialization.Serializable
 
 internal sealed interface AudioHostReport {
@@ -16,9 +16,9 @@ internal sealed interface AudioHostReport {
 
     suspend fun sendToRust() {
         when (this) {
-            is Started -> sendHostTextToRust("AUDIO_STARTED_REPORTED", JsonHelper.jsonEncode(this))
-            is Completed -> sendHostTextToRust("AUDIO_COMPLETED_REPORTED", JsonHelper.jsonEncode(this))
-            is Progress -> sendHostTextToRust("AUDIO_PROGRESS_REPORTED", JsonHelper.jsonEncode(this))
+            is Started -> RustHostReports.audioStarted(JsonHelper.jsonEncode(this))
+            is Completed -> RustHostReports.audioCompleted(JsonHelper.jsonEncode(this))
+            is Progress -> RustHostReports.audioProgress(JsonHelper.jsonEncode(this))
         }
     }
 }

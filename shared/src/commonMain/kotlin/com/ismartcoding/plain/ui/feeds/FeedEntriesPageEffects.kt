@@ -1,12 +1,15 @@
 package com.ismartcoding.plain.ui.feeds
 
+import com.ismartcoding.plain.rust.graphql.SubscriptionUpdate
+import com.ismartcoding.plain.rust.graphql.AppSubscriptions
+import com.ismartcoding.plain.rust.graphql.changes
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import com.ismartcoding.plain.events.EventType
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshLayoutState
@@ -16,8 +19,6 @@ import com.ismartcoding.plain.ui.state.exitSearchMode
 import com.ismartcoding.plain.ui.state.exitSelectMode
 import com.ismartcoding.plain.ui.state.launchSafe
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import com.ismartcoding.plain.rust.RustEventHandler
 import com.ismartcoding.plain.lib.JsonHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,9 +41,15 @@ internal fun FeedEntriesPageEffects(
     }
 
     LaunchedEffect(feedEntriesVM, feedsVM, tagsVM) {
-        RustEventHandler.events.collect { event ->
-            val completed = if (event.type == EventType.FEED_SYNC_UPDATED) {
-                JsonHelper.jsonDecode<FeedSyncUpdate>(event.payload).states.lastOrNull { state ->
+        fun refreshEntries() {
+            feedsVM.loadAsync(withCount = true)
+            feedsVM.refreshSelectedItemAsync()
+            scope.launch(Dispatchers.IO) { feedEntriesVM.loadAsync(tagsVM) }
+        }
+        launch { AppSubscriptions.contentChanged.changes().collect { refreshEntries() } }
+        AppSubscriptions.feedSyncUpdated.collect { update ->
+            val completed = if (update is SubscriptionUpdate.Data) {
+                update.value.states.lastOrNull { state ->
                     state.status in setOf("COMPLETED", "ERROR", "CANCELLED") &&
                         state.revision >= (FeedWorkerState.revision(state.feedId) ?: -1L)
                 }
@@ -52,11 +59,7 @@ internal fun FeedEntriesPageEffects(
                     if (completed.status == "ERROR") RefreshContentState.Failed else RefreshContentState.Finished,
                 )
             }
-            if (event.type == EventType.CONTENT_CHANGED || completed != null) {
-                feedsVM.loadAsync(withCount = true)
-                feedsVM.refreshSelectedItemAsync()
-                scope.launch(Dispatchers.IO) { feedEntriesVM.loadAsync(tagsVM) }
-            }
+            if (completed != null) refreshEntries()
         }
     }
 

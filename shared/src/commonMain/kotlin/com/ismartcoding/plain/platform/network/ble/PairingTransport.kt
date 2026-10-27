@@ -1,13 +1,11 @@
 package com.ismartcoding.plain.platform.network.ble
 
-import com.ismartcoding.plain.rust.sendEventToRust
+import com.ismartcoding.plain.rust.native.RustHostReports
 
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
 import com.ismartcoding.plain.platform.network.wifiAwareAttached
-import com.ismartcoding.plain.events.EventType
-import com.ismartcoding.plain.events.HostEvent
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.network.BleAvailability
 import com.ismartcoding.plain.platform.network.bleAvailabilityFlow
@@ -77,7 +75,7 @@ object PairingTransport {
                 AdvertisingFacts(available == BleAvailability.READY, aware, lease)
             }.collect { facts ->
                 if (!lock.withLock { !closed && current === this }) return@collect
-                try { sendEventToRust(HostEvent(EventType.BLE_ADVERTISING_FACTS_REPORTED, JsonHelper.jsonEncode(facts))) }
+                try { RustHostReports.bleAdvertisingFacts(JsonHelper.jsonEncode(facts)) }
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) { LogCat.e("BLE advertising facts", error) }
             }
