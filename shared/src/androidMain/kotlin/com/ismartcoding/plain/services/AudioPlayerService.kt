@@ -22,6 +22,7 @@ import androidx.media3.session.MediaSession
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.platform.media.AndroidAudioPlayer
 import com.ismartcoding.plain.features.audio.AudioCommands
+import com.ismartcoding.plain.models.AudioCommand
 import com.ismartcoding.plain.features.audio.AudioServiceAction
 import com.ismartcoding.plain.platform.media.audioPause
 import com.ismartcoding.plain.platform.media.audioPlay
@@ -71,7 +72,7 @@ class AudioPlayerService : MediaLibraryService() {
             override fun setPlaybackSpeed(speed: Float) = audioSetPlaybackSpeed(speed)
             override fun stop() = audioPause()
             override fun seekToPrevious() {
-                AudioCommands.submit("PREVIOUS")
+                AudioCommands.submit(AudioCommand.PREVIOUS)
             }
 
             override fun getAvailableCommands(): Player.Commands {
@@ -85,7 +86,7 @@ class AudioPlayerService : MediaLibraryService() {
             }
 
             override fun seekToNext() {
-                AudioCommands.submit("NEXT")
+                AudioCommands.submit(AudioCommand.NEXT)
             }
         }
         val s = MediaLibrarySession.Builder(this, forwardingPlayer, object : MediaLibrarySession.Callback {

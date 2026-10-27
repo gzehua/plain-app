@@ -9,6 +9,12 @@ sealed interface SubscriptionUpdate<out T> {
     data class Failed(val error: Throwable) : SubscriptionUpdate<Nothing>
 }
 
-fun Flow<SubscriptionUpdate<*>>.changes(): Flow<Unit> = transform { update ->
-    if (update !is SubscriptionUpdate.Failed) emit(Unit)
+fun Flow<SubscriptionUpdate<*>>.changes(): Flow<Unit> = changes { true }
+
+fun <T> Flow<SubscriptionUpdate<T>>.changes(predicate: suspend (T) -> Boolean): Flow<Unit> = transform { update ->
+    when (update) {
+        SubscriptionUpdate.Attached -> emit(Unit)
+        is SubscriptionUpdate.Data -> if (predicate(update.value)) emit(Unit)
+        is SubscriptionUpdate.Failed -> Unit
+    }
 }

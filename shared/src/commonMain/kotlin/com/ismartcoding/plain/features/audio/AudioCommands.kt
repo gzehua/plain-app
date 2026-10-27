@@ -2,6 +2,7 @@ package com.ismartcoding.plain.features.audio
 
 import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+import com.ismartcoding.plain.models.AudioCommand
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.logcat.LogCat
 import kotlinx.coroutines.*
@@ -22,10 +23,10 @@ object AudioCommands {
     private fun submit(request: suspend () -> Unit) {
         check(requests.trySend(request).isSuccess) { "Audio command capacity exceeded" }
     }
-    suspend fun command(action: String, positionMs: Long = 0, speed: Float = 1f) {
-        RustGraphqlApi.graphql(Mutation.audioCommand(action, positionMs, speed))
+    suspend fun command(action: AudioCommand, positionMs: Long = 0, speed: Float = 1f) {
+        RustGraphqlApi.graphql(Mutation.audioCommand(action.name, positionMs, speed))
     }
-    fun submit(action: String, positionMs: Long = 0, speed: Float = 1f) = submit { command(action, positionMs, speed) }
+    fun submit(action: AudioCommand, positionMs: Long = 0, speed: Float = 1f) = submit { command(action, positionMs, speed) }
     fun cycleMode() = submit {
         val current = AudioQueueClient.playback().mode
         val modes = MediaPlayMode.entries

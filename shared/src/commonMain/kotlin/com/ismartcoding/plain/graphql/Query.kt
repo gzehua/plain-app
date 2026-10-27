@@ -105,33 +105,40 @@ object Query {
     fun audioPlaylistCovers(ids: Collection<String>): GraphqlRequest = GraphqlRequest(
         $$"query($ids: [ID!]!) { audioPlaylistCovers(ids: $ids) { id albums { albumId trackCount candidatePaths } } }",
         mapOf(variable("ids", ids)),
+        field = "audioPlaylistCovers",
     )
 
     fun audioPlaylists(): GraphqlRequest = GraphqlRequest(
         $$"query { audioPlaylists { $${Fragments.AUDIO_PLAYLIST_FIELDS} } }",
+        field = "audioPlaylists",
     )
 
     fun audioPlaylistItems(id: String, offset: Int, limit: Int, query: String): GraphqlRequest = GraphqlRequest(
         $$"query($id: ID!, $offset: Int!, $limit: Int!, $query: String!) { audioPlaylistItems(id: $id, offset: $offset, limit: $limit, query: $query) { $${Fragments.AUDIO_TRACK_FIELDS} } }",
         mapOf(variable("id", id), variable("offset", offset), variable("limit", limit), variable("query", query)),
+        field = "audioPlaylistItems",
     )
 
     fun audioPlayback(): GraphqlRequest = GraphqlRequest(
         $$"query { audioPlayback { mediaId path mode isPlaying positionMs revision } }",
+        field = "audioPlayback",
     )
 
     fun audioQueueIds(limit: Int): GraphqlRequest = GraphqlRequest(
         $$"query($limit: Int!) { audioQueueItems(query: \"\", offset: 0, limit: $limit) { mediaId } }",
         mapOf(variable("limit", limit)),
+        field = "audioQueueItems",
     )
 
     fun audioQueueItemCount(): GraphqlRequest = GraphqlRequest(
         $$"query { audioQueueItemCount }",
+        field = "audioQueueItemCount",
     )
 
     fun audioQueueItems(offset: Int, limit: Int, query: String): GraphqlRequest = GraphqlRequest(
         $$"query($offset: Int!, $limit: Int!, $query: String!) { audioQueueItems(offset: $offset, limit: $limit, query: $query) { $${Fragments.AUDIO_TRACK_FIELDS} } }",
         mapOf(variable("offset", offset), variable("limit", limit), variable("query", query)),
+        field = "audioQueueItems",
     )
 
     fun sessions(): GraphqlRequest = GraphqlRequest(
@@ -333,6 +340,7 @@ object Query {
 
     fun audioOverview(): GraphqlRequest = GraphqlRequest(
         $$"query { audioOverview { artists { name itemCount playCount samplePath } recentItems { $${Fragments.mediaFields(DataType.AUDIO)} } } }",
+        field = "audioOverview",
     )
 
     fun shareLink(id: String, host: String?): GraphqlRequest = GraphqlRequest(

@@ -2,7 +2,7 @@ package com.ismartcoding.plain.rust
 
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.Prefs
-import com.ismartcoding.plain.app.SubscriptionObservers
+import com.ismartcoding.plain.SubscriptionObservers
 
 import com.ismartcoding.plain.platform.system.*
 import com.ismartcoding.plain.rust.graphql.RustGraphqlSubscriptions

@@ -132,6 +132,7 @@ object Mutation {
     fun createAudioPlaylist(name: String): GraphqlRequest = GraphqlRequest(
         $$"mutation($name: String!) { createAudioPlaylist(name: $name) { $${Fragments.AUDIO_PLAYLIST_FIELDS} } }",
         mapOf(variable("name", name)),
+        field = "createAudioPlaylist",
     )
 
     fun updateAudioPlaylist(id: String, name: String): GraphqlRequest = GraphqlRequest(
@@ -157,6 +158,7 @@ object Mutation {
     fun advanceAudioSelection(action: String, expectedPath: String, expectedRevision: Long, shuffle: Boolean): GraphqlRequest = GraphqlRequest(
         $$"mutation($action: AudioSelectionAction!, $expectedPath: String!, $expectedRevision: Long!, $shuffle: Boolean!) { advanceAudioSelection(action: $action, expectedPath: $expectedPath, expectedRevision: $expectedRevision, shuffle: $shuffle) { track { $${Fragments.AUDIO_TRACK_FIELDS} } } }",
         mapOf(variable("action", action), variable("expectedPath", expectedPath), variable("expectedRevision", expectedRevision), variable("shuffle", shuffle)),
+        field = "advanceAudioSelection",
     )
 
     fun clearAudioQueue(): GraphqlRequest = GraphqlRequest(

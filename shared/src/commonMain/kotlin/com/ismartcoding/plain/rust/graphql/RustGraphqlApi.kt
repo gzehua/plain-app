@@ -18,6 +18,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 object RustGraphqlApi {
+    suspend inline fun <reified T> read(request: GraphqlRequest): T =
+        JsonHelper.jsonDecodeFromElement(graphql(request).getValue(request.field))
+
     inline fun <reified T> subscribe(request: GraphqlRequest): Flow<GraphqlResult<T>> =
         RustGraphqlSubscriptions.subscribe(request).map { response ->
             GraphqlResult(response.data?.let { JsonHelper.jsonDecodeFromElement<T>(it) }, response.errors)

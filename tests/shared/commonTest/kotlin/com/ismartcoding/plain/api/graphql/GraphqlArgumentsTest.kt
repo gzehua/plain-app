@@ -16,6 +16,29 @@ import kotlin.test.*
 
 class GraphqlArgumentsTest {
     @Test
+    fun audioRequestsOwnTheirResponseFieldsWithoutChangingTheEnvelope() {
+        val requests = listOf(
+            Query.audioPlaylistCovers(listOf("playlist")) to "audioPlaylistCovers",
+            Query.audioPlaylists() to "audioPlaylists",
+            Query.audioPlaylistItems("playlist", 0, 10, "") to "audioPlaylistItems",
+            Query.audioPlayback() to "audioPlayback",
+            Query.audioQueueIds(10) to "audioQueueItems",
+            Query.audioQueueItemCount() to "audioQueueItemCount",
+            Query.audioQueueItems(0, 10, "") to "audioQueueItems",
+            Query.audioOverview() to "audioOverview",
+            Mutation.createAudioPlaylist("Playlist") to "createAudioPlaylist",
+            Mutation.advanceAudioSelection("NEXT", "", 0L, false) to "advanceAudioSelection",
+        )
+
+        for ((request, expected) in requests) {
+            assertEquals(expected, request.field)
+            val root = request.query.substringAfter('{').trimStart().substringBefore('(').substringBefore(' ')
+            assertEquals(expected, root)
+            assertFalse("field" in JsonHelper.jsonDecode<JsonObject>(JsonHelper.jsonEncode(request)))
+        }
+    }
+
+    @Test
     fun valuesRemainSeparateFromTheDocumentAndRoundTripThroughTheEnvelope() {
         val input = "a\"b\\c\n) { deleteNotes(query: \"all:true\") }"
         val request = Query.chatCount(input)

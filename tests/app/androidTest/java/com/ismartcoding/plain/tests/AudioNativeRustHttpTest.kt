@@ -3,6 +3,7 @@ package com.ismartcoding.plain.tests
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.audio.*
+import com.ismartcoding.plain.models.AudioCommand
 import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
 import com.ismartcoding.plain.ui.audio.*
 import kotlinx.coroutines.*
@@ -39,18 +40,18 @@ class AudioNativeRustHttpTest {
             withTimeout(5_000) {
                 while (playback().getValue("positionMs").jsonPrimitive.long < 100) delay(100)
             }
-            AudioCommands.command("SEEK",5_000)
+            AudioCommands.command(AudioCommand.SEEK,5_000)
             delay(100)
-            AudioCommands.command("PAUSE")
+            AudioCommands.command(AudioCommand.PAUSE)
             val paused = playback().getValue("positionMs").jsonPrimitive.long
             assertTrue("Native seek must be persisted", paused in 4_900..6_000)
-            AudioCommands.command("PLAY")
+            AudioCommands.command(AudioCommand.PLAY)
             delay(300)
             assertTrue(playback().getValue("positionMs").jsonPrimitive.long >= paused)
             assertTrue(TestAudioHistoryClient.recentPageFiltered(file.name,20,0).isEmpty())
         } finally {
             try {
-                AudioCommands.command("CLEAR")
+                AudioCommands.command(AudioCommand.CLEAR)
                 AudioQueueClient.clearQueue()
             } finally {
                 AudioEngineHost.install(oldEngine)

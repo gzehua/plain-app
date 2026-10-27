@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.app
+package com.ismartcoding.plain
 
 import com.ismartcoding.plain.features.chat.ChatMessageReceiver
 import com.ismartcoding.plain.features.chat.RustChatStore

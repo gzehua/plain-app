@@ -3,6 +3,7 @@ package com.ismartcoding.plain.platform.media
 import com.ismartcoding.plain.ui.permissions.checkNotificationPermission
 
 import com.ismartcoding.plain.features.audio.AudioCommands
+import com.ismartcoding.plain.models.AudioCommand
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.audio_notification_prompt
@@ -36,13 +37,13 @@ fun audioPlayerProgress(): Long = audioPlayer.progress
 /** Suspending read for non-main threads (e.g. the HTTP server): the Android player is a Media3 MediaController which only allows calls on the app thread. */
 suspend fun audioPlayerProgressAsync(): Long = withContext(Dispatchers.Main) { audioPlayer.progress }
 
-fun audioSeekTo(positionMs: Long) = AudioCommands.submit("SEEK", positionMs = positionMs)
+fun audioSeekTo(positionMs: Long) = AudioCommands.submit(AudioCommand.SEEK, positionMs = positionMs)
 
-fun audioPause() = AudioCommands.submit("PAUSE")
+fun audioPause() = AudioCommands.submit(AudioCommand.PAUSE)
 
-fun audioPlay() = AudioCommands.submit("PLAY")
+fun audioPlay() = AudioCommands.submit(AudioCommand.PLAY)
 
-fun restartAudioIfPlaying() = AudioCommands.submit("RESTART")
+fun restartAudioIfPlaying() = AudioCommands.submit(AudioCommand.RESTART)
 
 fun playAudioWithNotificationCheck(path: String) {
     checkNotificationPermission(Res.string.audio_notification_prompt) {
@@ -58,8 +59,8 @@ fun audioJustPlayWithNotificationCheck(audio: AudioItem) {
     }
 }
 
-fun audioSkipToPrevious() = AudioCommands.submit("PREVIOUS")
+fun audioSkipToPrevious() = AudioCommands.submit(AudioCommand.PREVIOUS)
 
-fun audioSkipToNext() = AudioCommands.submit("NEXT")
+fun audioSkipToNext() = AudioCommands.submit(AudioCommand.NEXT)
 
-fun audioSetPlaybackSpeed(speed: Float) = AudioCommands.submit("SET_SPEED", speed = speed)
+fun audioSetPlaybackSpeed(speed: Float) = AudioCommands.submit(AudioCommand.SET_SPEED, speed = speed)

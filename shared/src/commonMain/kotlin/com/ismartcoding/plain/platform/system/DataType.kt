@@ -1,5 +1,8 @@
 package com.ismartcoding.plain.platform.system
 
+import kotlinx.serialization.Serializable
+
+@Serializable(with = DataTypeSerializer::class)
 enum class DataType(val value: Int) {
     DEFAULT(0),
     AUDIO(1),
