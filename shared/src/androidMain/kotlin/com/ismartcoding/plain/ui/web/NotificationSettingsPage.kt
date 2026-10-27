@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.web
 
+import com.ismartcoding.plain.features.notifications.NotificationFilterMode
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -87,7 +88,7 @@ fun NotificationSettingsPage(
 
             item {
                 PSectionTitle(title = stringResource(
-                    if (vm.filterData.value.mode == "allowlist") Res.string.allowed_apps else Res.string.blocked_apps
+                    if (vm.filterData.value.mode == NotificationFilterMode.ALLOWLIST) Res.string.allowed_apps else Res.string.blocked_apps
                 ))
             }
 

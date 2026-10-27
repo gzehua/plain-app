@@ -1,6 +1,5 @@
-package com.ismartcoding.plain.api.graphql.models
+package com.ismartcoding.plain.models
 
-import com.ismartcoding.plain.models.MergeTaskStatus
 import kotlinx.serialization.Serializable
 
 @Serializable

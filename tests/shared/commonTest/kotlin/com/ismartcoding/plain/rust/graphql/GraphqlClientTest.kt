@@ -118,10 +118,12 @@ class GraphqlClientTest {
             JsonHelper.jsonDecode<GraphqlResponse>("""{"data":{"savedValue":null}}""")
         }
         assertEquals(7L, absent.execute(Query.savedValue("key", 7L)))
-        val invalid = GraphqlClient {
-            JsonHelper.jsonDecode<GraphqlResponse>("""{"data":{"savedValue":{}}}""")
+        for (value in listOf("{}", "[]", "true", "\"not-a-number\"")) {
+            val invalid = GraphqlClient {
+                GraphqlResponse(data = JsonObject(mapOf("savedValue" to JsonHelper.jsonDecode(value))))
+            }
+            assertFailsWith<Exception> { invalid.execute(Query.savedValue("key", 7L)) }
         }
-        assertFailsWith<SerializationException> { invalid.execute(Query.savedValue("key", 7L)) }
     }
 
     @Test

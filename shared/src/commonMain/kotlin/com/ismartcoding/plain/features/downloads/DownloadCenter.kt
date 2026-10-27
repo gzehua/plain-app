@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
 import com.ismartcoding.plain.features.chat.download.DownloadQueue
+import com.ismartcoding.plain.features.shares.SharedDownloadCommand
 import com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine
 import com.ismartcoding.plain.platform.system.PlatformLock
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,13 +26,13 @@ object DownloadCenter {
     }
 
     fun cancel(taskId: String): Boolean = when (progress.value[taskId]?.kind) {
-        DOWNLOAD_KIND_SHARE -> SharedFolderDownloadEngine.control(taskId, "cancel")
+        DOWNLOAD_KIND_SHARE -> SharedFolderDownloadEngine.control(taskId, SharedDownloadCommand.CANCEL)
         DOWNLOAD_KIND_CHAT -> DownloadQueue.removeDownload(taskId)
         else -> false
     }
 
     fun remove(taskId: String): Boolean = when (progress.value[taskId]?.kind) {
-        DOWNLOAD_KIND_SHARE -> SharedFolderDownloadEngine.control(taskId, "remove")
+        DOWNLOAD_KIND_SHARE -> SharedFolderDownloadEngine.control(taskId, SharedDownloadCommand.REMOVE)
         DOWNLOAD_KIND_CHAT -> DownloadQueue.removeDownload(taskId)
         else -> false
     }

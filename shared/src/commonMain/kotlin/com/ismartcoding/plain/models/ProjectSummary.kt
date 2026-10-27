@@ -1,4 +1,4 @@
-package com.ismartcoding.plain.api.graphql.models
+package com.ismartcoding.plain.models
 
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable

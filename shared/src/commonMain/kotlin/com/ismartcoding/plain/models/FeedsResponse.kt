@@ -1,7 +1,5 @@
-package com.ismartcoding.plain.api.graphql.models
+package com.ismartcoding.plain.models
 
-import com.ismartcoding.plain.models.Feed
-import com.ismartcoding.plain.models.FeedEntryCount
 import kotlinx.serialization.Serializable
 
 @Serializable

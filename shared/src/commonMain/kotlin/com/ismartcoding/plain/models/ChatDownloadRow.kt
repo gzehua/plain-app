@@ -1,8 +1,7 @@
-package com.ismartcoding.plain.api.graphql.models
+package com.ismartcoding.plain.models
 
 import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.features.downloads.DownloadStatus
-import com.ismartcoding.plain.models.Peer
 import kotlinx.serialization.Serializable
 
 @Serializable

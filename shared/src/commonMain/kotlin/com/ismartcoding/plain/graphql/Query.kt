@@ -1,18 +1,18 @@
 package com.ismartcoding.plain.graphql
 
 import com.ismartcoding.plain.IData
-import com.ismartcoding.plain.api.graphql.models.AppFileName
-import com.ismartcoding.plain.api.graphql.models.AudioDuration
-import com.ismartcoding.plain.api.graphql.models.ChatDownloadSnapshot
-import com.ismartcoding.plain.api.graphql.models.DocExtensionGroup
-import com.ismartcoding.plain.api.graphql.models.FeedsResponse
-import com.ismartcoding.plain.api.graphql.models.FileSize
-import com.ismartcoding.plain.api.graphql.models.MediaFileInfo
-import com.ismartcoding.plain.api.graphql.models.MergeResult
-import com.ismartcoding.plain.api.graphql.models.ProjectSummary
-import com.ismartcoding.plain.api.graphql.models.QueuedMediaId
-import com.ismartcoding.plain.api.graphql.models.SelectedMediaPath
-import com.ismartcoding.plain.api.graphql.models.SharedDownloadSnapshot
+import com.ismartcoding.plain.models.AppFileName
+import com.ismartcoding.plain.models.AudioDuration
+import com.ismartcoding.plain.models.ChatDownloadSnapshot
+import com.ismartcoding.plain.models.DocExtensionGroup
+import com.ismartcoding.plain.models.FeedsResponse
+import com.ismartcoding.plain.models.FileSize
+import com.ismartcoding.plain.models.MediaFileInfoResult
+import com.ismartcoding.plain.models.MergeResult
+import com.ismartcoding.plain.models.ProjectSummary
+import com.ismartcoding.plain.models.QueuedMediaId
+import com.ismartcoding.plain.models.SelectedMediaPath
+import com.ismartcoding.plain.models.SharedDownloadSnapshot
 import com.ismartcoding.plain.features.chat.models.MessageShare
 import com.ismartcoding.plain.features.files.FileSortBy
 import com.ismartcoding.plain.features.nearby.MdnsSnapshot
@@ -347,19 +347,19 @@ object Query {
         field = "audioLyricsByPath",
     )
 
-    fun videoFileInfo(path: String): GraphqlRequest<MediaFileInfo<VideoFileInfo>> = GraphqlRequest(
+    fun videoFileInfo(path: String): GraphqlRequest<MediaFileInfoResult<VideoFileInfo>> = GraphqlRequest(
         $$"query($path:String!,$name:String!){fileInfo(path:$path,fileName:$name){data{__typename ... on VideoFileInfo{width height rotation displayWidth displayHeight durationMs bitrate frameRate title artist album genre takenAt writer composer location{latitude longitude}}}}}",
         mapOf(variable("path", path), variable("name", "video.mp4")),
         field = "fileInfo",
     )
 
-    fun imageFileInfo(path: String): GraphqlRequest<MediaFileInfo<ImageFileInfo>> = GraphqlRequest(
+    fun imageFileInfo(path: String): GraphqlRequest<MediaFileInfoResult<ImageFileInfo>> = GraphqlRequest(
         $$"query($path:String!,$name:String!){fileInfo(path:$path,fileName:$name){data{__typename ... on ImageFileInfo{width height rotation make model colorSpace apertureValue exposureTime focalLength isoSpeed takenAt flash fNumber exposureProgram meteringMode whiteBalance creator resolutionX resolutionY description location{latitude longitude}}}}}",
         mapOf(variable("path", path), variable("name", "image.jpg")),
         field = "fileInfo",
     )
 
-    fun audioDuration(path: String): GraphqlRequest<MediaFileInfo<AudioDuration>> = GraphqlRequest(
+    fun audioDuration(path: String): GraphqlRequest<MediaFileInfoResult<AudioDuration>> = GraphqlRequest(
         $$"query($path:String!,$name:String!){fileInfo(path:$path,fileName:$name){data{... on AudioFileInfo{durationMs}}}}",
         mapOf(variable("path", path), variable("name", "audio.mp3")),
         field = "fileInfo",

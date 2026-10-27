@@ -1,7 +1,5 @@
 package com.ismartcoding.plain.ui.feeds
 
-import com.ismartcoding.plain.features.feeds.feed
-
 import com.ismartcoding.plain.ui.tags.TagsViewModel
 import com.ismartcoding.plain.ui.state.ISearchableViewModel
 import com.ismartcoding.plain.ui.state.ISelectableViewModel

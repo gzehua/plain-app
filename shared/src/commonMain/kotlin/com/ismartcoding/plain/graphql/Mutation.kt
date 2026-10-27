@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.graphql
 
-import com.ismartcoding.plain.api.graphql.models.AdvancedAudioSelection
-import com.ismartcoding.plain.api.graphql.models.MergeResult
+import com.ismartcoding.plain.models.AdvancedAudioSelection
+import com.ismartcoding.plain.models.MergeResult
 import com.ismartcoding.plain.features.audio.AudioSelectionAction
 import com.ismartcoding.plain.features.audio.MediaPlayMode
 import com.ismartcoding.plain.features.chat.download.ChatDownloadCommand
@@ -340,7 +340,7 @@ object Mutation {
         field = "copyFileToDirectory",
     )
 
-    fun extractZipArchive(path: String, target: String): GraphqlRequest<Boolean> = GraphqlRequest(
+    fun extractZipArchive(path: String, target: String): GraphqlRequest<String> = GraphqlRequest(
         $$"mutation($path: String!, $target: String!) { extractZipArchive(path: $path, target: $target) }",
         mapOf(variable("path", path), variable("target", target)),
         field = "extractZipArchive",
@@ -593,8 +593,8 @@ object Mutation {
             name?.let { variable("name", it) },
             url?.let { variable("url", it) },
             fetchContent?.let { variable("fetchContent", it) },
-            field = "updateFeed",
         ),
+        field = "updateFeed",
     )
 
     fun syncFeeds(id: String): GraphqlRequest<Unit> = GraphqlRequest(
@@ -620,7 +620,7 @@ object Mutation {
         }
     }
 
-    fun createZipArchive(paths: Collection<String>, target: String): GraphqlRequest<Boolean> = GraphqlRequest(
+    fun createZipArchive(paths: Collection<String>, target: String): GraphqlRequest<String> = GraphqlRequest(
         $$"mutation($paths: [String!]!, $target: String!) { createZipArchive(paths: $paths, target: $target) }",
         mapOf(variable("paths", paths), variable("target", target)),
         field = "createZipArchive",

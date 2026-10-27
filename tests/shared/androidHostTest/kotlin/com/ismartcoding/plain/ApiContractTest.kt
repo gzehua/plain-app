@@ -61,10 +61,10 @@ class ApiContractTest {
         val queries = operationFieldNamesIn("Query")
         val mutations = operationFieldNamesIn("Mutation")
         val subscriptions = operationFieldNamesIn("Subscription")
-        if (queries.size != 127 || mutations.size != 201 || subscriptions.size != 38) {
+        if (queries.size != 129 || mutations.size != 200 || subscriptions.size != 38) {
             fail(
                 "Shared Rust schema fragments declare ${queries.size} Query / ${mutations.size} " +
-                    "Mutation and ${subscriptions.size} Subscription operations — the contract has 127 / 201 / 38. The snapshot looks truncated or " +
+                    "Mutation and ${subscriptions.size} Subscription operations — the contract has 129 / 200 / 38. The snapshot looks truncated or " +
                     "drifted; every check in this class reads it, so they would pass on an empty file.",
             )
         }
