@@ -53,10 +53,9 @@
     <string name="browser">Browser</string>
     <string name="reject">Afwijzen</string>
     <string name="open_web_address">Open het onderstaande adres in uw webbrowser.</string>
-    <string name="allow_web_access_desc">Toegang tot uw telefoongegevens via een webbrowser toestaan</string>
-    <string name="allow_desktop_access">Desktoptoegang toestaan</string>
-    <string name="allow_desktop_access_desc">Toegang tot uw telefoongegevens via de desktop-app toestaan</string>
-    <string name="allow_desktop_chat_access_desc">Sta deze computer toe uw telefoon te beheren en chatberichten en bestanden uit te wisselen</string>
+    <string name="allow_remote_access">Externe toegang toestaan</string>
+    <string name="allow_remote_access_desc">Geef dit apparaat toegang tot je gegevens.</string>
+    <string name="allow_remote_chat_access_desc">Geef dit apparaat toegang tot je gegevens en laat het berichten en bestanden uitwisselen.</string>
     <string name="chat_input_hint">Waar denk je aan?</string>
     <string name="client_id">Client-ID</string>
     <string name="online">Online</string>

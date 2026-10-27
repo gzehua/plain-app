@@ -53,10 +53,9 @@
     <string name="browser">Navigateur</string>
     <string name="reject">Rejeter</string>
     <string name="open_web_address">Ouvrez l'adresse ci-dessous dans votre navigateur Web.</string>
-    <string name="allow_web_access_desc">Autoriser l'accès à vos données téléphoniques depuis un navigateur Web</string>
-    <string name="allow_desktop_access">Autoriser l'accès Bureau</string>
-    <string name="allow_desktop_access_desc">Autoriser l'accès à vos données téléphoniques depuis l'application de bureau</string>
-    <string name="allow_desktop_chat_access_desc">Autoriser cet ordinateur à gérer votre téléphone et à échanger des messages et des fichiers</string>
+    <string name="allow_remote_access">Autoriser l’accès à distance</string>
+    <string name="allow_remote_access_desc">Autorisez cet appareil à accéder à vos données.</string>
+    <string name="allow_remote_chat_access_desc">Autorisez cet appareil à accéder à vos données et à échanger des messages et des fichiers.</string>
     <string name="chat_input_hint">Qu'avez-vous en tête ?</string>
     <string name="client_id">ID client</string>
     <string name="online">En ligne</string>
