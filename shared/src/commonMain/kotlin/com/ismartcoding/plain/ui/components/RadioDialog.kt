@@ -5,6 +5,7 @@ import com.ismartcoding.plain.ui.base.PTextButton
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectableGroup
@@ -26,6 +27,7 @@ fun RadioDialog(
     modifier: Modifier = Modifier,
     title: String = "",
     options: List<RadioDialogOption> = emptyList(),
+    compact: Boolean = false,
     onDismissRequest: () -> Unit = {},
 ) {
     AlertDialog(
@@ -39,12 +41,20 @@ fun RadioDialog(
             )
         },
         text = {
-            LazyColumn(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            LazyColumn(
+                Modifier.selectableGroup(),
+                verticalArrangement = Arrangement.spacedBy(if (compact) 0.dp else 4.dp),
+            ) {
                 items(options) { option ->
-                    PDialogRadioRow(selected = option.selected, onClick = {
-                        option.onClick()
-                        onDismissRequest()
-                    }, text = option.text)
+                    PDialogRadioRow(
+                        selected = option.selected,
+                        onClick = {
+                            option.onClick()
+                            onDismissRequest()
+                        },
+                        text = option.text,
+                        modifier = if (compact) Modifier.heightIn(min = 48.dp) else Modifier,
+                    )
                 }
             }
         },

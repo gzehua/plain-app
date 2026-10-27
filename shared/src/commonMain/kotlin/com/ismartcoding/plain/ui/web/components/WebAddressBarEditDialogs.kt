@@ -116,6 +116,7 @@ fun PortSelectionDialog(
     val ports = if (isHttps) httpsPorts else httpPorts
     RadioDialog(
         title = stringResource(Res.string.change_port),
+        compact = true,
         options =
             ports.map {
                 RadioDialogOption(
