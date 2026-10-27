@@ -1,4 +1,5 @@
 use plain_server::assembly::server::ContentServer;
+use plain_server::platform::system::log::{self, Level};
 use std::sync::Arc;
 
 pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String, String> {
@@ -27,6 +28,7 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
             directory,
             std::path::Path::new(&cache_directory),
         )?;
+        plain_server::platform::system::log::init_file(&paths.rust_log_file(), "info")?;
         let prefs =
             Arc::new(plain_rs::prefs::Prefs::load(&paths.prefs()).map_err(|e| e.to_string())?);
         let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -39,7 +41,10 @@ pub(crate) fn start(data_dir: &str, token: &str, config: &str) -> Result<String,
         })?;
         match runtime.block_on(server.start_configured_public()) {
             Ok((http, _)) => server.port = http,
-            Err(error) => eprintln!("HTTP server startup failed: {error}"),
+            Err(error) => log::write_log(
+                Level::Error,
+                &format!("HTTP server startup failed: {error}"),
+            ),
         }
         crate::ffi::host::install(&runtime, &server)?;
         *guard = Some(crate::ffi::server::Core {

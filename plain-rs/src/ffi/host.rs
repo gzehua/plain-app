@@ -1,5 +1,6 @@
 use super::values::{c_string, input};
 use plain_server::host::events::HostEvents;
+use plain_server::platform::system::log::{self, Level};
 use std::{
     ffi::c_char,
     sync::{Arc, Mutex},
@@ -24,7 +25,7 @@ pub(crate) fn install(
                 _ = host.wait_disconnected() => return,
                 _ = receiver.notified() => {
                     if let Err(error) = host.prefs_changed().await {
-                        eprintln!("Host preferences update failed: {error}");
+                        log::write_log(Level::Error, &format!("Host preferences update failed: {error}"));
                     }
                 },
             }
