@@ -9,13 +9,13 @@ object SharedLinkClient {
     fun pageUrl(link: SharedLink): String = link.pageUrl
 
     suspend fun ownLink(id: String, host: String? = null): SharedLink =
-        RustGraphqlApi.read(Query.shareLink(id, host))
+        RustGraphqlApi.execute(Query.shareLink(id, host))
 
     suspend fun initialLink(messageId: String, expected: MessageShare): SharedLink =
-        RustGraphqlApi.read(Query.initialSharedLink(messageId, expected))
+        RustGraphqlApi.execute(Query.initialSharedLink(messageId, expected))
 
     suspend fun browse(messageId: String, expected: MessageShare, virtualPath: String?): SharedBrowseResult? =
-        RustGraphqlApi.read(Mutation.browseSharedLink(messageId, expected, virtualPath))
+        RustGraphqlApi.execute(Mutation.browseSharedLink(messageId, expected, virtualPath))
 
     suspend fun cacheFile(
         link: SharedLink,
@@ -23,5 +23,5 @@ object SharedLinkClient {
         entry: SharedFileDto,
         thumbnail: Boolean = false,
     ): String =
-        RustGraphqlApi.read(Mutation.cacheSharedFile(link, urlToken, entry, thumbnail))
+        RustGraphqlApi.execute(Mutation.cacheSharedFile(link, urlToken, entry, thumbnail))
 }

@@ -18,7 +18,7 @@ object MediaActionClient {
         if (ids.isEmpty()) return 0
         val query = mediaActionSelection(ids, fromTrash || action == MediaAction.RESTORE)
         val request = Mutation.mediaAction(action, type, query, destDir)
-        return RustGraphqlApi.read<ActionResult>(request).affectedCount
+        return RustGraphqlApi.execute<ActionResult>(request).affectedCount
     }
 }
 internal fun mediaActionSelection(ids: Collection<String>, fromTrash: Boolean): String {

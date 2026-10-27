@@ -8,7 +8,7 @@ import com.ismartcoding.plain.ui.sessions.VSession
 import kotlin.time.Instant
 
 object RustSessionStore {
-    suspend fun list(): List<VSession> = RustGraphqlApi.read<List<SessionFacts>>(Query.sessions()).map {
+    suspend fun list(): List<VSession> = RustGraphqlApi.execute<List<SessionFacts>>(Query.sessions()).map {
         VSession(
             it.clientId,
             it.name,
@@ -28,9 +28,9 @@ object RustSessionStore {
     suspend fun create(name: String): CreatedSession = RustNativeApi.createSession(name)
 
     suspend fun rename(clientId: String, name: String): Boolean =
-        RustGraphqlApi.read(Mutation.renameSession(clientId, name))
+        RustGraphqlApi.execute(Mutation.renameSession(clientId, name))
 
     suspend fun delete(clientId: String) {
-        RustGraphqlApi.graphql(Mutation.revokeSession(clientId))
+        RustGraphqlApi.execute<Unit>(Mutation.revokeSession(clientId))
     }
 }

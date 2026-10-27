@@ -27,6 +27,6 @@ object FavoriteFoldersClient {
         update(Mutation.setFavoriteFolderAlias(fullPath, alias))
 
     private suspend fun update(request: GraphqlRequest): List<FavoriteFolder> = lock.withLock {
-        RustGraphqlApi.read<List<FavoriteFolder>>(request).also { state.value = it }
+        RustGraphqlApi.execute<List<FavoriteFolder>>(request).also { state.value = it }
     }
 }

@@ -6,7 +6,7 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 object CallsClient {
     suspend fun search(query: String, limit: Int, offset: Int): List<Call> =
-        RustGraphqlApi.read(Query.calls(query, limit, offset))
+        RustGraphqlApi.execute(Query.calls(query, limit, offset))
 
-    suspend fun count(query: String): Int = RustGraphqlApi.read(Query.callCount(query))
+    suspend fun count(query: String): Int = RustGraphqlApi.execute(Query.callCount(query))
 }

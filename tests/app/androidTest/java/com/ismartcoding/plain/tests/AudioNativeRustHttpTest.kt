@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ismartcoding.plain.appContext
 import com.ismartcoding.plain.features.audio.*
@@ -31,9 +32,9 @@ class AudioNativeRustHttpTest {
             .put("data".toByteArray()).putInt(samples).array()
         file.outputStream().use { it.write(header); it.write(ByteArray(samples)) }
         val oldEngine = AudioEngineHost.install(null)
-        suspend fun playback() = RustGraphqlApi.query("audioPlayback { path positionMs revision }").getValue("audioPlayback").jsonObject
+        suspend fun playback() = RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { audioPlayback { path positionMs revision } }")).getValue("audioPlayback").jsonObject
         try {
-            RustGraphqlApi.mutate("audioPlayPath(path: ${JsonPrimitive(file.absolutePath)}) {path positionMs revision}")
+            RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { audioPlayPath(path: ${JsonPrimitive(file.absolutePath)}) {path positionMs revision} }"))
             assertTrue(TestAudioHistoryClient.recentPageFiltered(file.name,20,0).isEmpty())
             assertTrue(AudioQueueClient.queuedMediaIds().isEmpty())
             assertNull(AudioQueueClient.playback().mediaId)

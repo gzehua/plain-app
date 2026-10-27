@@ -27,7 +27,7 @@ object AudioCommands {
     }
 
     suspend fun command(action: AudioCommand, positionMs: Long = 0, speed: Float = 1f) {
-        RustGraphqlApi.graphql(Mutation.audioCommand(action, positionMs, speed))
+        RustGraphqlApi.execute<Unit>(Mutation.audioCommand(action, positionMs, speed))
     }
 
     fun submit(
@@ -40,18 +40,18 @@ object AudioCommands {
         val current = AudioQueueClient.playback().mode
         val modes = MediaPlayMode.entries
         val next = modes[(modes.indexOf(current) + 1) % modes.size]
-        RustGraphqlApi.graphql(Mutation.updateAudioPlayMode(next))
+        RustGraphqlApi.execute<Unit>(Mutation.updateAudioPlayMode(next))
     }
 
     fun playTrack(audio: AudioItem) = submit {
         if (!audio.mediaId.isNullOrEmpty()) {
-            RustGraphqlApi.graphql(Mutation.audioPlayTrack(audio.mediaId!!))
+            RustGraphqlApi.execute<Unit>(Mutation.audioPlayTrack(audio.mediaId!!))
         } else {
-            RustGraphqlApi.graphql(Mutation.audioPlayPath(audio.path))
+            RustGraphqlApi.execute<Unit>(Mutation.audioPlayPath(audio.path))
         }
     }
 
     fun playPath(path: String) = submit {
-        RustGraphqlApi.graphql(Mutation.audioPlayPath(path))
+        RustGraphqlApi.execute<Unit>(Mutation.audioPlayPath(path))
     }
 }

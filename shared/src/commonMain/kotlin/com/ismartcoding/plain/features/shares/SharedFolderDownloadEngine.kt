@@ -73,7 +73,7 @@ object SharedFolderDownloadEngine {
     }
 
     suspend fun refresh() = stateLock.withLock {
-        val snapshot = RustGraphqlApi.read<SharedDownloadSnapshot>(Query.sharedDownloadQueue())
+        val snapshot = RustGraphqlApi.execute<SharedDownloadSnapshot>(Query.sharedDownloadQueue())
         if (!version.accept(snapshot.runtimeId, snapshot.revision)) return@withLock
         val tasks = snapshot.tasks.map { row ->
             SharedFolderBatchTask(
@@ -101,7 +101,7 @@ object SharedFolderDownloadEngine {
             is Request.Enqueue -> Mutation.enqueueSharedDownload(request.input)
             is Request.Control -> Mutation.sharedDownloadControl(request.command, request.id)
         }
-        RustGraphqlApi.graphql(operation)
+        RustGraphqlApi.execute<Unit>(operation)
     }
 
     private sealed interface Request {

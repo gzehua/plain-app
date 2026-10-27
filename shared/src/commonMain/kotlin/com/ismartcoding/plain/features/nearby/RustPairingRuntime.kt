@@ -10,12 +10,12 @@ import com.ismartcoding.plain.rust.native.RustHostReports
 import com.ismartcoding.plain.rust.native.RustNativeApi
 
 object RustPairingRuntime {
-    suspend fun states(): List<PairingState> = RustGraphqlApi.read(Query.pairingStates())
+    suspend fun states(): List<PairingState> = RustGraphqlApi.execute(Query.pairingStates())
 
     suspend fun start(device: NearbyDevice, mode: PairingMode = PairingMode.CHAT): PairingState {
         val ip = if (DiscoveryMethod.QR in device.discoveryMethods) device.bestIp.takeIf { it.isNotBlank() } ?: device.ips.firstOrNull() else null
         val host = ip?.let { "${if (':' in it) "[$it]" else it}:${device.port}" }
-        val state = RustGraphqlApi.read<PairingState>(
+        val state = RustGraphqlApi.execute<PairingState>(
             Mutation.pairDevice(PairingDeviceInput(id = device.id, host = host, mode = mode)),
         )
         PairingProjection.reconcile()
@@ -26,10 +26,10 @@ object RustPairingRuntime {
         generation: String,
         password: String,
     ): PairingState =
-        RustGraphqlApi.read(Mutation.pairDevice(PairingDeviceInput(generation = generation, password = password)))
+        RustGraphqlApi.execute(Mutation.pairDevice(PairingDeviceInput(generation = generation, password = password)))
 
     suspend fun cancelGeneration(generation: String): Boolean =
-        RustGraphqlApi.read(Mutation.cancelPairing(generation))
+        RustGraphqlApi.execute(Mutation.cancelPairing(generation))
 
     suspend fun cancel(id: String): Boolean {
         val attempt = states().lastOrNull {
@@ -46,5 +46,5 @@ object RustPairingRuntime {
     }
 
     suspend fun respond(request: PairingRequestInput, accepted: Boolean): Boolean =
-        RustGraphqlApi.read(Mutation.respondToPairing(request, accepted))
+        RustGraphqlApi.execute(Mutation.respondToPairing(request, accepted))
 }

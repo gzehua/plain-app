@@ -7,7 +7,7 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 object ChatMessageEditor {
     suspend fun updateTextAsync(item: ChatItem, newText: String): Boolean {
-        val result = RustGraphqlApi.read<ChatTextEdit>(Mutation.editChatText(item.id, newText))
+        val result = RustGraphqlApi.execute<ChatTextEdit>(Mutation.editChatText(item.id, newText))
         val current = result.chat
         item.fromId = current.fromId
         item.toId = current.toId

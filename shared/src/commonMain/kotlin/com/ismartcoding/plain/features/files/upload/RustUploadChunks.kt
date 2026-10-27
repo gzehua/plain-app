@@ -4,28 +4,24 @@ import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.models.MergeTaskStatus
-import com.ismartcoding.plain.rust.graphql.GraphqlRequest
+import com.ismartcoding.plain.rust.graphql.GraphqlClient
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.rust.native.RustNativeBindings
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
 
 internal object RustUploadChunks {
     private val client = UploadChunksClient(
         sendChunk = { id, index, bytes -> withContext(Dispatchers.IO) { RustNativeBindings.uploadChunk(id, index, bytes) } },
-        mutate = { RustGraphqlApi.graphql(it) },
-        query = { RustGraphqlApi.graphql(it) },
     )
 
     suspend fun replace(path: String, chunks: Iterator<ByteArray>): Boolean = client.replace(path, chunks)
 }
 internal class UploadChunksClient(
     private val sendChunk: suspend (String, Long, ByteArray) -> String,
-    private val mutate: suspend (GraphqlRequest) -> JsonObject,
-    private val query: suspend (GraphqlRequest) -> JsonObject,
+    private val api: GraphqlClient = RustGraphqlApi,
 ) {
     private val maxChunkBytes = 1024 * 1024
     @OptIn(ExperimentalUuidApi::class)
@@ -58,10 +54,10 @@ internal class UploadChunksClient(
             }
             if (buffered > 0) upload(buffer.copyOf(buffered))
             if (index == 0L) upload(ByteArray(0))
-            var status = RustGraphqlApi.read<MergeResult>(Mutation.mergeChunks(id, index, path, size), mutate)
+            var status = api.execute<MergeResult>(Mutation.mergeChunks(id, index, path, size))
             while (status.status in setOf(MergeTaskStatus.STARTED, MergeTaskStatus.MERGING)) {
                 delay(100)
-                status = RustGraphqlApi.read(Query.mergeStatus(id), query)
+                status = api.execute(Query.mergeStatus(id))
             }
             check(status.status == MergeTaskStatus.DONE) {
                 status.error ?: "Upload merge did not complete"
@@ -69,7 +65,7 @@ internal class UploadChunksClient(
             return true
         } finally {
             withContext(NonCancellable) {
-                try { mutate(Mutation.deleteChunks(id)) }
+                try { api.execute<Unit>(Mutation.deleteChunks(id)) }
                 catch (error: Exception) { LogCat.e("Upload chunk cleanup failed", error) }
             }
         }

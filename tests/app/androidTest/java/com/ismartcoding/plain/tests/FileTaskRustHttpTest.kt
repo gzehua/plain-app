@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 import android.os.Environment
@@ -72,13 +73,13 @@ class FileTaskRustHttpTest {
             try { TestFileTaskClient.create(FileTaskType.COPY,listOf(FileTaskOp("/system/test",File(root,"forbidden").path))) }
             catch (_: Exception) { rejected = true }
             assertTrue(rejected)
-            val spoofedCaller = runCatching { RustGraphqlApi.query("fileTasks(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, query: \"\", offset: 0, limit: 1) { id }") }
+            val spoofedCaller = runCatching { RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { " + "fileTasks(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, query: \"\", offset: 0, limit: 1) { id }" + " }")) }
             assertTrue(spoofedCaller.isFailure)
             Prefs.setApiPermissions(originalPermissions + "WRITE_EXTERNAL_STORAGE")
-            assertEquals(true, RustGraphqlApi.mutate("""copyFile(src: "${source.path}", dst: "${File(root,"public-copy.txt").path}", overwrite: false)""").getValue("copyFile").jsonPrimitive.boolean)
+            assertEquals(true, RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { " + """copyFile(src: "${source.path}", dst: "${File(root,"public-copy.txt").path}", overwrite: false)""" + " }")).getValue("copyFile").jsonPrimitive.boolean)
             assertEquals("synthetic",File(root,"public-copy.txt").readText())
             var publicFailed = false
-            try { RustGraphqlApi.mutate("""copyFile(src: "/system/test", dst: "${File(root,"public-never").path}", overwrite: false)""") }
+            try { RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { " + """copyFile(src: "/system/test", dst: "${File(root,"public-never").path}", overwrite: false)""" + " }")) }
             catch (_: Exception) { publicFailed = true }
             assertTrue(publicFailed)
         } finally {

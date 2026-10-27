@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.features.chat
 
+import com.ismartcoding.plain.features.settings.SavedValuesClient
 import com.ismartcoding.plain.features.chat.data.ChatTarget
 import com.ismartcoding.plain.features.chat.data.ChatTargetType
 import com.ismartcoding.plain.features.chat.models.MessageContent
@@ -14,31 +15,31 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.rust.graphql.selectionQuery
 
 object ChatClient {
-    suspend fun readDraft(id: String): String = RustGraphqlApi.readSavedValue(draftKey(id), "")
+    suspend fun readDraft(id: String): String = SavedValuesClient.get(draftKey(id), "")
 
-    suspend fun writeDraft(id: String, value: String) = RustGraphqlApi.writeSavedValue(draftKey(id), value)
+    suspend fun writeDraft(id: String, value: String) = SavedValuesClient.set(draftKey(id), value)
 
     private fun draftKey(id: String) = "chat_input_text:${ChatTarget.parseId(id).encodedToId}"
 
     suspend fun getChatItem(id: String): ChatItem? = ChatQueries.getChatItem(id)
 
     suspend fun sendContent(target: ChatTarget, content: MessageContent): ChatItem =
-        RustGraphqlApi.read<List<ChatItem>>(Mutation.sendChatItem(target.encodedToId, content.toJSONString())).single()
+        RustGraphqlApi.execute<List<ChatItem>>(Mutation.sendChatItem(target.encodedToId, content.toJSONString())).single()
 
     suspend fun sendText(target: ChatTarget, text: String): ChatItem =
         sendContent(target, MessageContent(MessageType.TEXT, MessageText(text)))
 
     suspend fun forward(id: String, targets: List<ChatTarget>): List<ChatItem> =
-        RustGraphqlApi.read(Mutation.forwardChatItems(id, targets.map { it.encodedToId }))
+        RustGraphqlApi.execute(Mutation.forwardChatItems(id, targets.map { it.encodedToId }))
 
     suspend fun deleteQuery(query: String): Int =
-        RustGraphqlApi.read<ActionResult>(Mutation.deleteChatItems(query)).affectedCount
+        RustGraphqlApi.execute<ActionResult>(Mutation.deleteChatItems(query)).affectedCount
 
     suspend fun deliver(id: String, recipients: List<String>? = null): ChatItem =
-        RustGraphqlApi.read(Mutation.deliverChatItem(id, recipients))
+        RustGraphqlApi.execute(Mutation.deliverChatItem(id, recipients))
 
     suspend fun deleteOne(id: String) {
-        RustGraphqlApi.graphql(Mutation.deleteChatItem(id))
+        RustGraphqlApi.execute<Unit>(Mutation.deleteChatItem(id))
     }
 
     suspend fun deleteByIds(ids: Set<String>) {

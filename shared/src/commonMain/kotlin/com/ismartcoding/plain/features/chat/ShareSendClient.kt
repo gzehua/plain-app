@@ -10,10 +10,10 @@ import kotlin.time.Instant
 
 object ShareSendClient {
     suspend fun sendContent(targets: List<ChatTarget>, content: MessageContent): List<ChatItem> =
-        RustGraphqlApi.read(Mutation.sendChatItems(targets.map { it.encodedToId }, content.toJSONString()))
+        RustGraphqlApi.execute(Mutation.sendChatItems(targets.map { it.encodedToId }, content.toJSONString()))
 
     suspend fun sendShare(targets: List<ChatTarget>, shareId: String): List<ChatItem> =
-        RustGraphqlApi.read(Mutation.sendShare(targets.map { it.encodedToId }, shareId))
+        RustGraphqlApi.execute(Mutation.sendShare(targets.map { it.encodedToId }, shareId))
 
     suspend fun sendFolderShare(
         targets: List<ChatTarget>,
@@ -21,5 +21,5 @@ object ShareSendClient {
         name: String,
         expiresAt: Instant?,
     ): List<ChatItem> =
-        RustGraphqlApi.read(Mutation.sendFolderShare(targets.map { it.encodedToId }, dirPath, name, expiresAt))
+        RustGraphqlApi.execute(Mutation.sendFolderShare(targets.map { it.encodedToId }, dirPath, name, expiresAt))
 }

@@ -15,11 +15,11 @@ object RustNearbyDevices {
         val token = Uuid.random().toString()
         discoverySession(token,
             acquire = {
-                RustGraphqlApi.graphql(Mutation.acquireDiscovery(it))
+                RustGraphqlApi.execute<Unit>(Mutation.acquireDiscovery(it))
                 apply(snapshot())
                 RustMdnsRuntime.refresh()
             },
-            release = { RustGraphqlApi.graphql(Mutation.releaseDiscovery(it)) },
+            release = { RustGraphqlApi.execute<Unit>(Mutation.releaseDiscovery(it)) },
         )
     }
     /**
@@ -28,7 +28,7 @@ object RustNearbyDevices {
      */
 
     suspend fun snapshot(): List<NearbyDevice> =
-        RustGraphqlApi.read(Query.nearbyDevices())
+        RustGraphqlApi.execute(Query.nearbyDevices())
 
     fun apply(devices: List<NearbyDevice>) {
         NearbyViewModel.nearbyDevices.value = devices

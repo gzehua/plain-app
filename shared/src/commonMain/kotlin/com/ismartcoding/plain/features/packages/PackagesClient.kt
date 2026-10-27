@@ -7,9 +7,9 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 object PackagesClient {
     suspend fun search(query: String, limit: Int, offset: Int, sortBy: FileSortBy): List<AppPackage> =
-        RustGraphqlApi.read(Query.packages(query, offset, limit, sortBy))
+        RustGraphqlApi.execute(Query.packages(query, offset, limit, sortBy))
 
-    suspend fun manifest(id: String): String = RustGraphqlApi.read(Query.packageManifest(id))
+    suspend fun manifest(id: String): String = RustGraphqlApi.execute(Query.packageManifest(id))
 
-    suspend fun count(query: String): Int = RustGraphqlApi.read(Query.packageCount(query))
+    suspend fun count(query: String): Int = RustGraphqlApi.execute(Query.packageCount(query))
 }

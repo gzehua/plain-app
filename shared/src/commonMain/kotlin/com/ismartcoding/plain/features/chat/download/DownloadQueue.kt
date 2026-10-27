@@ -56,7 +56,7 @@ object DownloadQueue {
     }
 
     suspend fun refresh() = stateLock.withLock {
-        val snapshot = RustGraphqlApi.read<ChatDownloadSnapshot>(Query.chatDownloadQueue())
+        val snapshot = RustGraphqlApi.execute<ChatDownloadSnapshot>(Query.chatDownloadQueue())
         if (!version.accept(snapshot.runtimeId, snapshot.revision)) return@withLock
         val tasks = snapshot.tasks.map { row ->
             DownloadTask(
@@ -78,7 +78,7 @@ object DownloadQueue {
             is Request.Enqueue -> Mutation.enqueueChatDownload(request.messageId, request.fileId, request.peerId)
             is Request.Control -> Mutation.chatDownloadControl(request.command, request.id)
         }
-        RustGraphqlApi.graphql(operation)
+        RustGraphqlApi.execute<Unit>(operation)
     }
 
     private sealed interface Request {

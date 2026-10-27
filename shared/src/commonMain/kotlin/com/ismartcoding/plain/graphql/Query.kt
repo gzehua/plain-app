@@ -404,7 +404,7 @@ object Query {
 
     fun feeds(withCount: Boolean): GraphqlRequest = GraphqlRequest(
         $$"query { feeds { $${Fragments.FEED_FIELDS} }" + (if (withCount) " feedEntryCounts { id count }" else "") + " }",
-        field = "feeds",
+        field = if (withCount) null else "feeds",
     )
 
     fun audioOverview(): GraphqlRequest = GraphqlRequest(

@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.features.files.upload
 
+import com.ismartcoding.plain.rust.graphql.graphqlClient
 import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.CancellationException
@@ -18,14 +19,16 @@ class RustUploadChunksTest {
         var queryError: Exception? = null
         val client = UploadChunksClient(
             sendChunk = { id, index, bytes -> ids.add(id); indices.add(index); chunks.add(bytes.copyOf()); failure },
-            mutate = { body ->
-                mutations.add(body)
-                when {
-                    body.query.contains("mergeChunks(") -> buildJsonObject { putJsonObject("mergeChunks") { put("status", "STARTED") } }
-                    else -> buildJsonObject { put("deleteChunks", true) }
-                }
-            },
-            query = { queries++; queryError?.let { throw it }; buildJsonObject { putJsonObject("mergeStatus") { put("status", mergeStatus); put("error", "Fixture merge failure") } } },
+            api = graphqlClient(
+                mutate = { body ->
+                    mutations.add(body)
+                    when {
+                        body.query.contains("mergeChunks(") -> buildJsonObject { putJsonObject("mergeChunks") { put("status", "STARTED") } }
+                        else -> buildJsonObject { put("deleteChunks", true) }
+                    }
+                },
+                query = { queries++; queryError?.let { throw it }; buildJsonObject { putJsonObject("mergeStatus") { put("status", mergeStatus); put("error", "Fixture merge failure") } } },
+            ),
         )
     }
 

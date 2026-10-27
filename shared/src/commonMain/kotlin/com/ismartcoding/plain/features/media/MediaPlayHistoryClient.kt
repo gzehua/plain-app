@@ -22,7 +22,7 @@ object MediaPlayHistoryClient {
     suspend fun find(mediaId: String, type: DataType, since: Instant): MediaPlayHistory? {
         synchronized(lock) { pendingWrite }?.join()
         val query = "type:${type.name} ids:${JsonHelper.jsonEncode(mediaId)} played_at:${JsonHelper.jsonEncode(">=$since")}"
-        return RustGraphqlApi.read<List<MediaPlayHistory>>(Query.mediaPlayHistory(query, 0, 1)).singleOrNull()
+        return RustGraphqlApi.execute<List<MediaPlayHistory>>(Query.mediaPlayHistory(query, 0, 1)).singleOrNull()
     }
 
     fun recordPlay(mediaId: String, type: DataType, positionMs: Long): Job =
@@ -35,7 +35,7 @@ object MediaPlayHistoryClient {
         val previousWrite = pendingWrite
         coIO {
             previousWrite?.join()
-            try { RustGraphqlApi.graphql(request) }
+            try { RustGraphqlApi.execute<Unit>(request) }
             catch (cancelled: CancellationException) { throw cancelled }
             catch (error: Exception) { LogCat.e("Write media playback history", error) }
         }.also { pendingWrite = it }

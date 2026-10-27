@@ -13,17 +13,17 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
 suspend fun getLogFileSize(): Long =
-    RustGraphqlApi.graphql(Query.appLogFilesSize()).getValue("appLogFilesSize").jsonPrimitive.long
+    RustGraphqlApi.execute<Unit>(Query.appLogFilesSize()).getValue("appLogFilesSize").jsonPrimitive.long
 
 suspend fun clearLogsAsync() {
-    RustGraphqlApi.graphql(Mutation.clearAppLogs())
+    RustGraphqlApi.execute<Unit>(Mutation.clearAppLogs())
 }
 
 fun exportLogsAsync() {
     coMain {
         DialogHelper.showLoading()
         try {
-            val path = RustGraphqlApi.graphql(Mutation.exportAppLogs()).getValue("exportAppLogs")
+            val path = RustGraphqlApi.execute<Unit>(Mutation.exportAppLogs()).getValue("exportAppLogs")
             if (path is JsonNull) {
                 DialogHelper.showMessage(Res.string.no_logs_error)
             } else {

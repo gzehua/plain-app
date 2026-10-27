@@ -5,40 +5,35 @@ import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.models.Tag
 import com.ismartcoding.plain.models.TagRelation
 import com.ismartcoding.plain.platform.system.DataType
-import com.ismartcoding.plain.rust.graphql.GraphqlRequest
+import com.ismartcoding.plain.rust.graphql.GraphqlClient
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-import kotlinx.serialization.json.JsonObject
 
-internal object RustContentTags : TagsApi(
-    query = { RustGraphqlApi.graphql(it) },
-    mutate = { RustGraphqlApi.graphql(it) },
-)
+internal object RustContentTags : TagsApi()
 internal open class TagsApi(
-    private val query: suspend (GraphqlRequest) -> JsonObject,
-    private val mutate: suspend (GraphqlRequest) -> JsonObject,
+    private val api: GraphqlClient = RustGraphqlApi,
 ) {
 
     suspend fun all(type: DataType): List<Tag> =
-        RustGraphqlApi.read(Query.tags(type), query)
+        api.execute(Query.tags(type))
 
     suspend fun create(type: DataType, name: String): Tag =
-        RustGraphqlApi.read(Mutation.createTag(type, name), mutate)
+        api.execute(Mutation.createTag(type, name))
 
     suspend fun rename(id: String, name: String): Tag =
-        RustGraphqlApi.read(Mutation.updateTag(id, name), mutate)
+        api.execute(Mutation.updateTag(id, name))
 
     suspend fun delete(id: String) {
-        mutate(Mutation.deleteTag(id))
+        api.execute<Unit>(Mutation.deleteTag(id))
     }
 
     suspend fun keys(id: String): List<String> =
-        RustGraphqlApi.read(Query.tagKeys(id), query)
+        api.execute(Query.tagKeys(id))
 
     suspend fun relations(keys: Set<String>, type: DataType): List<TagRelation> =
-        RustGraphqlApi.read(Query.tagRelations(type, keys), query)
+        api.execute(Query.tagRelations(type, keys))
 
     suspend fun edit(type: DataType, keys: Collection<String>, add: Collection<String>, remove: Collection<String>) {
         if (keys.isEmpty() || (add.isEmpty() && remove.isEmpty())) return
-        mutate(Mutation.updateTagRelations(type, keys, add, remove))
+        api.execute<Unit>(Mutation.updateTagRelations(type, keys, add, remove))
     }
 }

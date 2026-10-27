@@ -7,23 +7,23 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 object PomodoroClient {
     suspend fun today(): PomodoroToday =
-        RustGraphqlApi.read(Query.pomodoroToday())
+        RustGraphqlApi.execute(Query.pomodoroToday())
 
     suspend fun start(durationSec: Int): PomodoroToday {
-        RustGraphqlApi.graphql(Mutation.startPomodoro(durationSec))
+        RustGraphqlApi.execute<Unit>(Mutation.startPomodoro(durationSec))
         return today()
     }
 
     suspend fun pause(): PomodoroToday {
-        RustGraphqlApi.graphql(Mutation.pausePomodoro())
+        RustGraphqlApi.execute<Unit>(Mutation.pausePomodoro())
         return today()
     }
 
     suspend fun stop(): PomodoroToday {
-        RustGraphqlApi.graphql(Mutation.stopPomodoro())
+        RustGraphqlApi.execute<Unit>(Mutation.stopPomodoro())
         return today()
     }
 
     suspend fun adjust(durationSec: Int): PomodoroToday =
-        RustGraphqlApi.read(Mutation.adjustPomodoro(durationSec))
+        RustGraphqlApi.execute(Mutation.adjustPomodoro(durationSec))
 }

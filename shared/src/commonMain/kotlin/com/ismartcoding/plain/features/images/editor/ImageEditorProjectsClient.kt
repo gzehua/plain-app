@@ -10,21 +10,21 @@ import kotlinx.serialization.Serializable
 
 object ImageEditorProjectsClient {
     suspend fun listAsync(): List<ImageEditorProjectSummary> =
-        RustGraphqlApi.read<List<ProjectSummary>>(Query.imageEditorProjects()).map { row ->
+        RustGraphqlApi.execute<List<ProjectSummary>>(Query.imageEditorProjects()).map { row ->
                 ImageEditorProjectSummary(ID(row.id), row.thumbnail, row.canvasWidth, row.canvasHeight, row.layerCount, row.updatedAt)
             }
 
     suspend fun getByIdAsync(id: String): ImageEditorProject? =
-        RustGraphqlApi.read(Query.imageEditorProject(id))
+        RustGraphqlApi.execute(Query.imageEditorProject(id))
 
     suspend fun addOrUpdateAsync(id: String, updateItem: ImageEditorProject.() -> Unit): ImageEditorProject {
         val project = (if (id.isEmpty()) null else getByIdAsync(id)) ?: ImageEditorProject(id)
         project.updateItem()
-        return RustGraphqlApi.read(Mutation.saveImageEditorProject(id, project))
+        return RustGraphqlApi.execute(Mutation.saveImageEditorProject(id, project))
     }
 
     suspend fun deleteAsync(id: String) {
-        RustGraphqlApi.graphql(Mutation.deleteImageEditorProject(id))
+        RustGraphqlApi.execute<Unit>(Mutation.deleteImageEditorProject(id))
     }
 }
 

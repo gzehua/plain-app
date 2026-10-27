@@ -6,8 +6,8 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 object RustSmsQuery {
     suspend fun search(query: String, limit: Int, offset: Int): List<Sms> =
-        RustGraphqlApi.read(Query.sms(query, offset, limit))
+        RustGraphqlApi.execute(Query.sms(query, offset, limit))
 
     suspend fun count(query: String): Int =
-        RustGraphqlApi.read(Query.smsCount(query))
+        RustGraphqlApi.execute(Query.smsCount(query))
 }

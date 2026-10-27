@@ -13,7 +13,7 @@ object SharesClient {
         readOnly: Boolean,
         expiresAt: Instant?,
     ): ShareRecord =
-        RustGraphqlApi.read(Mutation.createShare(name, realPaths, readOnly, expiresAt))
+        RustGraphqlApi.execute(Mutation.createShare(name, realPaths, readOnly, expiresAt))
 
     suspend fun updateShare(
         id: String,
@@ -21,17 +21,17 @@ object SharesClient {
         expiresAt: Instant?,
         realPaths: List<String>? = null,
     ): ShareRecord =
-        RustGraphqlApi.read(Mutation.updateShare(id, name, expiresAt, realPaths))
+        RustGraphqlApi.execute(Mutation.updateShare(id, name, expiresAt, realPaths))
 
     suspend fun deleteShare(id: String) {
-        RustGraphqlApi.graphql(Mutation.deleteShare(id))
+        RustGraphqlApi.execute<Unit>(Mutation.deleteShare(id))
     }
 
     suspend fun listShares(): List<ShareRecord> =
-        RustGraphqlApi.read(Query.shareRecords())
+        RustGraphqlApi.execute(Query.shareRecords())
 
     suspend fun getShare(id: String): ShareRecord? =
-        RustGraphqlApi.read(Query.shareRecord(id))
+        RustGraphqlApi.execute(Query.shareRecord(id))
 
     suspend fun buildLink(
         share: ShareRecord,

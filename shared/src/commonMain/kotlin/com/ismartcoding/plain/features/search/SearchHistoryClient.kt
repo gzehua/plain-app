@@ -1,13 +1,13 @@
 package com.ismartcoding.plain.features.search
 
-import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
+import com.ismartcoding.plain.features.settings.SavedValuesClient
 
 object SearchHistoryClient {
-    suspend fun read(): List<String> = RustGraphqlApi.readSavedValue("recent_searches", emptyList())
+    suspend fun read(): List<String> = SavedValuesClient.get("recent_searches", emptyList())
 
-    suspend fun record(term: String) = RustGraphqlApi.writeSavedValue("recent_searches", (listOf(term) + read().filterNot { it.equals(term, ignoreCase = true) }).take(10))
+    suspend fun record(term: String) = SavedValuesClient.set("recent_searches", (listOf(term) + read().filterNot { it.equals(term, ignoreCase = true) }).take(10))
 
-    suspend fun remove(term: String) = RustGraphqlApi.writeSavedValue("recent_searches", read().filterNot { it.equals(term, ignoreCase = true) })
+    suspend fun remove(term: String) = SavedValuesClient.set("recent_searches", read().filterNot { it.equals(term, ignoreCase = true) })
 
-    suspend fun clear() = RustGraphqlApi.writeSavedValue("recent_searches", emptyList<String>())
+    suspend fun clear() = SavedValuesClient.set("recent_searches", emptyList<String>())
 }

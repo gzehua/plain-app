@@ -13,7 +13,7 @@ object RustChatStore {
     suspend fun getByChannelId(id: String): List<ChatItem> = page(channel = id)
 
     suspend fun getLatestConversations(): Map<String, ChatItem> =
-        RustGraphqlApi.read<List<ChatConversation>>(Query.chatConversations()).associate { it.id to it.chat }
+        RustGraphqlApi.execute<List<ChatConversation>>(Query.chatConversations()).associate { it.id to it.chat }
 
     suspend fun search(
         text: String,
@@ -21,7 +21,7 @@ object RustChatStore {
         offset: Int,
     ): List<ChatItem> = page(text = text, limit = limit, offset = offset, descending = true)
 
-    suspend fun count(text: String): Int = RustGraphqlApi.read(Query.chatCount("text:${term(text)}"))
+    suspend fun count(text: String): Int = RustGraphqlApi.execute(Query.chatCount("text:${term(text)}"))
 
     suspend fun page(
         peer: String? = null,
@@ -39,10 +39,10 @@ object RustChatStore {
             if (descending) "sort:desc" else null,
             if (latest) "latest:true" else null,
         ).joinToString(" ")
-        return RustGraphqlApi.read(Query.chatRecords(query, offset, limit ?: Int.MAX_VALUE))
+        return RustGraphqlApi.execute(Query.chatRecords(query, offset, limit ?: Int.MAX_VALUE))
     }
 
-    suspend fun getById(id: String): ChatItem? = RustGraphqlApi.read(Query.chatItem(id))
+    suspend fun getById(id: String): ChatItem? = RustGraphqlApi.execute(Query.chatItem(id))
 
     private fun term(value: String): String = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 }

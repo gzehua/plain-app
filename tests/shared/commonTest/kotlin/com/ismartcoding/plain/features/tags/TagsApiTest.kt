@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.features.tags
 
+import com.ismartcoding.plain.rust.graphql.graphqlClient
 import kotlinx.serialization.json.*
 import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import com.ismartcoding.plain.lib.JsonHelper
@@ -15,11 +16,16 @@ class TagsApiTest {
     @Test
     fun create_and_rename_do_not_preread_or_generate_local_records() = runTest {
         val requests = mutableListOf<GraphqlRequest>()
-        val api = TagsApi(query = { error("Unexpected preread: $it") }, mutate = {
-            requests.add(it)
-            val field = if (it.query.contains("createTag(")) "createTag" else "updateTag"
-            JsonHelper.jsonDecode<JsonObject>("""{"$field":{"id":"server-tag","name":"Label","count":0,"type":6}}""")
-        })
+        val api = TagsApi(
+            api = graphqlClient(
+                query = { error("Unexpected preread: $it") },
+                mutate = {
+                    requests.add(it)
+                    val field = if (it.query.contains("createTag(")) "createTag" else "updateTag"
+                    JsonHelper.jsonDecode<JsonObject>("""{"$field":{"id":"server-tag","name":"Label","count":0,"type":6}}""")
+                },
+            ),
+        )
         assertEquals("server-tag", api.create(DataType.NOTE, "Label").id.also { assertEquals(1, requests.size) })
         assertTrue(requests.single().query.contains("createTag("))
         assertFalse("id" in requests.single().variables)
@@ -33,10 +39,15 @@ class TagsApiTest {
     @Test
     fun batch_edits_send_one_key_list_without_metadata_or_prereads() = runTest {
         val requests = mutableListOf<GraphqlRequest>()
-        val api = TagsApi(query = { error("Unexpected preread") }, mutate = {
-            requests.add(it)
-            JsonHelper.jsonDecode<JsonObject>("""{"updateTagRelations":true}""")
-        })
+        val api = TagsApi(
+            api = graphqlClient(
+                query = { error("Unexpected preread") },
+                mutate = {
+                    requests.add(it)
+                    JsonHelper.jsonDecode<JsonObject>("""{"updateTagRelations":true}""")
+                },
+            ),
+        )
         api.edit(DataType.FILE, listOf("/a, b", "/second"), listOf("add"), listOf("remove"))
         assertEquals(1, requests.size)
         assertEquals(listOf("/a, b", "/second"), requests.single().variables.getValue("keys").jsonArray.map { it.jsonPrimitive.content })

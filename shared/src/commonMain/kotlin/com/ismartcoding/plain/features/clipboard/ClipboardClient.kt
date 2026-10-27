@@ -10,10 +10,10 @@ import com.ismartcoding.plain.rust.graphql.selectionQuery
 
 object ClipboardClient {
     suspend fun getPage(limit: Int, offset: Int, query: String = ""): List<ClipboardItem> =
-        RustGraphqlApi.read(Query.clipboardItems(limit, offset, query))
+        RustGraphqlApi.execute(Query.clipboardItems(limit, offset, query))
 
     suspend fun count(query: String = ""): Int =
-        RustGraphqlApi.read(Query.clipboardItemCount(query))
+        RustGraphqlApi.execute(Query.clipboardItemCount(query))
 
     suspend fun deleteByIds(ids: List<String>): Int {
         if (ids.isEmpty()) return 0
@@ -21,7 +21,7 @@ object ClipboardClient {
     }
 
     suspend fun delete(query: String): Int =
-        RustGraphqlApi.read<ActionResult>(Mutation.deleteClipboardItems(query)).affectedCount
+        RustGraphqlApi.execute<ActionResult>(Mutation.deleteClipboardItems(query)).affectedCount
 
     suspend fun clear() {
         delete("all:true")

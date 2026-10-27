@@ -6,5 +6,5 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 object FileTaskClient {
     suspend fun execute(type: FileTaskType, ops: List<FileTaskOp>): FileTask =
-        RustGraphqlApi.read(Mutation.createFileTask(type, ops))
+        RustGraphqlApi.execute(Mutation.createFileTask(type, ops))
 }

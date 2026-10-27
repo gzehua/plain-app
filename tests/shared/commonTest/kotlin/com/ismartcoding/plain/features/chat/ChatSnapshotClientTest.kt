@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.features.chat
 
+import com.ismartcoding.plain.rust.graphql.graphqlClient
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.coroutines.test.runTest
@@ -19,28 +20,53 @@ class ChatSnapshotClientTest {
     fun batchesExistingChatItemSelectionsAndDeduplicatesIdsWithoutAnExtraApi() = runTest {
         val ids = (0 until 130).map { "message-$it" }
         val sizes = mutableListOf<Int>()
-        val snapshot = readChatSnapshot(ids + ids.first()) { selection ->
-            val size = selection.query.split("chatItem(").size - 1
-            sizes += size
-            JsonObject((0 until size).associate { "message$it" to JsonNull })
-        }
+        val snapshot = readChatSnapshot(
+            ids + ids.first(),
+            api = graphqlClient(
+                query = { selection ->
+                    val size = selection.query.split("chatItem(").size - 1
+                    sizes += size
+                    JsonObject((0 until size).associate { "message$it" to JsonNull })
+                },
+            ),
+        )
         assertEquals(listOf(128, 2), sizes)
         assertEquals(ids, snapshot.keys.toList())
         assertTrue(snapshot.values.all { it == null })
-        assertTrue(readChatSnapshot(emptyList()) { error("No request for empty UI state") }.isEmpty())
+        assertTrue(readChatSnapshot(
+            emptyList(),
+            api = graphqlClient(
+                query = { error("No request for empty UI state") },
+            ),
+        ).isEmpty())
     }
 
     @Test
     fun preservesLiteralIdsAndRequiresAnExplicitAliasResult() = runTest {
         val id = "quoted\"\nidentifier"
-        val snapshot = readChatSnapshot(listOf(id)) { selection ->
-            assertEquals(id, selection.variables.getValue("id0").jsonPrimitive.content)
-            JsonObject(mapOf("message0" to JsonHelper.jsonEncodeToElement(chat(id))))
-        }
+        val snapshot = readChatSnapshot(
+            listOf(id),
+            api = graphqlClient(
+                query = { selection ->
+                    assertEquals(id, selection.variables.getValue("id0").jsonPrimitive.content)
+                    JsonObject(mapOf("message0" to JsonHelper.jsonEncodeToElement(chat(id))))
+                },
+            ),
+        )
         assertEquals(id, snapshot.getValue(id)?.id)
-        assertFailsWith<NoSuchElementException> { readChatSnapshot(listOf(id)) { JsonObject(emptyMap()) } }
+        assertFailsWith<NoSuchElementException> { readChatSnapshot(
+            listOf(id),
+            api = graphqlClient(
+                query = { JsonObject(emptyMap()) },
+            ),
+        ) }
         assertFailsWith<IllegalArgumentException> {
-            readChatSnapshot(listOf(id)) { JsonObject(mapOf("message0" to JsonHelper.jsonEncodeToElement(chat("other")))) }
+            readChatSnapshot(
+                listOf(id),
+                api = graphqlClient(
+                    query = { JsonObject(mapOf("message0" to JsonHelper.jsonEncodeToElement(chat("other")))) },
+                ),
+            )
         }
     }
 }

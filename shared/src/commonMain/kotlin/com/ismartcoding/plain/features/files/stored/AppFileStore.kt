@@ -32,7 +32,7 @@ object AppFileStore {
 
     private suspend fun importPath(path: String, name: String, mime: String, deleteSource: Boolean): AppFile {
         val file = withContext(NonCancellable) {
-            RustGraphqlApi.read<AppFile>(Mutation.importAppFile(path, name, mime, deleteSource))
+            RustGraphqlApi.execute<AppFile>(Mutation.importAppFile(path, name, mime, deleteSource))
         }
         try {
             currentCoroutineContext().ensureActive()
@@ -44,17 +44,17 @@ object AppFileStore {
     }
 
     suspend fun page(offset: Int, limit: Int, query: String = ""): List<VAppFile> =
-        RustGraphqlApi.read<List<AppFile>>(Query.appFiles(offset, limit, query))
+        RustGraphqlApi.execute<List<AppFile>>(Query.appFiles(offset, limit, query))
             .map { VAppFile(it, it.fileName) }
 
     suspend fun count(query: String = ""): Int =
-        RustGraphqlApi.read(Query.appFileCount(query))
+        RustGraphqlApi.execute(Query.appFileCount(query))
 
     suspend fun displayName(id: String): String =
-        RustGraphqlApi.read<List<AppFileName>>(Query.appFileName("text:$id")).firstOrNull()?.fileName.orEmpty()
+        RustGraphqlApi.execute<List<AppFileName>>(Query.appFileName("text:$id")).firstOrNull()?.fileName.orEmpty()
 
     suspend fun release(id: String) {
-        RustGraphqlApi.graphql(Mutation.releaseAppFile(id.substringBefore('.')))
+        RustGraphqlApi.execute<Unit>(Mutation.releaseAppFile(id.substringBefore('.')))
     }
 }
 

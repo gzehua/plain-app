@@ -5,5 +5,5 @@ import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 object RemoteFiles {
     suspend fun cache(url: String, name: String = ""): String =
-        RustGraphqlApi.read(Mutation.cacheRemoteFile(url, name))
+        RustGraphqlApi.execute(Mutation.cacheRemoteFile(url, name))
 }

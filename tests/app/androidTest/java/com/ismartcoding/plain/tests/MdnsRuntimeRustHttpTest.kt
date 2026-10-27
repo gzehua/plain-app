@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.tests
 
+import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.rust.native.RustNativeApi
 
@@ -44,14 +45,14 @@ class MdnsRuntimeRustHttpTest {
         val debugToken = Uuid.random().toString()
         try {
             suspend fun discovering(): Boolean =
-                RustGraphqlApi.query("isDiscovering").getValue("isDiscovering").jsonPrimitive.boolean
-            assertEquals(true, RustGraphqlApi.mutate("startDiscovery").getValue("startDiscovery").jsonPrimitive.boolean)
+                RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { isDiscovering }")).getValue("isDiscovering").jsonPrimitive.boolean
+            assertEquals(true, RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { startDiscovery }")).getValue("startDiscovery").jsonPrimitive.boolean)
             assertTrue(discovering())
             val started = snapshot()
             assertTrue(started.receiver)
             assertTrue(started.scanning)
             assertTrue(started.revision > before.revision)
-            assertEquals(true, RustGraphqlApi.mutate("stopDiscovery").getValue("stopDiscovery").jsonPrimitive.boolean)
+            assertEquals(true, RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { stopDiscovery }")).getValue("stopDiscovery").jsonPrimitive.boolean)
             assertFalse(discovering())
             val stopped = snapshot()
             assertFalse(stopped.scanning)
@@ -67,7 +68,7 @@ class MdnsRuntimeRustHttpTest {
                 assertTrue(packets.all { it.srcPort > 0 && it.size > 0 })
             } else assertTrue(packets.any { it.summary.contains("PTR") && it.detail.contains("_plainapp._tcp.local") && it.srcPort > 0 && it.size > 0 })
             assertTrue(captured.services.all { it.serviceType == "_plainapp._tcp.local" })
-            RustGraphqlApi.mutate("stopDiscovery")
+            RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { stopDiscovery }"))
             assertTrue(discovering())
             RustMdnsRuntime.debugStop(debugToken).await()
             val cleaned = snapshot()
@@ -76,7 +77,7 @@ class MdnsRuntimeRustHttpTest {
             assertTrue(cleaned.packetsOut.isEmpty())
         } finally {
             RustMdnsRuntime.debugStop(debugToken).await()
-            RustGraphqlApi.mutate(if (before.manualScanning) "startDiscovery" else "stopDiscovery")
+            RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { " + (if (before.manualScanning) "startDiscovery" else "stopDiscovery") + " }"))
         }
     }
 }

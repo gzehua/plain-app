@@ -28,7 +28,7 @@ internal object RustDlnaSender {
 
     suspend fun call(command: CastCommand) {
         val request = Mutation.dlna(command)
-        apply(RustGraphqlApi.read<CastSnapshot>(request))
+        apply(RustGraphqlApi.execute<CastSnapshot>(request))
     }
 
     fun addItem(item: IMedia) { coIO { call(CastCommand.Add(CastItem.from(item))) } }

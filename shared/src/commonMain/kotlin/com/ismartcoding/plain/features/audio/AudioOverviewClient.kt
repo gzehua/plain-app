@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.merge
 
 object AudioOverviewClient {
     suspend fun read(): AudioOverview =
-        RustGraphqlApi.read(Query.audioOverview())
+        RustGraphqlApi.execute(Query.audioOverview())
     val updates get() = merge(
         AppSubscriptions.contentChanged.changes(),
         AppSubscriptions.mediaLibraryUpdated.changes { DataType.AUDIO in it.types },

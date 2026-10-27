@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.features.feeds
 
+import com.ismartcoding.plain.rust.graphql.graphqlClient
 import kotlinx.serialization.json.*
 import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import com.ismartcoding.plain.lib.JsonHelper
@@ -16,10 +17,15 @@ class FeedsApiTest {
     @Test
     fun create_and_edit_each_make_one_mutation_without_prereads_or_second_steps() = runTest {
         val requests = mutableListOf<GraphqlRequest>()
-        val api = FeedsApi(query = { error("Unexpected preread: $it") }, mutate = {
-            requests.add(it)
-            JsonObject(mapOf((if (it.query.contains("createFeed(")) "createFeed" else "updateFeed") to feed))
-        })
+        val api = FeedsApi(
+            api = graphqlClient(
+                query = { error("Unexpected preread: $it") },
+                mutate = {
+                    requests.add(it)
+                    JsonObject(mapOf((if (it.query.contains("createFeed(")) "createFeed" else "updateFeed") to feed))
+                },
+            ),
+        )
         assertEquals("fixture", api.create("https://example.org/feed", "Named").id)
         assertEquals(1, requests.size)
         assertEquals(JsonPrimitive("Named"), requests.single().variables["name"])
@@ -40,10 +46,15 @@ class FeedsApiTest {
     @Test
     fun preview_is_one_query_without_mutations_and_decodes_the_contract_dto() = runTest {
         val requests = mutableListOf<GraphqlRequest>()
-        val api = FeedsApi(query = {
-            requests.add(it)
-            JsonHelper.jsonDecode<JsonObject>("""{"feedPreview":{"title":"A & B"}}""")
-        }, mutate = { error("Preview must not persist: $it") })
+        val api = FeedsApi(
+            api = graphqlClient(
+                query = {
+                    requests.add(it)
+                    JsonHelper.jsonDecode<JsonObject>("""{"feedPreview":{"title":"A & B"}}""")
+                },
+                mutate = { error("Preview must not persist: $it") },
+            ),
+        )
         assertEquals("A & B", api.preview("https://example.org/feed").title)
         assertEquals(1, requests.size)
         assertTrue(requests.single().query.contains("feedPreview("))
@@ -51,10 +62,15 @@ class FeedsApiTest {
     @Test
     fun list_and_counts_share_one_request_and_project_the_returned_counts() = runTest {
         val requests = mutableListOf<GraphqlRequest>()
-        val api = FeedsApi(query = {
-            requests.add(it)
-            JsonHelper.jsonDecode<JsonObject>("""{"feeds":[$feed],"feedEntryCounts":[{"id":"fixture","count":7}]}""")
-        }, mutate = { error("List must not mutate") })
+        val api = FeedsApi(
+            api = graphqlClient(
+                query = {
+                    requests.add(it)
+                    JsonHelper.jsonDecode<JsonObject>("""{"feeds":[$feed],"feedEntryCounts":[{"id":"fixture","count":7}]}""")
+                },
+                mutate = { error("List must not mutate") },
+            ),
+        )
         assertEquals(7, api.getAll(withCount = true).single().entryCount)
         assertEquals(1, requests.size)
         assertTrue(requests.single().query.contains("feedEntryCounts"))

@@ -10,7 +10,7 @@ data class GraphqlRequest(
     val query: String,
     val variables: Map<String, JsonElement> = emptyMap(),
     val operationName: String? = null,
-    @Transient val field: String = "",
+    @PublishedApi @Transient internal val field: String? = null,
 )
 
 internal inline fun <reified T> variable(name: String, value: T): Pair<String, JsonElement> =
