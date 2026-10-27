@@ -9,4 +9,5 @@ data class BookmarkInput(
     var groupId: String,
     var pinned: Boolean,
     var sortOrder: Int,
+    var faviconUrl: String? = null,
 )

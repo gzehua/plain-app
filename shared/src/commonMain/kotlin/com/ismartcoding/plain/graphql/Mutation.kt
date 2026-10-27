@@ -286,12 +286,6 @@ object Mutation {
         field = "deleteNotes",
     )
 
-    fun fetchBookmarkMetadata(id: String): GraphqlRequest = GraphqlRequest(
-        $$"mutation($id: ID!) { fetchBookmarkMetadata(id: $id) { $${Fragments.BOOKMARK} } }",
-        mapOf(variable("id", id)),
-        field = "fetchBookmarkMetadata",
-    )
-
     fun startPomodoro(durationSec: Int): GraphqlRequest = GraphqlRequest(
         $$"mutation($durationSec: Int!) { startPomodoro(durationSec: $durationSec) }",
         mapOf(variable("durationSec", durationSec)),
