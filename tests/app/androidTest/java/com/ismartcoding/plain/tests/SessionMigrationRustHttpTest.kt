@@ -53,7 +53,7 @@ class SessionMigrationRustHttpTest {
                     snapshotFlow { MainViewModel.pendingLoginRequest.value }.first { it?.clientId == id }!!
                 }
             }
-            http.webSocket("ws://127.0.0.1:${Prefs.httpPort.value}/?cid=$id&auth=1") { socket ->
+            http.webSocket("ws://127.0.0.1:${Prefs.httpPort.value}/auth?cid=$id&auth=1") { socket ->
                 socket.sendBinary(chaCha20Encrypt(passwordKey, JsonHelper.jsonEncode(request)))
                 val pending = JsonHelper.jsonDecode<JsonObject>(requireNotNull(chaCha20Decrypt(passwordKey,
                     requireNotNull(withTimeout(10_000) { socket.incoming.receive() }.binary))).decodeToString())

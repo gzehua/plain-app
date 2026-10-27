@@ -117,7 +117,7 @@ async function login(host, port, clientId) {
   // taps that prompt, and the socket has to stay open until then.
   let approved = false
   const response = await new Promise((resolve, reject) => {
-    const ws = new WebSocket(`ws://${host}:${port}/?cid=${encodeURIComponent(clientId)}&auth=1`)
+    const ws = new WebSocket(`ws://${host}:${port}/auth?cid=${encodeURIComponent(clientId)}&auth=1`)
     const timer = setTimeout(() => {
       ws.close()
       reject(new Error(approved ? 'the device never answered after the approval — nobody accepted the prompt' : 'login handshake timed out'))
