@@ -14,7 +14,7 @@ import kotlin.concurrent.Volatile
 
 object RustRuntime {
     private val lock = PlatformLock()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     @Volatile var isCoreInitialized: Boolean = false
         private set
@@ -43,7 +43,6 @@ object RustRuntime {
             isCoreInitialized = true
             RustHostApiHandler.start(scope, audioCatalogObserver)
             com.ismartcoding.plain.rust.graphql.RustGraphqlSubscriptions.start(scope)
-            com.ismartcoding.plain.rust.graphql.AppSubscriptions.start(scope)
             com.ismartcoding.plain.app.SubscriptionObservers.start(scope)
             collectorsStarted = true
         }
