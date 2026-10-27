@@ -1,8 +1,5 @@
 package com.ismartcoding.plain.ui.audio
 
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.filter
 import com.ismartcoding.plain.rust.graphql.AppSubscriptions
 import com.ismartcoding.plain.rust.graphql.changes
 import com.ismartcoding.plain.features.audio.toPlaylistAudio
@@ -20,6 +17,13 @@ import kotlinx.coroutines.CancellationException
 import com.ismartcoding.plain.lib.logcat.LogCat
 
 class AudioQueueViewModel : ViewModel() {
+    companion object {
+        private val active = mutableSetOf<AudioQueueViewModel>()
+        suspend fun refreshActive() {
+            for (viewModel in active.toList()) viewModel.loadAsync()
+        }
+    }
+
     val audioPlayerVisible = MutableStateFlow(false)
     val queueItems = mutableStateOf<List<AudioItem>>(listOf())
     val queueCount = mutableStateOf(0)
@@ -35,28 +39,19 @@ class AudioQueueViewModel : ViewModel() {
     private val pageLimit = 200
 
     init {
+        active.add(this)
         viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
-            merge(
-                AppSubscriptions.contentChanged.changes().map { false },
-                AppSubscriptions.audioPlaybackChanged.changes().map { true },
-                AppSubscriptions.audioLibraryChanged.changes().map { false },
-            ).collect { playbackChanged ->
-                try {
-                    when (playbackChanged) {
-                        true -> {
-                            val playback = AudioQueueClient.playback()
-                            selectedPath.value = playback.path.orEmpty()
-                            selectedMediaId.value = playback.mediaId
-                        }
-                        false -> loadAsync()
-                    }
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (error: Exception) {
-                    LogCat.e("Refresh audio queue", error)
-                }
+            AppSubscriptions.contentChanged.changes().collect {
+                try { loadAsync() }
+                catch (cancelled: CancellationException) { throw cancelled }
+                catch (error: Exception) { LogCat.e("Refresh audio queue", error) }
             }
         }
+    }
+
+    override fun onCleared() {
+        active.remove(this)
+        super.onCleared()
     }
 
     suspend fun loadAsync() {

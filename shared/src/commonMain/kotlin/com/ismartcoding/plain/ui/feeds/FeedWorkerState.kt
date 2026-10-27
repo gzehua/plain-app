@@ -4,11 +4,11 @@ import androidx.compose.runtime.mutableStateMapOf
 import com.ismartcoding.plain.models.FeedSyncState
 import com.ismartcoding.plain.features.feeds.FeedsClient
 import com.ismartcoding.plain.features.feeds.FeedWorkerStatus
-import com.ismartcoding.plain.api.graphql.models.FeedSyncUpdate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 
 object FeedWorkerState {
     private val lock = Mutex()
@@ -16,12 +16,14 @@ object FeedWorkerState {
 
     fun status(id: String): FeedWorkerStatus? = states[id]?.let { FeedWorkerStatus.valueOf(it.status) }
 
-    internal fun revision(id: String): Long? = states[id]?.revision
+    internal fun completed(): Map<String, FeedSyncState> = states.filterValues {
+        it.status in setOf("COMPLETED", "ERROR", "CANCELLED")
+    }
 
     suspend fun refresh() = lock.withLock { applyLocked(FeedsClient.syncStates(), replace = true) }
     internal suspend fun apply(update: FeedSyncUpdate) = lock.withLock {
         withContext(Dispatchers.Main) { update.removed.forEach(states::remove) }
-        applyLocked(update.states, replace = false)
+        applyLocked(update.states, replace = update.replace)
     }
 
     private suspend fun applyLocked(values: List<FeedSyncState>, replace: Boolean) = withContext(Dispatchers.Main) {
@@ -32,3 +34,10 @@ object FeedWorkerState {
         }
     }
 }
+
+@Serializable
+internal data class FeedSyncUpdate(
+    val states: List<FeedSyncState>,
+    val removed: List<String>,
+    val replace: Boolean,
+)

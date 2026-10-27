@@ -1,8 +1,5 @@
 package com.ismartcoding.plain.ui.web
 
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.filter
 import com.ismartcoding.plain.rust.graphql.AppSubscriptions
 import com.ismartcoding.plain.rust.graphql.changes
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -15,6 +12,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,12 +54,13 @@ fun ClipboardHistoryPage(
     val scope = rememberCoroutineScope()
     val items by vm.itemsFlow.collectAsState()
 
+    DisposableEffect(vm) {
+        ClipboardHistoryViewModel.attach(vm)
+        onDispose { ClipboardHistoryViewModel.detach(vm) }
+    }
     LaunchedEffect(vm) {
         launch { vm.loadAsync() }
-        merge(
-            AppSubscriptions.contentChanged.changes(),
-            AppSubscriptions.clipboardHistoryChanged.changes(),
-        ).collect { vm.loadAsync() }
+        AppSubscriptions.contentChanged.changes().collect { vm.loadAsync() }
     }
 
     val refreshLayoutState = rememberRefreshLayoutState {

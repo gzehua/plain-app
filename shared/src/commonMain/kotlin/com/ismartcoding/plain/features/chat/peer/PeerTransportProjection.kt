@@ -1,6 +1,6 @@
 package com.ismartcoding.plain.features.chat.peer
 
-import com.ismartcoding.plain.api.graphql.models.PeerTransportState
+import kotlinx.serialization.Serializable
 
 import com.ismartcoding.plain.ui.chat.ChatViewModel
 import com.ismartcoding.plain.features.chat.peer.transport.PeerTransportType
@@ -12,3 +12,6 @@ object PeerTransportProjection {
         }
     }
 }
+
+@Serializable
+internal data class PeerTransportState(val peerId: String, val transport: String)

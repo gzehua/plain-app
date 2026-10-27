@@ -13,12 +13,6 @@ pub(crate) fn install(
 ) -> Result<(), String> {
     let _entered = runtime.enter();
     let host = Arc::new(server.host_events()?);
-    let callbacks = host.clone();
-    runtime.spawn(async move {
-        if let Err(error) = callbacks.observe_session_callbacks().await {
-            eprintln!("Session host callbacks failed: {error}");
-        }
-    });
     let changes = Arc::new(tokio::sync::Notify::new());
     let receiver = changes.clone();
     let weak = Arc::downgrade(&host);

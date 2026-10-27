@@ -6,7 +6,6 @@ import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.features.telephony.sms.SmsProviderObserver
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.http_server_failed
-import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.Channel
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.withIO
@@ -14,10 +13,7 @@ import com.ismartcoding.plain.mdns.MdnsHotspotWatcher
 import com.ismartcoding.plain.platform.network.NetworkEvents
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.Prefs
-import com.ismartcoding.plain.rust.graphql.AppSubscriptions
-import com.ismartcoding.plain.rust.graphql.changes
-import com.ismartcoding.plain.rust.RustHttpStatus
-import com.ismartcoding.plain.rust.native.RustNativeBindings
+import com.ismartcoding.plain.features.settings.ServiceState
 import com.ismartcoding.plain.services.PNotificationListenerService
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import kotlinx.coroutines.CancellationException
@@ -28,9 +24,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 
@@ -46,14 +40,7 @@ internal object HttpServerResources {
         get() = httpStarted == true && Prefs.desktopAccess.value && Permission.NOTIFICATION_LISTENER.name in Prefs.apiPermissions.value
 
     fun observe() = scope.launch(start = CoroutineStart.UNDISPATCHED) {
-        val httpUpdates = flow<ResourceUpdate> {
-            val output = this
-            AppSubscriptions.httpServerChanged
-                .onSubscription { output.emit(HttpStatusUpdate(RustNativeBindings::httpStatus)) }
-                .changes().collect {
-                    emit(HttpStatusUpdate(RustNativeBindings::httpStatus))
-                }
-        }
+        val httpUpdates = HttpServerManager.httpServerState.map { HttpStatusUpdate(it == ServiceState.ON) }
         merge(
             httpUpdates,
             combine(
@@ -64,19 +51,14 @@ internal object HttpServerResources {
                 .map { NotificationSettingUpdate },
         ).collect { update ->
             when (update) {
-                is HttpStatusUpdate -> applyHttpStatus(update.readStatus)
+                is HttpStatusUpdate -> applyHttpStatus(update.started)
                 NotificationSettingUpdate -> applyNotificationListener()
             }
         }
     }
 
-    private suspend fun applyHttpStatus(readStatus: () -> String) = withIO {
+    private suspend fun applyHttpStatus(started: Boolean) = withIO {
         try {
-            val started = when (val state = JsonHelper.jsonDecode<RustHttpStatus>(readStatus()).state) {
-                "started" -> true
-                "stopped", "error" -> false
-                else -> error("Unknown Rust HTTP state: $state")
-            }
             httpStarted = started
             if (started) start() else stop()
             httpResourcesError = ""
@@ -129,5 +111,5 @@ internal object HttpServerResources {
 }
 
 private sealed interface ResourceUpdate
-private class HttpStatusUpdate(val readStatus: () -> String) : ResourceUpdate
+private class HttpStatusUpdate(val started: Boolean) : ResourceUpdate
 private data object NotificationSettingUpdate : ResourceUpdate

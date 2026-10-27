@@ -11,6 +11,15 @@ import com.ismartcoding.plain.features.audio.AudioPlaylistsClient
 import com.ismartcoding.plain.ui.tags.TagsViewModel
 
 class AudioHomeViewModel : ViewModel() {
+    companion object {
+        private var active: Pair<AudioHomeViewModel, TagsViewModel>? = null
+        fun attach(viewModel: AudioHomeViewModel, tags: TagsViewModel) { active = viewModel to tags }
+        fun detach(viewModel: AudioHomeViewModel) {
+            if (active?.first === viewModel) active = null
+        }
+        suspend fun refreshActive() { active?.let { (viewModel, tags) -> viewModel.refreshOverview(tags) } }
+    }
+
     val playlists = mutableStateOf<List<Pair<AudioPlaylist, Int>>>(emptyList())
     val playlistCovers = mutableStateOf<Map<String, List<AudioAlbumCover>>>(emptyMap())
     val recentItems = mutableStateOf<List<Audio>>(emptyList())

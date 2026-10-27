@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.ui.feeds
 
-import com.ismartcoding.plain.rust.graphql.SubscriptionUpdate
 import com.ismartcoding.plain.rust.graphql.AppSubscriptions
 import com.ismartcoding.plain.rust.graphql.changes
 import kotlinx.coroutines.launch
@@ -10,6 +9,7 @@ import kotlinx.coroutines.IO
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshContentState
 import com.ismartcoding.plain.ui.base.pullrefresh.RefreshLayoutState
@@ -47,19 +47,18 @@ internal fun FeedEntriesPageEffects(
             scope.launch(Dispatchers.IO) { feedEntriesVM.loadAsync(tagsVM) }
         }
         launch { AppSubscriptions.contentChanged.changes().collect { refreshEntries() } }
-        AppSubscriptions.feedSyncUpdated.collect { update ->
-            val completed = if (update is SubscriptionUpdate.Data) {
-                update.value.states.lastOrNull { state ->
-                    state.status in setOf("COMPLETED", "ERROR", "CANCELLED") &&
-                        state.revision >= (FeedWorkerState.revision(state.feedId) ?: -1L)
-                }
-            } else null
-            if (completed != null) {
+        val observed = FeedWorkerState.completed().mapValues { it.value.revision }.toMutableMap()
+        snapshotFlow { FeedWorkerState.completed() }.collect { completed ->
+            val latest = completed.values.filter { state ->
+                state.revision > (observed[state.feedId] ?: -1L)
+            }.maxByOrNull { it.revision }
+            completed.forEach { (id, state) -> observed[id] = state.revision }
+            if (latest != null) {
                 topRefreshLayoutState.setRefreshState(
-                    if (completed.status == "ERROR") RefreshContentState.Failed else RefreshContentState.Finished,
+                    if (latest.status == "ERROR") RefreshContentState.Failed else RefreshContentState.Finished,
                 )
+                refreshEntries()
             }
-            if (completed != null) refreshEntries()
         }
     }
 

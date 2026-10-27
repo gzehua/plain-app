@@ -61,12 +61,24 @@ class ApiContractTest {
         val queries = operationFieldNamesIn("Query")
         val mutations = operationFieldNamesIn("Mutation")
         val subscriptions = operationFieldNamesIn("Subscription")
-        if (queries.size != 127 || mutations.size != 201 || subscriptions.size != 46) {
+        if (queries.size != 127 || mutations.size != 201 || subscriptions.size != 38) {
             fail(
                 "Shared Rust schema fragments declare ${queries.size} Query / ${mutations.size} " +
-                    "Mutation and ${subscriptions.size} Subscription operations — the contract has 127 / 201 / 46. The snapshot looks truncated or " +
+                    "Mutation and ${subscriptions.size} Subscription operations — the contract has 127 / 201 / 38. The snapshot looks truncated or " +
                     "drifted; every check in this class reads it, so they would pass on an empty file.",
             )
+        }
+    }
+
+    @Test
+    fun hostCallbacksAreNotExposedAsSubscriptions() {
+        val subscriptions = operationFieldNamesIn("Subscription")
+        for (name in listOf("networkChanged", "audioLibraryChanged", "clipboardHistoryChanged",
+            "httpServerChanged", "onlineClientsUpdated", "peerClipboardChanged",
+            "sharedFolderDownloadsChanged", "dlnaRendererChanged", "dlnaSenderUpdated",
+            "peerTransportsUpdated", "appUpdateDownloadUpdated", "feedSyncUpdated",
+            "audioPlaybackChanged", "pairingSucceeded")) {
+            if (name in subscriptions) fail("Host callback exposed as a subscription: $name")
         }
     }
 

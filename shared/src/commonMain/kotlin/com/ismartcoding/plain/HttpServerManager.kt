@@ -4,7 +4,6 @@ import com.ismartcoding.plain.events.RequestPermissionsEvent
 import com.ismartcoding.plain.features.settings.ServiceState
 import com.ismartcoding.plain.i18n.Res
 import com.ismartcoding.plain.i18n.http_server_failed
-import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.lib.sendEvent
@@ -14,7 +13,6 @@ import com.ismartcoding.plain.platform.permissions.isGranted
 import com.ismartcoding.plain.preferences.PrefKeys
 import com.ismartcoding.plain.rust.RustHttpStatus
 import com.ismartcoding.plain.rust.native.RustNativeApi
-import com.ismartcoding.plain.rust.native.RustNativeBindings
 import com.ismartcoding.plain.ui.i18n.LocaleHelper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,16 +36,9 @@ object HttpServerManager {
         httpServerError.value = detail.ifEmpty { LocaleHelper.getStringAsync(Res.string.http_server_failed) }
     }
 
-    internal suspend fun refreshHttpServerState() = withIO {
-        val status = JsonHelper.jsonDecode<RustHttpStatus>(RustNativeBindings.httpStatus())
-        val current = when (status.state) {
-            "started" -> ServiceState.ON
-            "error" -> ServiceState.ERROR
-            "stopped" -> ServiceState.OFF
-            else -> error("Unknown Rust HTTP state: ${status.state}")
-        }
-        httpServerState.value = current
-        if (current == ServiceState.ERROR || status.message.isNotEmpty()) setHttpServerError(status.message)
+    internal suspend fun applyHttpServerStatus(status: RustHttpStatus) {
+        httpServerState.value = status.state
+        if (status.state == ServiceState.ERROR || status.message.isNotEmpty()) setHttpServerError(status.message)
         else httpServerError.value = ""
     }
 

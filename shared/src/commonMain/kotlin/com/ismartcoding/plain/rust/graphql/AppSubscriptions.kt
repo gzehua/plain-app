@@ -15,26 +15,12 @@ import kotlinx.serialization.json.jsonPrimitive
 
 import com.ismartcoding.plain.api.graphql.models.*
 import com.ismartcoding.plain.features.chat.channel.ChannelRuntimeEvent
-import com.ismartcoding.plain.features.dlna.sender.CastSnapshot
 import com.ismartcoding.plain.features.images.search.ImageModelsSnapshot
-import com.ismartcoding.plain.features.settings.AppUpdateDownload
 import com.ismartcoding.plain.models.PairingRequestInput
 
 @OptIn(ExperimentalCoroutinesApi::class)
 object AppSubscriptions {
     private val scope = RustRuntime.scope
-    internal val networkChanged =
-        subscription<Boolean>("networkChanged")
-            .shareIn(scope, SharingStarted.WhileSubscribed())
-    internal val httpServerChanged =
-        subscription<Boolean>("httpServerChanged")
-            .shareIn(scope, SharingStarted.WhileSubscribed())
-    internal val audioLibraryChanged =
-        subscription<Boolean>("audioLibraryChanged")
-            .shareIn(scope, SharingStarted.WhileSubscribed())
-    internal val clipboardHistoryChanged =
-        subscription<Boolean>("clipboardHistoryChanged")
-            .shareIn(scope, SharingStarted.WhileSubscribed())
     internal val peersChanged =
         subscription<Boolean>("peersChanged")
             .shareIn(scope, SharingStarted.WhileSubscribed())
@@ -54,47 +40,12 @@ object AppSubscriptions {
     internal val downloadsChanged =
         subscription<Boolean>("downloadsChanged")
             .shareIn(scope, SharingStarted.WhileSubscribed())
-    internal val sharedFolderDownloadsChanged =
-        subscription<Boolean>("sharedFolderDownloadsChanged")
-            .shareIn(scope, SharingStarted.WhileSubscribed())
-    internal val dlnaRendererChanged =
-        subscription<Boolean>("dlnaRendererChanged")
-            .shareIn(scope, SharingStarted.WhileSubscribed())
-    internal val dlnaSenderUpdated =
-        subscription<CastSnapshot>(
-            "dlnaSenderUpdated",
-            "{ version devices { id hostAddress name location } currentDevice { id " +
-                "hostAddress name location } items { path title albumArt artist durationMs " +
-                "audio } currentUri playing progressMs durationMs supportsCallback }",
-        )
-            .shareIn(scope, SharingStarted.WhileSubscribed())
-    internal val peerTransportsUpdated =
-        subscription<List<PeerTransportState>>("peerTransportsUpdated", "{ peerId transport }")
-            .shareIn(scope, SharingStarted.WhileSubscribed())
-    internal val onlineClientsUpdated =
-        subscription<List<String>>("onlineClientsUpdated")
-            .shareIn(scope, SharingStarted.WhileSubscribed())
     internal val imageModelsUpdated =
         subscription<ImageModelsSnapshot>(
             "imageModelsUpdated",
             "{ version status downloadProgress errorMessage modelSize modelDir " +
                 "isIndexing totalImages indexedImages }",
         )
-            .shareIn(scope, SharingStarted.WhileSubscribed())
-    internal val appUpdateDownloadUpdated =
-        subscription<AppUpdateDownload>(
-            "appUpdateDownloadUpdated",
-            "{ coreId taskId revision status progress filePath error }",
-        )
-            .shareIn(scope, SharingStarted.WhileSubscribed())
-    internal val feedSyncUpdated =
-        subscription<FeedSyncUpdate>(
-            "feedSyncUpdated",
-            "{ states { feedId taskId revision status error } removed }",
-        )
-            .shareIn(scope, SharingStarted.WhileSubscribed())
-    internal val audioPlaybackChanged =
-        subscription<AudioPlaybackChange>("audioPlaybackChanged", "{ revision positionMs }")
             .shareIn(scope, SharingStarted.WhileSubscribed())
     internal val pairingChanged =
         subscription<Boolean>("pairingChanged")
@@ -105,9 +56,6 @@ object AppSubscriptions {
             "{ fromId fromName port deviceType ecdhPublicKey signaturePublicKey " +
                 "timestamp ips signature fromIp awareSupported }",
         )
-            .shareIn(scope, SharingStarted.WhileSubscribed())
-    internal val pairingSucceeded =
-        subscription<PairingSuccessNotice>("pairingSucceeded", "{ deviceId key }")
             .shareIn(scope, SharingStarted.WhileSubscribed())
     internal val pomodoroAction =
         subscription<PomodoroAction>(

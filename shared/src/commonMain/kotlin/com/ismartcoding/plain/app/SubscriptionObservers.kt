@@ -15,48 +15,23 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 
-import com.ismartcoding.plain.HttpServerManager
 import com.ismartcoding.plain.features.chat.channel.ChannelSystemMessageReceiver
 import com.ismartcoding.plain.features.chat.download.DownloadQueue
-import com.ismartcoding.plain.features.chat.peer.PeerTransportProjection
-import com.ismartcoding.plain.features.dlna.DlnaRendererState
-import com.ismartcoding.plain.features.dlna.sender.RustDlnaSender
 import com.ismartcoding.plain.features.images.search.RustImageModels
 import com.ismartcoding.plain.features.nearby.PairingProjection
 import com.ismartcoding.plain.features.nearby.RustMdnsRuntime
 import com.ismartcoding.plain.features.nearby.RustNearbyDevices
-import com.ismartcoding.plain.features.sessions.setOnlineClientIds
-import com.ismartcoding.plain.features.settings.AppUpdateDownloads
-import com.ismartcoding.plain.features.shares.SharedFolderDownloadEngine
-import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
-import com.ismartcoding.plain.ui.feeds.FeedWorkerState
 import com.ismartcoding.plain.ui.pomodoro.PomodoroProjection
 
 internal object SubscriptionObservers {
     fun start(scope: CoroutineScope) {
-        scope.observe(AppSubscriptions.httpServerChanged) { HttpServerManager.refreshHttpServerState() }
         scope.observe(AppSubscriptions.mdnsChanged) { RustMdnsRuntime.refresh() }
         scope.observe(AppSubscriptions.nearbyDevicesChanged) { RustNearbyDevices.apply(RustNearbyDevices.snapshot()) }
         scope.observe(AppSubscriptions.downloadsChanged) { DownloadQueue.refresh() }
-        scope.observe(AppSubscriptions.sharedFolderDownloadsChanged) { SharedFolderDownloadEngine.refresh() }
-        scope.observe(AppSubscriptions.dlnaRendererChanged) { DlnaRendererState.refresh() }
         scope.observe(AppSubscriptions.pairingChanged) { PairingProjection.reconcile() }
-        scope.observeData(AppSubscriptions.peerTransportsUpdated) { value -> PeerTransportProjection.apply(value) }
-        scope.observeData(AppSubscriptions.onlineClientsUpdated) { value -> setOnlineClientIds(value.toSet()) }
-        scope.observeData(AppSubscriptions.dlnaSenderUpdated) { value -> RustDlnaSender.apply(value) }
         scope.observeData(AppSubscriptions.imageModelsUpdated) { value -> RustImageModels.apply(value) }
-        scope.observeData(AppSubscriptions.appUpdateDownloadUpdated) { value -> AppUpdateDownloads.apply(value) }
-        scope.observeData(AppSubscriptions.audioPlaybackChanged) { value -> AudioEngineHost.restore(value) }
         scope.observeData(AppSubscriptions.channelsChanged) { value -> ChannelSystemMessageReceiver.applyCommitted(value) }
         scope.observeData(AppSubscriptions.pairingRequested) { value -> PairingProjection.request(value) }
-        scope.observeData(AppSubscriptions.pairingSucceeded) { value -> PairingProjection.success(value) }
-        scope.observe(AppSubscriptions.feedSyncUpdated) { update ->
-            when (update) {
-                is SubscriptionUpdate.Data -> FeedWorkerState.apply(update.value)
-                SubscriptionUpdate.Attached -> FeedWorkerState.refresh()
-                is SubscriptionUpdate.Failed -> Unit
-            }
-        }
         scope.observe(AppSubscriptions.pomodoroAction) { update ->
             when (update) {
                 is SubscriptionUpdate.Data -> PomodoroProjection.apply(update.value)

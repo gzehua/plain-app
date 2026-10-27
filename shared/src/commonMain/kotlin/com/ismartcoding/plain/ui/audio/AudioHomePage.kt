@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -133,6 +134,11 @@ fun AudioHomePage(
     // while a filter is active.
     val sidebarFilterActive =
         audioVM.trash.value || audioVM.bucketId.value.isNotEmpty() || audioVM.tag.value != null
+
+    DisposableEffect(homeVM, tagsVM, audioVM.hasPermission.value) {
+        if (audioVM.hasPermission.value) AudioHomeViewModel.attach(homeVM, tagsVM)
+        onDispose { AudioHomeViewModel.detach(homeVM) }
+    }
 
     LaunchedEffect(audioVM.hasPermission.value) {
         if (audioVM.hasPermission.value) {

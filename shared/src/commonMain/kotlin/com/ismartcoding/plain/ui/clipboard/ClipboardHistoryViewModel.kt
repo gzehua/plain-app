@@ -13,6 +13,16 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class ClipboardHistoryViewModel : ViewModel() {
+    companion object {
+        private var active: ClipboardHistoryViewModel? = null
+
+        fun attach(viewModel: ClipboardHistoryViewModel) { active = viewModel }
+        fun detach(viewModel: ClipboardHistoryViewModel) {
+            if (active === viewModel) active = null
+        }
+        suspend fun refreshActive() { active?.loadAsync() }
+    }
+
     private val updates = Mutex()
     private val _itemsFlow = MutableStateFlow<List<ClipboardItem>>(emptyList())
     val itemsFlow: StateFlow<List<ClipboardItem>> = _itemsFlow

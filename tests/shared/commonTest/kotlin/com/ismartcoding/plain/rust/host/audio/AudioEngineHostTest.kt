@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.rust.host.audio
 
-import com.ismartcoding.plain.api.graphql.models.AudioPlaybackChange
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.media.AudioPlayer
@@ -99,11 +98,11 @@ class AudioEngineHostTest {
         try {
             AudioEngineHost.command(command(true))
             player.lastPositionMs = 777
-            AudioEngineHost.restore(AudioPlaybackChange(4, 0))
+            AudioEngineHost.restore(AudioPlaybackState(4, 0))
             assertEquals(777L, player.lastPositionMs)
-            AudioEngineHost.restore(AudioPlaybackChange(6, 1234))
+            AudioEngineHost.restore(AudioPlaybackState(6, 1234))
             assertEquals(1234L, player.lastPositionMs)
-            AudioEngineHost.restore(AudioPlaybackChange(6, 0))
+            AudioEngineHost.restore(AudioPlaybackState(6, 0))
             assertEquals(1234L, player.lastPositionMs)
             assertEquals(listOf("bind:5", "load", "bind:6"), player.calls)
         } finally {

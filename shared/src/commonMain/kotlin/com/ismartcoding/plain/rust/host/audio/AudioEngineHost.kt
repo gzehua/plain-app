@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.rust.host.audio
 
-import com.ismartcoding.plain.api.graphql.models.AudioPlaybackChange
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.models.AudioItem
@@ -16,17 +15,14 @@ import kotlinx.serialization.json.*
 @Serializable
 private data class AudioEngineCommand(
     val action: String,
-    val playback: AudioEnginePlayback,
+    val playback: AudioPlaybackState,
     val speed: Float,
     val newTrack: Boolean,
     val track: AudioItem? = null,
 )
 
 @Serializable
-private data class AudioEnginePlayback(
-    val revision: Long,
-    val positionMs: Long,
-)
+internal data class AudioPlaybackState(val revision: Long, val positionMs: Long)
 
 object AudioEngineHost {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -100,7 +96,7 @@ object AudioEngineHost {
         }.also { pendingReport = it }
     }
 
-    internal suspend fun restore(restored: AudioPlaybackChange) {
+    internal suspend fun restore(restored: AudioPlaybackState) {
         val restoredRevision = restored.revision
         val position = restored.positionMs
         require(restoredRevision >= 0 && position >= 0)

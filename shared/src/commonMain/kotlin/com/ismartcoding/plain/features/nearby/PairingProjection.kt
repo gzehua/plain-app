@@ -1,6 +1,5 @@
 package com.ismartcoding.plain.features.nearby
 
-import com.ismartcoding.plain.api.graphql.models.PairingSuccessNotice
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.serialization.Serializable
 
@@ -62,9 +61,9 @@ object PairingProjection {
     }
 
     private val terminalPhases = setOf("SUCCEEDED", "FAILED", "CANCELLED")
-    internal suspend fun success(value: PairingSuccessNotice) {
-        val peer = RustPeerStore.getById(value.deviceId) ?: return
-        if (!peer.isPaired() || peer.key != value.key) return
+    internal suspend fun success(deviceId: String, key: String) {
+        val peer = RustPeerStore.getById(deviceId) ?: return
+        if (!peer.isPaired() || peer.key != key) return
         NearbyViewModel.handlePairingSuccess(peer.id)
         PeerStatusClient.reconnectNow("post_pairing")
     }

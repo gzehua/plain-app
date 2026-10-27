@@ -1,8 +1,6 @@
 package com.ismartcoding.plain.ui.home
 
-import com.ismartcoding.plain.rust.graphql.changes
-import com.ismartcoding.plain.rust.graphql.AppSubscriptions
-import com.ismartcoding.plain.platform.network.vpnActive
+import com.ismartcoding.plain.platform.network.NetworkEvents
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -57,12 +55,8 @@ fun HomePage(
     updateVM: UpdateViewModel,
     onTabSelected: (Int) -> Unit,
 ) {
-    var isVpnActive by remember { mutableStateOf(vpnActive()) }
-    LaunchedEffect(Unit) {
-        AppSubscriptions.networkChanged.changes().collect {
-            isVpnActive = vpnActive()
-        }
-    }
+    val network = NetworkEvents.snapshot.collectAsStateValue()
+    val isVpnActive = network.vpnActive
     val backgroundServiceEnabled = Prefs.backgroundServiceEnabled.collectAsStateValue()
     var systemAlertWindow by remember { mutableStateOf(Permission.SYSTEM_ALERT_WINDOW.isGranted()) }
     val refreshState = rememberRefreshLayoutState {
@@ -84,7 +78,7 @@ fun HomePage(
                 }
 
                 is WindowFocusChangedEvent -> {
-                    isVpnActive = vpnActive()
+                    NetworkEvents.changed()
                     systemAlertWindow = Permission.SYSTEM_ALERT_WINDOW.isGranted()
                 }
             }

@@ -21,7 +21,6 @@ object AudioOverviewClient {
         AppSubscriptions.contentChanged.changes(),
         AppSubscriptions.mediaLibraryUpdated.filter(::audioLibraryChangeRefreshes).map { Unit },
         AppSubscriptions.mediaScanProgress.filter(::audioScanChangeRefreshes).map { Unit },
-        AppSubscriptions.audioLibraryChanged.changes(),
     )
 }
 

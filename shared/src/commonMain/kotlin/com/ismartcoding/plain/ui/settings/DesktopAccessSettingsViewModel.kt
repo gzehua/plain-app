@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.ui.settings
 
-import com.ismartcoding.plain.rust.graphql.changes
-import com.ismartcoding.plain.rust.graphql.AppSubscriptions
+import com.ismartcoding.plain.platform.network.NetworkEvents
 import com.ismartcoding.plain.HttpServerManager
 
 import com.ismartcoding.plain.ui.state.launchSafe
@@ -19,24 +18,20 @@ import com.ismartcoding.plain.rust.native.RustNativeApi
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.onSubscription
 
 class DesktopAccessSettingsViewModel : ViewModel() {
     val lanIpv4Addresses = MutableStateFlow<List<String>?>(null)
 
     suspend fun observeNetworkAddresses() {
-        AppSubscriptions.networkChanged.changes().collect {
-            refreshNetworkAddresses()
-        }
-    }
-
-    private suspend fun refreshNetworkAddresses() {
         try {
-            lanIpv4Addresses.value = RustNativeApi.lanIpv4Addresses()
+            NetworkEvents.refresh()
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
             LogCat.e("Load network addresses", error)
+        }
+        NetworkEvents.snapshot.collect { snapshot ->
+            lanIpv4Addresses.value = snapshot.lanIpv4Addresses
         }
     }
 
