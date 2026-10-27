@@ -1,7 +1,7 @@
 package com.ismartcoding.plain.features.files.upload
 
 import com.ismartcoding.plain.rust.graphql.graphqlClient
-import com.ismartcoding.plain.rust.graphql.GraphqlRequest
+import com.ismartcoding.plain.rust.graphql.GraphqlOperation
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.*
@@ -12,7 +12,7 @@ class RustUploadChunksTest {
         val chunks = mutableListOf<ByteArray>()
         val indices = mutableListOf<Long>()
         val ids = mutableSetOf<String>()
-        val mutations = mutableListOf<GraphqlRequest>()
+        val mutations = mutableListOf<GraphqlOperation>()
         var failure = ""
         var queries = 0
         var mergeStatus = "DONE"

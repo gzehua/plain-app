@@ -1,7 +1,6 @@
 package com.ismartcoding.plain.features.chat
 
 import com.ismartcoding.plain.graphql.Query
-import com.ismartcoding.plain.models.ChatConversation
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
@@ -13,7 +12,7 @@ object RustChatStore {
     suspend fun getByChannelId(id: String): List<ChatItem> = page(channel = id)
 
     suspend fun getLatestConversations(): Map<String, ChatItem> =
-        RustGraphqlApi.execute<List<ChatConversation>>(Query.chatConversations()).associate { it.id to it.chat }
+        RustGraphqlApi.execute(Query.chatConversations()).associate { it.id to it.chat }
 
     suspend fun search(
         text: String,

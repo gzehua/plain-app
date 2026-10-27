@@ -12,7 +12,6 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
 
 object AppFileStore {
     fun toFidUri(fileId: String, ext: String = ""): String = if (ext.isEmpty()) "fid:$fileId" else "fid:$fileId.$ext"
@@ -32,7 +31,7 @@ object AppFileStore {
 
     private suspend fun importPath(path: String, name: String, mime: String, deleteSource: Boolean): AppFile {
         val file = withContext(NonCancellable) {
-            RustGraphqlApi.execute<AppFile>(Mutation.importAppFile(path, name, mime, deleteSource))
+            RustGraphqlApi.execute(Mutation.importAppFile(path, name, mime, deleteSource))
         }
         try {
             currentCoroutineContext().ensureActive()
@@ -44,19 +43,16 @@ object AppFileStore {
     }
 
     suspend fun page(offset: Int, limit: Int, query: String = ""): List<VAppFile> =
-        RustGraphqlApi.execute<List<AppFile>>(Query.appFiles(offset, limit, query))
+        RustGraphqlApi.execute(Query.appFiles(offset, limit, query))
             .map { VAppFile(it, it.fileName) }
 
     suspend fun count(query: String = ""): Int =
         RustGraphqlApi.execute(Query.appFileCount(query))
 
     suspend fun displayName(id: String): String =
-        RustGraphqlApi.execute<List<AppFileName>>(Query.appFileName("text:$id")).firstOrNull()?.fileName.orEmpty()
+        RustGraphqlApi.execute(Query.appFileName("text:$id")).firstOrNull()?.fileName.orEmpty()
 
     suspend fun release(id: String) {
-        RustGraphqlApi.execute<Unit>(Mutation.releaseAppFile(id.substringBefore('.')))
+        RustGraphqlApi.execute(Mutation.releaseAppFile(id.substringBefore('.')))
     }
 }
-
-@Serializable
-private data class AppFileName(val fileName: String)

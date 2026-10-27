@@ -69,7 +69,7 @@ object RustGraphqlSubscriptions {
         }
     }
 
-    fun subscribe(request: GraphqlRequest): Flow<GraphqlResponse> = callbackFlow {
+    internal fun subscribe(request: GraphqlOperation): Flow<GraphqlResponse> = callbackFlow {
         var operation: Pair<Long, String>? = null
         try {
             registry.withLock {

@@ -5,14 +5,12 @@ import com.ismartcoding.plain.rust.graphql.GraphqlRequest
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import com.ismartcoding.plain.features.files.FavoriteFoldersClient
 import kotlinx.coroutines.*
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class FavoriteFoldersRustHttpTest {
@@ -29,13 +27,13 @@ class FavoriteFoldersRustHttpTest {
             assertEquals(listOf(second,first),updated.map { it.fullPath })
             assertEquals("旅行",updated.last().alias)
             assertEquals(first,updated.last().rootPath)
-            assertFalse(RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { prefs }")).getValue("prefs").jsonObject["favorite_folders"]?.toString().orEmpty().contains(root))
+            assertFalse(RustGraphqlApi.execute(GraphqlRequest<JsonObject>("query { prefs }")).getValue("prefs").jsonObject["favorite_folders"]?.toString().orEmpty().contains(root))
             var failed = false
             try { FavoriteFoldersClient.add(root,"$root-outside/folder") }
             catch (_: Exception) { failed = true }
             assertTrue(failed)
             assertEquals(2,FavoriteFoldersClient.refresh().count { it.fullPath.startsWith(root) })
-            RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { " + "setFavoriteFolderAlias(fullPath: ${JsonPrimitive(first)}, alias: ${JsonPrimitive("External change")}) { fullPath alias }" + " }"))
+            RustGraphqlApi.execute(GraphqlRequest<JsonObject>("mutation { " + "setFavoriteFolderAlias(fullPath: ${JsonPrimitive(first)}, alias: ${JsonPrimitive("External change")}) { fullPath alias }" + " }"))
             withTimeout(5_000) {
                 while (FavoriteFoldersClient.items.value.none { it.fullPath == first && it.alias == "External change" }) delay(50)
             }

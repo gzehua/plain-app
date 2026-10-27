@@ -19,8 +19,6 @@ import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
-import java.net.URLEncoder
-import java.util.UUID
 import kotlin.math.abs
 
 @RunWith(AndroidJUnit4::class)
@@ -29,7 +27,7 @@ class BrowserVideoInstrumentedTest {
     fun publicResourceTranscodesHevcWithTheRustOwnedPipeline() = runBlocking {
         val source = File("/data/local/tmp/hevc_probe.mp4")
         assumeTrue("HEVC fixture is missing", source.isFile)
-        val capabilities = RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { app { capabilities } }")).getValue("app").jsonObject
+        val capabilities = RustGraphqlApi.execute(GraphqlRequest<JsonObject>("query { app { capabilities } }")).getValue("app").jsonObject
             .getValue("capabilities").jsonArray.map { it.jsonPrimitive.content }
         assumeTrue("HEVC transcoding is unavailable", "VIDEO_TRANSCODE" in capabilities)
         val service = Prefs.backgroundServiceEnabled.value

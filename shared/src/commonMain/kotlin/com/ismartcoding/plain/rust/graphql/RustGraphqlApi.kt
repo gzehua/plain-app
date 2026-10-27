@@ -8,7 +8,7 @@ import kotlinx.coroutines.withContext
 
 object RustGraphqlApi : GraphqlClient(::executeNativeGraphql)
 
-private suspend fun executeNativeGraphql(request: GraphqlRequest): GraphqlResponse =
+private suspend fun executeNativeGraphql(request: GraphqlOperation): GraphqlResponse =
     withContext(Dispatchers.IO) {
         JsonHelper.jsonDecode(RustNativeBindings.graphql(JsonHelper.jsonEncode(request)))
     }

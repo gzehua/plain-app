@@ -18,7 +18,6 @@ import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.permissions.Permission
 import com.ismartcoding.plain.Prefs
 import java.io.File
-import java.util.UUID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -78,10 +77,10 @@ class ApiFixtureRustHttpTest {
             } finally {
                 registrationLog.delete()
             }
-            check(RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { peers { id } }")).getValue("peers").jsonArray.count { it.jsonObject.getValue("id").jsonPrimitive.content == peerId } == 1)
-            channelId = RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { createChatChannel(name: \"API fixture channel\") { id } }")).getValue("createChatChannel").jsonObject.getValue("id").jsonPrimitive.content
-            val channelKey = RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { chatChannels { id key } }")).getValue("chatChannels").jsonArray.single { it.jsonObject.getValue("id").jsonPrimitive.content == channelId }.jsonObject.getValue("key")
-            val app = RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { app { httpPort capabilities } }")).getValue("app").jsonObject
+            check(RustGraphqlApi.execute(GraphqlRequest<JsonObject>("query { peers { id } }")).getValue("peers").jsonArray.count { it.jsonObject.getValue("id").jsonPrimitive.content == peerId } == 1)
+            channelId = RustGraphqlApi.execute(GraphqlRequest<JsonObject>("mutation { createChatChannel(name: \"API fixture channel\") { id } }")).getValue("createChatChannel").jsonObject.getValue("id").jsonPrimitive.content
+            val channelKey = RustGraphqlApi.execute(GraphqlRequest<JsonObject>("query { chatChannels { id key } }")).getValue("chatChannels").jsonArray.single { it.jsonObject.getValue("id").jsonPrimitive.content == channelId }.jsonObject.getValue("key")
+            val app = RustGraphqlApi.execute(GraphqlRequest<JsonObject>("query { app { httpPort capabilities } }")).getValue("app").jsonObject
             val credentials = JsonHelper.jsonEncode(mapOf(
                 "clientId" to JsonPrimitive(clientId),
                 "token" to JsonPrimitive(session.token),
@@ -99,9 +98,9 @@ class ApiFixtureRustHttpTest {
         } finally {
             ready.delete()
             stop.delete()
-            if (clientId.isNotEmpty()) RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { revokeSession(clientId: ${JsonPrimitive(clientId)}) }"))
-            if (channelId.isNotEmpty()) RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { deleteChatChannel(id: ${JsonPrimitive(channelId)}) }"))
-            if (peerCreated) RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { deletePeer(id: ${JsonPrimitive(peerId)}) }"))
+            if (clientId.isNotEmpty()) RustGraphqlApi.execute(GraphqlRequest<JsonObject>("mutation { revokeSession(clientId: ${JsonPrimitive(clientId)}) }"))
+            if (channelId.isNotEmpty()) RustGraphqlApi.execute(GraphqlRequest<JsonObject>("mutation { deleteChatChannel(id: ${JsonPrimitive(channelId)}) }"))
+            if (peerCreated) RustGraphqlApi.execute(GraphqlRequest<JsonObject>("mutation { deletePeer(id: ${JsonPrimitive(peerId)}) }"))
             if (rootCreated) root.deleteRecursively()
             Prefs.setApiPermissions(oldPermissions)
             Prefs.desktopAccess.value = oldAccess

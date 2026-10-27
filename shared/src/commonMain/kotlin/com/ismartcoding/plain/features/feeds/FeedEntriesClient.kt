@@ -20,15 +20,15 @@ object FeedEntriesClient {
         RustGraphqlApi.execute(Mutation.syncFeedEntryContent(id))
 
     suspend fun markReadAsync(ids: Set<String>, read: Boolean = true) {
-        if (ids.isNotEmpty()) RustGraphqlApi.execute<Unit>(Mutation.markFeedEntriesRead(selectionQuery(ids), read))
+        if (ids.isNotEmpty()) RustGraphqlApi.execute(Mutation.markFeedEntriesRead(selectionQuery(ids), read))
     }
 
     suspend fun deleteAsync(ids: Set<String>) {
-        if (ids.isNotEmpty()) RustGraphqlApi.execute<Unit>(Mutation.deleteFeedEntries(selectionQuery(ids)))
+        if (ids.isNotEmpty()) RustGraphqlApi.execute(Mutation.deleteFeedEntries(selectionQuery(ids)))
     }
 
     suspend fun deleteQuery(query: String) {
-        RustGraphqlApi.execute<Unit>(Mutation.deleteFeedEntries(query))
+        RustGraphqlApi.execute(Mutation.deleteFeedEntries(query))
     }
 
     suspend fun deleteAllAsync() = deleteQuery("all:true")

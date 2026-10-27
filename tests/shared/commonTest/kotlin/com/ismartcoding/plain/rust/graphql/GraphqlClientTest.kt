@@ -1,10 +1,15 @@
 package com.ismartcoding.plain.rust.graphql
 
+import com.ismartcoding.plain.features.files.FileSortBy
+import com.ismartcoding.plain.platform.system.DataType
+import com.ismartcoding.plain.models.Audio
+import com.ismartcoding.plain.models.Image
+import com.ismartcoding.plain.models.Video
+import com.ismartcoding.plain.models.Doc
 import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.models.AudioItem
-import com.ismartcoding.plain.models.ChatItem
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerializationException
@@ -12,6 +17,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 
@@ -22,13 +28,13 @@ class GraphqlClientTest {
         var calls = 0
         val api = GraphqlClient { received ->
             calls++
-            assertSame(request, received)
+            assertSame(request.operation, received)
             JsonHelper.jsonDecode<GraphqlResponse>(
                 """{"data":{"audioQueueItems":[{"mediaId":"track","title":"Song","artist":"Artist","path":"/music/song.mp3","durationMs":3000000123}],"unrelated":null},"errors":[]}""",
             )
         }
 
-        val items = api.execute<List<AudioItem>>(request)
+        val items = api.execute(request)
         assertEquals(listOf(AudioItem("track", "Song", "Artist", "/music/song.mp3", 3_000_000_123)), items)
         assertEquals(1, calls)
     }
@@ -41,14 +47,14 @@ class GraphqlClientTest {
             calls++
             GraphqlResponse(data = JsonObject(emptyMap()))
         }
-        assertEquals(Unit, api.execute<Unit>(request))
+        assertEquals(Unit, api.execute(request))
         assertEquals(1, calls)
 
         val failed = GraphqlClient {
             GraphqlResponse(data = JsonObject(emptyMap()), errors = listOf(GraphqlError("no_permission")))
         }
         assertEquals("no_permission", assertFailsWith<IllegalStateException> {
-            failed.execute<Unit>(request)
+            failed.execute(request)
         }.message)
     }
 
@@ -57,7 +63,7 @@ class GraphqlClientTest {
         val api = GraphqlClient {
             JsonHelper.jsonDecode<GraphqlResponse>("""{"data":{"message0":null}}""")
         }
-        val snapshot = api.execute<Map<String, ChatItem?>>(Query.chatSnapshot(listOf("missing")))
+        val snapshot = api.execute(Query.chatSnapshot(listOf("missing")))
         assertEquals(mapOf("message0" to null), snapshot)
     }
 
@@ -67,19 +73,70 @@ class GraphqlClientTest {
         val nullable = GraphqlClient {
             JsonHelper.jsonDecode<GraphqlResponse>("""{"data":{"chatItem":null}}""")
         }
-        assertNull(nullable.execute<ChatItem?>(request))
+        assertNull(nullable.execute(request))
 
         val missing = GraphqlClient { GraphqlResponse(data = JsonObject(emptyMap())) }
-        assertFailsWith<NoSuchElementException> { missing.execute<ChatItem?>(request) }
+        assertFailsWith<NoSuchElementException> { missing.execute(request) }
 
         val invalid = GraphqlClient {
             JsonHelper.jsonDecode<GraphqlResponse>("""{"data":{"audioQueueItems":[{}]}}""")
         }
         assertFailsWith<SerializationException> {
-            invalid.execute<List<AudioItem>>(Query.audioQueueItems(0, 10, ""))
+            invalid.execute(Query.audioQueueItems(0, 10, ""))
         }
         val noData = GraphqlClient { GraphqlResponse() }
-        assertFailsWith<IllegalStateException> { noData.execute<Unit>(Mutation.startPomodoro(60)) }
+        assertFailsWith<IllegalStateException> { noData.execute(Mutation.startPomodoro(60)) }
+    }
+
+    @Test
+    fun media_requests_choose_the_concrete_decoder_before_execution() = runTest {
+        val row = """{"id":"media","title":"Title","artist":"Artist","path":"/media/file","size":3000000123,"durationMs":4000000123,"bucketId":"bucket","takenAt":null,"createdAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z"}"""
+        val api = GraphqlClient {
+            JsonHelper.jsonDecode<GraphqlResponse>("""{"data":{"audios":[$row],"images":[$row],"videos":[$row],"docs":[$row]}}""")
+        }
+        for (type in listOf(DataType.AUDIO, DataType.IMAGE, DataType.VIDEO, DataType.DOC)) {
+            val item = api.execute(Query.mediaRows(type, "", 10, 0, FileSortBy.NAME_ASC)).single()
+            assertTrue(when (type) {
+                DataType.AUDIO -> item is Audio
+                DataType.IMAGE -> item is Image
+                DataType.VIDEO -> item is Video
+                DataType.DOC -> item is Doc
+                else -> false
+            })
+            assertEquals("media", item.id)
+        }
+    }
+
+    @Test
+    fun saved_values_infer_the_result_from_the_default_and_only_default_on_null() = runTest {
+        val api = GraphqlClient {
+            JsonHelper.jsonDecode<GraphqlResponse>("""{"data":{"savedValue":3000000123}}""")
+        }
+        val value = api.execute(Query.savedValue("key", 0L))
+        assertEquals(3_000_000_123L, value)
+        val absent = GraphqlClient {
+            JsonHelper.jsonDecode<GraphqlResponse>("""{"data":{"savedValue":null}}""")
+        }
+        assertEquals(7L, absent.execute(Query.savedValue("key", 7L)))
+        val invalid = GraphqlClient {
+            JsonHelper.jsonDecode<GraphqlResponse>("""{"data":{"savedValue":{}}}""")
+        }
+        assertFailsWith<SerializationException> { invalid.execute(Query.savedValue("key", 7L)) }
+    }
+
+    @Test
+    fun scalar_requests_return_their_values_without_exposing_json() = runTest {
+        val api = GraphqlClient {
+            JsonHelper.jsonDecode<GraphqlResponse>("""{"data":{"appLogFilesSize":3000000123,"appCacheSize":4000000123,"clearAppCache":true,"exportAppLogs":null}}""")
+        }
+        val logSize = api.execute(Query.appLogFilesSize())
+        val cacheSize = api.execute(Query.appCacheSize())
+        val cleared = api.execute(Mutation.clearAppCache())
+        val archive = api.execute(Mutation.exportAppLogs())
+        assertEquals(3_000_000_123L, logSize)
+        assertEquals(4_000_000_123L, cacheSize)
+        assertTrue(cleared)
+        assertNull(archive)
     }
 
     @Test
@@ -88,12 +145,12 @@ class GraphqlClientTest {
         var calls = 0
         val failure = IllegalStateException("Request failed")
         val failed = GraphqlClient { calls++; throw failure }
-        assertSame(failure, assertFailsWith<IllegalStateException> { failed.execute<Int>(request) })
+        assertSame(failure, assertFailsWith<IllegalStateException> { failed.execute(request) })
         assertEquals(1, calls)
 
         val cancellation = CancellationException("Request cancelled")
         val cancelled = GraphqlClient { calls++; throw cancellation }
-        assertSame(cancellation, assertFailsWith<CancellationException> { cancelled.execute<Int>(request) })
+        assertSame(cancellation, assertFailsWith<CancellationException> { cancelled.execute(request) })
         assertEquals(2, calls)
     }
 }

@@ -11,8 +11,8 @@ import com.ismartcoding.plain.network.TestHttpClientSpec
 import com.ismartcoding.plain.network.createTestHttpClient
 import com.ismartcoding.plain.network.postText
 import com.ismartcoding.plain.rust.graphql.GraphqlRequest
-import java.util.UUID
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
@@ -35,11 +35,11 @@ class MainGraphqlRustHttpTest {
             id = clientId
             val token = created.token
             assertTrue(token.isNotEmpty())
-            val app = RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { app { httpPort urlToken capabilities } }")).getValue("app").jsonObject
+            val app = RustGraphqlApi.execute(GraphqlRequest<JsonObject>("query { app { httpPort urlToken capabilities } }")).getValue("app").jsonObject
             assertEquals(getDeviceCapabilities().map { it.name }.toSet(), app.getValue("capabilities").jsonArray.map { it.jsonPrimitive.content }.toSet())
             val baseUrl = "http://127.0.0.1:${app.getValue("httpPort").jsonPrimitive.int}"
             suspend fun httpGraphql(document: String, variables: Map<String, JsonElement> = emptyMap()): JsonObject {
-                val body = JsonHelper.jsonEncode(GraphqlRequest(document, variables))
+                val body = JsonHelper.jsonEncode(HttpGraphqlRequest(document, variables))
                 val headers = mapOf("c-id" to clientId, "Authorization" to "Bearer $token")
                 return httpClient.postText("$baseUrl/graphql", body, "application/json", headers).use { response ->
                     check(response.isOk()) { "Rust API returned HTTP ${response.status}" }
@@ -51,13 +51,13 @@ class MainGraphqlRustHttpTest {
             }
             suspend fun httpQuery(selection: String): JsonObject = httpGraphql("query { $selection }")
             val schema = "__schema { queryType { name } mutationType { name } }"
-            assertEquals(RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { $schema }")), httpQuery(schema))
+            assertEquals(RustGraphqlApi.execute(GraphqlRequest<JsonObject>("query { $schema }")), httpQuery(schema))
             assertEquals(app.getValue("urlToken"), httpQuery("app { urlToken }").getValue("app").jsonObject.getValue("urlToken"))
             Prefs.load()
             assertEquals(app.getValue("urlToken").jsonPrimitive.content, Prefs.urlToken.value)
             for (selection in listOf("systemPrefs", "systemSettings { password }", "userSettings { service }")) {
                 for (useHttp in listOf(false, true)) {
-                    val failure = runCatching { if (useHttp) httpQuery(selection) else RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { $selection }")) }.exceptionOrNull()
+                    val failure = runCatching { if (useHttp) httpQuery(selection) else RustGraphqlApi.execute(GraphqlRequest<JsonObject>("query { $selection }")) }.exceptionOrNull()
                     assertNotNull(failure)
                     assertTrue(failure.toString().contains("Unknown field"))
                 }
@@ -76,7 +76,7 @@ class MainGraphqlRustHttpTest {
 
     @Test
     fun selectedDeviceFieldsReadActualSdkFactsThroughTheMainNativeExecutor() = runBlocking {
-        val data = RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { deviceInfo { name model appVersion appBuildNumber kernelVersion totalMemory display { width height density } } }")).getValue("deviceInfo").jsonObject
+        val data = RustGraphqlApi.execute(GraphqlRequest<JsonObject>("query { deviceInfo { name model appVersion appBuildNumber kernelVersion totalMemory display { width height density } } }")).getValue("deviceInfo").jsonObject
         assertTrue(data.getValue("model").jsonPrimitive.content.isNotEmpty())
         assertTrue(data.getValue("appVersion").jsonPrimitive.content.isNotEmpty())
         assertTrue(data.getValue("kernelVersion").jsonPrimitive.content.isNotEmpty())
@@ -87,3 +87,6 @@ class MainGraphqlRustHttpTest {
         assertTrue(display.getValue("density").jsonPrimitive.double > 0)
     }
 }
+
+@Serializable
+private data class HttpGraphqlRequest(val query: String, val variables: Map<String, JsonElement>)

@@ -6,7 +6,6 @@ import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.models.AudioPlayback
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.rust.graphql.selectionQuery
-import kotlinx.serialization.Serializable
 
 object AudioQueueClient {
     suspend fun playback(): AudioPlayback =
@@ -15,14 +14,14 @@ object AudioQueueClient {
     suspend fun resolveNext(isNext: Boolean, shuffle: Boolean = false): AudioItem? {
         val current = playback()
         val action = if (isNext) AudioSelectionAction.NEXT else AudioSelectionAction.PREVIOUS
-        val result = RustGraphqlApi.execute<AdvancedAudioSelection?>(
+        val result = RustGraphqlApi.execute(
             Mutation.advanceAudioSelection(action, current.path.orEmpty(), current.revision, shuffle),
         )
         return result?.track
     }
 
     suspend fun clearQueue() {
-        RustGraphqlApi.execute<Unit>(Mutation.clearAudioQueue())
+        RustGraphqlApi.execute(Mutation.clearAudioQueue())
     }
 
     suspend fun enqueue(items: List<AudioItem>) {
@@ -31,19 +30,19 @@ object AudioQueueClient {
     }
 
     suspend fun add(query: String) {
-        RustGraphqlApi.execute<Unit>(Mutation.addAudioToQueue(query))
+        RustGraphqlApi.execute(Mutation.addAudioToQueue(query))
     }
 
     suspend fun removeQueued(mediaId: String) {
-        RustGraphqlApi.execute<Unit>(Mutation.removeAudioFromQueue(mediaId))
+        RustGraphqlApi.execute(Mutation.removeAudioFromQueue(mediaId))
     }
 
     suspend fun reorderQueued(mediaIds: List<String>) {
-        RustGraphqlApi.execute<Unit>(Mutation.reorderAudioQueue(mediaIds))
+        RustGraphqlApi.execute(Mutation.reorderAudioQueue(mediaIds))
     }
 
     suspend fun queuedMediaIds(): Set<String> =
-        RustGraphqlApi.execute<List<QueuedMediaId>>(Query.audioQueueIds(Int.MAX_VALUE))
+        RustGraphqlApi.execute(Query.audioQueueIds(Int.MAX_VALUE))
             .mapNotNull { it.mediaId }
             .toSet()
 
@@ -56,9 +55,3 @@ object AudioQueueClient {
     suspend fun queuePageFiltered(query: String, offset: Int, limit: Int): List<AudioItem> =
         RustGraphqlApi.execute(Query.audioQueueItems(offset, limit, query))
 }
-
-@Serializable
-private data class QueuedMediaId(val mediaId: String?)
-
-@Serializable
-private data class AdvancedAudioSelection(val track: AudioItem?)

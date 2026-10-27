@@ -5,14 +5,13 @@ import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.models.AudioAlbumCover
 import com.ismartcoding.plain.models.AudioItem
 import com.ismartcoding.plain.models.AudioPlaylist
-import com.ismartcoding.plain.models.AudioPlaylistCovers
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.rust.graphql.selectionQuery
 
 object AudioPlaylistsClient {
     suspend fun covers(ids: List<String>): Map<String, List<AudioAlbumCover>> {
         if (ids.isEmpty()) return emptyMap()
-        return RustGraphqlApi.execute<List<AudioPlaylistCovers>>(Query.audioPlaylistCovers(ids))
+        return RustGraphqlApi.execute(Query.audioPlaylistCovers(ids))
             .associate { it.id to it.albums }
     }
 
@@ -20,24 +19,24 @@ object AudioPlaylistsClient {
         playlists().firstOrNull { it.first.id == id }?.first
 
     suspend fun playlists(): List<Pair<AudioPlaylist, Int>> =
-        RustGraphqlApi.execute<List<AudioPlaylist>>(Query.audioPlaylists())
+        RustGraphqlApi.execute(Query.audioPlaylists())
             .map { it to it.itemCount }
 
     suspend fun createPlaylist(name: String): AudioPlaylist =
         RustGraphqlApi.execute(Mutation.createAudioPlaylist(name))
 
     suspend fun renamePlaylist(id: String, name: String) {
-        RustGraphqlApi.execute<Unit>(Mutation.updateAudioPlaylist(id, name))
+        RustGraphqlApi.execute(Mutation.updateAudioPlaylist(id, name))
     }
 
     suspend fun deletePlaylist(id: String) {
-        RustGraphqlApi.execute<Unit>(Mutation.deleteAudioPlaylist(id))
+        RustGraphqlApi.execute(Mutation.deleteAudioPlaylist(id))
     }
 
     suspend fun addPlaylistItems(playlistId: String, items: List<AudioItem>) {
         val ids = items.mapNotNull { it.mediaId }
         if (ids.isEmpty()) return
-        RustGraphqlApi.execute<Unit>(Mutation.addAudioPlaylistItems(playlistId, selectionQuery(ids)))
+        RustGraphqlApi.execute(Mutation.addAudioPlaylistItems(playlistId, selectionQuery(ids)))
     }
 
     suspend fun removePlaylistItem(playlistId: String, mediaId: String) =
@@ -45,7 +44,7 @@ object AudioPlaylistsClient {
 
     suspend fun removePlaylistItems(playlistId: String, mediaIds: Collection<String>) {
         if (mediaIds.isNotEmpty()) {
-            RustGraphqlApi.execute<Unit>(Mutation.removeAudioPlaylistItem(playlistId, selectionQuery(mediaIds)))
+            RustGraphqlApi.execute(Mutation.removeAudioPlaylistItem(playlistId, selectionQuery(mediaIds)))
         }
     }
 

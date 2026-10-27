@@ -15,7 +15,6 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
-import java.util.UUID
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -51,7 +50,7 @@ class FileBrowseRustHttpTest {
             assertEquals("folder", FilesClient.search("", "${archive.path}!zip!/", FileSortBy.NAME_ASC).first().name)
             Prefs.setApiPermissions(permissions + "WRITE_EXTERNAL_STORAGE")
             suspend fun field(selection: String): JsonElement =
-                RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { $selection }")).values.first()
+                RustGraphqlApi.execute(GraphqlRequest<JsonObject>("query { $selection }")).values.first()
             assertEquals(true, field("""pathExists(path: "${root.path}")""").jsonPrimitive.boolean)
             assertEquals("DIR", field("""pathKind(path: "${root.path}")""").jsonPrimitive.content)
             assertEquals("FILE", field("""pathKind(path: "${File(root, "a.txt").path}")""").jsonPrimitive.content)

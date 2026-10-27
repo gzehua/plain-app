@@ -24,7 +24,7 @@ object SharesClient {
         RustGraphqlApi.execute(Mutation.updateShare(id, name, expiresAt, realPaths))
 
     suspend fun deleteShare(id: String) {
-        RustGraphqlApi.execute<Unit>(Mutation.deleteShare(id))
+        RustGraphqlApi.execute(Mutation.deleteShare(id))
     }
 
     suspend fun listShares(): List<ShareRecord> =

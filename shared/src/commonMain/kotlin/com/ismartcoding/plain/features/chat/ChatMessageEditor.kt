@@ -2,12 +2,11 @@ package com.ismartcoding.plain.features.chat
 
 import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.models.ChatItem
-import com.ismartcoding.plain.models.ChatTextEdit
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 
 object ChatMessageEditor {
     suspend fun updateTextAsync(item: ChatItem, newText: String): Boolean {
-        val result = RustGraphqlApi.execute<ChatTextEdit>(Mutation.editChatText(item.id, newText))
+        val result = RustGraphqlApi.execute(Mutation.editChatText(item.id, newText))
         val current = result.chat
         item.fromId = current.fromId
         item.toId = current.toId

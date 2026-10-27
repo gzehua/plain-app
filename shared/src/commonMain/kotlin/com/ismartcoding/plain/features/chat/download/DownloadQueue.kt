@@ -4,7 +4,6 @@ import com.ismartcoding.plain.features.chat.models.MessageFile
 import com.ismartcoding.plain.features.downloads.DOWNLOAD_KIND_CHAT
 import com.ismartcoding.plain.features.downloads.DownloadCenter
 import com.ismartcoding.plain.features.downloads.DownloadQueueVersion
-import com.ismartcoding.plain.features.downloads.DownloadStatus
 import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.lib.logcat.LogCat
@@ -15,7 +14,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.Serializable
 
 object DownloadQueue {
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -56,7 +54,7 @@ object DownloadQueue {
     }
 
     suspend fun refresh() = stateLock.withLock {
-        val snapshot = RustGraphqlApi.execute<ChatDownloadSnapshot>(Query.chatDownloadQueue())
+        val snapshot = RustGraphqlApi.execute(Query.chatDownloadQueue())
         if (!version.accept(snapshot.runtimeId, snapshot.revision)) return@withLock
         val tasks = snapshot.tasks.map { row ->
             DownloadTask(
@@ -78,7 +76,7 @@ object DownloadQueue {
             is Request.Enqueue -> Mutation.enqueueChatDownload(request.messageId, request.fileId, request.peerId)
             is Request.Control -> Mutation.chatDownloadControl(request.command, request.id)
         }
-        RustGraphqlApi.execute<Unit>(operation)
+        RustGraphqlApi.execute(operation)
     }
 
     private sealed interface Request {
@@ -93,21 +91,3 @@ object DownloadQueue {
         ) : Request
     }
 }
-
-@Serializable
-private data class ChatDownloadSnapshot(
-    val runtimeId: String,
-    val revision: Long,
-    val tasks: List<ChatDownloadRow>,
-)
-
-@Serializable
-private data class ChatDownloadRow(
-    val file: MessageFile,
-    val peer: Peer,
-    val messageId: String,
-    val status: DownloadStatus,
-    val error: String,
-    val downloaded: Long,
-    val speed: Long,
-)

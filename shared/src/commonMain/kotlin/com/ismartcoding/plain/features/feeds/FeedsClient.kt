@@ -3,12 +3,10 @@ package com.ismartcoding.plain.features.feeds
 import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.models.Feed
-import com.ismartcoding.plain.models.FeedEntryCount
 import com.ismartcoding.plain.models.FeedPreview
 import com.ismartcoding.plain.models.FeedSyncState
 import com.ismartcoding.plain.rust.graphql.GraphqlClient
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-import kotlinx.serialization.Serializable
 
 internal object FeedsClient : FeedsApi()
 internal open class FeedsApi(
@@ -16,12 +14,7 @@ internal open class FeedsApi(
 ) {
 
     suspend fun getAll(withCount: Boolean = false): List<Feed> {
-        val request = Query.feeds(withCount)
-        val data = if (withCount) {
-            api.execute<FeedsResponse>(request)
-        } else {
-            FeedsResponse(api.execute(request), emptyList())
-        }
+        val data = api.execute(Query.feeds(withCount))
         val counts = data.feedEntryCounts.associate { it.id to it.count }
         return data.feeds.map { it.apply { entryCount = counts[id] ?: 0 } }
     }
@@ -40,25 +33,19 @@ internal open class FeedsApi(
     }
 
     suspend fun deleteAsync(ids: Set<String>) {
-        ids.forEach { api.execute<Unit>(Mutation.deleteFeed(it)) }
+        ids.forEach { api.execute(Mutation.deleteFeed(it)) }
     }
 
     suspend fun importAsync(content: String) {
-        api.execute<Unit>(Mutation.importFeeds(content))
+        api.execute(Mutation.importFeeds(content))
     }
 
     suspend fun exportAsync(): String = api.execute(Mutation.exportFeeds())
 
     suspend fun sync(feedId: String) {
-        api.execute<Unit>(Mutation.syncFeeds(feedId))
+        api.execute(Mutation.syncFeeds(feedId))
     }
 
     suspend fun syncStates(): List<FeedSyncState> =
         api.execute(Query.feedSyncStates())
 }
-
-@Serializable
-private data class FeedsResponse(
-    val feeds: List<Feed>,
-    val feedEntryCounts: List<FeedEntryCount>,
-)

@@ -209,7 +209,7 @@ class ShareActivity : ComponentActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val f = shareOpenFile("shared_text_${System.currentTimeMillis()}.txt")
-                RustGraphqlApi.execute<Unit>(
+                RustGraphqlApi.execute(
                     Mutation.saveSharedText(checkNotNull(f.parent), f.path, text),
                 )
                 withContext(Dispatchers.Main) { openInMain(Uri.fromFile(f), "text/plain") }

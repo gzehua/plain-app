@@ -15,11 +15,11 @@ object RustNearbyDevices {
         val token = Uuid.random().toString()
         discoverySession(token,
             acquire = {
-                RustGraphqlApi.execute<Unit>(Mutation.acquireDiscovery(it))
+                RustGraphqlApi.execute(Mutation.acquireDiscovery(it))
                 apply(snapshot())
                 RustMdnsRuntime.refresh()
             },
-            release = { RustGraphqlApi.execute<Unit>(Mutation.releaseDiscovery(it)) },
+            release = { RustGraphqlApi.execute(Mutation.releaseDiscovery(it)) },
         )
     }
     /**

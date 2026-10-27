@@ -5,12 +5,10 @@ import com.ismartcoding.plain.graphql.Query
 import com.ismartcoding.plain.lib.ID
 import com.ismartcoding.plain.models.ImageEditorProject
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
-import kotlin.time.Instant
-import kotlinx.serialization.Serializable
 
 object ImageEditorProjectsClient {
     suspend fun listAsync(): List<ImageEditorProjectSummary> =
-        RustGraphqlApi.execute<List<ProjectSummary>>(Query.imageEditorProjects()).map { row ->
+        RustGraphqlApi.execute(Query.imageEditorProjects()).map { row ->
                 ImageEditorProjectSummary(ID(row.id), row.thumbnail, row.canvasWidth, row.canvasHeight, row.layerCount, row.updatedAt)
             }
 
@@ -24,16 +22,6 @@ object ImageEditorProjectsClient {
     }
 
     suspend fun deleteAsync(id: String) {
-        RustGraphqlApi.execute<Unit>(Mutation.deleteImageEditorProject(id))
+        RustGraphqlApi.execute(Mutation.deleteImageEditorProject(id))
     }
 }
-
-@Serializable
-private data class ProjectSummary(
-    val id: String,
-    val thumbnail: String?,
-    val canvasWidth: Int,
-    val canvasHeight: Int,
-    val layerCount: Int,
-    val updatedAt: Instant,
-)

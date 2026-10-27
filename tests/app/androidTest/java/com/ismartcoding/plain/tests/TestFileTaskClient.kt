@@ -17,8 +17,8 @@ internal object TestFileTaskClient {
     suspend fun create(type: FileTaskType, ops: List<FileTaskOp>, title: String = type.name): FileTask = submit(type, ops, title, false)
 
     private suspend fun submit(type: FileTaskType, ops: List<FileTaskOp>, title: String, wait: Boolean): FileTask =
-        parse(RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation(\$type:FileTaskType!,\$title:String!,\$ops:[FileTaskOpInput!]!,\$wait:Boolean!){createFileTask(type:\$type,title:\$title,ops:\$ops,waitForCompletion:\$wait){ $fields }}", mapOf("type" to JsonPrimitive(type.name), "title" to JsonPrimitive(title), "ops" to json.encodeToJsonElement(ops), "wait" to JsonPrimitive(wait)))).getValue("createFileTask"))
+        parse(RustGraphqlApi.execute(GraphqlRequest<JsonObject>("mutation(\$type:FileTaskType!,\$title:String!,\$ops:[FileTaskOpInput!]!,\$wait:Boolean!){createFileTask(type:\$type,title:\$title,ops:\$ops,waitForCompletion:\$wait){ $fields }}", mapOf("type" to JsonPrimitive(type.name), "title" to JsonPrimitive(title), "ops" to json.encodeToJsonElement(ops), "wait" to JsonPrimitive(wait)))).getValue("createFileTask"))
 
-    suspend fun list(offset: Int, limit: Int, query: String): List<FileTask> = RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { fileTasks(offset: $offset, limit: $limit, query: ${JsonHelper.jsonEncode(query)}) { $fields } }")).getValue("fileTasks").jsonArray.map(::parse)
+    suspend fun list(offset: Int, limit: Int, query: String): List<FileTask> = RustGraphqlApi.execute(GraphqlRequest<JsonObject>("query { fileTasks(offset: $offset, limit: $limit, query: ${JsonHelper.jsonEncode(query)}) { $fields } }")).getValue("fileTasks").jsonArray.map(::parse)
     private fun parse(value: JsonElement): FileTask = JsonHelper.jsonDecodeFromElement(value)
 }

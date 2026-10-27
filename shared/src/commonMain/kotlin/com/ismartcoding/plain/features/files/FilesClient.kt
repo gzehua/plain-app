@@ -3,17 +3,15 @@ package com.ismartcoding.plain.features.files
 import com.ismartcoding.plain.features.files.upload.RustUploadChunks
 import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.graphql.Query
-import com.ismartcoding.plain.models.ActionResult
 import com.ismartcoding.plain.models.File as FileEntry
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import io.ktor.http.Url
 import io.ktor.http.decodeURLPart
 import kotlinx.coroutines.CancellationException
-import kotlinx.serialization.Serializable
 
 object FilesClient {
     suspend fun size(path: String): Long =
-        RustGraphqlApi.execute<FileSize>(Query.fileInfo(path)).size
+        RustGraphqlApi.execute(Query.fileInfo(path)).size
 
     suspend fun writeChunks(path: String, chunks: Iterator<ByteArray>): Boolean =
         RustUploadChunks.replace(path, chunks)
@@ -22,7 +20,7 @@ object FilesClient {
         RustGraphqlApi.execute(Mutation.copyFile(srcPath, targetPath, overwrite))
 
     suspend fun copyToDirectory(srcPath: String, dirPath: String, fileName: String): String =
-        RustGraphqlApi.execute<String?>(Mutation.copyFileToDirectory(srcPath, dirPath, fileName)).orEmpty()
+        RustGraphqlApi.execute(Mutation.copyFileToDirectory(srcPath, dirPath, fileName)).orEmpty()
 
     suspend fun createZipArchive(paths: List<String>, target: String): Boolean = archiveOperation {
         RustGraphqlApi.execute(Mutation.createZipArchive(paths, target))
@@ -89,7 +87,7 @@ object FilesClient {
     suspend fun delete(path: String): Boolean = deleteMany(listOf(path)) > 0
 
     suspend fun deleteMany(paths: List<String>): Int =
-        RustGraphqlApi.execute<ActionResult>(Mutation.deleteFiles(paths)).affectedCount
+        RustGraphqlApi.execute(Mutation.deleteFiles(paths)).affectedCount
 
     private suspend fun read(
         root: String,
@@ -119,6 +117,3 @@ object FilesClient {
         return RustGraphqlApi.execute(operation)
     }
 }
-
-@Serializable
-private data class FileSize(val size: Long)

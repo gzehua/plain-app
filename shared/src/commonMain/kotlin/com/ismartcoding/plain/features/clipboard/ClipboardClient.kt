@@ -3,7 +3,6 @@ package com.ismartcoding.plain.features.clipboard
 import com.ismartcoding.plain.features.chat.peer.RustPeerStore
 import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.graphql.Query
-import com.ismartcoding.plain.models.ActionResult
 import com.ismartcoding.plain.models.ClipboardItem
 import com.ismartcoding.plain.rust.graphql.RustGraphqlApi
 import com.ismartcoding.plain.rust.graphql.selectionQuery
@@ -21,7 +20,7 @@ object ClipboardClient {
     }
 
     suspend fun delete(query: String): Int =
-        RustGraphqlApi.execute<ActionResult>(Mutation.deleteClipboardItems(query)).affectedCount
+        RustGraphqlApi.execute(Mutation.deleteClipboardItems(query)).affectedCount
 
     suspend fun clear() {
         delete("all:true")

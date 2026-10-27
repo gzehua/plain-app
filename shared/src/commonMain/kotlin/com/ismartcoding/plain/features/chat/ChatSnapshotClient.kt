@@ -12,7 +12,7 @@ internal suspend fun readChatSnapshot(
     val result = linkedMapOf<String, ChatItem?>()
     for (batch in ids.distinct().chunked(128)) {
         val selection = Query.chatSnapshot(batch)
-        val data = api.execute<Map<String, ChatItem?>>(selection)
+        val data = api.execute(selection)
         batch.forEachIndexed { index, id ->
             result[id] = data.getValue("message$index")?.also {
                 require(it.id == id) { "Mismatched chat snapshot identity" }

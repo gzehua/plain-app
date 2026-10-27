@@ -32,18 +32,18 @@ open class NotesApi internal constructor(
     }
 
     suspend fun saveFeedEntryAsync(id: String) {
-        api.execute<Unit>(Mutation.saveFeedEntriesToNotes(selectionQuery(setOf(id))))
+        api.execute(Mutation.saveFeedEntriesToNotes(selectionQuery(setOf(id))))
     }
 
     suspend fun trashAsync(ids: Set<String>) {
-        if (ids.isNotEmpty()) api.execute<Unit>(Mutation.trashNotes(selectionQuery(ids)))
+        if (ids.isNotEmpty()) api.execute(Mutation.trashNotes(selectionQuery(ids)))
     }
 
     suspend fun restoreAsync(ids: Set<String>) {
-        if (ids.isNotEmpty()) api.execute<Unit>(Mutation.restoreNotes(selectionQuery(ids)))
+        if (ids.isNotEmpty()) api.execute(Mutation.restoreNotes(selectionQuery(ids)))
     }
 
     suspend fun deleteAsync(ids: Set<String>) {
-        if (ids.isNotEmpty()) api.execute<Unit>(Mutation.deleteNotes(selectionQuery(ids)))
+        if (ids.isNotEmpty()) api.execute(Mutation.deleteNotes(selectionQuery(ids)))
     }
 }

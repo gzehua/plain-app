@@ -2,7 +2,6 @@ package com.ismartcoding.plain.features.media
 
 import com.ismartcoding.plain.graphql.Mutation
 import com.ismartcoding.plain.graphql.Query
-import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.lib.coIO
 import com.ismartcoding.plain.lib.logcat.LogCat
 import com.ismartcoding.plain.models.MediaPlayHistory
@@ -22,7 +21,7 @@ object MediaPlayHistoryClient {
     suspend fun find(mediaId: String, type: DataType, since: Instant): MediaPlayHistory? {
         synchronized(lock) { pendingWrite }?.join()
         val query = "type:${type.name} ids:${JsonHelper.jsonEncode(mediaId)} played_at:${JsonHelper.jsonEncode(">=$since")}"
-        return RustGraphqlApi.execute<List<MediaPlayHistory>>(Query.mediaPlayHistory(query, 0, 1)).singleOrNull()
+        return RustGraphqlApi.execute(Query.mediaPlayHistory(query, 0, 1)).singleOrNull()
     }
 
     fun recordPlay(mediaId: String, type: DataType, positionMs: Long): Job =
@@ -31,11 +30,11 @@ object MediaPlayHistoryClient {
     fun saveProgress(mediaId: String, type: DataType, positionMs: Long): Job =
         write(Mutation.saveMediaPlayProgress(mediaId, type, positionMs))
 
-    private fun write(request: GraphqlRequest): Job = synchronized(lock) {
+    private fun write(request: GraphqlRequest<Unit>): Job = synchronized(lock) {
         val previousWrite = pendingWrite
         coIO {
             previousWrite?.join()
-            try { RustGraphqlApi.execute<Unit>(request) }
+            try { RustGraphqlApi.execute(request) }
             catch (cancelled: CancellationException) { throw cancelled }
             catch (error: Exception) { LogCat.e("Write media playback history", error) }
         }.also { pendingWrite = it }

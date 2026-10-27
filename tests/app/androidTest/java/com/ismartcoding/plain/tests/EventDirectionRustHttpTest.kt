@@ -13,7 +13,7 @@ import org.junit.runner.RunWith
 class EventDirectionRustHttpTest {
     @Test fun platformReportsAreNotExposedAsMainGraphqlMutations() = runBlocking {
         for (field in listOf("reportPermissions", "reportScreenMirrorVideo", "reportClipboard")) {
-            assertTrue("$field must not be a main-schema mutation", runCatching { RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { $field }")) }.isFailure)
+            assertTrue("$field must not be a main-schema mutation", runCatching { RustGraphqlApi.execute(GraphqlRequest<JsonObject>("mutation { $field }")) }.isFailure)
         }
     }
 }

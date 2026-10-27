@@ -23,7 +23,7 @@ internal open class TagsApi(
         api.execute(Mutation.updateTag(id, name))
 
     suspend fun delete(id: String) {
-        api.execute<Unit>(Mutation.deleteTag(id))
+        api.execute(Mutation.deleteTag(id))
     }
 
     suspend fun keys(id: String): List<String> =
@@ -34,6 +34,6 @@ internal open class TagsApi(
 
     suspend fun edit(type: DataType, keys: Collection<String>, add: Collection<String>, remove: Collection<String>) {
         if (keys.isEmpty() || (add.isEmpty() && remove.isEmpty())) return
-        api.execute<Unit>(Mutation.updateTagRelations(type, keys, add, remove))
+        api.execute(Mutation.updateTagRelations(type, keys, add, remove))
     }
 }

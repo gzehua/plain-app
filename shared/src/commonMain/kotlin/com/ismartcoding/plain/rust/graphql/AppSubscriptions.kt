@@ -92,7 +92,7 @@ object AppSubscriptions {
     private inline fun <reified T> subscription(field: String, selection: String = ""): Flow<SubscriptionUpdate<T>> = flow {
         while (currentCoroutineContext().isActive) {
             try {
-                RustGraphqlSubscriptions.subscribe(GraphqlRequest("subscription { $field $selection }")).collect { response ->
+                RustGraphqlSubscriptions.subscribe(GraphqlOperation("subscription { $field $selection }")).collect { response ->
                     if (response.errors.isNotEmpty()) throw GraphqlSubscriptionException(response.errors)
                     if (response.extensions?.get("subscriptionReady")?.jsonPrimitive?.booleanOrNull == true) {
                         emit(SubscriptionUpdate.Attached)

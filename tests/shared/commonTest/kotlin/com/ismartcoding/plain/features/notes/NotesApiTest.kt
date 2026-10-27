@@ -2,7 +2,7 @@ package com.ismartcoding.plain.features.notes
 
 import com.ismartcoding.plain.rust.graphql.graphqlClient
 import kotlinx.serialization.json.*
-import com.ismartcoding.plain.rust.graphql.GraphqlRequest
+import com.ismartcoding.plain.rust.graphql.GraphqlOperation
 import com.ismartcoding.plain.lib.JsonHelper
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonObject
@@ -17,7 +17,7 @@ class NotesApiTest {
 
     @Test
     fun create_and_edit_submit_only_the_edit_values_without_reading_a_record() = runTest {
-        val requests = mutableListOf<GraphqlRequest>()
+        val requests = mutableListOf<GraphqlOperation>()
         val api = NotesApi(
             api = graphqlClient(
                 query = { error("Unexpected preread: $it") },

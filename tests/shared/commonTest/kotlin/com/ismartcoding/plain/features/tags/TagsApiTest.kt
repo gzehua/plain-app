@@ -2,7 +2,7 @@ package com.ismartcoding.plain.features.tags
 
 import com.ismartcoding.plain.rust.graphql.graphqlClient
 import kotlinx.serialization.json.*
-import com.ismartcoding.plain.rust.graphql.GraphqlRequest
+import com.ismartcoding.plain.rust.graphql.GraphqlOperation
 import com.ismartcoding.plain.lib.JsonHelper
 import com.ismartcoding.plain.platform.system.DataType
 import kotlinx.coroutines.test.runTest
@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 class TagsApiTest {
     @Test
     fun create_and_rename_do_not_preread_or_generate_local_records() = runTest {
-        val requests = mutableListOf<GraphqlRequest>()
+        val requests = mutableListOf<GraphqlOperation>()
         val api = TagsApi(
             api = graphqlClient(
                 query = { error("Unexpected preread: $it") },
@@ -38,7 +38,7 @@ class TagsApiTest {
     }
     @Test
     fun batch_edits_send_one_key_list_without_metadata_or_prereads() = runTest {
-        val requests = mutableListOf<GraphqlRequest>()
+        val requests = mutableListOf<GraphqlOperation>()
         val api = TagsApi(
             api = graphqlClient(
                 query = { error("Unexpected preread") },

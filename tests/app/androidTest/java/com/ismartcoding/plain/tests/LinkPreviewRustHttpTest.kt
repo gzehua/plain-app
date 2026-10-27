@@ -10,12 +10,10 @@ import com.ismartcoding.plain.features.chat.models.MessageContent
 import com.ismartcoding.plain.features.chat.models.MessageText
 import com.ismartcoding.plain.features.chat.models.MessageType
 import com.ismartcoding.plain.features.chat.models.toJSONString
-import com.ismartcoding.plain.features.chat.ChatStatus
 import com.ismartcoding.plain.features.chat.ChatMessageEditor
 import com.ismartcoding.plain.models.ChatItem
 import com.ismartcoding.plain.features.files.stored.AppFileStore
 import kotlinx.serialization.json.jsonArray
-import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -37,7 +35,7 @@ class LinkPreviewRustHttpTest {
             hash = image.id
             val content = MessageContent(MessageType.TEXT, MessageText(url,
                 listOf(LinkPreview(url = url, title = id, imageLocalPath = AppFileStore.toFidUri(image))))).toJSONString()
-            val value = RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation(\$content:String!){sendChatItem(target: \"peer:local\", content: \$content) { id fromId toId channelId content status statusData createdAt updatedAt }}", mapOf("content" to JsonPrimitive(content)))).getValue("sendChatItem").jsonArray.single()
+            val value = RustGraphqlApi.execute(GraphqlRequest<JsonObject>("mutation(\$content:String!){sendChatItem(target: \"peer:local\", content: \$content) { id fromId toId channelId content status statusData createdAt updatedAt }}", mapOf("content" to JsonPrimitive(content)))).getValue("sendChatItem").jsonArray.single()
             val chat = JsonHelper.jsonDecodeFromElement<ChatItem>(value)
             id = chat.id
             val stale = ChatItem(id = id, toId = "stale", content = MessageContent(MessageType.TEXT, MessageText("stale")).toJSONString())

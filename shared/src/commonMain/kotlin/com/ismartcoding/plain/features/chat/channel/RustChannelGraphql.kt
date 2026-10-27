@@ -27,7 +27,7 @@ internal suspend fun removeMemberGraphql(id: String, peerId: String): ChatChanne
 }
 internal suspend fun acceptInviteGraphql(id: String): GraphQLResponse = withIO {
     try {
-        RustGraphqlApi.execute<Unit>(Mutation.acceptChatChannelInvite(id))
+        RustGraphqlApi.execute(Mutation.acceptChatChannelInvite(id))
         GraphQLResponse(data = "true")
     } catch (e: Exception) {
         GraphQLResponse(exception = e)

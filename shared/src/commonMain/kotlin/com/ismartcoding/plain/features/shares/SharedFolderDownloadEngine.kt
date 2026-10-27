@@ -73,7 +73,7 @@ object SharedFolderDownloadEngine {
     }
 
     suspend fun refresh() = stateLock.withLock {
-        val snapshot = RustGraphqlApi.execute<SharedDownloadSnapshot>(Query.sharedDownloadQueue())
+        val snapshot = RustGraphqlApi.execute(Query.sharedDownloadQueue())
         if (!version.accept(snapshot.runtimeId, snapshot.revision)) return@withLock
         val tasks = snapshot.tasks.map { row ->
             SharedFolderBatchTask(
@@ -101,7 +101,7 @@ object SharedFolderDownloadEngine {
             is Request.Enqueue -> Mutation.enqueueSharedDownload(request.input)
             is Request.Control -> Mutation.sharedDownloadControl(request.command, request.id)
         }
-        RustGraphqlApi.execute<Unit>(operation)
+        RustGraphqlApi.execute(operation)
     }
 
     private sealed interface Request {
@@ -122,41 +122,4 @@ internal data class SharedDownloadInput(
     val entries: List<SharedFileDto>,
     val targetDir: String,
     val zipName: String,
-)
-
-@Serializable
-private data class SharedDownloadSnapshot(
-    val runtimeId: String,
-    val revision: Long,
-    val tasks: List<SharedDownloadRow>,
-)
-
-@Serializable
-private data class SharedDownloadRow(
-    val id: String,
-    val messageId: String,
-    val type: ShareBatchType,
-    val title: String,
-    val targetDir: String,
-    val link: SharedLink,
-    val urlToken: String,
-    val entries: List<SharedFileDto>,
-    val zipName: String,
-    val status: DownloadStatus,
-    val error: String,
-    val downloadedSize: Long,
-    val totalSize: Long,
-    val downloadSpeed: Long,
-    val totalFiles: Long,
-    val doneFiles: Long,
-    val failedFiles: Long,
-    val currentFile: String,
-    val packing: Boolean,
-    val failures: List<SharedDownloadFailure>,
-)
-
-@Serializable
-private data class SharedDownloadFailure(
-    val path: String,
-    val error: String,
 )

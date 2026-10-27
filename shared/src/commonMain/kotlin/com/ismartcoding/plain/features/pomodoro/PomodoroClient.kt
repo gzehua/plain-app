@@ -10,17 +10,17 @@ object PomodoroClient {
         RustGraphqlApi.execute(Query.pomodoroToday())
 
     suspend fun start(durationSec: Int): PomodoroToday {
-        RustGraphqlApi.execute<Unit>(Mutation.startPomodoro(durationSec))
+        RustGraphqlApi.execute(Mutation.startPomodoro(durationSec))
         return today()
     }
 
     suspend fun pause(): PomodoroToday {
-        RustGraphqlApi.execute<Unit>(Mutation.pausePomodoro())
+        RustGraphqlApi.execute(Mutation.pausePomodoro())
         return today()
     }
 
     suspend fun stop(): PomodoroToday {
-        RustGraphqlApi.execute<Unit>(Mutation.stopPomodoro())
+        RustGraphqlApi.execute(Mutation.stopPomodoro())
         return today()
     }
 

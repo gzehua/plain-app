@@ -15,7 +15,7 @@ object RustPairingRuntime {
     suspend fun start(device: NearbyDevice, mode: PairingMode = PairingMode.CHAT): PairingState {
         val ip = if (DiscoveryMethod.QR in device.discoveryMethods) device.bestIp.takeIf { it.isNotBlank() } ?: device.ips.firstOrNull() else null
         val host = ip?.let { "${if (':' in it) "[$it]" else it}:${device.port}" }
-        val state = RustGraphqlApi.execute<PairingState>(
+        val state = RustGraphqlApi.execute(
             Mutation.pairDevice(PairingDeviceInput(id = device.id, host = host, mode = mode)),
         )
         PairingProjection.reconcile()

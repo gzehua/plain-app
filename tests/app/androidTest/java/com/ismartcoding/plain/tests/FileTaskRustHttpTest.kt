@@ -14,7 +14,6 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
-import java.util.UUID
 import com.ismartcoding.plain.models.FileTask
 import com.ismartcoding.plain.platform.files.scanFileTaskPaths
 
@@ -73,13 +72,13 @@ class FileTaskRustHttpTest {
             try { TestFileTaskClient.create(FileTaskType.COPY,listOf(FileTaskOp("/system/test",File(root,"forbidden").path))) }
             catch (_: Exception) { rejected = true }
             assertTrue(rejected)
-            val spoofedCaller = runCatching { RustGraphqlApi.execute<JsonObject>(GraphqlRequest("query { " + "fileTasks(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, query: \"\", offset: 0, limit: 1) { id }" + " }")) }
+            val spoofedCaller = runCatching { RustGraphqlApi.execute(GraphqlRequest<JsonObject>("query { " + "fileTasks(clientId: ${JsonPrimitive("foreign-${UUID.randomUUID()}")}, query: \"\", offset: 0, limit: 1) { id }" + " }")) }
             assertTrue(spoofedCaller.isFailure)
             Prefs.setApiPermissions(originalPermissions + "WRITE_EXTERNAL_STORAGE")
-            assertEquals(true, RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { " + """copyFile(src: "${source.path}", dst: "${File(root,"public-copy.txt").path}", overwrite: false)""" + " }")).getValue("copyFile").jsonPrimitive.boolean)
+            assertEquals(true, RustGraphqlApi.execute(GraphqlRequest<JsonObject>("mutation { " + """copyFile(src: "${source.path}", dst: "${File(root,"public-copy.txt").path}", overwrite: false)""" + " }")).getValue("copyFile").jsonPrimitive.boolean)
             assertEquals("synthetic",File(root,"public-copy.txt").readText())
             var publicFailed = false
-            try { RustGraphqlApi.execute<JsonObject>(GraphqlRequest("mutation { " + """copyFile(src: "/system/test", dst: "${File(root,"public-never").path}", overwrite: false)""" + " }")) }
+            try { RustGraphqlApi.execute(GraphqlRequest<JsonObject>("mutation { " + """copyFile(src: "/system/test", dst: "${File(root,"public-never").path}", overwrite: false)""" + " }")) }
             catch (_: Exception) { publicFailed = true }
             assertTrue(publicFailed)
         } finally {

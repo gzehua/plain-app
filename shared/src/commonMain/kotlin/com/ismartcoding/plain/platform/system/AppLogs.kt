@@ -8,26 +8,23 @@ import com.ismartcoding.plain.i18n.no_logs_error
 import com.ismartcoding.plain.lib.coMain
 import com.ismartcoding.plain.ui.components.DialogHelper
 import kotlinx.coroutines.CancellationException
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.long
 
 suspend fun getLogFileSize(): Long =
-    RustGraphqlApi.execute<Unit>(Query.appLogFilesSize()).getValue("appLogFilesSize").jsonPrimitive.long
+    RustGraphqlApi.execute(Query.appLogFilesSize())
 
 suspend fun clearLogsAsync() {
-    RustGraphqlApi.execute<Unit>(Mutation.clearAppLogs())
+    RustGraphqlApi.execute(Mutation.clearAppLogs())
 }
 
 fun exportLogsAsync() {
     coMain {
         DialogHelper.showLoading()
         try {
-            val path = RustGraphqlApi.execute<Unit>(Mutation.exportAppLogs()).getValue("exportAppLogs")
-            if (path is JsonNull) {
+            val path = RustGraphqlApi.execute(Mutation.exportAppLogs())
+            if (path == null) {
                 DialogHelper.showMessage(Res.string.no_logs_error)
             } else {
-                shareLogArchive(path.jsonPrimitive.content)
+                shareLogArchive(path)
             }
         } catch (cancelled: CancellationException) {
             throw cancelled

@@ -30,15 +30,15 @@ class GraphqlVariableContractTest {
             for (method in owner.javaClass.declaredMethods.filter { it.returnType == GraphqlRequest::class.java && !it.isSynthetic }) {
                 if (!method.parameterTypes.all(::supported)) continue
                 val arguments = method.parameterTypes.mapIndexed { index, type -> argument(method, index, type) }.toTypedArray()
-                val request = method.invoke(owner, *arguments) as GraphqlRequest
-                val definitions = Regex("""\$(\w+)\s*:\s*([\w!\[\]]+)""").findAll(request.query.substringBefore('{'))
+                val request = method.invoke(owner, *arguments) as GraphqlRequest<*>
+                val definitions = Regex("""\$(\w+)\s*:\s*([\w!\[\]]+)""").findAll(request.operation.query.substringBefore('{'))
                     .associate { it.groupValues[1] to it.groupValues[2] }
-                assertTrue(definitions.keys.containsAll(request.variables.keys), method.name)
+                assertTrue(definitions.keys.containsAll(request.operation.variables.keys), method.name)
                 definitions.filterValues { it.endsWith('!') }.keys.forEach { name ->
-                    assertTrue(name in request.variables, "${method.name}: missing required variable $name")
+                    assertTrue(name in request.operation.variables, "${method.name}: missing required variable $name")
                 }
-                val root = types.getValue(request.query.substringBefore('(').substringBefore(' '))
-                for (call in Regex("""\b(\w+)\(([^()]*)\)""").findAll(request.query.substringAfter('{'))) {
+                val root = types.getValue(request.operation.query.substringBefore('(').substringBefore(' '))
+                for (call in Regex("""\b(\w+)\(([^()]*)\)""").findAll(request.operation.query.substringAfter('{'))) {
                     val expected = root[call.groupValues[1]] ?: continue
                     for (argument in Regex("""(\w+)\s*:\s*\$(\w+)""").findAll(call.groupValues[2])) {
                         val actualType = definitions.getValue(argument.groupValues[2])

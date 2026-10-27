@@ -7,7 +7,7 @@ import kotlinx.serialization.json.JsonElement
 @Serializable
 internal sealed interface GraphqlSubscriptionCommand {
     @Serializable @SerialName("subscribe")
-    data class Subscribe(val id: String, val payload: GraphqlRequest) : GraphqlSubscriptionCommand
+    data class Subscribe(val id: String, val payload: GraphqlOperation) : GraphqlSubscriptionCommand
     @Serializable @SerialName("complete")
     data class Complete(val id: String) : GraphqlSubscriptionCommand
 }

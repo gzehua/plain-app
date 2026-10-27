@@ -52,23 +52,23 @@ class GraphqlArgumentsTest {
 
         for ((request, expected) in requests) {
             assertEquals(expected, request.field)
-            val root = request.query.substringAfter('{').trimStart().substringBefore('(').substringBefore(' ')
+            val root = request.operation.query.substringAfter('{').trimStart().substringBefore('(').substringBefore(' ')
             assertEquals(expected, root)
-            assertFalse("field" in JsonHelper.jsonDecode<JsonObject>(JsonHelper.jsonEncode(request)))
+            assertFalse("field" in JsonHelper.jsonDecode<JsonObject>(JsonHelper.jsonEncode(request.operation)))
         }
     }
 
     @Test
     fun typed_data_types_and_sort_orders_keep_graphql_enum_names() {
-        assertEquals(JsonPrimitive("IMAGE"), Query.tags(DataType.IMAGE).variables["type"])
-        assertEquals(JsonPrimitive("IMAGE"), Mutation.createTag(DataType.IMAGE, "Tag").variables["type"])
+        assertEquals(JsonPrimitive("IMAGE"), Query.tags(DataType.IMAGE).operation.variables["type"])
+        assertEquals(JsonPrimitive("IMAGE"), Mutation.createTag(DataType.IMAGE, "Tag").operation.variables["type"])
         assertEquals(
             JsonPrimitive("IMAGE"),
-            Mutation.mediaAction(MediaAction.TRASH, DataType.IMAGE, "ids:=image", "").variables["type"],
+            Mutation.mediaAction(MediaAction.TRASH, DataType.IMAGE, "ids:=image", "").operation.variables["type"],
         )
         assertEquals(
             JsonPrimitive("NAME_ASC"),
-            Query.mediaRows(DataType.IMAGE, "", 10, 0, FileSortBy.NAME_ASC).variables["sortBy"],
+            Query.mediaRows(DataType.IMAGE, "", 10, 0, FileSortBy.NAME_ASC).operation.variables["sortBy"],
         )
     }
 
@@ -76,46 +76,46 @@ class GraphqlArgumentsTest {
     fun valuesRemainSeparateFromTheDocumentAndRoundTripThroughTheEnvelope() {
         val input = "a\"b\\c\n) { deleteNotes(query: \"all:true\") }"
         val request = Query.chatCount(input)
-        assertEquals(Query.chatCount("ordinary").query, request.query)
-        assertFalse(request.query.contains(input))
-        assertTrue(request.query.contains("chatCount(query: \$query)"))
-        val envelope = JsonHelper.jsonDecode<JsonObject>(JsonHelper.jsonEncode(request))
+        assertEquals(Query.chatCount("ordinary").operation.query, request.operation.query)
+        assertFalse(request.operation.query.contains(input))
+        assertTrue(request.operation.query.contains("chatCount(query: \$query)"))
+        val envelope = JsonHelper.jsonDecode<JsonObject>(JsonHelper.jsonEncode(request.operation))
         assertEquals(input, envelope.getValue("variables").jsonObject.getValue("query").jsonPrimitive.content)
-        assertEquals(request.query, envelope.getValue("query").jsonPrimitive.content)
+        assertEquals(request.operation.query, envelope.getValue("query").jsonPrimitive.content)
         val paths = listOf("a\"", "b\\c", "line\nbreak")
-        assertEquals(paths, Mutation.deleteFiles(paths).variables.getValue("paths").jsonArray.map { it.jsonPrimitive.content })
+        assertEquals(paths, Mutation.deleteFiles(paths).operation.variables.getValue("paths").jsonArray.map { it.jsonPrimitive.content })
     }
 
     @Test
     fun optionalUpdateArgumentsAreOmittedAndFalseIsRetained() {
-        assertEquals(setOf("id"), Mutation.updateFeed("id", null, null, null).variables.keys)
-        val variables = Mutation.updateFeed("id", "", null, false).variables
+        assertEquals(setOf("id"), Mutation.updateFeed("id", null, null, null).operation.variables.keys)
+        val variables = Mutation.updateFeed("id", "", null, false).operation.variables
         assertEquals(JsonPrimitive(""), variables["name"])
         assertEquals(JsonPrimitive(false), variables["fetchContent"])
         assertFalse("url" in variables)
-        assertEquals(JsonNull, Mutation.syncFeeds("").variables["id"])
+        assertEquals(JsonNull, Mutation.syncFeeds("").operation.variables["id"])
     }
 
     @Test
     fun nullAndEmptyRecipientsRemainDistinct() {
-        assertEquals(JsonNull, Mutation.deliverChatItem("id", null).variables["recipients"])
-        assertEquals(JsonArray(emptyList()), Mutation.deliverChatItem("id", emptyList()).variables["recipients"])
+        assertEquals(JsonNull, Mutation.deliverChatItem("id", null).operation.variables["recipients"])
+        assertEquals(JsonArray(emptyList()), Mutation.deliverChatItem("id", emptyList()).operation.variables["recipients"])
     }
 
     @Test
     fun batchAliasesAndVariablesStayUniqueWhenIdsRepeat() {
         val request = Query.chatSnapshot(listOf("a\"", "a\""))
-        assertTrue(request.query.contains("message0:chatItem(id: \$id0)"))
-        assertTrue(request.query.contains("message1:chatItem(id: \$id1)"))
-        assertEquals(mapOf("id0" to JsonPrimitive("a\""), "id1" to JsonPrimitive("a\"")), request.variables)
+        assertTrue(request.operation.query.contains("message0:chatItem(id: \$id0)"))
+        assertTrue(request.operation.query.contains("message1:chatItem(id: \$id1)"))
+        assertEquals(mapOf("id0" to JsonPrimitive("a\""), "id1" to JsonPrimitive("a\"")), request.operation.variables)
     }
 
     @Test
     fun onlyMoveIncludesDestination() {
         for (action in MediaAction.entries) {
             val request = Mutation.mediaAction(action, DataType.IMAGE, "ids:=1", "a\"b")
-            assertEquals(action == MediaAction.MOVE, "destDir" in request.variables)
-            if (action == MediaAction.MOVE) assertEquals(JsonPrimitive("a\"b"), request.variables["destDir"])
+            assertEquals(action == MediaAction.MOVE, "destDir" in request.operation.variables)
+            if (action == MediaAction.MOVE) assertEquals(JsonPrimitive("a\"b"), request.operation.variables["destDir"])
         }
     }
 
@@ -141,10 +141,10 @@ class GraphqlArgumentsTest {
         for ((command, expected) in commands) {
             val request = Mutation.dlna(command)
             assertEquals(expected, request.field)
-            assertEquals(expected, request.query.substringAfter('{').trimStart().substringBefore('(').substringBefore(' '))
-            assertFalse("field" in JsonHelper.jsonDecode<JsonObject>(JsonHelper.jsonEncode(request)))
+            assertEquals(expected, request.operation.query.substringAfter('{').trimStart().substringBefore('(').substringBefore(' '))
+            assertFalse("field" in JsonHelper.jsonDecode<JsonObject>(JsonHelper.jsonEncode(request.operation)))
         }
-        val input = Mutation.dlna(CastCommand.Cast(item)).variables.getValue("item").jsonObject
+        val input = Mutation.dlna(CastCommand.Cast(item)).operation.variables.getValue("item").jsonObject
         assertEquals(JsonPrimitive(item.path), input["path"])
         assertEquals(JsonPrimitive(4_000L), input["durationMs"])
         assertEquals(JsonPrimitive(true), input["audio"])
@@ -152,37 +152,37 @@ class GraphqlArgumentsTest {
 
     @Test
     fun mediaSelectionsKeepTypeSpecificFields() {
-        assertTrue(Query.mediaRows(DataType.AUDIO, "", 10, 0, FileSortBy.NAME_ASC).query.contains("albumFileId"))
-        assertTrue(Query.mediaRows(DataType.IMAGE, "", 10, 0, FileSortBy.NAME_ASC).query.contains("takenAt"))
-        assertFalse(Query.mediaRows(DataType.DOC, "", 10, 0, FileSortBy.NAME_ASC).query.contains("isFavorite"))
-        assertTrue(Query.mediaCount(DataType.VIDEO, "").query.contains("videoCount(query: \$query)"))
+        assertTrue(Query.mediaRows(DataType.AUDIO, "", 10, 0, FileSortBy.NAME_ASC).operation.query.contains("albumFileId"))
+        assertTrue(Query.mediaRows(DataType.IMAGE, "", 10, 0, FileSortBy.NAME_ASC).operation.query.contains("takenAt"))
+        assertFalse(Query.mediaRows(DataType.DOC, "", 10, 0, FileSortBy.NAME_ASC).operation.query.contains("isFavorite"))
+        assertTrue(Query.mediaCount(DataType.VIDEO, "").operation.query.contains("videoCount(query: \$query)"))
     }
 
     @Test
     fun variableRequestsOwnNamesAndPreserveDefaultInputFields() {
         val path = "a\"b\\c\n"
-        assertEquals(mapOf("path" to JsonPrimitive(path), "name" to JsonPrimitive("audio.mp3")), Query.audioDuration(path).variables)
-        assertEquals(mapOf("path" to JsonPrimitive(path)), Mutation.cacheAudioCover(path).variables)
+        assertEquals(mapOf("path" to JsonPrimitive(path), "name" to JsonPrimitive("audio.mp3")), Query.audioDuration(path).operation.variables)
+        assertEquals(mapOf("path" to JsonPrimitive(path)), Mutation.cacheAudioCover(path).operation.variables)
         val request = Mutation.createFileTask(FileTaskType.COPY, listOf(FileTaskOp("a", "b")))
-        assertEquals(JsonPrimitive(false), request.variables.getValue("ops").jsonArray.single().jsonObject["overwrite"])
-        assertEquals(setOf("type", "title", "ops"), request.variables.keys)
+        assertEquals(JsonPrimitive(false), request.operation.variables.getValue("ops").jsonArray.single().jsonObject["overwrite"])
+        assertEquals(setOf("type", "title", "ops"), request.operation.variables.keys)
     }
 
     @Test
     fun structuredInputsExcludeOutputFieldsAndPreserveDatesAndNulls() {
         val created = Mutation.saveNote("", "title", "body")
         assertEquals("createNote", created.field)
-        assertEquals(setOf("input"), created.variables.keys)
-        assertEquals(setOf("title", "content"), created.variables.getValue("input").jsonObject.keys)
+        assertEquals(setOf("input"), created.operation.variables.keys)
+        assertEquals(setOf("title", "content"), created.operation.variables.getValue("input").jsonObject.keys)
         val edited = Mutation.saveNote("id", "", "body")
         assertEquals("updateNote", edited.field)
-        assertEquals(JsonPrimitive("id"), edited.variables["id"])
-        val project = Mutation.saveImageEditorProject("id", ImageEditorProject("id")).variables.getValue("input").jsonObject
+        assertEquals(JsonPrimitive("id"), edited.operation.variables["id"])
+        val project = Mutation.saveImageEditorProject("id", ImageEditorProject("id")).operation.variables.getValue("input").jsonObject
         assertEquals(setOf("stateB64", "thumbnail", "canvasWidth", "canvasHeight", "layerCount"), project.keys)
         assertEquals(JsonNull, project["thumbnail"])
         val expiresAt = Instant.parse("2026-01-01T00:00:00.123456789Z")
-        assertEquals(JsonPrimitive(expiresAt.toString()), Mutation.createShare("share", listOf("path"), true, expiresAt).variables["expiresAt"])
-        assertEquals(JsonNull, Mutation.updateShare("id", "name", null, null).variables["realPaths"])
-        assertEquals(JsonNull, Query.shareLink("id", null).variables["host"])
+        assertEquals(JsonPrimitive(expiresAt.toString()), Mutation.createShare("share", listOf("path"), true, expiresAt).operation.variables["expiresAt"])
+        assertEquals(JsonNull, Mutation.updateShare("id", "name", null, null).operation.variables["realPaths"])
+        assertEquals(JsonNull, Query.shareLink("id", null).operation.variables["host"])
     }
 }
