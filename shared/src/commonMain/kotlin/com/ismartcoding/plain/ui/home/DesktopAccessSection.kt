@@ -27,6 +27,7 @@ import com.ismartcoding.plain.i18n.desktop_access_instructions
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.PTextButton
+import com.ismartcoding.plain.ui.web.components.WebAddressPager
 import androidx.compose.material3.Switch
 import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.media.extensions.collectAsStateValue
@@ -63,7 +64,7 @@ fun DesktopAccessSection(navController: NavHostController) {
             val webVM: DesktopAccessSettingsViewModel = viewModel { DesktopAccessSettingsViewModel() }
             val lanIpv4Addresses by webVM.lanIpv4Addresses.collectAsState()
             LaunchedEffect(webVM) { webVM.observeNetworkAddresses() }
-            lanIpv4Addresses?.let { HomeWebAddresses(lanIpv4Addresses = it) }
+            lanIpv4Addresses?.let { WebAddressPager(lanIpv4Addresses = it, compact = true) }
         }
         Row(
             modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 4.dp),

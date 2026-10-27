@@ -7,14 +7,19 @@ import kotlinx.coroutines.launch
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,32 +38,30 @@ import com.ismartcoding.plain.i18n.collapse_backup_addresses
 import com.ismartcoding.plain.i18n.collapsed
 import com.ismartcoding.plain.i18n.expanded
 import com.ismartcoding.plain.i18n.try_more_addresses
+import com.ismartcoding.plain.i18n.home_try_other_addresses
+import com.ismartcoding.plain.i18n.change_port
+import com.ismartcoding.plain.i18n.mdns_hostname
+import com.ismartcoding.plain.i18n.show_qr_code
+import com.ismartcoding.plain.platform.setClipboardText
+import com.ismartcoding.plain.ui.components.PIconButton
 import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.chevron_down as ui_drawable_chevron_down
 import com.ismartcoding.plain.ui.resources.chevron_up as ui_drawable_chevron_up
+import com.ismartcoding.plain.ui.resources.chevron_right as ui_drawable_chevron_right
+import com.ismartcoding.plain.ui.resources.pen as ui_drawable_pen
+import com.ismartcoding.plain.ui.resources.qr_code as ui_drawable_qr_code
 
 @Composable
 fun WebAddressBar(
     isHttps: Boolean,
     lanIpv4Addresses: List<String>,
-    modifier: Modifier = Modifier.fillMaxWidth().background(
-        color = MaterialTheme.colorScheme.cardBackgroundNormal,
-        shape = RoundedCornerShape(12.dp),
-    ).padding(top = 8.dp),
-    moreAddressesText: String = stringResource(Res.string.try_more_addresses),
-    backupAddressesBelowToggle: Boolean = false,
-    backupToggleModifier: Modifier = Modifier.padding(horizontal = 8.dp),
-    expandIcon: DrawableResource = UiRes.drawable.ui_drawable_chevron_down,
-    collapseIcon: DrawableResource = UiRes.drawable.ui_drawable_chevron_up,
-    addressRow: @Composable (String, Boolean, () -> Unit, () -> Unit) -> Unit = { url, hostname, edit, qr ->
-        AddressRow(url, hostname, edit, qr)
-    },
+    modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     val port = if (isHttps) Prefs.httpsPort.collectAsState() else Prefs.httpPort.collectAsState()
     // Shared persisted state so the HTTP/HTTPS pager pages stay in sync.
@@ -77,15 +80,20 @@ fun WebAddressBar(
         if (backupAddresses.isNotEmpty()) {
             val expansion = stringResource(if (expanded.value) Res.string.expanded else Res.string.collapsed)
             PTextButton(
-                modifier = backupToggleModifier.semantics {
+                modifier = Modifier.padding(horizontal = if (compact) 0.dp else 8.dp).semantics {
                     stateDescription = expansion
                 },
-                text = if (expanded.value) stringResource(Res.string.collapse_backup_addresses) else moreAddressesText,
+                text = stringResource(
+                    if (expanded.value) Res.string.collapse_backup_addresses
+                    else if (compact) Res.string.home_try_other_addresses
+                    else Res.string.try_more_addresses,
+                ),
                 icon = painterResource(
-                    if (expanded.value)
-                        collapseIcon
-                    else
-                        expandIcon
+                    if (compact) {
+                        if (expanded.value) UiRes.drawable.ui_drawable_chevron_down else UiRes.drawable.ui_drawable_chevron_right
+                    } else {
+                        if (expanded.value) UiRes.drawable.ui_drawable_chevron_up else UiRes.drawable.ui_drawable_chevron_down
+                    }
                 ),
                 onClick = {
                     scope.launch { Prefs.set(PrefKeys.WEB_ADDRESS_BAR_EXPANDED, !expanded.value)}
@@ -94,7 +102,15 @@ fun WebAddressBar(
         }
     }
 
-    Column(modifier) {
+    val containerModifier = if (compact) modifier.fillMaxWidth() else modifier.fillMaxWidth().background(
+        color = MaterialTheme.colorScheme.cardBackgroundNormal,
+        shape = MaterialTheme.shapes.small,
+    ).padding(top = 8.dp)
+    val addressRow: @Composable (String, Boolean, () -> Unit, () -> Unit) -> Unit = { url, hostname, edit, qr ->
+        if (compact) CompactAddressRow(url, hostname, edit, qr)
+        else AddressRow(url, hostname, edit, qr)
+    }
+    Column(containerModifier) {
         val primaryUrl = UrlHelper.buildUrl(scheme, primaryAddress, port.value)
         addressRow(
             primaryUrl,
@@ -108,7 +124,7 @@ fun WebAddressBar(
                 qrCodeDialogVisible = true
             },
         )
-        if (backupAddressesBelowToggle) backupAddressesToggle()
+        if (compact) backupAddressesToggle()
         AnimatedVisibility(
             visible = expanded.value && backupAddresses.isNotEmpty(),
             enter = expandVertically(),
@@ -135,7 +151,7 @@ fun WebAddressBar(
                 }
             }
         }
-        if (!backupAddressesBelowToggle) backupAddressesToggle()
+        if (!compact) backupAddressesToggle()
     }
 
     if (mdnsEditDialogVisible) {
@@ -197,6 +213,49 @@ private fun AddressRow(
             isHostnameRow = isHostnameRow,
             onEditClick = onEditClick,
             onQrClick = onQrClick,
+        )
+    }
+}
+
+@Composable
+private fun CompactAddressRow(
+    url: String,
+    isHostname: Boolean,
+    onEdit: () -> Unit,
+    onQr: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SelectionContainer(Modifier.weight(1f)) {
+            Text(
+                text = url,
+                modifier = Modifier.fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .clickable {
+                        setClipboardText("url", url)
+                    }
+                    .padding(vertical = 8.dp),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                softWrap = false,
+            )
+        }
+        PIconButton(
+            icon = UiRes.drawable.ui_drawable_pen,
+            modifier = Modifier.size(32.dp),
+            iconSize = 16.dp,
+            contentDescription = stringResource(if (isHostname) Res.string.mdns_hostname else Res.string.change_port),
+            click = onEdit,
+        )
+        PIconButton(
+            icon = UiRes.drawable.ui_drawable_qr_code,
+            modifier = Modifier.size(32.dp),
+            iconSize = 16.dp,
+            contentDescription = stringResource(Res.string.show_qr_code),
+            click = onQr,
         )
     }
 }

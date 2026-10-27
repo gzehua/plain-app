@@ -29,10 +29,7 @@ import kotlinx.coroutines.launch
 fun WebAddressPager(
     lanIpv4Addresses: List<String>,
     modifier: Modifier = Modifier,
-    showProtocolSelector: Boolean = false,
-    addressBar: @Composable (Boolean, List<String>) -> Unit = { isHttps, addresses ->
-        WebAddressBar(isHttps = isHttps, lanIpv4Addresses = addresses)
-    },
+    compact: Boolean = false,
 ) {
     val isHttps = Prefs.https.collectAsState()
     val pagerState = rememberPagerState(
@@ -46,7 +43,7 @@ fun WebAddressPager(
         }
     }
     Column(modifier = modifier.fillMaxWidth()) {
-        if (showProtocolSelector) {
+        if (compact) {
             PSegmentedButtons(
                 options = listOf("HTTP", "HTTPS"),
                 selectedIndex = pagerState.currentPage,
@@ -65,9 +62,9 @@ fun WebAddressPager(
             state = pagerState,
             modifier = Modifier.fillMaxWidth(),
         ) { page ->
-            addressBar(page == 1, lanIpv4Addresses)
+            WebAddressBar(isHttps = page == 1, lanIpv4Addresses = lanIpv4Addresses, compact = compact)
         }
-        if (!showProtocolSelector) {
+        if (!compact) {
             PRangeDots(
                 items = listOf(0, 1),
                 selected = pagerState.currentPage,
