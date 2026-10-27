@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -60,7 +61,7 @@ internal fun DeviceLink(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primaryContainer)
-                .padding(horizontal = 10.dp, vertical = 5.dp),
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
@@ -78,7 +79,7 @@ internal fun DeviceLink(modifier: Modifier = Modifier) {
             )
         }
         VerticalSpace(dp = 8.dp)
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.width(56.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.width(40.dp)) {
             Box(Modifier.size(5.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
             DashedLine(Modifier.weight(1f))
             Box(Modifier.size(5.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
@@ -88,11 +89,6 @@ internal fun DeviceLink(modifier: Modifier = Modifier) {
 
 // ---------- Device frames ----------
 
-/** Phone mockup frame (bezel + screen), sized by the caller. Screen
- *  background matches the app. Dark lifts the screen to
- *  surfaceContainerLowest so the screen reads as a panel distinct from the
- *  page background, which shares the app background color. Keep the height
- *  ≥ ~185dp so the bottom nav row stays fully inside the clip. */
 @Composable
 internal fun PhoneFrame(
     modifier: Modifier = Modifier,
@@ -108,63 +104,65 @@ internal fun PhoneFrame(
     }
 }
 
-/** Desktop browser window: traffic lights + address bar, then page content. */
 @Composable
 internal fun BrowserFrame(
     modifier: Modifier = Modifier,
     height: Dp,
     content: @Composable () -> Unit,
 ) {
-    Column(
+    Box(
         modifier = modifier
             .height(height)
-            .clip(MaterialTheme.shapes.medium)
-            .border(2.dp, bezelColor(), MaterialTheme.shapes.medium)
-            .background(MaterialTheme.colorScheme.surface),
+            .clip(RoundedCornerShape(16.dp))
+            .background(bezelColor())
+            .padding(2.dp),
     ) {
-        // Titlebar as an overlay: lights pinned start, URL pill absolutely
-        // centered — nested Row/weight layouts let it drift downward.
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(26.dp)
-                .background(if (isDarkTheme()) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.inverseSurface),
+                .height(height - 4.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(MaterialTheme.colorScheme.surface),
         ) {
             Row(
                 modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(start = 10.dp),
+                    .fillMaxWidth()
+                    .height(32.dp)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                    .padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Box(Modifier.size(7.dp).clip(CircleShape).background(MaterialTheme.colorScheme.error))
-                Box(Modifier.size(7.dp).clip(CircleShape).background(MaterialTheme.colorScheme.orange))
-                Box(Modifier.size(7.dp).clip(CircleShape).background(MaterialTheme.colorScheme.green))
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Box(Modifier.size(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.error))
+                    Box(Modifier.size(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.orange))
+                    Box(Modifier.size(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.green))
+                }
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(UiRes.drawable.ui_drawable_lock),
+                        contentDescription = null,
+                        tint = mockupMutedColor(),
+                        modifier = Modifier.size(8.dp),
+                    )
+                    Text(
+                        text = "192.0.2.20",
+                        fontSize = 8.sp,
+                        lineHeight = 9.sp,
+                        color = mockupMutedColor(),
+                        maxLines = 1,
+                    )
+                }
             }
-            Row(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .clip(CircleShape)
-                    .background(if (isDarkTheme()) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surfaceContainerHighest)
-                    .padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 2.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(3.dp),
-            ) {
-                Icon(
-                    painter = painterResource(UiRes.drawable.ui_drawable_lock),
-                    contentDescription = null,
-                    tint = mockupMutedColor(),
-                    modifier = Modifier.size(8.dp),
-                )
-                Text(
-                    text = "192.0.2.20",
-                    fontSize = 8.sp,
-                    lineHeight = 9.sp,
-                    color = mockupMutedColor(),
-                    maxLines = 1,
-                )
-            }
+            content()
         }
-        content()
     }
 }

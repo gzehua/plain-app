@@ -21,7 +21,7 @@ fun StepItem(index: Int, title: String, desc: String = "", modifier: Modifier = 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 8.dp, end = 16.dp),
+            .padding(top = 8.dp, bottom = 8.dp, end = 8.dp),
         verticalAlignment = Alignment.Top,
     ) {
         StepNumber(index)

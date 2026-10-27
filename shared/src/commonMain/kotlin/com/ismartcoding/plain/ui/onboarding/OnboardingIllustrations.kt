@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -50,15 +50,13 @@ import com.ismartcoding.plain.i18n.search
 
 @Composable
 fun WelcomeIllustration() {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        // Phone and browser share one height; below ~185dp the phone mock
-        // clips its bottom nav. Content lays out natively at the frame size.
-        PhoneFrame(modifier = Modifier.width(104.dp).height(200.dp)) { AppHomeScreen() }
-        DeviceLink(Modifier.padding(horizontal = 2.dp))
-        BrowserFrame(modifier = Modifier.weight(1f), height = 200.dp) {
+    Row(modifier = Modifier.widthIn(max = 360.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        PhoneFrame(modifier = Modifier.weight(0.65f).height(128.dp)) { AppHomeScreen() }
+        DeviceLink(Modifier.padding(horizontal = 4.dp))
+        BrowserFrame(modifier = Modifier.weight(1.6f), height = 168.dp) {
             Row(modifier = Modifier.fillMaxSize()) {
-                WebRail(activeIndex = 2, pressed = false)
-                WebContent(sectionIndex = 2, modifier = Modifier.weight(1f))
+                WebRail(activeIndex = 2, pressed = false, compact = true)
+                WebContent(sectionIndex = 2, modifier = Modifier.weight(1f), compact = true)
             }
         }
     }
@@ -75,7 +73,7 @@ fun DesktopAccessIllustration() {
     val phase = (p * 4f).toInt().coerceIn(0, 3)
     val local = p * 4f - phase
     val pressed = local < 0.18f
-    BrowserFrame(modifier = Modifier.width(304.dp), height = 212.dp) {
+    BrowserFrame(modifier = Modifier.widthIn(max = 304.dp).fillMaxWidth(), height = 208.dp) {
         Row(modifier = Modifier.fillMaxSize()) {
             WebRail(activeIndex = activeCycle[phase], pressed = pressed)
             Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
@@ -99,12 +97,12 @@ fun ChatIllustration() {
     val me = stringResource(Res.string.me)
     Column(
         modifier = Modifier
-            .width(304.dp)
-            .height(320.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .border(2.dp, bezelColor(), RoundedCornerShape(20.dp))
+            .widthIn(max = 304.dp).fillMaxWidth()
+            .height(288.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .border(2.dp, bezelColor(), RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 10.dp, vertical = 8.dp),
+            .padding(16.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -122,39 +120,32 @@ fun ChatIllustration() {
         VerticalSpace(dp = 4.dp)
         Column(
             modifier = Modifier.weight(1f).fillMaxWidth().alpha(fadeOut),
-            verticalArrangement = Arrangement.spacedBy(3.dp, alignment = Alignment.Bottom),
+            verticalArrangement = Arrangement.spacedBy(4.dp, alignment = Alignment.Bottom),
         ) {
-            // Timeline: peer text → my text → my images → my shared folder → my text.
             ChatMessageRow(fromMe = false, name = "MacBook", time = "09:41", appear = (p - 0.02f) / 0.06f) {
                 Text(
                     text = stringResource(Res.string.onboarding_3_bubble_in),
                     fontSize = 9.sp,
-                    modifier = Modifier.padding(vertical = 3.dp),
+                    modifier = Modifier.padding(vertical = 4.dp),
                 )
             }
             ChatMessageRow(fromMe = true, name = me, time = "09:42", appear = (p - 0.15f) / 0.06f) {
                 Text(
                     text = stringResource(Res.string.onboarding_3_bubble_out),
                     fontSize = 9.sp,
-                    modifier = Modifier.padding(vertical = 3.dp),
+                    modifier = Modifier.padding(vertical = 4.dp),
                 )
             }
             ChatMessageRow(fromMe = true, name = me, time = "09:43", appear = (p - 0.28f) / 0.06f) {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(vertical = 3.dp)) {
-                    DemoPhoto(0, Modifier.size(40.dp), cornerRadius = 6.dp)
-                    DemoPhoto(3, Modifier.size(40.dp), cornerRadius = 6.dp)
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(vertical = 4.dp)) {
+                    DemoPhoto(0, Modifier.size(40.dp), cornerRadius = 8.dp)
+                    DemoPhoto(3, Modifier.size(40.dp), cornerRadius = 8.dp)
                 }
             }
             ChatMessageRow(fromMe = true, name = me, time = "09:44", appear = (p - 0.42f) / 0.06f) {
                 ShareCard()
             }
-            ChatMessageRow(fromMe = true, name = me, time = "09:45", appear = (p - 0.56f) / 0.06f) {
-                Text(
-                    text = stringResource(Res.string.onboarding_3_msg_sent),
-                    fontSize = 9.sp,
-                    modifier = Modifier.padding(vertical = 3.dp),
-                )
-            }
+
         }
         VerticalSpace(dp = 4.dp)
         // Chat input: bordered field with the send icon inside (bottom-right),
@@ -164,7 +155,7 @@ fun ChatIllustration() {
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
                 .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
-                .padding(start = 8.dp, end = 5.dp, top = 4.dp, bottom = 3.dp),
+                .padding(8.dp),
         ) {
             Text(
                 text = stringResource(Res.string.chat_input_hint),
@@ -172,7 +163,7 @@ fun ChatIllustration() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.align(Alignment.CenterStart),
+                modifier = Modifier.align(Alignment.CenterStart).padding(end = 24.dp),
             )
             Icon(
                 painter = painterResource(UiRes.drawable.ui_drawable_send),
@@ -197,14 +188,14 @@ private fun ToolCard(
     val scheme = MaterialTheme.colorScheme
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(if (hero) scheme.primaryContainer else scheme.cardBackgroundNormal)
-            .padding(horizontal = 12.dp, vertical = 18.dp),
+            .padding(horizontal = 8.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
             Modifier
-                .size(44.dp)
+                .size(40.dp)
                 .clip(CircleShape)
                 // Default cover pairing (primaryContainer→tertiaryContainer
                 // gradient): the dark surface circle read as a black hole.
@@ -219,10 +210,10 @@ private fun ToolCard(
                 painter = painterResource(icon),
                 contentDescription = title,
                 tint = scheme.primary,
-                modifier = Modifier.size(22.dp),
+                modifier = Modifier.size(24.dp),
             )
         }
-        VerticalSpace(dp = 6.dp)
+        VerticalSpace(dp = 8.dp)
         Text(
             text = title,
             style = MaterialTheme.typography.titleSmall,
@@ -242,8 +233,8 @@ private fun ToolCard(
 
 @Composable
 fun MediaToolsIllustration() {
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Row(modifier = Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+    Column(Modifier.widthIn(max = 320.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(modifier = Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ToolCard(
                 modifier = Modifier.weight(1f).fillMaxHeight(),
                 icon = UiRes.drawable.ui_drawable_image,
@@ -259,7 +250,7 @@ fun MediaToolsIllustration() {
                 hero = true,
             )
         }
-        Row(modifier = Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+        Row(modifier = Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ToolCard(
                 modifier = Modifier.weight(1f).fillMaxHeight(),
                 icon = UiRes.drawable.ui_drawable_notebook_pen,

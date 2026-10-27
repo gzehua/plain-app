@@ -88,9 +88,7 @@ fun HowToUsePage(
                             VerticalSpace(dp = 16.dp)
                             StepItem(index = 2, title = stringResource(Res.string.step_choose_ip_title))
                             VerticalSpace(dp = 8.dp)
-                            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                                lanIpv4Addresses?.let { WebAddressPager(lanIpv4Addresses = it) }
-                            }
+                            lanIpv4Addresses?.let { WebAddressPager(lanIpv4Addresses = it) }
                             VerticalSpace(dp = 16.dp)
                             StepItem(index = 3, title = stringResource(Res.string.step_open_url_title))
                             VerticalSpace(dp = 8.dp)
@@ -144,7 +142,6 @@ fun HowToUsePage(
                             modifier = Modifier.clickable { WebHelper.open(TROUBLESHOOTING_GUIDE_URL) },
                             icon = UiRes.drawable.ui_drawable_circle_help,
                             title = stringResource(Res.string.more_help),
-                            subtitle = TROUBLESHOOTING_GUIDE_URL.removePrefix("https://"),
                             showMore = true,
                         )
                     }

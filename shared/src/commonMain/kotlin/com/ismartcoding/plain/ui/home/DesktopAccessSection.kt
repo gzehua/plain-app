@@ -70,7 +70,7 @@ fun DesktopAccessSection(navController: NavHostController) {
             LaunchedEffect(webVM) { webVM.observeNetworkAddresses() }
             lanIpv4Addresses?.let { WebAddressPager(lanIpv4Addresses = it) }
         }
-        VerticalSpace(16.dp)
+        VerticalSpace(8.dp)
         PDivider(modifier = Modifier.padding(start = 16.dp))
         PListItem(modifier = Modifier.clickable {
             navController.navigate(Routing.DesktopAccessSettings)

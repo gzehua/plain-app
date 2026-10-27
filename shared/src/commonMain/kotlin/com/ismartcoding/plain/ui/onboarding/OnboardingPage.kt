@@ -152,7 +152,7 @@ fun OnboardingPage(navController: NavHostController) {
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
             )
-            VerticalSpace(dp = 28.dp)
+            VerticalSpace(dp = 24.dp)
         }
     }
 }
@@ -184,7 +184,7 @@ private fun SlideDesktopAccess() {
 private fun SlideChat() {
     SlideFrame(
         illustration = { ChatIllustration() },
-        illustrationHeight = 320.dp,
+        illustrationHeight = 288.dp,
         title = stringResource(Res.string.onboarding_3_title),
         body = stringResource(Res.string.onboarding_3_body),
     )
@@ -194,6 +194,7 @@ private fun SlideChat() {
 private fun SlideMediaTools() {
     SlideFrame(
         illustration = { MediaToolsIllustration() },
+        illustrationHeight = 304.dp,
         title = stringResource(Res.string.onboarding_4_title),
         body = stringResource(Res.string.onboarding_4_body),
     )
@@ -205,7 +206,7 @@ private fun SlideFrame(
     title: String,
     body: String,
     illustration: @Composable () -> Unit,
-    illustrationHeight: Dp = 300.dp,
+    illustrationHeight: Dp = 256.dp,
     badges: List<String> = emptyList(),
 ) {
     Column(
@@ -241,7 +242,7 @@ private fun SlideFrame(
             VerticalSpace(dp = 16.dp)
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 badges.forEach { BadgeChip(it) }
@@ -256,9 +257,9 @@ private fun BadgeChip(text: String) {
         modifier = Modifier
             .clip(RoundedCornerShape(50))
             .background(MaterialTheme.colorScheme.primaryContainer)
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Icon(
             painter = painterResource(UiRes.drawable.ui_drawable_check),
@@ -290,8 +291,8 @@ private fun SlideGetStarted() {
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
         )
-        VerticalSpace(dp = 28.dp)
-        Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        VerticalSpace(dp = 24.dp)
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             StepRow(1, stringResource(Res.string.onboarding_step1_title), stringResource(Res.string.onboarding_step1_desc))
             StepRow(2, stringResource(Res.string.onboarding_step2_title), stringResource(Res.string.onboarding_step2_desc))
             StepRow(3, stringResource(Res.string.onboarding_step3_title), stringResource(Res.string.onboarding_step3_desc))
@@ -301,9 +302,9 @@ private fun SlideGetStarted() {
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
                 .background(MaterialTheme.colorScheme.cardBackgroundNormal)
-                .padding(horizontal = 14.dp, vertical = 7.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Icon(
                 painter = painterResource(UiRes.drawable.ui_drawable_lock),

@@ -18,12 +18,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.ui.theme.grey
 
-// Generic single-choice selector rendered as a row of dots. The selected
-// item grows horizontally and uses primary; others stay short and use grey.
-// Each dot owns a fixed 24.dp tall touch target so tapping is comfortable
-// regardless of the visible dot size. Pair with PSegmentedButtons when text
-// labels are required; dots fit two-to-four item selectors with no room for
-// words.
 @Composable
 fun <T> PRangeDots(
     items: List<T>,
@@ -61,4 +55,4 @@ fun <T> PRangeDots(
     }
 }
 
-private val DOT_TOUCH_HEIGHT = 24.dp
+private val DOT_TOUCH_HEIGHT = 16.dp

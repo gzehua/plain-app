@@ -88,21 +88,21 @@ private val webSections: List<WebSection>
 
 /** Icon rail mirroring plain-desktop app-rail: icon over label, primary pill on active. */
 @Composable
-internal fun WebRail(activeIndex: Int, pressed: Boolean, modifier: Modifier = Modifier) {
+internal fun WebRail(activeIndex: Int, pressed: Boolean, modifier: Modifier = Modifier, compact: Boolean = false) {
     Column(
         modifier = modifier
-            .width(38.dp)
+            .width(if (compact) 32.dp else 40.dp)
             .fillMaxHeight()
             .background(MaterialTheme.colorScheme.cardBackgroundNormal)
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(1.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         webSections.forEachIndexed { index, section ->
             val isActive = index == activeIndex
             Column(
                 modifier = Modifier
-                    .width(32.dp)
+                    .width(if (compact) 24.dp else 32.dp)
                     .clip(RoundedCornerShape(6.dp))
                     .background(
                         when {
@@ -111,7 +111,7 @@ internal fun WebRail(activeIndex: Int, pressed: Boolean, modifier: Modifier = Mo
                             else -> Color.Transparent
                         },
                     )
-                    .padding(vertical = 2.dp),
+                    .padding(vertical = 4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
@@ -121,13 +121,15 @@ internal fun WebRail(activeIndex: Int, pressed: Boolean, modifier: Modifier = Mo
                     tint = if (isActive) MaterialTheme.colorScheme.primary else mockupMutedColor(),
                     modifier = Modifier.size(11.dp),
                 )
-                Text(
-                    text = stringResource(section.label),
-                    fontSize = 7.sp,
-                    lineHeight = 8.sp,
-                    color = if (isActive) MaterialTheme.colorScheme.primary else mockupMutedColor(),
-                    maxLines = 1,
-                )
+                if (!compact) {
+                    Text(
+                        text = stringResource(section.label),
+                        fontSize = 7.sp,
+                        lineHeight = 8.sp,
+                        color = if (isActive) MaterialTheme.colorScheme.primary else mockupMutedColor(),
+                        maxLines = 1,
+                    )
+                }
             }
         }
     }
@@ -135,10 +137,10 @@ internal fun WebRail(activeIndex: Int, pressed: Boolean, modifier: Modifier = Mo
 
 /** Content pane for the active web section — real app content, not placeholders. */
 @Composable
-internal fun WebContent(sectionIndex: Int, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize().padding(6.dp)) {
+internal fun WebContent(sectionIndex: Int, modifier: Modifier = Modifier, compact: Boolean = false) {
+    Box(modifier = modifier.fillMaxSize().padding(8.dp)) {
         when (sectionIndex) {
-            2 -> WebMediaGrid(rows = 3, cols = 3)
+            2 -> WebMediaGrid(rows = if (compact) 2 else 3, cols = if (compact) 2 else 3)
             3 -> WebVideoGrid()
             1 -> WebAudioList()
             else -> WebChatPreview()
@@ -150,12 +152,12 @@ internal fun WebContent(sectionIndex: Int, modifier: Modifier = Modifier) {
 private fun WebMediaGrid(rows: Int, cols: Int) {
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(3.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         repeat(rows) { row ->
             Row(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 repeat(cols) { col ->
                     DemoPhoto(

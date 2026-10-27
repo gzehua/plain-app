@@ -67,7 +67,7 @@ fun WebAddressBar(
                 color = MaterialTheme.colorScheme.cardBackgroundNormal,
                 shape = RoundedCornerShape(12.dp),
             )
-            .padding(vertical = 8.dp),
+            .padding(top = 8.dp),
     ) {
         val primaryUrl = UrlHelper.buildUrl(scheme, primaryAddress, port.value)
         AddressRow(

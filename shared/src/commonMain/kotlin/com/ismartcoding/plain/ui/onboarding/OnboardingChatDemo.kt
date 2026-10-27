@@ -50,15 +50,15 @@ internal fun ShareCard() {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Surface(
-                modifier = Modifier.size(30.dp),
-                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.size(32.dp),
+                shape = RoundedCornerShape(8.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
             ) {
                 Icon(
                     painter = painterResource(UiRes.drawable.ui_drawable_folders),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(7.dp),
+                    modifier = Modifier.padding(8.dp),
                 )
             }
             Column(modifier = Modifier.weight(1f).padding(start = 8.dp)) {
@@ -104,7 +104,7 @@ internal fun ChatMessageRow(
         } else {
             HorizontalSpace(dp = 4.dp)
         }
-        Column(modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 5.dp).weight(1f)) {
+        Column(modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 4.dp).weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text = name,
