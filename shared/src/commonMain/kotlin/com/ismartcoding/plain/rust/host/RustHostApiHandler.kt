@@ -37,7 +37,6 @@ import com.ismartcoding.plain.ui.feeds.FeedWorkerState
 import com.ismartcoding.plain.ui.feeds.FeedSyncUpdate
 import com.ismartcoding.plain.features.sessions.setOnlineClientIds
 import com.ismartcoding.plain.rust.RustHttpStatus
-import com.ismartcoding.plain.rust.host.audio.AudioCatalogObserver
 import com.ismartcoding.plain.rust.host.audio.AudioEngineHost
 import com.ismartcoding.plain.rust.host.files.ThumbnailHost
 import com.ismartcoding.plain.rust.host.network.BlePairingHost
@@ -71,7 +70,7 @@ internal fun CoroutineScope.launchHostRequest(method: String, block: suspend Cor
 internal object RustHostApiHandler {
     private val requests = Channel<String>(32)
 
-    fun start(scope: CoroutineScope, audioCatalogObserver: AudioCatalogObserver?) {
+    fun start(scope: CoroutineScope) {
         scope.launch {
             val bleAdvertising = PairingTransport.connect()
             val advertisingObservation = launch {
@@ -79,7 +78,6 @@ internal object RustHostApiHandler {
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) { LogCat.e("BLE advertising observation", error) }
             }
-            val observation = audioCatalogObserver?.observe(this)
             val clipboardObservation = launch {
                 try { observeClipboardReports() }
                 catch (cancelled: CancellationException) { throw cancelled }
@@ -107,7 +105,6 @@ internal object RustHostApiHandler {
             } finally {
                 withContext(NonCancellable) {
                     clipboardObservation.cancelAndJoin()
-                    observation?.cancelAndJoin()
                     advertisingObservation.cancelAndJoin()
                     cleanup("BLE advertising") { bleAdvertising.close() }
                     disconnect()

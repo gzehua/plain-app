@@ -111,21 +111,6 @@ pub extern "C" fn plain_report_ble_advertising_facts(payload: *const c_char) -> 
     })
 }
 
-fn media_catalog_changed(payload: String) -> String {
-    reply!((|| -> Result<bool, String> {
-        let (runtime, host) = bridge()?;
-        runtime.block_on(host.report_media_catalog_changed(payload))?;
-        Ok(true)
-    })())
-}
-#[unsafe(no_mangle)]
-pub extern "C" fn plain_report_media_catalog_changed(payload: *const c_char) -> *mut c_char {
-    c_string(match input(payload) {
-        Ok(payload) => media_catalog_changed(payload),
-        Err(error) => reply!(Err::<bool, String>(error)),
-    })
-}
-
 fn screen_mirror_state(payload: String) -> String {
     reply!((|| -> Result<bool, String> {
         let (runtime, host) = bridge()?;
@@ -464,19 +449,6 @@ mod android {
     ) -> jstring {
         env.with_env(|env| -> jni::errors::Result<_> {
             env.new_string(ble_advertising_facts(payload.to_string()))
-        })
-        .resolve::<ThrowRuntimeExAndDefault>()
-        .into_raw()
-    }
-
-    #[unsafe(no_mangle)]
-    pub extern "system" fn Java_com_ismartcoding_plain_rust_native_RustNativeBindings_reportMediaCatalogChanged(
-        mut env: EnvUnowned<'_>,
-        _: JObject<'_>,
-        payload: JString<'_>,
-    ) -> jstring {
-        env.with_env(|env| -> jni::errors::Result<_> {
-            env.new_string(media_catalog_changed(payload.to_string()))
         })
         .resolve::<ThrowRuntimeExAndDefault>()
         .into_raw()

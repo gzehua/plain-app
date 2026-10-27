@@ -17,7 +17,6 @@ internal actual object RustNativeBindings {
     actual external fun reportBleAdvertisement(payload: String): String
     actual external fun reportBleScanState(payload: String): String
     actual external fun reportBleAdvertisingFacts(payload: String): String
-    actual external fun reportMediaCatalogChanged(payload: String): String
     actual external fun reportScreenMirrorState(payload: String): String
     actual external fun reportScreenMirrorCodec(payload: String): String
     actual external fun reportScreenMirrorAudioGranted(payload: String): String

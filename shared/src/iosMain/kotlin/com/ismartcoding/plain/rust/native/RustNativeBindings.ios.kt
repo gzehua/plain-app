@@ -7,7 +7,6 @@ import com.ismartcoding.plain.rustprefs.plain_report_network_interfaces_changed
 import com.ismartcoding.plain.rustprefs.plain_report_ble_advertisement
 import com.ismartcoding.plain.rustprefs.plain_report_ble_scan_state
 import com.ismartcoding.plain.rustprefs.plain_report_ble_advertising_facts
-import com.ismartcoding.plain.rustprefs.plain_report_media_catalog_changed
 import com.ismartcoding.plain.rustprefs.plain_report_screen_mirror_state
 import com.ismartcoding.plain.rustprefs.plain_report_screen_mirror_codec
 import com.ismartcoding.plain.rustprefs.plain_report_screen_mirror_audio_granted
@@ -130,7 +129,6 @@ internal actual object RustNativeBindings {
     actual fun reportBleAdvertisement(payload: String): String = memScoped { readString(plain_report_ble_advertisement(payload.cstr.ptr)) }
     actual fun reportBleScanState(payload: String): String = memScoped { readString(plain_report_ble_scan_state(payload.cstr.ptr)) }
     actual fun reportBleAdvertisingFacts(payload: String): String = memScoped { readString(plain_report_ble_advertising_facts(payload.cstr.ptr)) }
-    actual fun reportMediaCatalogChanged(payload: String): String = memScoped { readString(plain_report_media_catalog_changed(payload.cstr.ptr)) }
     actual fun reportScreenMirrorState(payload: String): String = memScoped { readString(plain_report_screen_mirror_state(payload.cstr.ptr)) }
     actual fun reportScreenMirrorCodec(payload: String): String = memScoped { readString(plain_report_screen_mirror_codec(payload.cstr.ptr)) }
     actual fun reportScreenMirrorAudioGranted(payload: String): String = memScoped { readString(plain_report_screen_mirror_audio_granted(payload.cstr.ptr)) }

@@ -15,7 +15,6 @@ internal expect object RustNativeBindings {
     fun reportBleAdvertisement(payload: String): String
     fun reportBleScanState(payload: String): String
     fun reportBleAdvertisingFacts(payload: String): String
-    fun reportMediaCatalogChanged(payload: String): String
     fun reportScreenMirrorState(payload: String): String
     fun reportScreenMirrorCodec(payload: String): String
     fun reportScreenMirrorAudioGranted(payload: String): String

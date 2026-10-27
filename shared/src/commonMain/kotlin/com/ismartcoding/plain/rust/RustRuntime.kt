@@ -6,7 +6,6 @@ import com.ismartcoding.plain.Prefs
 import com.ismartcoding.plain.platform.system.*
 import com.ismartcoding.plain.rust.native.RustNativeBindings
 import com.ismartcoding.plain.rust.host.RustHostApiHandler
-import com.ismartcoding.plain.rust.host.audio.AudioCatalogObserver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +27,7 @@ object RustRuntime {
     private var sessionToken: String? = null
     private var collectorsStarted = false
 
-    fun start(audioCatalogObserver: AudioCatalogObserver? = null) = lock.withLock {
+    fun start() = lock.withLock {
         val token = sessionToken ?: generateChaCha20Key().also { sessionToken = it }
         val config = rustStartupConfig
         val result = JsonHelper.jsonDecode<RustStartupResult>(RustNativeBindings.startCore(
@@ -41,7 +40,7 @@ object RustRuntime {
         if (!collectorsStarted) {
             Prefs.load()
             isCoreInitialized = true
-            RustHostApiHandler.start(scope, audioCatalogObserver)
+            RustHostApiHandler.start(scope)
             com.ismartcoding.plain.rust.graphql.RustGraphqlSubscriptions.start(scope)
             com.ismartcoding.plain.app.SubscriptionObservers.start(scope)
             collectorsStarted = true

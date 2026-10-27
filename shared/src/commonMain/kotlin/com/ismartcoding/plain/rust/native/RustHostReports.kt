@@ -8,7 +8,6 @@ object RustHostReports {
     suspend fun bleAdvertisement(payload: String): Boolean = nativeCall { RustNativeBindings.reportBleAdvertisement(payload) }
     suspend fun bleScanState(payload: String): Boolean = nativeCall { RustNativeBindings.reportBleScanState(payload) }
     suspend fun bleAdvertisingFacts(payload: String): Boolean = nativeCall { RustNativeBindings.reportBleAdvertisingFacts(payload) }
-    suspend fun mediaCatalogChanged(payload: String): Boolean = nativeCall { RustNativeBindings.reportMediaCatalogChanged(payload) }
     suspend fun screenMirrorState(payload: String): Boolean = nativeCall { RustNativeBindings.reportScreenMirrorState(payload) }
     suspend fun screenMirrorCodec(payload: String): Boolean = nativeCall { RustNativeBindings.reportScreenMirrorCodec(payload) }
     suspend fun screenMirrorAudioGranted(payload: String): Boolean = nativeCall { RustNativeBindings.reportScreenMirrorAudioGranted(payload) }

@@ -9,13 +9,12 @@ import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.platform.system.initDiskLogging
 import com.ismartcoding.plain.platform.system.initializePlatformApp
 import com.ismartcoding.plain.platform.system.newImageLoader
-import com.ismartcoding.plain.rust.host.audio.AudioCatalogObserver
 import com.ismartcoding.plain.rust.RustRuntime
 import com.ismartcoding.plain.ui.settings.checkAppUpdate
 
-fun initializeApp(audioCatalogObserver: AudioCatalogObserver? = null) {
+fun initializeApp() {
     SingletonImageLoader.setSafe(::newImageLoader)
-    RustRuntime.start(audioCatalogObserver)
+    RustRuntime.start()
     initDiskLogging()
     AppEvents.register()
     initializePlatformApp()

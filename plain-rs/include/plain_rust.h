@@ -34,7 +34,6 @@ char *plain_report_network_interfaces_changed(const char *payload);
 char *plain_report_ble_advertisement(const char *payload);
 char *plain_report_ble_scan_state(const char *payload);
 char *plain_report_ble_advertising_facts(const char *payload);
-char *plain_report_media_catalog_changed(const char *payload);
 char *plain_report_screen_mirror_state(const char *payload);
 char *plain_report_screen_mirror_codec(const char *payload);
 char *plain_report_screen_mirror_audio_granted(const char *payload);

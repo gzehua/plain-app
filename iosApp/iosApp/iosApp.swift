@@ -30,7 +30,7 @@ struct PlainApp: SwiftUI.App {
         IosPlatformRegistry.shared.setVideoFrameObserver(observer: videoFrameObserver)
         UNUserNotificationCenter.current().delegate = notificationDelegate
         backgroundScheduler.register()
-        AppInitializerKt.initializeApp(audioCatalogObserver: nil)
+        AppInitializerKt.initializeApp()
     }
 
     var body: some Scene {
