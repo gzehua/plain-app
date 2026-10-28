@@ -79,12 +79,6 @@ object DialogHelper {
             confirmation.value = ConfirmDialog(getComposeString(Res.string.error), message, Pair(getComposeString(Res.string.ok), callback), null)
         }
     }
-
-    fun showTextCopiedMessage(text: String) {
-        coIO {
-            showMessage(getComposeString(Res.string.copied_to_clipboard_format, text))
-        }
-    }
 }
 
 suspend inline fun confirmActionAsync(

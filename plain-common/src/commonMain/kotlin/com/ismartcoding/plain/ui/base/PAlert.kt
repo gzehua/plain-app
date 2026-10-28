@@ -95,7 +95,7 @@ fun PAlert(
                         painter = painterResource(iconRes),
                         contentDescription = null,
                         tint = accentColor,
-                        modifier = Modifier.size(Spacing.xl),
+                        modifier = Modifier.size(16.dp),
                     )
                     Spacer(modifier = Modifier.width(Spacing.sm))
                     Text(

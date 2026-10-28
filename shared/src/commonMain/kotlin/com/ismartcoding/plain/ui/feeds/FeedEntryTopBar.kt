@@ -87,7 +87,6 @@ internal fun FeedEntryTopBar(
                     onClick = {
                         dismiss(); val m = feedEntryVM.item.value ?: return@PDropdownMenuItem
                         setClipboardText("link", m.url)
-                        DialogHelper.showTextCopiedMessage(m.url)
                     })
                 PDropdownMenuItem(text = { Text(stringResource(Res.string.font_size)) },
                     leadingIcon = { Icon(painter = painterResource(UiRes.drawable.ui_drawable_type), contentDescription = stringResource(Res.string.font_size)) },

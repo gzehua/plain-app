@@ -42,7 +42,7 @@ fun WebAddressPager(
             Prefs.set(PrefKeys.HTTPS, page == 1)
         }
     }
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
         if (compact) {
             PSegmentedButtons(
                 options = listOf("HTTP", "HTTPS"),

@@ -105,7 +105,6 @@ fun ScanHistoryItem(
                     tint = MaterialTheme.colorScheme.onSurface,
                     onClick = {
                         setClipboardText(LocaleHelper.getString(Res.string.scan_result), text)
-                        DialogHelper.showTextCopiedMessage(text)
                     },
                     modifier = Modifier.weight(1f)
                 )

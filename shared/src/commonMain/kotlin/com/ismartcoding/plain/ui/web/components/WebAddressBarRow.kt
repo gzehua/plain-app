@@ -41,7 +41,6 @@ fun WebAddressBarRow(
                     .padding(start = 16.dp)
                     .clickable {
                         setClipboardText("url", url)
-                        DialogHelper.showTextCopiedMessage(url)
                     },
                 style =
                     TextStyle(

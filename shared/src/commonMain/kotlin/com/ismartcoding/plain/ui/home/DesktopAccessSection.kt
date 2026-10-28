@@ -67,7 +67,7 @@ fun DesktopAccessSection(navController: NavHostController) {
             lanIpv4Addresses?.let { WebAddressPager(lanIpv4Addresses = it, compact = true) }
         }
         Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 4.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, bottom = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(Modifier.weight(1f)) {

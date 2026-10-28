@@ -86,7 +86,6 @@ fun ChatListItemContextMenu(
                     showContextMenu.value = false
                     val text = (m.value as MessageText).text
                     setClipboardText(LocaleHelper.getString(Res.string.message), text)
-                    DialogHelper.showTextCopiedMessage(text)
                 },
             )
             if (m.fromId == "me") {
