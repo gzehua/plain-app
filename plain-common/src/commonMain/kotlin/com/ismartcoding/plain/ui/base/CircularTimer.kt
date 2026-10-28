@@ -1,5 +1,6 @@
 package com.ismartcoding.plain.ui.base
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -19,7 +20,7 @@ fun CircularTimer(
 ) {
     CircularProgressIndicator(
         progress = { progress.coerceIn(0f, 1f) },
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         color = progressColor,
         trackColor = trackColor,
         strokeWidth = strokeWidth,
