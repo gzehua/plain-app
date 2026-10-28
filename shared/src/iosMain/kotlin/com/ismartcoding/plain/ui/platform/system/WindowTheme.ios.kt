@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
 import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationDidFinishLaunchingNotification
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIWindow
 import platform.UIKit.UIWindowDidBecomeVisibleNotification
@@ -23,10 +24,16 @@ internal fun observeWindowTheme() {
     ) { notification ->
         (notification?.`object` as? UIWindow)?.applyTheme()
     }
-    CoroutineScope(Dispatchers.Main.immediate).launch {
-        Prefs.darkTheme.collect {
-            for (scene in UIApplication.sharedApplication.connectedScenes.filterIsInstance<UIWindowScene>()) {
-                for (window in scene.windows.filterIsInstance<UIWindow>()) window.applyTheme()
+    NSNotificationCenter.defaultCenter.addObserverForName(
+        UIApplicationDidFinishLaunchingNotification,
+        `object` = null,
+        queue = NSOperationQueue.mainQueue,
+    ) {
+        CoroutineScope(Dispatchers.Main.immediate).launch {
+            Prefs.darkTheme.collect {
+                for (scene in UIApplication.sharedApplication.connectedScenes.filterIsInstance<UIWindowScene>()) {
+                    for (window in scene.windows.filterIsInstance<UIWindow>()) window.applyTheme()
+                }
             }
         }
     }
