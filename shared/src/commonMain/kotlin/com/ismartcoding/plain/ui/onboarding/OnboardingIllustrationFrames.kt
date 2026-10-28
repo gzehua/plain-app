@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -113,7 +112,7 @@ internal fun BrowserFrame(
     Box(
         modifier = modifier
             .height(height)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(MaterialTheme.shapes.medium)
             .background(bezelColor())
             .padding(2.dp),
     ) {
@@ -121,7 +120,7 @@ internal fun BrowserFrame(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(height - 4.dp)
-                .clip(RoundedCornerShape(14.dp))
+                .clip(MaterialTheme.shapes.medium)
                 .background(MaterialTheme.colorScheme.surface),
         ) {
             Row(
