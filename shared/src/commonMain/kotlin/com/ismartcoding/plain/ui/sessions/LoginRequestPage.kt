@@ -26,7 +26,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,7 +41,6 @@ import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.components.ButtonType
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.state.launchSafe
-import com.ismartcoding.plain.ui.theme.LocalDarkTheme
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.lock as ui_drawable_lock
@@ -58,8 +56,8 @@ internal fun LoginRequestPage(
     val request = loginRequest.request
     val descRes = if (request.peer != null) Res.string.allow_remote_chat_access_desc else Res.string.allow_remote_access_desc
     val device = listOf(
-        "${request.browserName.capitalize()} ${request.browserVersion}".trim(),
-        "${request.osName.capitalize()} ${request.osVersion}".trim(),
+        request.browserName.capitalize().trim(),
+        request.osName.capitalize().trim(),
     ).filter { it.isNotEmpty() }.joinToString(" · ")
     val requester = listOf(device, loginRequest.clientIp).filter { it.isNotEmpty() }.joinToString("   ")
     var allowing by remember { mutableStateOf(false) }
@@ -143,17 +141,13 @@ internal fun LoginRequestPage(
                 }
             }
             item {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = requester,
-                        modifier = Modifier
-                            .background(if (LocalDarkTheme.current) Color(0xFF503A30) else Color(0xFFFFE3D0), CircleShape)
-                            .padding(horizontal = 24.dp, vertical = 16.dp),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Center,
-                    )
-                }
+                Text(
+                    text = requester,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
             }
         }
         Row(
