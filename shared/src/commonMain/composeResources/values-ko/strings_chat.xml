@@ -53,7 +53,6 @@
     <string name="browser">브라우저</string>
     <string name="reject">거부</string>
     <string name="open_web_address">아래 주소를 웹 브라우저에서 여세요.</string>
-    <string name="allow_remote_access">원격 접근 허용</string>
     <string name="allow_remote_access_desc">이 기기가 내 데이터에 접근하도록 허용합니다.</string>
     <string name="allow_remote_chat_access_desc">이 기기가 내 데이터에 접근하고 메시지와 파일을 주고받도록 허용합니다.</string>
     <string name="chat_input_hint">무엇이 생각나세요?</string>

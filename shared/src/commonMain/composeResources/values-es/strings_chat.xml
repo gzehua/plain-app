@@ -53,7 +53,6 @@
     <string name="browser">Navegador</string>
     <string name="reject">Rechazar</string>
     <string name="open_web_address">Abre la dirección siguiente en tu navegador web.</string>
-    <string name="allow_remote_access">Permitir acceso remoto</string>
     <string name="allow_remote_access_desc">Permite que este dispositivo acceda a tus datos.</string>
     <string name="allow_remote_chat_access_desc">Permite que este dispositivo acceda a tus datos e intercambie mensajes y archivos.</string>
     <string name="chat_input_hint">¿En qué estás pensando?</string>

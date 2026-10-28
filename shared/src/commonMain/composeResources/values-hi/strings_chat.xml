@@ -53,7 +53,6 @@
     <string name="browser">ब्राउज़र</string>
     <string name="reject">अस्वीकार करें</string>
     <string name="open_web_address">नीचे दिया गया पता अपने वेब ब्राउज़र में खोलें।</string>
-    <string name="allow_remote_access">रिमोट ऐक्सेस की अनुमति दें</string>
     <string name="allow_remote_access_desc">इस डिवाइस को अपने डेटा तक पहुँचने दें।</string>
     <string name="allow_remote_chat_access_desc">इस डिवाइस को अपने डेटा तक पहुँचने और संदेश व फ़ाइलें भेजने-पाने दें।</string>
     <string name="chat_input_hint">आपके मन में क्या है?</string>

@@ -53,7 +53,6 @@
     <string name="browser">உலாவர</string>
     <string name="reject">நிராகரி</string>
     <string name="open_web_address">கீழே உள்ள முகவரியை உங்கள் வலை உலாவியில் திறக்கவும்.</string>
-    <string name="allow_remote_access">தொலைநிலை அணுகலை அனுமதி</string>
     <string name="allow_remote_access_desc">இந்தச் சாதனம் உங்கள் தரவை அணுக அனுமதிக்கவும்.</string>
     <string name="allow_remote_chat_access_desc">இந்தச் சாதனம் உங்கள் தரவை அணுகவும் செய்திகள் மற்றும் கோப்புகளைப் பரிமாறவும் அனுமதிக்கவும்.</string>
     <string name="chat_input_hint">உங்கள் நினைவில் என்ன?</string>

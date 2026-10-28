@@ -93,7 +93,7 @@ internal fun LoginRequestPage(
                         )
                     }
                     Text(
-                        text = stringResource(Res.string.allow_remote_access),
+                        text = stringResource(Res.string.home_remote_access),
                         style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,

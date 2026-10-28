@@ -55,7 +55,6 @@
     <string name="browser">Browser</string>
     <string name="reject">Reject</string>
     <string name="open_web_address">Open the address below in your web browser.</string>
-    <string name="allow_remote_access">Allow Remote Access</string>
     <string name="allow_remote_access_desc">Allow this device to access your data.</string>
     <string name="allow_remote_chat_access_desc">Allow this device to access your data and exchange messages and files.</string>
     <string name="chat_input_hint">What's on your mind?</string>

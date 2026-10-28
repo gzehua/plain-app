@@ -41,7 +41,6 @@
     <string name="accept">允許</string>
     <string name="reject">拒絕</string>
     <string name="open_web_address">在網頁瀏覽器中開啟下面的網址。</string>
-    <string name="allow_remote_access">允許遠端存取</string>
     <string name="allow_remote_access_desc">允許此裝置存取你的資料。</string>
     <string name="allow_remote_chat_access_desc">允許此裝置存取你的資料，並收發訊息和檔案。</string>
     <string name="invalid_password">密碼錯誤</string>
