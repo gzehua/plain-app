@@ -45,6 +45,7 @@ import com.ismartcoding.plain.i18n.show_qr_code
 import com.ismartcoding.plain.platform.setClipboardText
 import com.ismartcoding.plain.ui.components.PIconButton
 import com.ismartcoding.plain.Prefs
+import com.ismartcoding.plain.ui.base.PExpandableSection
 import com.ismartcoding.plain.ui.base.PTextButton
 import com.ismartcoding.plain.ui.theme.cardBackgroundNormal
 import org.jetbrains.compose.resources.painterResource
@@ -52,7 +53,6 @@ import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
 import com.ismartcoding.plain.ui.resources.chevron_down as ui_drawable_chevron_down
 import com.ismartcoding.plain.ui.resources.chevron_up as ui_drawable_chevron_up
-import com.ismartcoding.plain.ui.resources.chevron_right as ui_drawable_chevron_right
 import com.ismartcoding.plain.ui.resources.pen as ui_drawable_pen
 import com.ismartcoding.plain.ui.resources.qr_code as ui_drawable_qr_code
 
@@ -76,32 +76,6 @@ fun WebAddressBar(
     val primaryAddress = lanIpv4Addresses.firstOrNull() ?: hostname
     val backupAddresses = (listOf(hostname) + lanIpv4Addresses.drop(1)).filter { it != primaryAddress }
 
-    val backupAddressesToggle: @Composable () -> Unit = {
-        if (backupAddresses.isNotEmpty()) {
-            val expansion = stringResource(if (expanded.value) Res.string.expanded else Res.string.collapsed)
-            PTextButton(
-                modifier = Modifier.padding(horizontal = if (compact) 0.dp else 8.dp).semantics {
-                    stateDescription = expansion
-                },
-                text = stringResource(
-                    if (expanded.value) Res.string.collapse_backup_addresses
-                    else if (compact) Res.string.home_try_other_addresses
-                    else Res.string.try_more_addresses,
-                ),
-                icon = painterResource(
-                    if (compact) {
-                        if (expanded.value) UiRes.drawable.ui_drawable_chevron_down else UiRes.drawable.ui_drawable_chevron_right
-                    } else {
-                        if (expanded.value) UiRes.drawable.ui_drawable_chevron_up else UiRes.drawable.ui_drawable_chevron_down
-                    }
-                ),
-                onClick = {
-                    scope.launch { Prefs.set(PrefKeys.WEB_ADDRESS_BAR_EXPANDED, !expanded.value)}
-                },
-            )
-        }
-    }
-
     val containerModifier = if (compact) modifier.fillMaxWidth() else modifier.fillMaxWidth().background(
         color = MaterialTheme.colorScheme.cardBackgroundNormal,
         shape = MaterialTheme.shapes.small,
@@ -124,34 +98,64 @@ fun WebAddressBar(
                 qrCodeDialogVisible = true
             },
         )
-        if (compact) backupAddressesToggle()
-        AnimatedVisibility(
-            visible = expanded.value && backupAddresses.isNotEmpty(),
-            enter = expandVertically(),
-            exit = shrinkVertically(),
-        ) {
-            Column {
-                backupAddresses.forEach { address ->
-                    val url = UrlHelper.buildUrl(scheme, address, port.value)
-                    addressRow(
-                        url,
-                        address == hostname,
-                        {
-                            if (address == hostname) {
-                                mdnsEditDialogVisible = true
-                            } else {
-                                portDialogVisible = true
-                            }
-                        },
-                        {
-                            qrCodeUrl = url
-                            qrCodeDialogVisible = true
-                        },
-                    )
+        if (backupAddresses.isNotEmpty()) {
+            val expansion = stringResource(if (expanded.value) Res.string.expanded else Res.string.collapsed)
+            val text = stringResource(
+                if (expanded.value) Res.string.collapse_backup_addresses
+                else if (compact) Res.string.home_try_other_addresses
+                else Res.string.try_more_addresses,
+            )
+            val toggle: () -> Unit = {
+                scope.launch { Prefs.set(PrefKeys.WEB_ADDRESS_BAR_EXPANDED, !expanded.value) }
+            }
+            val backupRows: @Composable () -> Unit = {
+                Column {
+                    backupAddresses.forEach { address ->
+                        val url = UrlHelper.buildUrl(scheme, address, port.value)
+                        addressRow(
+                            url,
+                            address == hostname,
+                            {
+                                if (address == hostname) {
+                                    mdnsEditDialogVisible = true
+                                } else {
+                                    portDialogVisible = true
+                                }
+                            },
+                            {
+                                qrCodeUrl = url
+                                qrCodeDialogVisible = true
+                            },
+                        )
+                    }
                 }
             }
+            if (compact) {
+                PExpandableSection(
+                    text = text,
+                    expanded = expanded.value,
+                    stateDescription = expansion,
+                    onClick = toggle,
+                    content = backupRows,
+                )
+            } else {
+                AnimatedVisibility(
+                    visible = expanded.value,
+                    enter = expandVertically(),
+                    exit = shrinkVertically(),
+                ) {
+                    backupRows()
+                }
+                PTextButton(
+                    modifier = Modifier.padding(horizontal = 8.dp).semantics {
+                        stateDescription = expansion
+                    },
+                    text = text,
+                    icon = painterResource(if (expanded.value) UiRes.drawable.ui_drawable_chevron_up else UiRes.drawable.ui_drawable_chevron_down),
+                    onClick = toggle,
+                )
+            }
         }
-        if (!compact) backupAddressesToggle()
     }
 
     if (mdnsEditDialogVisible) {

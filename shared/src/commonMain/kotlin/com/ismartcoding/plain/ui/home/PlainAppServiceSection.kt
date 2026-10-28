@@ -1,10 +1,5 @@
 package com.ismartcoding.plain.ui.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,8 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.features.settings.ServiceState
@@ -31,11 +24,8 @@ import com.ismartcoding.plain.platform.system.getDeviceCapabilities
 import com.ismartcoding.plain.ui.base.*
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import com.ismartcoding.plain.ui.theme.tipsText
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.ui.resources.chevron_down as ui_drawable_chevron_down
-import com.ismartcoding.plain.ui.resources.chevron_up as ui_drawable_chevron_up
 import com.ismartcoding.plain.ui.resources.dark_mode as ui_drawable_dark_mode
 
 @Composable
@@ -85,18 +75,13 @@ fun PlainAppServiceSection(
                 }
             }
         }
-        PTextButton(
-            modifier = Modifier.padding(horizontal = 8.dp).semantics {
-                stateDescription = expansion
-            },
+        PExpandableSection(
+            toggleModifier = Modifier.padding(horizontal = 8.dp),
             text = label,
-            icon = painterResource(if (expanded) UiRes.drawable.ui_drawable_chevron_up else UiRes.drawable.ui_drawable_chevron_down),
+            expanded = expanded,
+            stateDescription = expansion,
             onClick = { expanded = !expanded },
-        )
-        AnimatedVisibility(
-            visible = expanded,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut(),
+            fadeContent = true,
         ) {
             Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 8.dp)) {
                 Text(
