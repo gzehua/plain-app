@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="sound_meter">Sound meter</string>
+    <string name="sound_meter_chart_hint">Start measuring to see sound levels</string>
     <string name="pomodoro_timer">Pomodoro timer</string>
     <string name="dlna_receiver">Cast Receiver</string>
     <string name="dlna_receiver_desc">Play videos, music, and photos from another device.</string>

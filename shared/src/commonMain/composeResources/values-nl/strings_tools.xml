@@ -3,6 +3,7 @@
     <string name="custom_sound">Aangepast geluid</string>
     <string name="select_sound">Geluid selecteren</string>
     <string name="sound_meter">Geluidsmeter</string>
+    <string name="sound_meter_chart_hint">Start de meting om geluidsniveaus te zien</string>
     <string name="pomodoro_timer">Pomodoro Timer</string>
     <string name="dlna_receiver">Cast-ontvanger</string>
     <string name="dlna_receiver_desc">Speel video's, muziek en foto's af vanaf een ander apparaat.</string>

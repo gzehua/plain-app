@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="sound_meter">Medidor de sonido</string>
+    <string name="sound_meter_chart_hint">Inicia la medición para ver los niveles de sonido</string>
     <string name="pomodoro_timer">Temporizador Pomodoro</string>
     <string name="dlna_receiver">Receptor de transmisión</string>
     <string name="dlna_receiver_desc">Reproduce vídeos, música y fotos desde otro dispositivo.</string>

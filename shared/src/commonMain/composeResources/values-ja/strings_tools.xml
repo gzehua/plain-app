@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="sound_meter">音量メーター</string>
+    <string name="sound_meter_chart_hint">測定を開始すると音量の変化が表示されます</string>
     <string name="pomodoro_timer">ポモドーロタイマー</string>
     <string name="dlna_receiver">キャストレシーバー</string>
     <string name="dlna_receiver_desc">別のデバイスから動画、音楽、写真を再生します。</string>

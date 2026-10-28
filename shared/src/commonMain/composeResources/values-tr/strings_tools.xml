@@ -3,6 +3,7 @@
     <string name="custom_sound">Özel ses</string>
     <string name="select_sound">Ses seç</string>
     <string name="sound_meter">Ses ölçer</string>
+    <string name="sound_meter_chart_hint">Ses seviyelerini görmek için ölçümü başlatın</string>
     <string name="pomodoro_timer">Pomodoro Zamanlayıcısı</string>
     <string name="dlna_receiver">Alıcıyı yayınla</string>
     <string name="dlna_receiver_desc">Başka bir cihazdan video, müzik ve fotoğraf oynatın.</string>

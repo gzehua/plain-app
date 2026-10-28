@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="sound_meter">Détecteur de son</string>
+    <string name="sound_meter_chart_hint">Lancez la mesure pour voir les niveaux sonores</string>
     <string name="pomodoro_timer">Minuteur Pomodoro</string>
     <string name="dlna_receiver">Récepteur de diffusion</string>
     <string name="dlna_receiver_desc">Lisez des vidéos, de la musique et des photos depuis un autre appareil.</string>

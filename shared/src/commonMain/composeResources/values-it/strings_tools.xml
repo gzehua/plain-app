@@ -3,6 +3,7 @@
     <string name="custom_sound">Suono personalizzato</string>
     <string name="select_sound">Seleziona suono</string>
     <string name="sound_meter">Misuratore di suono</string>
+    <string name="sound_meter_chart_hint">Avvia la misurazione per vedere i livelli sonori</string>
     <string name="pomodoro_timer">Timer Pomodoro</string>
     <string name="dlna_receiver">Ricevitore di trasmissione</string>
     <string name="dlna_receiver_desc">Riproduci video, musica e foto da un altro dispositivo.</string>

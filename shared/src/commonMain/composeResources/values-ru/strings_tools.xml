@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="sound_meter">Звуковой метр</string>
+    <string name="sound_meter_chart_hint">Начните измерение, чтобы увидеть уровень звука</string>
     <string name="pomodoro_timer">Таймер Помодоро</string>
     <string name="dlna_receiver">Приёмник трансляции</string>
     <string name="dlna_receiver_desc">Воспроизводите видео, музыку и фотографии с другого устройства.</string>

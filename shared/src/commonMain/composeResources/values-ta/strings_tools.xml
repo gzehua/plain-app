@@ -3,6 +3,7 @@
     <string name="custom_sound">பிரத்தியேக ஒலி</string>
     <string name="select_sound">ஒலியைத் தேர்ந்தெடுக்கவும்</string>
     <string name="sound_meter">ஒலிக்குக் கோளி</string>
+    <string name="sound_meter_chart_hint">ஒலி அளவுகளைக் காண அளவீட்டைத் தொடங்கவும்</string>
     <string name="pomodoro_timer">பொமடோரோ நேரமிடி</string>
     <string name="dlna_receiver">காஸ்ட் ரிசீவர்</string>
     <string name="dlna_receiver_desc">மற்றொரு சாதனத்திலிருந்து வீடியோக்கள், இசை மற்றும் புகைப்படங்களை இயக்கவும்.</string>

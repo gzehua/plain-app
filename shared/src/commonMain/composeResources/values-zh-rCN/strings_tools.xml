@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="sound_meter">分贝仪</string>
+    <string name="sound_meter_chart_hint">开始测量，查看声音变化</string>
     <string name="pomodoro_timer">番茄时钟</string>
     <string name="dlna_receiver">投屏接收器</string>
     <string name="dlna_receiver_desc">播放来自其他设备的视频、音乐和照片。</string>

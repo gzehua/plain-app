@@ -3,6 +3,7 @@
     <string name="custom_sound">Âm thanh tùy chỉnh</string>
     <string name="select_sound">Chọn âm thanh</string>
     <string name="sound_meter">Dụng cụ đo âm thanh</string>
+    <string name="sound_meter_chart_hint">Bắt đầu đo để xem mức âm thanh</string>
     <string name="pomodoro_timer">Bộ hẹn giờ Pomodoro</string>
     <string name="dlna_receiver">Bộ thu chiếu</string>
     <string name="dlna_receiver_desc">Phát video, nhạc và ảnh từ thiết bị khác.</string>

@@ -14,6 +14,8 @@ import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.lib.Channel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 
 /**
@@ -42,6 +44,7 @@ fun SoundMeterRecorder(
     min: MutableFloatState,
     avg: MutableFloatState,
     max: MutableFloatState,
+    onStarted: () -> Unit,
     onSample: (Float) -> Unit,
 ) {
     val sharedFlow = Channel.sharedFlow
@@ -66,21 +69,19 @@ fun SoundMeterRecorder(
             return@LaunchedEffect
         }
 
+        onStarted()
+
         withContext(Dispatchers.Default) {
-            while (isRunning.value) {
-                val value = dataSource.getDecibel()
-                if (value.isFinite() && value > 0f) {
-                    withContext(Dispatchers.Main) {
-                        decibel.floatValue = value
-                        total.floatValue += value
-                        count.intValue++
-                        avg.floatValue = total.floatValue / count.intValue
-                        if (value > max.floatValue) max.floatValue = value
-                        if (value < min.floatValue || min.floatValue == 0f) min.floatValue = value
-                        onSample(value)
-                    }
+            sampleSoundMeter(dataSource::getDecibel) { value ->
+                withContext(Dispatchers.Main) {
+                    decibel.floatValue = value
+                    total.floatValue += value
+                    count.intValue++
+                    avg.floatValue = total.floatValue / count.intValue
+                    if (value > max.floatValue) max.floatValue = value
+                    if (value < min.floatValue || min.floatValue == 0f) min.floatValue = value
+                    onSample(value)
                 }
-                delay(180)
             }
         }
     }
@@ -89,5 +90,13 @@ fun SoundMeterRecorder(
         onDispose {
             dataSource.stop()
         }
+    }
+}
+
+internal suspend fun sampleSoundMeter(read: () -> Float, onSample: suspend (Float) -> Unit) {
+    while (currentCoroutineContext().isActive) {
+        val value = read()
+        if (value.isFinite() && value > 0f) onSample(value)
+        delay(1000)
     }
 }

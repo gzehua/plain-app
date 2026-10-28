@@ -2,9 +2,11 @@ package com.ismartcoding.plain.ui.tools
 
 import com.ismartcoding.plain.i18n.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -66,7 +68,7 @@ fun SoundMeterPage(navController: NavHostController) {
     val isRunning = remember { mutableStateOf(false) }
     val decibel = remember { mutableFloatStateOf(0f) }
     val samples = remember { mutableStateListOf<SoundMeterSample>() }
-    val chartPlayback = remember { LiveChartPlayback(capacity = 68, sampleIntervalSeconds = 0.18, minimumYMax = 100f) }
+    val chartPlayback = remember { LiveChartPlayback(minimumYMax = 100f) }
     var selectedSample by remember { mutableStateOf<SoundMeterSample?>(null) }
     val clock = remember { TimeSource.Monotonic.markNow() }
     val decibelValueStrings = stringArrayResource(Res.array.decibel_values)
@@ -74,12 +76,12 @@ fun SoundMeterPage(navController: NavHostController) {
         derivedStateOf { if (decibel.floatValue > 0) decibelValueStrings.getOrNull((decibel.floatValue / 10).toInt() - 1) ?: "" else "" }
     }
 
-    SoundMeterRecorder(isRunning, decibel, total, count, min, avg, max) { value ->
+    SoundMeterRecorder(isRunning, decibel, total, count, min, avg, max, onStarted = {
+        samples.clear()
+        chartPlayback.clear()
+        selectedSample = null
+    }) { value ->
         val now = clock.elapsedNow().inWholeMilliseconds / 1000f
-        if (samples.isNotEmpty() && now - samples.last().seconds > 1f) {
-            samples.clear()
-            chartPlayback.clear()
-        }
         if (samples.size == 128) samples.removeAt(0)
         selectedSample?.let { if (it !in samples) selectedSample = null }
         samples.add(SoundMeterSample(count.intValue, now, value))
@@ -136,14 +138,28 @@ fun SoundMeterPage(navController: NavHostController) {
                                 color = MaterialTheme.colorScheme.primary,
                             )
                         }
-                        LiveLineChart(
-                            samples = samples.map { LiveChartSample(it.index, it.decibels) },
-                            isRunning = isRunning.value,
+                        Box(
                             modifier = Modifier.fillMaxWidth().height(128.dp).padding(top = 16.dp),
-                            playback = chartPlayback,
-                            selectedSampleIndex = selectedSample?.index,
-                            onSampleSelected = { point -> selectedSample = samples.firstOrNull { it.index == point.index } },
-                        )
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            LiveLineChart(
+                                samples = samples.map { LiveChartSample(it.index, it.decibels) },
+                                isRunning = isRunning.value,
+                                modifier = Modifier.fillMaxSize(),
+                                playback = chartPlayback,
+                                selectedSampleIndex = selectedSample?.index,
+                                onSampleSelected = { point -> selectedSample = samples.firstOrNull { it.index == point.index } },
+                            )
+                            if (samples.isEmpty()) {
+                                Text(
+                                    text = stringResource(Res.string.sound_meter_chart_hint),
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                        }
                     }
                 }
             }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="sound_meter">Schallpegelmesser</string>
+    <string name="sound_meter_chart_hint">Messung starten, um den Schallpegel zu sehen</string>
     <string name="pomodoro_timer">Pomodoro-Timer</string>
     <string name="dlna_receiver">Cast-Empfänger</string>
     <string name="dlna_receiver_desc">Spielen Sie Videos, Musik und Fotos von einem anderen Gerät ab.</string>

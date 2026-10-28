@@ -3,6 +3,7 @@
     <string name="custom_sound">커스텀 사운드</string>
     <string name="select_sound">사운드 선택</string>
     <string name="sound_meter">음향 미터</string>
+    <string name="sound_meter_chart_hint">측정을 시작하면 소리 크기의 변화를 볼 수 있습니다</string>
     <string name="pomodoro_timer">포모도로 타이머</string>
     <string name="dlna_receiver">캐스트 수신기</string>
     <string name="dlna_receiver_desc">다른 기기에서 동영상, 음악, 사진을 재생하세요.</string>
