@@ -46,8 +46,13 @@ import com.ismartcoding.plain.ui.base.*
 import com.ismartcoding.plain.ui.components.*
 import com.ismartcoding.plain.ui.theme.dialogSheetBackground
 import com.ismartcoding.plain.ui.base.PTextButton
+import com.ismartcoding.plain.ui.charts.LiveChartPlayback
+import com.ismartcoding.plain.ui.charts.LiveChartSample
+import com.ismartcoding.plain.ui.charts.LiveLineChart
 import kotlin.math.abs
 import kotlin.time.TimeSource
+
+private data class SoundMeterSample(val index: Int, val seconds: Float, val decibels: Float)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +66,7 @@ fun SoundMeterPage(navController: NavHostController) {
     val isRunning = remember { mutableStateOf(false) }
     val decibel = remember { mutableFloatStateOf(0f) }
     val samples = remember { mutableStateListOf<SoundMeterSample>() }
+    val chartPlayback = remember { LiveChartPlayback(capacity = 68, sampleIntervalSeconds = 0.18, minimumYMax = 100f) }
     var selectedSample by remember { mutableStateOf<SoundMeterSample?>(null) }
     val clock = remember { TimeSource.Monotonic.markNow() }
     val decibelValueStrings = stringArrayResource(Res.array.decibel_values)
@@ -70,10 +76,13 @@ fun SoundMeterPage(navController: NavHostController) {
 
     SoundMeterRecorder(isRunning, decibel, total, count, min, avg, max) { value ->
         val now = clock.elapsedNow().inWholeMilliseconds / 1000f
-        if (samples.isNotEmpty() && now - samples.last().seconds > 1f) samples.clear()
-        while (samples.isNotEmpty() && (now - samples.first().seconds > 12f || samples.size >= 128)) samples.removeAt(0)
+        if (samples.isNotEmpty() && now - samples.last().seconds > 1f) {
+            samples.clear()
+            chartPlayback.clear()
+        }
+        if (samples.size == 128) samples.removeAt(0)
         selectedSample?.let { if (it !in samples) selectedSample = null }
-        samples.add(SoundMeterSample(now, value))
+        samples.add(SoundMeterSample(count.intValue, now, value))
     }
 
     PScaffold(topBar = {
@@ -127,7 +136,14 @@ fun SoundMeterPage(navController: NavHostController) {
                                 color = MaterialTheme.colorScheme.primary,
                             )
                         }
-                        SoundMeterChart(samples, selectedSample, { selectedSample = it }, Modifier.fillMaxWidth().height(128.dp).padding(top = 16.dp))
+                        LiveLineChart(
+                            samples = samples.map { LiveChartSample(it.index, it.decibels) },
+                            isRunning = isRunning.value,
+                            modifier = Modifier.fillMaxWidth().height(128.dp).padding(top = 16.dp),
+                            playback = chartPlayback,
+                            selectedSampleIndex = selectedSample?.index,
+                            onSampleSelected = { point -> selectedSample = samples.firstOrNull { it.index == point.index } },
+                        )
                     }
                 }
             }
@@ -170,6 +186,7 @@ fun SoundMeterPage(navController: NavHostController) {
                                 total.floatValue = 0f; count.intValue = 0; decibel.floatValue = 0f
                                 min.floatValue = 0f; max.floatValue = 0f; avg.floatValue = 0f
                                 samples.clear()
+                                chartPlayback.clear()
                                 selectedSample = null
                             },
                         )

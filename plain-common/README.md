@@ -59,6 +59,7 @@ Before editing UI, choose the scene below, open its compiled example, and read t
 | Confirmation and input dialog | Host `confirmActionAsync` / `DialogHelper`, `TextFieldDialog`, `RadioDialog`; selection rows use `PDialogRadioRow` | [DialogHelper](../shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/components/DialogHelper.kt) |
 | Icon with label below | `PIconTextSmallButton` for compact toolbar; `PIconTextActionButton` for shortcuts; `PSheetPrimaryAction` for sheet actions | [State showcase](../shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/settings/ShowcaseComponentStates.kt) |
 | Boolean / radio / simple icon control | Official Material3 `Switch`, `RadioButton`, `IconButton`; use host icon shortcuts when applicable | [Dark theme choices](../shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/settings/DarkThemePage.kt) |
+| Live scrolling curve with gradient fill and optional markers/selection | `LiveLineChart` + `LiveChartPlayback`; callers map samples and own domain meaning | [SoundMeterPage](../shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/tools/SoundMeterPage.kt) |
 | Media seek, animated waveform, countdown | `PlayerSlider`, `WaveSlider`, `CircularTimer` | [PomodoroPage](../shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/pomodoro/PomodoroPage.kt) |
 | Large document, scan, drag selection, fast scroll, pull refresh | `CodeEditor`, `QrCodeScanner`, `gridDragSelect`, fastscroll and pullrefresh packages | [TextFilePage](../shared/src/commonMain/kotlin/com/ismartcoding/plain/ui/media/TextFilePage.kt) |
 
