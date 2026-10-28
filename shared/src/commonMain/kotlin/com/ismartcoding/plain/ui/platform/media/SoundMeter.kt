@@ -9,12 +9,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import com.ismartcoding.plain.events.PermissionsResultEvent
 import com.ismartcoding.plain.lib.Channel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Platform-specific sound meter data source. Each platform provides raw
@@ -42,10 +42,10 @@ fun SoundMeterRecorder(
     min: MutableFloatState,
     avg: MutableFloatState,
     max: MutableFloatState,
+    onSample: (Float) -> Unit,
 ) {
-    val scope = rememberCoroutineScope()
     val sharedFlow = Channel.sharedFlow
-    val dataSource = SoundMeterDataSource()
+    val dataSource = remember { SoundMeterDataSource() }
 
     LaunchedEffect(sharedFlow) {
         sharedFlow.collect { event ->
@@ -66,16 +66,19 @@ fun SoundMeterRecorder(
             return@LaunchedEffect
         }
 
-        scope.launch(Dispatchers.Default) {
+        withContext(Dispatchers.Default) {
             while (isRunning.value) {
                 val value = dataSource.getDecibel()
                 if (value.isFinite() && value > 0f) {
-                    decibel.floatValue = value
-                    total.floatValue += value
-                    count.intValue++
-                    avg.floatValue = total.floatValue / count.intValue
-                    if (value > max.floatValue) max.floatValue = value
-                    if (value < min.floatValue || min.floatValue == 0f) min.floatValue = value
+                    withContext(Dispatchers.Main) {
+                        decibel.floatValue = value
+                        total.floatValue += value
+                        count.intValue++
+                        avg.floatValue = total.floatValue / count.intValue
+                        if (value > max.floatValue) max.floatValue = value
+                        if (value < min.floatValue || min.floatValue == 0f) min.floatValue = value
+                        onSample(value)
+                    }
                 }
                 delay(180)
             }
