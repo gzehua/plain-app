@@ -2,6 +2,7 @@ package com.ismartcoding.plain.ui.sessions
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -9,7 +10,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,7 +24,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ismartcoding.plain.features.sessions.RustWebLogin
 import com.ismartcoding.plain.features.sessions.WebLoginRequestFacts
@@ -26,16 +37,16 @@ import com.ismartcoding.plain.i18n.*
 import com.ismartcoding.plain.lib.extensions.capitalize
 import com.ismartcoding.plain.ui.base.PCard
 import com.ismartcoding.plain.ui.base.PFilledButton
-import com.ismartcoding.plain.ui.base.PListItem
 import com.ismartcoding.plain.ui.base.POutlinedButton
 import com.ismartcoding.plain.ui.components.ButtonSize
 import com.ismartcoding.plain.ui.components.ButtonType
 import com.ismartcoding.plain.ui.navigation.PBackHandler
 import com.ismartcoding.plain.ui.state.launchSafe
+import com.ismartcoding.plain.ui.theme.LocalDarkTheme
 import com.ismartcoding.plain.ui.theme.PlainTheme
 import com.ismartcoding.plain.ui.resources.Res as UiRes
-import com.ismartcoding.plain.ui.resources.chrome as ui_drawable_chrome
-import com.ismartcoding.plain.ui.resources.laptop as ui_drawable_laptop
+import com.ismartcoding.plain.ui.resources.lock as ui_drawable_lock
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -45,9 +56,12 @@ internal fun LoginRequestPage(
 ) {
     PBackHandler(onBack = onClose)
     val request = loginRequest.request
-    val isWeb = request.browserName != "PlainApp"
     val descRes = if (request.peer != null) Res.string.allow_remote_chat_access_desc else Res.string.allow_remote_access_desc
-    val iconRes = if (isWeb) UiRes.drawable.ui_drawable_chrome else UiRes.drawable.ui_drawable_laptop
+    val device = listOf(
+        "${request.browserName.capitalize()} ${request.browserVersion}".trim(),
+        "${request.osName.capitalize()} ${request.osVersion}".trim(),
+    ).filter { it.isNotEmpty() }.joinToString(" · ")
+    val requester = listOf(device, loginRequest.clientIp).filter { it.isNotEmpty() }.joinToString("   ")
     var allowing by remember { mutableStateOf(false) }
     var denying by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -59,57 +73,91 @@ internal fun LoginRequestPage(
             .safeDrawingPadding(),
     ) {
         LazyColumn(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).widthIn(max = 480.dp).fillMaxWidth().align(Alignment.CenterHorizontally),
             contentPadding = PaddingValues(horizontal = PlainTheme.PAGE_HORIZONTAL_MARGIN, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         ) {
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Box(
+                        modifier = Modifier.size(56.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            painter = painterResource(UiRes.drawable.ui_drawable_lock),
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                     Text(
                         text = stringResource(Res.string.allow_remote_access),
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
                     )
                     Text(
                         text = stringResource(descRes),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
-            item {
-                PCard {
-                    PListItem(
-                        title = "${request.browserName.capitalize()} ${request.browserVersion}".trim(),
-                        subtitle = "${request.osName.capitalize()} ${request.osVersion}".trim(),
-                        icon = iconRes,
-                    )
-                    PListItem(
-                        title = stringResource(Res.string.ip_address),
-                        value = loginRequest.clientIp,
-                    )
-                    if (request.verificationCode.isNotEmpty()) {
+            if (request.verificationCode.isNotEmpty()) {
+                item {
+                    PCard {
                         Column(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primaryContainer).padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text(
-                                text = stringResource(Res.string.login_compare_code),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                text = request.verificationCode,
+                                modifier = Modifier.fillMaxWidth(),
+                                style = MaterialTheme.typography.headlineLarge.copy(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.SemiBold,
+                                ),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1,
+                                softWrap = false,
+                                autoSize = TextAutoSize.StepBased(
+                                    minFontSize = MaterialTheme.typography.titleMedium.fontSize,
+                                    maxFontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                                ),
                             )
                             Text(
-                                text = request.verificationCode,
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
+                                text = stringResource(Res.string.login_compare_code),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                textAlign = TextAlign.Center,
                             )
                         }
                     }
                 }
             }
+            item {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = requester,
+                        modifier = Modifier
+                            .background(if (LocalDarkTheme.current) Color(0xFF503A30) else Color(0xFFFFE3D0), CircleShape)
+                            .padding(horizontal = 24.dp, vertical = 16.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
         }
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier.widthIn(max = 480.dp).fillMaxWidth().align(Alignment.CenterHorizontally).padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             POutlinedButton(
